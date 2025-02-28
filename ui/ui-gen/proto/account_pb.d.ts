@@ -645,8 +645,8 @@ export class Account extends jspb.Message {
   hasCreateTime(): boolean;
   clearCreateTime(): Account;
 
-  getKind(): Account.Kind;
-  setKind(value: Account.Kind): Account;
+  getType(): Account.Type;
+  setType(value: Account.Type): Account;
 
   getDisplayName(): string;
   setDisplayName(value: string): Account;
@@ -666,12 +666,12 @@ export namespace Account {
   export type AsObject = {
     id: string,
     createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    kind: Account.Kind,
+    type: Account.Type,
     displayName: string,
     username: string,
   }
 
-  export enum Kind { 
+  export enum Type { 
     ACCOUNT_KIND_UNSPECIFIED = 0,
     USER_ACCOUNT = 1,
     SERVICE_ACCOUNT = 2,
@@ -742,8 +742,8 @@ export namespace RoleAssignment {
   }
 
   export class Scope extends jspb.Message {
-    getResourceKind(): RoleAssignment.ResourceKind;
-    setResourceKind(value: RoleAssignment.ResourceKind): Scope;
+    getResourceType(): RoleAssignment.ResourceType;
+    setResourceType(value: RoleAssignment.ResourceType): Scope;
 
     getResource(): string;
     setResource(value: string): Scope;
@@ -758,13 +758,13 @@ export namespace RoleAssignment {
 
   export namespace Scope {
     export type AsObject = {
-      resourceKind: RoleAssignment.ResourceKind,
+      resourceType: RoleAssignment.ResourceType,
       resource: string,
     }
   }
 
 
-  export enum ResourceKind { 
+  export enum ResourceType { 
     RESOURCE_KIND_UNSPECIFIED = 0,
     NAMED_RESOURCE = 1,
     NAMED_RESOURCE_PATH_PREFIX = 2,

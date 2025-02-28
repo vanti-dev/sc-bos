@@ -26,7 +26,7 @@ goog.object.extend(proto, google_protobuf_timestamp_pb);
 var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/field_mask_pb.js');
 goog.object.extend(proto, google_protobuf_field_mask_pb);
 goog.exportSymbol('proto.smartcore.bos.Account', null, global);
-goog.exportSymbol('proto.smartcore.bos.Account.Kind', null, global);
+goog.exportSymbol('proto.smartcore.bos.Account.Type', null, global);
 goog.exportSymbol('proto.smartcore.bos.CreateAccountRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.CreateRoleAssignmentRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.CreateRoleRequest', null, global);
@@ -53,7 +53,7 @@ goog.exportSymbol('proto.smartcore.bos.ListServiceCredentialsRequest', null, glo
 goog.exportSymbol('proto.smartcore.bos.ListServiceCredentialsResponse', null, global);
 goog.exportSymbol('proto.smartcore.bos.Role', null, global);
 goog.exportSymbol('proto.smartcore.bos.RoleAssignment', null, global);
-goog.exportSymbol('proto.smartcore.bos.RoleAssignment.ResourceKind', null, global);
+goog.exportSymbol('proto.smartcore.bos.RoleAssignment.ResourceType', null, global);
 goog.exportSymbol('proto.smartcore.bos.RoleAssignment.Scope', null, global);
 goog.exportSymbol('proto.smartcore.bos.ServiceCredential', null, global);
 goog.exportSymbol('proto.smartcore.bos.UpdateAccountPasswordRequest', null, global);
@@ -5500,7 +5500,7 @@ proto.smartcore.bos.Account.toObject = function(includeInstance, msg) {
   var f, obj = {
 id: jspb.Message.getFieldWithDefault(msg, 1, ""),
 createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-kind: jspb.Message.getFieldWithDefault(msg, 3, 0),
+type: jspb.Message.getFieldWithDefault(msg, 3, 0),
 displayName: jspb.Message.getFieldWithDefault(msg, 4, ""),
 username: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
@@ -5549,8 +5549,8 @@ proto.smartcore.bos.Account.deserializeBinaryFromReader = function(msg, reader) 
       msg.setCreateTime(value);
       break;
     case 3:
-      var value = /** @type {!proto.smartcore.bos.Account.Kind} */ (reader.readEnum());
-      msg.setKind(value);
+      var value = /** @type {!proto.smartcore.bos.Account.Type} */ (reader.readEnum());
+      msg.setType(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
@@ -5604,7 +5604,7 @@ proto.smartcore.bos.Account.serializeBinaryToWriter = function(message, writer) 
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
-  f = message.getKind();
+  f = message.getType();
   if (f !== 0.0) {
     writer.writeEnum(
       3,
@@ -5631,7 +5631,7 @@ proto.smartcore.bos.Account.serializeBinaryToWriter = function(message, writer) 
 /**
  * @enum {number}
  */
-proto.smartcore.bos.Account.Kind = {
+proto.smartcore.bos.Account.Type = {
   ACCOUNT_KIND_UNSPECIFIED: 0,
   USER_ACCOUNT: 1,
   SERVICE_ACCOUNT: 2
@@ -5693,19 +5693,19 @@ proto.smartcore.bos.Account.prototype.hasCreateTime = function() {
 
 
 /**
- * optional Kind kind = 3;
- * @return {!proto.smartcore.bos.Account.Kind}
+ * optional Type type = 3;
+ * @return {!proto.smartcore.bos.Account.Type}
  */
-proto.smartcore.bos.Account.prototype.getKind = function() {
-  return /** @type {!proto.smartcore.bos.Account.Kind} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+proto.smartcore.bos.Account.prototype.getType = function() {
+  return /** @type {!proto.smartcore.bos.Account.Type} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
 
 /**
- * @param {!proto.smartcore.bos.Account.Kind} value
+ * @param {!proto.smartcore.bos.Account.Type} value
  * @return {!proto.smartcore.bos.Account} returns this
  */
-proto.smartcore.bos.Account.prototype.setKind = function(value) {
+proto.smartcore.bos.Account.prototype.setType = function(value) {
   return jspb.Message.setProto3EnumField(this, 3, value);
 };
 
@@ -6145,7 +6145,7 @@ proto.smartcore.bos.RoleAssignment.serializeBinaryToWriter = function(message, w
 /**
  * @enum {number}
  */
-proto.smartcore.bos.RoleAssignment.ResourceKind = {
+proto.smartcore.bos.RoleAssignment.ResourceType = {
   RESOURCE_KIND_UNSPECIFIED: 0,
   NAMED_RESOURCE: 1,
   NAMED_RESOURCE_PATH_PREFIX: 2,
@@ -6186,7 +6186,7 @@ proto.smartcore.bos.RoleAssignment.Scope.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.RoleAssignment.Scope.toObject = function(includeInstance, msg) {
   var f, obj = {
-resourceKind: jspb.Message.getFieldWithDefault(msg, 1, 0),
+resourceType: jspb.Message.getFieldWithDefault(msg, 1, 0),
 resource: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
@@ -6225,8 +6225,8 @@ proto.smartcore.bos.RoleAssignment.Scope.deserializeBinaryFromReader = function(
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {!proto.smartcore.bos.RoleAssignment.ResourceKind} */ (reader.readEnum());
-      msg.setResourceKind(value);
+      var value = /** @type {!proto.smartcore.bos.RoleAssignment.ResourceType} */ (reader.readEnum());
+      msg.setResourceType(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
@@ -6261,7 +6261,7 @@ proto.smartcore.bos.RoleAssignment.Scope.prototype.serializeBinary = function() 
  */
 proto.smartcore.bos.RoleAssignment.Scope.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getResourceKind();
+  f = message.getResourceType();
   if (f !== 0.0) {
     writer.writeEnum(
       1,
@@ -6279,19 +6279,19 @@ proto.smartcore.bos.RoleAssignment.Scope.serializeBinaryToWriter = function(mess
 
 
 /**
- * optional ResourceKind resource_kind = 1;
- * @return {!proto.smartcore.bos.RoleAssignment.ResourceKind}
+ * optional ResourceType resource_type = 1;
+ * @return {!proto.smartcore.bos.RoleAssignment.ResourceType}
  */
-proto.smartcore.bos.RoleAssignment.Scope.prototype.getResourceKind = function() {
-  return /** @type {!proto.smartcore.bos.RoleAssignment.ResourceKind} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.smartcore.bos.RoleAssignment.Scope.prototype.getResourceType = function() {
+  return /** @type {!proto.smartcore.bos.RoleAssignment.ResourceType} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /**
- * @param {!proto.smartcore.bos.RoleAssignment.ResourceKind} value
+ * @param {!proto.smartcore.bos.RoleAssignment.ResourceType} value
  * @return {!proto.smartcore.bos.RoleAssignment.Scope} returns this
  */
-proto.smartcore.bos.RoleAssignment.Scope.prototype.setResourceKind = function(value) {
+proto.smartcore.bos.RoleAssignment.Scope.prototype.setResourceType = function(value) {
   return jspb.Message.setProto3EnumField(this, 1, value);
 };
 

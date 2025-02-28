@@ -22,69 +22,69 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Account_Kind int32
+type Account_Type int32
 
 const (
-	Account_ACCOUNT_KIND_UNSPECIFIED Account_Kind = 0
-	Account_USER_ACCOUNT             Account_Kind = 1
-	Account_SERVICE_ACCOUNT          Account_Kind = 2
+	Account_ACCOUNT_KIND_UNSPECIFIED Account_Type = 0
+	Account_USER_ACCOUNT             Account_Type = 1
+	Account_SERVICE_ACCOUNT          Account_Type = 2
 )
 
-// Enum value maps for Account_Kind.
+// Enum value maps for Account_Type.
 var (
-	Account_Kind_name = map[int32]string{
+	Account_Type_name = map[int32]string{
 		0: "ACCOUNT_KIND_UNSPECIFIED",
 		1: "USER_ACCOUNT",
 		2: "SERVICE_ACCOUNT",
 	}
-	Account_Kind_value = map[string]int32{
+	Account_Type_value = map[string]int32{
 		"ACCOUNT_KIND_UNSPECIFIED": 0,
 		"USER_ACCOUNT":             1,
 		"SERVICE_ACCOUNT":          2,
 	}
 )
 
-func (x Account_Kind) Enum() *Account_Kind {
-	p := new(Account_Kind)
+func (x Account_Type) Enum() *Account_Type {
+	p := new(Account_Type)
 	*p = x
 	return p
 }
 
-func (x Account_Kind) String() string {
+func (x Account_Type) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (Account_Kind) Descriptor() protoreflect.EnumDescriptor {
+func (Account_Type) Descriptor() protoreflect.EnumDescriptor {
 	return file_account_proto_enumTypes[0].Descriptor()
 }
 
-func (Account_Kind) Type() protoreflect.EnumType {
+func (Account_Type) Type() protoreflect.EnumType {
 	return &file_account_proto_enumTypes[0]
 }
 
-func (x Account_Kind) Number() protoreflect.EnumNumber {
+func (x Account_Type) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use Account_Kind.Descriptor instead.
-func (Account_Kind) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use Account_Type.Descriptor instead.
+func (Account_Type) EnumDescriptor() ([]byte, []int) {
 	return file_account_proto_rawDescGZIP(), []int{28, 0}
 }
 
-type RoleAssignment_ResourceKind int32
+type RoleAssignment_ResourceType int32
 
 const (
-	RoleAssignment_RESOURCE_KIND_UNSPECIFIED  RoleAssignment_ResourceKind = 0
-	RoleAssignment_NAMED_RESOURCE             RoleAssignment_ResourceKind = 1
-	RoleAssignment_NAMED_RESOURCE_PATH_PREFIX RoleAssignment_ResourceKind = 2
-	RoleAssignment_NODE                       RoleAssignment_ResourceKind = 3
-	RoleAssignment_SUBSYSTEM                  RoleAssignment_ResourceKind = 4
-	RoleAssignment_ZONE                       RoleAssignment_ResourceKind = 5
+	RoleAssignment_RESOURCE_KIND_UNSPECIFIED  RoleAssignment_ResourceType = 0
+	RoleAssignment_NAMED_RESOURCE             RoleAssignment_ResourceType = 1
+	RoleAssignment_NAMED_RESOURCE_PATH_PREFIX RoleAssignment_ResourceType = 2
+	RoleAssignment_NODE                       RoleAssignment_ResourceType = 3
+	RoleAssignment_SUBSYSTEM                  RoleAssignment_ResourceType = 4
+	RoleAssignment_ZONE                       RoleAssignment_ResourceType = 5
 )
 
-// Enum value maps for RoleAssignment_ResourceKind.
+// Enum value maps for RoleAssignment_ResourceType.
 var (
-	RoleAssignment_ResourceKind_name = map[int32]string{
+	RoleAssignment_ResourceType_name = map[int32]string{
 		0: "RESOURCE_KIND_UNSPECIFIED",
 		1: "NAMED_RESOURCE",
 		2: "NAMED_RESOURCE_PATH_PREFIX",
@@ -92,7 +92,7 @@ var (
 		4: "SUBSYSTEM",
 		5: "ZONE",
 	}
-	RoleAssignment_ResourceKind_value = map[string]int32{
+	RoleAssignment_ResourceType_value = map[string]int32{
 		"RESOURCE_KIND_UNSPECIFIED":  0,
 		"NAMED_RESOURCE":             1,
 		"NAMED_RESOURCE_PATH_PREFIX": 2,
@@ -102,30 +102,30 @@ var (
 	}
 )
 
-func (x RoleAssignment_ResourceKind) Enum() *RoleAssignment_ResourceKind {
-	p := new(RoleAssignment_ResourceKind)
+func (x RoleAssignment_ResourceType) Enum() *RoleAssignment_ResourceType {
+	p := new(RoleAssignment_ResourceType)
 	*p = x
 	return p
 }
 
-func (x RoleAssignment_ResourceKind) String() string {
+func (x RoleAssignment_ResourceType) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (RoleAssignment_ResourceKind) Descriptor() protoreflect.EnumDescriptor {
+func (RoleAssignment_ResourceType) Descriptor() protoreflect.EnumDescriptor {
 	return file_account_proto_enumTypes[1].Descriptor()
 }
 
-func (RoleAssignment_ResourceKind) Type() protoreflect.EnumType {
+func (RoleAssignment_ResourceType) Type() protoreflect.EnumType {
 	return &file_account_proto_enumTypes[1]
 }
 
-func (x RoleAssignment_ResourceKind) Number() protoreflect.EnumNumber {
+func (x RoleAssignment_ResourceType) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use RoleAssignment_ResourceKind.Descriptor instead.
-func (RoleAssignment_ResourceKind) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use RoleAssignment_ResourceType.Descriptor instead.
+func (RoleAssignment_ResourceType) EnumDescriptor() ([]byte, []int) {
 	return file_account_proto_rawDescGZIP(), []int{30, 0}
 }
 
@@ -1737,9 +1737,10 @@ type Account struct {
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The time this account was created. Output only.
 	CreateTime *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
-	// Describes which kind of account this is, which changes how authentication is handled.
-	// Required for account creation. After the account is created, this field is output-only.
-	Kind        Account_Kind `protobuf:"varint,3,opt,name=kind,proto3,enum=smartcore.bos.Account_Kind" json:"kind,omitempty"`
+	// Describes which type of account this is, which changes how authentication is handled.
+	// Required for account creation.
+	// Immutable.
+	Type        Account_Type `protobuf:"varint,3,opt,name=type,proto3,enum=smartcore.bos.Account_Type" json:"type,omitempty"`
 	DisplayName string       `protobuf:"bytes,4,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	// For user accounts, the username to use for authentication.
 	Username string `protobuf:"bytes,5,opt,name=username,proto3" json:"username,omitempty"`
@@ -1791,9 +1792,9 @@ func (x *Account) GetCreateTime() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Account) GetKind() Account_Kind {
+func (x *Account) GetType() Account_Type {
 	if x != nil {
-		return x.Kind
+		return x.Type
 	}
 	return Account_ACCOUNT_KIND_UNSPECIFIED
 }
@@ -1969,7 +1970,8 @@ func (x *RoleAssignment) GetScope() *RoleAssignment_Scope {
 	return nil
 }
 
-// Represents
+// ServiceCredential is a credential that can be used to authenticate as a service account.
+// Unlike a username/password, the secret is generated by the system and is not human readable.
 type ServiceCredential struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2072,7 +2074,7 @@ type RoleAssignment_Scope struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ResourceKind RoleAssignment_ResourceKind `protobuf:"varint,1,opt,name=resource_kind,json=resourceKind,proto3,enum=smartcore.bos.RoleAssignment_ResourceKind" json:"resource_kind,omitempty"`
+	ResourceType RoleAssignment_ResourceType `protobuf:"varint,1,opt,name=resource_type,json=resourceType,proto3,enum=smartcore.bos.RoleAssignment_ResourceType" json:"resource_type,omitempty"`
 	Resource     string                      `protobuf:"bytes,2,opt,name=resource,proto3" json:"resource,omitempty"`
 }
 
@@ -2108,9 +2110,9 @@ func (*RoleAssignment_Scope) Descriptor() ([]byte, []int) {
 	return file_account_proto_rawDescGZIP(), []int{30, 0}
 }
 
-func (x *RoleAssignment_Scope) GetResourceKind() RoleAssignment_ResourceKind {
+func (x *RoleAssignment_Scope) GetResourceType() RoleAssignment_ResourceType {
 	if x != nil {
-		return x.ResourceKind
+		return x.ResourceType
 	}
 	return RoleAssignment_RESOURCE_KIND_UNSPECIFIED
 }
@@ -2290,14 +2292,14 @@ var file_account_proto_rawDesc = []byte{
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
 	0x52, 0x0a, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x2f, 0x0a, 0x04,
-	0x6b, 0x69, 0x6e, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1b, 0x2e, 0x73, 0x6d, 0x61,
+	0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x1b, 0x2e, 0x73, 0x6d, 0x61,
 	0x72, 0x74, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x62, 0x6f, 0x73, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75,
-	0x6e, 0x74, 0x2e, 0x4b, 0x69, 0x6e, 0x64, 0x52, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x12, 0x21, 0x0a,
+	0x6e, 0x74, 0x2e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x21, 0x0a,
 	0x0c, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x04, 0x20,
 	0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x69, 0x73, 0x70, 0x6c, 0x61, 0x79, 0x4e, 0x61, 0x6d, 0x65,
 	0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x05, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x4b, 0x0a, 0x04,
-	0x4b, 0x69, 0x6e, 0x64, 0x12, 0x1c, 0x0a, 0x18, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x5f,
+	0x54, 0x79, 0x70, 0x65, 0x12, 0x1c, 0x0a, 0x18, 0x41, 0x43, 0x43, 0x4f, 0x55, 0x4e, 0x54, 0x5f,
 	0x4b, 0x49, 0x4e, 0x44, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45, 0x44,
 	0x10, 0x00, 0x12, 0x10, 0x0a, 0x0c, 0x55, 0x53, 0x45, 0x52, 0x5f, 0x41, 0x43, 0x43, 0x4f, 0x55,
 	0x4e, 0x54, 0x10, 0x01, 0x12, 0x13, 0x0a, 0x0f, 0x53, 0x45, 0x52, 0x56, 0x49, 0x43, 0x45, 0x5f,
@@ -2320,14 +2322,14 @@ var file_account_proto_rawDesc = []byte{
 	0x6f, 0x73, 0x2e, 0x52, 0x6f, 0x6c, 0x65, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x6d, 0x65, 0x6e,
 	0x74, 0x2e, 0x53, 0x63, 0x6f, 0x70, 0x65, 0x52, 0x05, 0x73, 0x63, 0x6f, 0x70, 0x65, 0x1a, 0x74,
 	0x0a, 0x05, 0x53, 0x63, 0x6f, 0x70, 0x65, 0x12, 0x4f, 0x0a, 0x0d, 0x72, 0x65, 0x73, 0x6f, 0x75,
-	0x72, 0x63, 0x65, 0x5f, 0x6b, 0x69, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x2a,
+	0x72, 0x63, 0x65, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x2a,
 	0x2e, 0x73, 0x6d, 0x61, 0x72, 0x74, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x62, 0x6f, 0x73, 0x2e, 0x52,
 	0x6f, 0x6c, 0x65, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x6d, 0x65, 0x6e, 0x74, 0x2e, 0x52, 0x65,
-	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x4b, 0x69, 0x6e, 0x64, 0x52, 0x0c, 0x72, 0x65, 0x73, 0x6f,
-	0x75, 0x72, 0x63, 0x65, 0x4b, 0x69, 0x6e, 0x64, 0x12, 0x1a, 0x0a, 0x08, 0x72, 0x65, 0x73, 0x6f,
+	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x54, 0x79, 0x70, 0x65, 0x52, 0x0c, 0x72, 0x65, 0x73, 0x6f,
+	0x75, 0x72, 0x63, 0x65, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x72, 0x65, 0x73, 0x6f,
 	0x75, 0x72, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x72, 0x65, 0x73, 0x6f,
 	0x75, 0x72, 0x63, 0x65, 0x22, 0x84, 0x01, 0x0a, 0x0c, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x4b, 0x69, 0x6e, 0x64, 0x12, 0x1d, 0x0a, 0x19, 0x52, 0x45, 0x53, 0x4f, 0x55, 0x52, 0x43,
+	0x65, 0x54, 0x79, 0x70, 0x65, 0x12, 0x1d, 0x0a, 0x19, 0x52, 0x45, 0x53, 0x4f, 0x55, 0x52, 0x43,
 	0x45, 0x5f, 0x4b, 0x49, 0x4e, 0x44, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49,
 	0x45, 0x44, 0x10, 0x00, 0x12, 0x12, 0x0a, 0x0e, 0x4e, 0x41, 0x4d, 0x45, 0x44, 0x5f, 0x52, 0x45,
 	0x53, 0x4f, 0x55, 0x52, 0x43, 0x45, 0x10, 0x01, 0x12, 0x1e, 0x0a, 0x1a, 0x4e, 0x41, 0x4d, 0x45,
@@ -2482,8 +2484,8 @@ func file_account_proto_rawDescGZIP() []byte {
 var file_account_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_account_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
 var file_account_proto_goTypes = []any{
-	(Account_Kind)(0),                       // 0: smartcore.bos.Account.Kind
-	(RoleAssignment_ResourceKind)(0),        // 1: smartcore.bos.RoleAssignment.ResourceKind
+	(Account_Type)(0),                       // 0: smartcore.bos.Account.Type
+	(RoleAssignment_ResourceType)(0),        // 1: smartcore.bos.RoleAssignment.ResourceType
 	(*GetAccountRequest)(nil),               // 2: smartcore.bos.GetAccountRequest
 	(*CreateAccountRequest)(nil),            // 3: smartcore.bos.CreateAccountRequest
 	(*ListAccountsRequest)(nil),             // 4: smartcore.bos.ListAccountsRequest
@@ -2534,11 +2536,11 @@ var file_account_proto_depIdxs = []int32{
 	32, // 10: smartcore.bos.ListRoleAssignmentsResponse.role_assignments:type_name -> smartcore.bos.RoleAssignment
 	32, // 11: smartcore.bos.CreateRoleAssignmentRequest.role_assignment:type_name -> smartcore.bos.RoleAssignment
 	36, // 12: smartcore.bos.Account.create_time:type_name -> google.protobuf.Timestamp
-	0,  // 13: smartcore.bos.Account.kind:type_name -> smartcore.bos.Account.Kind
+	0,  // 13: smartcore.bos.Account.type:type_name -> smartcore.bos.Account.Type
 	34, // 14: smartcore.bos.RoleAssignment.scope:type_name -> smartcore.bos.RoleAssignment.Scope
 	36, // 15: smartcore.bos.ServiceCredential.create_time:type_name -> google.protobuf.Timestamp
 	36, // 16: smartcore.bos.ServiceCredential.expire_time:type_name -> google.protobuf.Timestamp
-	1,  // 17: smartcore.bos.RoleAssignment.Scope.resource_kind:type_name -> smartcore.bos.RoleAssignment.ResourceKind
+	1,  // 17: smartcore.bos.RoleAssignment.Scope.resource_type:type_name -> smartcore.bos.RoleAssignment.ResourceType
 	2,  // 18: smartcore.bos.AccountApiService.GetAccount:input_type -> smartcore.bos.GetAccountRequest
 	4,  // 19: smartcore.bos.AccountApiService.ListAccounts:input_type -> smartcore.bos.ListAccountsRequest
 	3,  // 20: smartcore.bos.AccountApiService.CreateAccount:input_type -> smartcore.bos.CreateAccountRequest
