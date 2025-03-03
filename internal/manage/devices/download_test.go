@@ -19,7 +19,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -44,7 +44,7 @@ func TestServer_DownloadDevicesHTTPHandler(t *testing.T) {
 		node.HasMetadata(&traits.Metadata{Location: &traits.Metadata_Location{Floor: "01"}}),
 	)
 
-	airTempDevice := airtemperature.NewModel()
+	airTempDevice := airtemperaturepb.NewModel()
 	_, _ = airTempDevice.UpdateAirTemperature(&traits.AirTemperature{
 		TemperatureGoal:    &traits.AirTemperature_TemperatureSetPoint{TemperatureSetPoint: &types.Temperature{ValueCelsius: 23.5}},
 		AmbientTemperature: &types.Temperature{ValueCelsius: 19.2},
@@ -54,7 +54,7 @@ func TestServer_DownloadDevicesHTTPHandler(t *testing.T) {
 		node.HasTrait(
 			trait.AirTemperature,
 			node.WithClients(
-				airtemperature.WrapApi(airtemperature.NewModelServer(airTempDevice)),
+				airtemperaturepb.WrapApi(airtemperaturepb.NewModelServer(airTempDevice)),
 			),
 		),
 		node.HasMetadata(&traits.Metadata{Location: &traits.Metadata_Location{Floor: "02"}}),

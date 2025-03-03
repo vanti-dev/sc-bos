@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoffpb"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
@@ -82,8 +82,8 @@ func TestStreamHandler(t *testing.T) {
 // tests that grpc server interceptors work properly with the stream handler
 func TestStreamHandler_Interceptors(t *testing.T) {
 	deviceName := "foobar"
-	model := onoff.NewModel(onoff.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_OFF}))
-	modelServer := onoff.NewModelServer(model)
+	model := onoffpb.NewModel(onoffpb.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_OFF}))
+	modelServer := onoffpb.NewModelServer(model)
 	modelServerConn := wrap.ServerToClient(traits.OnOffApi_ServiceDesc, modelServer)
 	srvDesc := serviceDescriptor(traits.OnOffApi_ServiceDesc.ServiceName)
 
@@ -274,8 +274,8 @@ func newNode(t *testing.T, ctx context.Context, name string) (*grpc.ClientConn, 
 func nodeServer(name string) *grpc.Server {
 	r := New() // use a router to force NOT_FOUND for unknown names
 	supportService(r, traits.OnOffApi_ServiceDesc.ServiceName)
-	m := onoff.NewModel(onoff.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_OFF}))
-	err := r.AddRoute("", name, wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoff.NewModelServer(m)))
+	m := onoffpb.NewModel(onoffpb.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_OFF}))
+	err := r.AddRoute("", name, wrap.ServerToClient(traits.OnOffApi_ServiceDesc, onoffpb.NewModelServer(m)))
 	if err != nil {
 		panic(err)
 	}

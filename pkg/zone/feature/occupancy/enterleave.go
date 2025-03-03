@@ -13,7 +13,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/util/math2"
 	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
@@ -24,7 +24,7 @@ type enterLeave struct {
 	client traits.EnterLeaveSensorApiClient
 	names  []string
 
-	model *occupancysensor.Model
+	model *occupancysensorpb.Model
 
 	logger *zap.Logger
 }

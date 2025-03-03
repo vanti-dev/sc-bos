@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/pestsense/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -48,7 +48,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		sensor := NewPestSensor(device.Id)
 		d.devices[device.Id] = sensor
 
-		announcer.Announce(device.Name, node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(sensor))))
+		announcer.Announce(device.Name, node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensorpb.WrapApi(sensor))))
 	}
 
 	// Connect to MQTT

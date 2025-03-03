@@ -7,11 +7,11 @@ import (
 	"golang.org/x/exp/rand"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeed"
+	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeedpb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-func FanSpeed(model *fanspeed.Model, presets ...fanspeed.Preset) service.Lifecycle {
+func FanSpeed(model *fanspeedpb.Model, presets ...fanspeedpb.Preset) service.Lifecycle {
 	s := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		go func() {
 			timer := time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)

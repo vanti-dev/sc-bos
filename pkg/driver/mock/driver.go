@@ -10,22 +10,22 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
-	"github.com/smart-core-os/sc-golang/pkg/trait/booking"
-	"github.com/smart-core-os/sc-golang/pkg/trait/electric"
-	"github.com/smart-core-os/sc-golang/pkg/trait/energystorage"
-	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeed"
-	"github.com/smart-core-os/sc-golang/pkg/trait/hail"
-	"github.com/smart-core-os/sc-golang/pkg/trait/light"
-	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
-	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
-	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
-	"github.com/smart-core-os/sc-golang/pkg/trait/vending"
-	"github.com/smart-core-os/sc-golang/pkg/trait/waste"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/bookingpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/electricpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/energystoragepb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensorpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeedpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/hailpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/lightpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoffpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/parentpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/publicationpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/vendingpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/wastepb"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -154,8 +154,8 @@ func (d *Driver) applyConfig(_ context.Context, cfg config.Root) error {
 func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap.Logger) ([]wrap.ServiceUnwrapper, service.Lifecycle) {
 	switch trait.Name(traitMd.Name) {
 	case trait.AirQualitySensor:
-		model := airqualitysensor.NewModel(airqualitysensor.WithInitialAirQuality(auto.GetAirQualityState()))
-		return []wrap.ServiceUnwrapper{airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
+		model := airqualitysensorpb.NewModel(airqualitysensorpb.WithInitialAirQuality(auto.GetAirQualityState()))
+		return []wrap.ServiceUnwrapper{airqualitysensorpb.WrapApi(airqualitysensorpb.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
 	case trait.AirTemperature:
 		h := rand.Float32() * 100
 		t := 15 + (rand.Float64() * 10)
@@ -167,10 +167,10 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 				TemperatureSetPoint: &types.Temperature{ValueCelsius: t},
 			},
 		}
-		model := airtemperature.NewModel(airtemperature.WithInitialAirTemperature(&initial))
-		return []wrap.ServiceUnwrapper{airtemperature.WrapApi(airtemperature.NewModelServer(model))}, nil
+		model := airtemperaturepb.NewModel(airtemperaturepb.WithInitialAirTemperature(&initial))
+		return []wrap.ServiceUnwrapper{airtemperaturepb.WrapApi(airtemperaturepb.NewModelServer(model))}, nil
 	case trait.Booking:
-		return []wrap.ServiceUnwrapper{booking.WrapApi(booking.NewModelServer(booking.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{bookingpb.WrapApi(bookingpb.NewModelServer(bookingpb.NewModel()))}, nil
 	case trait.BrightnessSensor:
 		// todo: return []any{brightnesssensor.WrapApi(brightnesssensor.NewModelServer(brightnesssensor.NewModel()))}, nil
 		return nil, nil
@@ -181,47 +181,47 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		// todo: return []any{count.WrapApi(count.NewModelServer(count.NewModel())), nil
 		return nil, nil
 	case trait.Electric:
-		model := electric.NewModel()
-		return []wrap.ServiceUnwrapper{electric.WrapApi(electric.NewModelServer(model))}, auto.Electric(model)
+		model := electricpb.NewModel()
+		return []wrap.ServiceUnwrapper{electricpb.WrapApi(electricpb.NewModelServer(model))}, auto.Electric(model)
 	case trait.Emergency:
 		// todo: return []any{emergency.WrapApi(emergency.NewModelServer(emergency.NewModel()))}, nil
 		return nil, nil
 	case trait.EnergyStorage:
-		return []wrap.ServiceUnwrapper{energystorage.WrapApi(energystorage.NewModelServer(energystorage.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{energystoragepb.WrapApi(energystoragepb.NewModelServer(energystoragepb.NewModel()))}, nil
 	case trait.EnterLeaveSensor:
-		return []wrap.ServiceUnwrapper{enterleavesensor.WrapApi(enterleavesensor.NewModelServer(enterleavesensor.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{enterleavesensorpb.WrapApi(enterleavesensorpb.NewModelServer(enterleavesensorpb.NewModel()))}, nil
 	case trait.ExtendRetract:
 		// todo: return []any{extendretract.WrapApi(extendretract.NewModelServer(extendretract.NewModel()))}, nil
 		return nil, nil
 	case trait.FanSpeed:
-		presets := []fanspeed.Preset{
+		presets := []fanspeedpb.Preset{
 			{Name: "off", Percentage: 0},
 			{Name: "low", Percentage: 15},
 			{Name: "med", Percentage: 40},
 			{Name: "high", Percentage: 75},
 			{Name: "full", Percentage: 100},
 		}
-		model := fanspeed.NewModel(fanspeed.WithPresets(presets...))
-		return []wrap.ServiceUnwrapper{fanspeed.WrapApi(fanspeed.NewModelServer(model))}, auto.FanSpeed(model, presets...)
+		model := fanspeedpb.NewModel(fanspeedpb.WithPresets(presets...))
+		return []wrap.ServiceUnwrapper{fanspeedpb.WrapApi(fanspeedpb.NewModelServer(model))}, auto.FanSpeed(model, presets...)
 	case trait.Hail:
-		return []wrap.ServiceUnwrapper{hail.WrapApi(hail.NewModelServer(hail.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{hailpb.WrapApi(hailpb.NewModelServer(hailpb.NewModel()))}, nil
 	case trait.InputSelect:
 		// todo: return []any{inputselect.WrapApi(inputselect.NewModelServer(inputselect.NewModel()))}, nil
 		return nil, nil
 	case trait.Light:
-		server := light.NewModelServer(light.NewModel(
-			light.WithPreset(0, &traits.LightPreset{Name: "off", Title: "Off"}),
-			light.WithPreset(40, &traits.LightPreset{Name: "low", Title: "Low"}),
-			light.WithPreset(60, &traits.LightPreset{Name: "med", Title: "Normal"}),
-			light.WithPreset(80, &traits.LightPreset{Name: "high", Title: "High"}),
-			light.WithPreset(100, &traits.LightPreset{Name: "full", Title: "Full"}),
+		server := lightpb.NewModelServer(lightpb.NewModel(
+			lightpb.WithPreset(0, &traits.LightPreset{Name: "off", Title: "Off"}),
+			lightpb.WithPreset(40, &traits.LightPreset{Name: "low", Title: "Low"}),
+			lightpb.WithPreset(60, &traits.LightPreset{Name: "med", Title: "Normal"}),
+			lightpb.WithPreset(80, &traits.LightPreset{Name: "high", Title: "High"}),
+			lightpb.WithPreset(100, &traits.LightPreset{Name: "full", Title: "Full"}),
 		))
-		return []wrap.ServiceUnwrapper{light.WrapApi(server), light.WrapInfo(server)}, nil
+		return []wrap.ServiceUnwrapper{lightpb.WrapApi(server), lightpb.WrapInfo(server)}, nil
 	case trait.LockUnlock:
 		// todo: return []any{lockunlock.WrapApi(lockunlock.NewModelServer(lockunlock.NewModel()))}, nil
 		return nil, nil
 	case trait.Metadata:
-		return []wrap.ServiceUnwrapper{metadata.WrapApi(metadata.NewModelServer(metadata.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{metadatapb.WrapApi(metadatapb.NewModelServer(metadatapb.NewModel()))}, nil
 	case trait.Microphone:
 		// todo: return []any{microphone.WrapApi(microphone.NewModelServer(microphone.NewModel()))}, nil
 		return nil, nil
@@ -231,16 +231,16 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		// todo: return []any{motionsensor.WrapApi(motionsensor.NewModelServer(motionsensor.NewModel()))}, nil
 		return nil, nil
 	case trait.OccupancySensor:
-		model := occupancysensor.NewModel()
-		return []wrap.ServiceUnwrapper{occupancysensor.WrapApi(occupancysensor.NewModelServer(model))}, auto.OccupancySensorAuto(model)
+		model := occupancysensorpb.NewModel()
+		return []wrap.ServiceUnwrapper{occupancysensorpb.WrapApi(occupancysensorpb.NewModelServer(model))}, auto.OccupancySensorAuto(model)
 	case trait.OnOff:
-		return []wrap.ServiceUnwrapper{onoff.WrapApi(onoff.NewModelServer(onoff.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{onoffpb.WrapApi(onoffpb.NewModelServer(onoffpb.NewModel()))}, nil
 	case trait.OpenClose:
 		return mockOpenClose(traitMd, deviceName, logger)
 	case trait.Parent:
-		return []wrap.ServiceUnwrapper{parent.WrapApi(parent.NewModelServer(parent.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{parentpb.WrapApi(parentpb.NewModelServer(parentpb.NewModel()))}, nil
 	case trait.Publication:
-		return []wrap.ServiceUnwrapper{publication.WrapApi(publication.NewModelServer(publication.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{publicationpb.WrapApi(publicationpb.NewModelServer(publicationpb.NewModel()))}, nil
 	case trait.Ptz:
 		// todo: return []any{ptz.WrapApi(ptz.NewModelServer(ptz.NewModel()))}, nil
 		return nil, nil
@@ -248,10 +248,10 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		// todo: return []any{speaker.WrapApi(speaker.NewModelServer(speaker.NewModel())), nil
 		return nil, nil
 	case trait.Vending:
-		return []wrap.ServiceUnwrapper{vending.WrapApi(vending.NewModelServer(vending.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{vendingpb.WrapApi(vendingpb.NewModelServer(vendingpb.NewModel()))}, nil
 	case trait.Waste:
-		model := waste.NewModel()
-		return []wrap.ServiceUnwrapper{waste.WrapApi(waste.NewModelServer(model))}, auto.WasteRecordsAuto(model)
+		model := wastepb.NewModel()
+		return []wrap.ServiceUnwrapper{wastepb.WrapApi(wastepb.NewModelServer(model))}, auto.WasteRecordsAuto(model)
 
 	case accesspb.TraitName:
 		model := accesspb.NewModel()

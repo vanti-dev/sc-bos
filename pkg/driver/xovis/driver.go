@@ -17,8 +17,8 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/enterleavesensorpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
@@ -103,7 +103,7 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 				OccupancyTotal: resource.NewValue(resource.WithInitialValue(&traits.Occupancy{}), resource.WithNoDuplicates()),
 			}
 			features = append(features, node.HasTrait(trait.OccupancySensor,
-				node.WithClients(occupancysensor.WrapApi(occupancy))))
+				node.WithClients(occupancysensorpb.WrapApi(occupancy))))
 			occupancyVal = occupancy.OccupancyTotal
 		}
 		var enterLeaveVal *resource.Value
@@ -117,7 +117,7 @@ func (d *Driver) applyConfig(_ context.Context, conf DriverConfig) error {
 			}
 
 			features = append(features, node.HasTrait(trait.EnterLeaveSensor,
-				node.WithClients(enterleavesensor.WrapApi(enterLeave))))
+				node.WithClients(enterleavesensorpb.WrapApi(enterLeave))))
 			enterLeaveVal = enterLeave.EnterLeaveTotal
 		}
 

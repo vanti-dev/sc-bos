@@ -10,9 +10,9 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	typespb "github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
-	"github.com/smart-core-os/sc-golang/pkg/trait/energystorage"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/energystoragepb"
 	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/api"
 	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/local"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -26,18 +26,18 @@ func (d *Driver) announceDevice(ctx context.Context, a node.Announcer, dev Devic
 		// todo: read the RSSI prop and link it with status
 		switch trait.Name(tn) {
 		case trait.AirQualitySensor:
-			model := airqualitysensor.NewModel()
-			client := airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model))
+			model := airqualitysensorpb.NewModel()
+			client := airqualitysensorpb.WrapApi(airqualitysensorpb.NewModelServer(model))
 			a.Announce(dev.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(client)))
 			go d.pullSampleAirQuality(ctx, dev, loc, model)
 		case trait.AirTemperature:
-			model := airtemperature.NewModel()
-			client := airtemperature.WrapApi(roAirTemperatureServer{airtemperature.NewModelServer(model)})
+			model := airtemperaturepb.NewModel()
+			client := airtemperaturepb.WrapApi(roAirTemperatureServer{airtemperaturepb.NewModelServer(model)})
 			a.Announce(dev.Name, node.HasTrait(trait.AirTemperature, node.WithClients(client)))
 			go d.pullSampleAirTemperature(ctx, dev, loc, model)
 		case trait.EnergyStorage:
-			model := energystorage.NewModel()
-			client := energystorage.WrapApi(roEnergyStorageServer{energystorage.NewModelServer(model)})
+			model := energystoragepb.NewModel()
+			client := energystoragepb.WrapApi(roEnergyStorageServer{energystoragepb.NewModelServer(model)})
 			a.Announce(dev.Name, node.HasTrait(trait.EnergyStorage, node.WithClients(client)))
 			go d.pullSampleEnergyLevel(ctx, dev, loc, model)
 		default:
@@ -47,7 +47,7 @@ func (d *Driver) announceDevice(ctx context.Context, a node.Announcer, dev Devic
 	return nil
 }
 
-func (d *Driver) pullSampleAirQuality(ctx context.Context, dev Device, loc *local.Location, model *airqualitysensor.Model) {
+func (d *Driver) pullSampleAirQuality(ctx context.Context, dev Device, loc *local.Location, model *airqualitysensorpb.Model) {
 	initial, stream, stop := loc.PullLatestSamples(dev.ID)
 	defer stop()
 	_, _ = model.UpdateAirQuality(sampleToAirQuality(initial))
@@ -106,7 +106,7 @@ func sampleToAirQuality(in api.DeviceSampleResponseEnriched) *traits.AirQuality 
 	return dst
 }
 
-func (d *Driver) pullSampleAirTemperature(ctx context.Context, dev Device, loc *local.Location, model *airtemperature.Model) {
+func (d *Driver) pullSampleAirTemperature(ctx context.Context, dev Device, loc *local.Location, model *airtemperaturepb.Model) {
 	initial, stream, stop := loc.PullLatestSamples(dev.ID)
 	defer stop()
 	_, _ = model.UpdateAirTemperature(sampleToAirTemperature(initial))
@@ -140,7 +140,7 @@ func sampleToAirTemperature(in api.DeviceSampleResponseEnriched) *traits.AirTemp
 	return dst
 }
 
-func (d *Driver) pullSampleEnergyLevel(ctx context.Context, dev Device, loc *local.Location, model *energystorage.Model) {
+func (d *Driver) pullSampleEnergyLevel(ctx context.Context, dev Device, loc *local.Location, model *energystoragepb.Model) {
 	initial, stream, stop := loc.PullLatestSamples(dev.ID)
 	defer stop()
 	_, _ = model.UpdateEnergyLevel(sampleToEnergyLevel(initial))

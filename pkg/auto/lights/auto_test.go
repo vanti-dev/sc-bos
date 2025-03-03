@@ -11,10 +11,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensor"
-	"github.com/smart-core-os/sc-golang/pkg/trait/light"
-	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensorpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/lightpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/modepb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -25,24 +25,24 @@ var errFailedBrightnessUpdate = errors.New("failed to update brightness this tim
 
 func TestPirsTurnLightsOn(t *testing.T) {
 	// we update this to send messages to the automation
-	pir01 := occupancysensor.NewModel()
-	pir02 := occupancysensor.NewModel()
+	pir01 := occupancysensorpb.NewModel()
+	pir02 := occupancysensorpb.NewModel()
 
 	clients := node.ClientFunc(func(p any) error {
 		switch v := p.(type) {
 		case *traits.OccupancySensorApiClient:
-			r := occupancysensor.NewApiRouter()
-			r.Add("pir01", occupancysensor.WrapApi(occupancysensor.NewModelServer(pir01)))
-			r.Add("pir02", occupancysensor.WrapApi(occupancysensor.NewModelServer(pir02)))
-			*v = occupancysensor.WrapApi(r)
+			r := occupancysensorpb.NewApiRouter()
+			r.Add("pir01", occupancysensorpb.WrapApi(occupancysensorpb.NewModelServer(pir01)))
+			r.Add("pir02", occupancysensorpb.WrapApi(occupancysensorpb.NewModelServer(pir02)))
+			*v = occupancysensorpb.WrapApi(r)
 		case *traits.LightApiClient:
-			*v = light.WrapApi(light.NewApiRouter())
+			*v = lightpb.WrapApi(lightpb.NewApiRouter())
 		case *traits.BrightnessSensorApiClient:
-			*v = brightnesssensor.WrapApi(brightnesssensor.NewApiRouter())
+			*v = brightnesssensorpb.WrapApi(brightnesssensorpb.NewApiRouter())
 		case *gen.ButtonApiClient:
 			*v = gen.WrapButtonApi(gen.NewButtonApiRouter())
 		case *traits.ModeApiClient:
-			*v = mode.WrapApi(mode.NewApiRouter())
+			*v = modepb.WrapApi(modepb.NewApiRouter())
 		default:
 			return errors.New("unsupported lightClient type")
 		}

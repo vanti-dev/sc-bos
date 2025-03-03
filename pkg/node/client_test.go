@@ -6,12 +6,12 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoffpb"
 )
 
 func TestNode_Client(t *testing.T) {
 	n := New("Test")
-	srv := onoff.NewModelServer(onoff.NewModel(onoff.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_ON})))
+	srv := onoffpb.NewModelServer(onoffpb.NewModel(onoffpb.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_ON})))
 	n.Announce("foo",
 		HasTrait(trait.OnOff),
 		HasServer(traits.RegisterOnOffApiServer, traits.OnOffApiServer(srv)),

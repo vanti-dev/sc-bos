@@ -10,8 +10,8 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/light"
-	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
+	"github.com/smart-core-os/sc-golang/pkg/trait/lightpb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/modepb"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -33,8 +33,8 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 		service.WithParser(ParseConfig),
 	)
 	d.logger = services.Logger.Named(DriverName)
-	d.lightsByAddress = make(map[string]*light.Model)
-	d.modesByAddress = make(map[string]*mode.Model)
+	d.lightsByAddress = make(map[string]*lightpb.Model)
+	d.modesByAddress = make(map[string]*modepb.Model)
 	return d
 }
 
@@ -46,8 +46,8 @@ type Driver struct {
 
 	cfg             Config
 	client          *Client
-	lightsByAddress map[string]*light.Model
-	modesByAddress  map[string]*mode.Model
+	lightsByAddress map[string]*lightpb.Model
+	modesByAddress  map[string]*modepb.Model
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
@@ -80,9 +80,9 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 		for t, addr := range dev.Addresses {
 			switch t {
 			case "light":
-				l := light.NewModel()
-				c := light.WrapApi(lightServer{
-					LightApiServer: light.NewModelServer(l),
+				l := lightpb.NewModel()
+				c := lightpb.WrapApi(lightServer{
+					LightApiServer: lightpb.NewModelServer(l),
 					client:         d.client,
 					device:         &_dev,
 					logger:         d.logger.With(zap.String("name", dev.Name)),
@@ -100,7 +100,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 					},
 				}
 
-				modeModel := mode.NewModelModes(modes)
+				modeModel := modepb.NewModelModes(modes)
 				s := &modeInfoServer{
 					Modes: &traits.ModesSupport{
 						ModeValuesSupport: &types.ResourceSupport{
@@ -111,13 +111,13 @@ func (d *Driver) applyConfig(ctx context.Context, cfg Config) error {
 				}
 
 				announcer.Announce(dev.Name, node.HasTrait(trait.Mode, node.WithClients(
-					mode.WrapApi(&modeServer{
-						ModeApiServer: mode.NewModelServer(modeModel),
+					modepb.WrapApi(&modeServer{
+						ModeApiServer: modepb.NewModelServer(modeModel),
 						client:        d.client,
 						device:        &_dev,
 						logger:        d.logger.With(zap.String("name", dev.Name)),
 					}),
-					mode.WrapInfo(s),
+					modepb.WrapInfo(s),
 				)))
 
 				d.modesByAddress[addr] = modeModel

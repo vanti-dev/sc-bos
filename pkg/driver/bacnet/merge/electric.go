@@ -11,7 +11,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/electric"
+	"github.com/smart-core-os/sc-golang/pkg/trait/electricpb"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -54,8 +54,8 @@ type electricTrait struct {
 	statuses *statuspb.Map
 	logger   *zap.Logger
 
-	model *electric.Model
-	*electric.ModelServer
+	model *electricpb.Model
+	*electricpb.ModelServer
 	config   electricConfig
 	pollTask *task.Intermittent
 }
@@ -65,7 +65,7 @@ func newElectric(client *gobacnet.Client, devices known.Context, statuses *statu
 	if err != nil {
 		return nil, err
 	}
-	model := electric.NewModel()
+	model := electricpb.NewModel()
 	_, _ = model.UpdateDemand(&traits.ElectricDemand{}) // reset defaults
 	t := &electricTrait{
 		client:      client,
@@ -73,7 +73,7 @@ func newElectric(client *gobacnet.Client, devices known.Context, statuses *statu
 		statuses:    statuses,
 		logger:      logger,
 		model:       model,
-		ModelServer: electric.NewModelServer(model),
+		ModelServer: electricpb.NewModelServer(model),
 		config:      cfg,
 	}
 	t.pollTask = task.NewIntermittent(t.startPoll)
@@ -82,7 +82,7 @@ func newElectric(client *gobacnet.Client, devices known.Context, statuses *statu
 }
 
 func (t *electricTrait) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(t.config.Name, node.HasTrait(trait.Electric, node.WithClients(electric.WrapApi(t))))
+	return a.Announce(t.config.Name, node.HasTrait(trait.Electric, node.WithClients(electricpb.WrapApi(t))))
 }
 
 func (t *electricTrait) GetDemand(ctx context.Context, request *traits.GetDemandRequest) (*traits.ElectricDemand, error) {

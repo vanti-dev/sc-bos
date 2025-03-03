@@ -7,12 +7,12 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/smart-core-os/sc-golang/pkg/trait/openclose"
+	"github.com/smart-core-os/sc-golang/pkg/trait/openclosepb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
 )
 
-func OpenClose(model *openclose.Model) service.Lifecycle {
+func OpenClose(model *openclosepb.Model) service.Lifecycle {
 	resistances := maps.Values(traits.OpenClosePosition_Resistance_value)
 	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		go func() {
