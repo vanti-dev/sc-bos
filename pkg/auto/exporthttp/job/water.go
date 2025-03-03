@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/types"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -22,10 +22,6 @@ type WaterJob struct {
 
 func (w *WaterJob) GetName() string {
 	return "water"
-}
-
-func (w *WaterJob) GetClients() []any {
-	return []any{&w.client, &w.infoClient}
 }
 
 func (w *WaterJob) GetInterval() time.Duration {
