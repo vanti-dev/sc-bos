@@ -5,7 +5,8 @@
         :chart-title="props.chartTitle"
         :demand="chartDemandName"
         :generated="chartGeneratedName"
-        class="flex-grow-1"/>
+        class="flex-grow-1"
+        style="min-height: 300px;"/>
     <power-total
         v-if="showTotal"
         :demand="totalDemandName"
@@ -17,9 +18,9 @@
 
 <script setup>
 import ContentCard from '@/components/ContentCard.vue';
-import {isNullOrUndef} from '@/util/types.js';
 import EnergyGraph from '@/dynamic/widgets/power-history/PowerHistoryGraph.vue';
 import PowerTotal from '@/dynamic/widgets/power-total/PowerTotal.vue';
+import {isNullOrUndef} from '@/util/types.js';
 import {computed} from 'vue';
 
 const props = defineProps({

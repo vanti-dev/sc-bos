@@ -2,6 +2,7 @@ package mock
 
 import (
 	"context"
+	"strconv"
 
 	"go.uber.org/zap"
 	"golang.org/x/exp/rand"
@@ -36,6 +37,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -283,6 +285,18 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		// set an initial value or Pull methods can hang
 		_, _ = model.UpdateProblem(&gen.StatusLog_Problem{Name: deviceName, Level: gen.StatusLog_NOMINAL})
 		return []wrap.ServiceUnwrapper{gen.WrapStatusApi(statuspb.NewModelServer(model))}, auto.Status(model, deviceName)
+	case transport.TraitName:
+		model := transport.NewModel()
+		maxFloor := 10
+		if m, ok := traitMd.GetMore()["numFloors"]; ok {
+			mi, err := strconv.Atoi(m)
+			maxFloor = mi
+			if err != nil {
+				logger.Error("failed to parse maxFloor", zap.Error(err))
+				return nil, nil
+			}
+		}
+		return []wrap.ServiceUnwrapper{gen.WrapTransportApi(transport.NewModelServer(model))}, auto.TransportAuto(model, maxFloor)
 	case udmipb.TraitName:
 		return []wrap.ServiceUnwrapper{gen.WrapUdmiService(auto.NewUdmiServer(logger, deviceName))}, nil
 	}

@@ -3,8 +3,6 @@
     <ops-nav-list-items
         :items="overviewChildren"
         :mini-variant="miniVariant"/>
-
-    <v-divider v-if="overviewChildren.length > 1" class="mb-3 mt-n1"/>
     <!-- Main List -->
     <v-list-item
         v-for="(item, key) in enabledMenuItems"

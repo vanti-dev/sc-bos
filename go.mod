@@ -2,6 +2,8 @@ module github.com/vanti-dev/sc-bos
 
 go 1.23.0
 
+toolchain go1.23.3
+
 require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/cenkalti/backoff/v4 v4.3.0
@@ -26,7 +28,7 @@ require (
 	github.com/rs/cors v1.8.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.51
-	github.com/smart-core-os/sc-golang v0.0.0-20250226093734-ac0bb94e2f8f
+	github.com/smart-core-os/sc-golang v0.0.0-20250220152000-a699795e09b6
 	github.com/stretchr/testify v1.9.0
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
 	github.com/vanti-dev/gobacnet v0.0.0-20250122134204-5b55cc2d13fe
