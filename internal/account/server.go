@@ -304,7 +304,7 @@ func (s *Server) DeleteAccount(ctx context.Context, req *gen.DeleteAccountReques
 		s.logger.Error("failed to delete account", zap.Error(err), zap.String("id", req.Id))
 		return nil, ErrDatabase
 	}
-	if !deleted {
+	if !deleted && !req.AllowMissing {
 		return nil, ErrAccountNotFound
 	}
 	return &gen.DeleteAccountResponse{}, nil
@@ -418,7 +418,7 @@ func (s *Server) DeleteServiceCredential(ctx context.Context, req *gen.DeleteSer
 		s.logger.Error("failed to delete service credential", zap.Error(err), zap.String("id", req.Id))
 		return nil, ErrDatabase
 	}
-	if !deleted {
+	if !deleted && !req.AllowMissing {
 		return nil, ErrServiceCredentialNotFound
 	}
 
@@ -699,7 +699,7 @@ func (s *Server) DeleteRole(ctx context.Context, req *gen.DeleteRoleRequest) (*g
 	if err != nil {
 		return nil, err
 	}
-	if !deleted {
+	if !deleted && !req.AllowMissing {
 		return nil, ErrRoleNotFound
 	}
 

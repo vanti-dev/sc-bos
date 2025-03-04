@@ -775,6 +775,16 @@ func TestServer_DeleteAccount(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to delete service account: %v", err)
 	}
+	// deleting an account again should fail
+	_, err = server.DeleteAccount(ctx, &gen.DeleteAccountRequest{Id: user.Id})
+	if status.Code(err) != codes.NotFound {
+		t.Errorf("expected NotFound error when deleting user account twice, got %v", err)
+	}
+	// deleting an account again with allow_missing should succeed
+	_, err = server.DeleteAccount(ctx, &gen.DeleteAccountRequest{Id: user.Id, AllowMissing: true})
+	if err != nil {
+		t.Errorf("failed to delete user account with allow_missing: %v", err)
+	}
 
 	// check that the accounts are actually gone
 	_, err = server.GetAccount(ctx, &gen.GetAccountRequest{Id: user.Id})
@@ -1342,6 +1352,11 @@ func TestServer_Role(t *testing.T) {
 	if status.Code(err) != codes.NotFound {
 		t.Errorf("expected NotFound error for role, got %v", err)
 	}
+	// deleting with allow_missing should succeed
+	_, err = server.DeleteRole(ctx, &gen.DeleteRoleRequest{Id: role.Id, AllowMissing: true})
+	if err != nil {
+		t.Errorf("failed to delete role with allow_missing: %v", err)
+	}
 }
 
 func TestServer_UpdateRole(t *testing.T) {
@@ -1691,6 +1706,11 @@ func TestServer_RoleAssignments(t *testing.T) {
 	_, err = server.DeleteRoleAssignment(ctx, &gen.DeleteRoleAssignmentRequest{Id: assignments[0].Id})
 	if status.Code(err) != codes.NotFound {
 		t.Errorf("expected NotFound error for delete role assignment, got %v", err)
+	}
+	// deleting with allow_missing should succeed
+	_, err = server.DeleteRoleAssignment(ctx, &gen.DeleteRoleAssignmentRequest{Id: assignments[0].Id, AllowMissing: true})
+	if err != nil {
+		t.Errorf("failed to delete role assignment with allow_missing: %v", err)
 	}
 }
 

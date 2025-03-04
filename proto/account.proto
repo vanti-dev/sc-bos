@@ -114,6 +114,9 @@ message DeleteAccountRequest {
 
   // The id of the account to delete.
   string id = 2;
+
+  // If true, no error will be returned if the account does not exist.
+  bool allow_missing = 3;
 }
 
 message DeleteAccountResponse {}
@@ -154,6 +157,9 @@ message DeleteServiceCredentialRequest {
 
   // The id of the service credential to delete.
   string id = 2;
+
+  // If true, no error will be returned if the service credential does not exist.
+  bool allow_missing = 3;
 }
 
 message DeleteServiceCredentialResponse {
@@ -214,6 +220,9 @@ message DeleteRoleRequest {
 
   // The id of the role to delete.
   string id = 2;
+
+  // If true, no error will be returned if the role does not exist.
+  bool allow_missing = 3;
 }
 
 message DeleteRoleResponse {}
@@ -270,6 +279,9 @@ message DeleteRoleAssignmentRequest {
 
   // The id of the role assignment to delete.
   string id = 2;
+
+  // If true, no error will be returned if the role assignment does not exist.
+  bool allow_missing = 3;
 }
 
 message DeleteRoleAssignmentResponse {}

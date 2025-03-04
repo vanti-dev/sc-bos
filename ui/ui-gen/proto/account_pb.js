@@ -2178,7 +2178,8 @@ proto.smartcore.bos.DeleteAccountRequest.prototype.toObject = function(opt_inclu
 proto.smartcore.bos.DeleteAccountRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-id: jspb.Message.getFieldWithDefault(msg, 2, "")
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -2223,6 +2224,10 @@ proto.smartcore.bos.DeleteAccountRequest.deserializeBinaryFromReader = function(
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setAllowMissing(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2266,6 +2271,13 @@ proto.smartcore.bos.DeleteAccountRequest.serializeBinaryToWriter = function(mess
       f
     );
   }
+  f = message.getAllowMissing();
+  if (f) {
+    writer.writeBool(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -2302,6 +2314,24 @@ proto.smartcore.bos.DeleteAccountRequest.prototype.getId = function() {
  */
 proto.smartcore.bos.DeleteAccountRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional bool allow_missing = 3;
+ * @return {boolean}
+ */
+proto.smartcore.bos.DeleteAccountRequest.prototype.getAllowMissing = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.smartcore.bos.DeleteAccountRequest} returns this
+ */
+proto.smartcore.bos.DeleteAccountRequest.prototype.setAllowMissing = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
@@ -3100,7 +3130,8 @@ proto.smartcore.bos.DeleteServiceCredentialRequest.prototype.toObject = function
 proto.smartcore.bos.DeleteServiceCredentialRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-id: jspb.Message.getFieldWithDefault(msg, 2, "")
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -3145,6 +3176,10 @@ proto.smartcore.bos.DeleteServiceCredentialRequest.deserializeBinaryFromReader =
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setAllowMissing(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3188,6 +3223,13 @@ proto.smartcore.bos.DeleteServiceCredentialRequest.serializeBinaryToWriter = fun
       f
     );
   }
+  f = message.getAllowMissing();
+  if (f) {
+    writer.writeBool(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -3224,6 +3266,24 @@ proto.smartcore.bos.DeleteServiceCredentialRequest.prototype.getId = function() 
  */
 proto.smartcore.bos.DeleteServiceCredentialRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional bool allow_missing = 3;
+ * @return {boolean}
+ */
+proto.smartcore.bos.DeleteServiceCredentialRequest.prototype.getAllowMissing = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.smartcore.bos.DeleteServiceCredentialRequest} returns this
+ */
+proto.smartcore.bos.DeleteServiceCredentialRequest.prototype.setAllowMissing = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
@@ -4314,7 +4374,8 @@ proto.smartcore.bos.DeleteRoleRequest.prototype.toObject = function(opt_includeI
 proto.smartcore.bos.DeleteRoleRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-id: jspb.Message.getFieldWithDefault(msg, 2, "")
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -4359,6 +4420,10 @@ proto.smartcore.bos.DeleteRoleRequest.deserializeBinaryFromReader = function(msg
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setAllowMissing(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -4402,6 +4467,13 @@ proto.smartcore.bos.DeleteRoleRequest.serializeBinaryToWriter = function(message
       f
     );
   }
+  f = message.getAllowMissing();
+  if (f) {
+    writer.writeBool(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -4438,6 +4510,24 @@ proto.smartcore.bos.DeleteRoleRequest.prototype.getId = function() {
  */
 proto.smartcore.bos.DeleteRoleRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional bool allow_missing = 3;
+ * @return {boolean}
+ */
+proto.smartcore.bos.DeleteRoleRequest.prototype.getAllowMissing = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.smartcore.bos.DeleteRoleRequest} returns this
+ */
+proto.smartcore.bos.DeleteRoleRequest.prototype.setAllowMissing = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 
@@ -5326,7 +5416,8 @@ proto.smartcore.bos.DeleteRoleAssignmentRequest.prototype.toObject = function(op
 proto.smartcore.bos.DeleteRoleAssignmentRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-id: jspb.Message.getFieldWithDefault(msg, 2, "")
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -5371,6 +5462,10 @@ proto.smartcore.bos.DeleteRoleAssignmentRequest.deserializeBinaryFromReader = fu
       var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setAllowMissing(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -5414,6 +5509,13 @@ proto.smartcore.bos.DeleteRoleAssignmentRequest.serializeBinaryToWriter = functi
       f
     );
   }
+  f = message.getAllowMissing();
+  if (f) {
+    writer.writeBool(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -5450,6 +5552,24 @@ proto.smartcore.bos.DeleteRoleAssignmentRequest.prototype.getId = function() {
  */
 proto.smartcore.bos.DeleteRoleAssignmentRequest.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional bool allow_missing = 3;
+ * @return {boolean}
+ */
+proto.smartcore.bos.DeleteRoleAssignmentRequest.prototype.getAllowMissing = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.smartcore.bos.DeleteRoleAssignmentRequest} returns this
+ */
+proto.smartcore.bos.DeleteRoleAssignmentRequest.prototype.setAllowMissing = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 

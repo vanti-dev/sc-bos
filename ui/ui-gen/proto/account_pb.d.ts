@@ -185,6 +185,9 @@ export class DeleteAccountRequest extends jspb.Message {
   getId(): string;
   setId(value: string): DeleteAccountRequest;
 
+  getAllowMissing(): boolean;
+  setAllowMissing(value: boolean): DeleteAccountRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeleteAccountRequest.AsObject;
   static toObject(includeInstance: boolean, msg: DeleteAccountRequest): DeleteAccountRequest.AsObject;
@@ -197,6 +200,7 @@ export namespace DeleteAccountRequest {
   export type AsObject = {
     name: string,
     id: string,
+    allowMissing: boolean,
   }
 }
 
@@ -309,6 +313,9 @@ export class DeleteServiceCredentialRequest extends jspb.Message {
   getId(): string;
   setId(value: string): DeleteServiceCredentialRequest;
 
+  getAllowMissing(): boolean;
+  setAllowMissing(value: boolean): DeleteServiceCredentialRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeleteServiceCredentialRequest.AsObject;
   static toObject(includeInstance: boolean, msg: DeleteServiceCredentialRequest): DeleteServiceCredentialRequest.AsObject;
@@ -321,6 +328,7 @@ export namespace DeleteServiceCredentialRequest {
   export type AsObject = {
     name: string,
     id: string,
+    allowMissing: boolean,
   }
 }
 
@@ -471,6 +479,9 @@ export class DeleteRoleRequest extends jspb.Message {
   getId(): string;
   setId(value: string): DeleteRoleRequest;
 
+  getAllowMissing(): boolean;
+  setAllowMissing(value: boolean): DeleteRoleRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeleteRoleRequest.AsObject;
   static toObject(includeInstance: boolean, msg: DeleteRoleRequest): DeleteRoleRequest.AsObject;
@@ -483,6 +494,7 @@ export namespace DeleteRoleRequest {
   export type AsObject = {
     name: string,
     id: string,
+    allowMissing: boolean,
   }
 }
 
@@ -607,6 +619,9 @@ export class DeleteRoleAssignmentRequest extends jspb.Message {
   getId(): string;
   setId(value: string): DeleteRoleAssignmentRequest;
 
+  getAllowMissing(): boolean;
+  setAllowMissing(value: boolean): DeleteRoleAssignmentRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeleteRoleAssignmentRequest.AsObject;
   static toObject(includeInstance: boolean, msg: DeleteRoleAssignmentRequest): DeleteRoleAssignmentRequest.AsObject;
@@ -619,6 +634,7 @@ export namespace DeleteRoleAssignmentRequest {
   export type AsObject = {
     name: string,
     id: string,
+    allowMissing: boolean,
   }
 }
 
