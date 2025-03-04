@@ -838,69 +838,244 @@ func TestServer_ServiceCredentials(t *testing.T) {
 
 }
 
-func TestServer_Password(t *testing.T) {
+func TestServer_UpdateAccountPassword(t *testing.T) {
 	ctx := context.Background()
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
 
-	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
-		Account: &gen.Account{
-			Type:        gen.Account_USER_ACCOUNT,
-			DisplayName: "User 1",
-			Username:    "user1",
+	type testCase struct {
+		create           *gen.CreateAccountRequest
+		update           *gen.UpdateAccountPasswordRequest
+		validPassword    string   // password to check after update
+		invalidPasswords []string // passwords to check for invalidity
+		code             codes.Code
+	}
+
+	cases := map[string]testCase{
+		"add_password": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				NewPassword: "user1Password",
+			},
+			validPassword: "user1Password",
 		},
-		Password: "user1Password",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	internalID, ok := parseID(account.Id)
-	if !ok {
-		t.Fatal("failed to parse account ID")
+		"change_password": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+				Password: "thepassword1",
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				NewPassword: "thepassword2",
+			},
+			validPassword:    "thepassword2",
+			invalidPasswords: []string{"thepassword1"},
+		},
+		"change_password_valid_old_password": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+				Password: "thepassword1",
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				OldPassword: "thepassword1",
+				NewPassword: "thepassword2",
+			},
+			validPassword:    "thepassword2",
+			invalidPasswords: []string{"thepassword1"},
+		},
+		"change_password_invalid_old_password": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+				Password: "thepassword1",
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				OldPassword: "wrongPassword",
+				NewPassword: "thepassword2",
+			},
+			validPassword:    "thepassword1",
+			invalidPasswords: []string{"thepassword2", "wrongPassword"},
+			code:             codes.FailedPrecondition,
+		},
+		"add_password_old_password_supplied": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				OldPassword: "thepassword1",
+				NewPassword: "thepassword2",
+			},
+			invalidPasswords: []string{"thepassword1", "thepassword2"},
+			code:             codes.FailedPrecondition,
+		},
+		"account_id_not_found": {
+			update: &gen.UpdateAccountPasswordRequest{
+				Id:          "12345",
+				NewPassword: "thepassword",
+			},
+			code: codes.NotFound,
+		},
+		"account_id_invalid": {
+			update: &gen.UpdateAccountPasswordRequest{
+				Id:          "invalid",
+				NewPassword: "thepassword",
+			},
+			code: codes.NotFound,
+		},
+		"account_id_empty": {
+			update: &gen.UpdateAccountPasswordRequest{
+				Id:          "",
+				NewPassword: "thepassword",
+			},
+			code: codes.InvalidArgument,
+		},
+		"add_password_empty": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				NewPassword: "",
+			},
+			code: codes.InvalidArgument,
+		},
+		"add_password_too_short": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				NewPassword: "123456789",
+			},
+			code: codes.InvalidArgument,
+		},
+		"add_password_long": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				NewPassword: strings.Repeat("a", maxPasswordLength),
+			},
+		},
+		"add_password_too_long": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				NewPassword: strings.Repeat("a", maxPasswordLength+1),
+			},
+			code: codes.InvalidArgument,
+		},
+		"password_ignores_leading_whitespace": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				NewPassword: "  thepassword",
+			},
+			validPassword: "thepassword",
+		},
+		"password_ignores_trailing_whitespace": {
+			create: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			update: &gen.UpdateAccountPasswordRequest{
+				NewPassword: "thepassword  ",
+			},
+			validPassword: "thepassword",
+		},
 	}
 
-	// check the password matches user1Password and not something else
-	err = store.Read(ctx, func(tx *Tx) error {
-		err := tx.CheckAccountPassword(ctx, internalID, "user1Password")
-		if err != nil {
-			return err
-		}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			store := NewMemoryStore(zap.NewNop())
+			server := NewServer(store, zap.NewNop())
 
-		err = tx.CheckAccountPassword(ctx, internalID, "wrongPassword")
-		if err == nil {
-			t.Error("expected error for wrong password, got nil")
-		}
-		return nil
-	})
-	if err != nil {
-		t.Fatalf("failed to check password (1): %v", err)
+			var account *gen.Account
+			var err error
+			if tc.create != nil {
+				account, err = server.CreateAccount(ctx, tc.create)
+				if err != nil {
+					t.Fatalf("failed to create account: %v", err)
+				}
+			}
+
+			req := proto.Clone(tc.update).(*gen.UpdateAccountPasswordRequest)
+			if account != nil {
+				req.Id = account.Id
+			}
+			_, err = server.UpdateAccountPassword(ctx, req)
+			if status.Code(err) != tc.code {
+				t.Errorf("expected error with code %v, got %v", tc.code, err)
+			}
+
+			check := func(password string) error {
+				return store.Read(ctx, func(tx *Tx) error {
+					id, ok := parseID(account.Id)
+					if !ok {
+						t.Fatalf("failed to parse account ID %q", account.Id)
+					}
+					return tx.CheckAccountPassword(ctx, id, password)
+				})
+			}
+
+			if tc.validPassword != "" {
+				err = check(tc.validPassword)
+				if err != nil {
+					t.Errorf("password check for %q failed: %v", tc.validPassword, err)
+				}
+			}
+
+			for _, password := range tc.invalidPasswords {
+				err = check(password)
+				if err == nil {
+					t.Errorf("expected error for password %q, got nil", password)
+				}
+			}
+
+		})
 	}
 
-	// update the password
-	_, err = server.UpdateAccountPassword(ctx, &gen.UpdateAccountPasswordRequest{
-		Id:          account.Id,
-		NewPassword: "user1Password2",
-	})
-	if err != nil {
-		t.Fatalf("failed to update password (1): %v", err)
-	}
-	// update again, but also provide the old password for verification
-	_, err = server.UpdateAccountPassword(ctx, &gen.UpdateAccountPasswordRequest{
-		Id:          account.Id,
-		OldPassword: "user1Password2",
-		NewPassword: "user1Password3",
-	})
-	if err != nil {
-		t.Fatalf("failed to update password (2): %v", err)
-	}
-
-	// check the new password
-	err = store.Read(ctx, func(tx *Tx) error {
-		return tx.CheckAccountPassword(ctx, internalID, "user1Password3")
-	})
-	if err != nil {
-		t.Fatalf("failed to check password (2): %v", err)
-	}
 }
 
 func TestServer_Role(t *testing.T) {

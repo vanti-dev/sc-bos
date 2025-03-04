@@ -12,6 +12,7 @@ import (
 
 	"github.com/vanti-dev/sc-bos/internal/account/queries"
 	"github.com/vanti-dev/sc-bos/internal/database"
+	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -29,9 +30,11 @@ var (
 	ErrUnexpectedServiceCreds    = status.Error(codes.FailedPrecondition, "user account cannot have service credentials")
 	ErrServiceCredentialLimit    = status.Error(codes.ResourceExhausted, "too many service credentials")
 	ErrUsernameExists            = status.Error(codes.AlreadyExists, "username already exists")
-	ErrUnexpectedPassword        = status.Error(codes.FailedPrecondition, "only user account can have password")
+	ErrUnexpectedPasswordCreate  = status.Error(codes.InvalidArgument, "only user account can have password")
+	ErrUnexpectedPasswordUpdate  = status.Error(codes.FailedPrecondition, "only user account can have password")
 	ErrInvalidDisplayName        = status.Error(codes.InvalidArgument, "invalid display name")
 	ErrInvalidPassword           = status.Error(codes.InvalidArgument, "password does not comply with policy")
+	ErrIncorrectPassword         = status.Error(codes.FailedPrecondition, "incorrect password")
 	ErrInvalidPageToken          = status.Error(codes.InvalidArgument, "invalid page token")
 	ErrInvalidFilter             = status.Error(codes.InvalidArgument, "invalid filter")
 	ErrRoleInUse                 = status.Error(codes.FailedPrecondition, "role is in use")
@@ -123,15 +126,12 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		if account.Username == "" {
 			return nil, ErrMissingUsername
 		}
-		if req.Password != "" && !permitPassword(req.Password) {
-			return nil, ErrInvalidPassword
-		}
 	case gen.Account_SERVICE_ACCOUNT:
 		if account.Username != "" {
 			return nil, ErrUnexpectedUsernameCreate
 		}
 		if req.Password != "" {
-			return nil, ErrUnexpectedPassword
+			return nil, ErrUnexpectedPasswordCreate
 		}
 	default:
 		return nil, ErrInvalidAccountKind
@@ -151,27 +151,30 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		default:
 			panic("already validated account kind")
 		}
-		if err != nil {
-			return err
+		if database.IsUniqueConstraintError(err) {
+			return ErrUsernameExists
+		} else if err != nil {
+			s.logger.Error("failed to create account",
+				zap.Error(err),
+				zap.String("type", account.Type.String()),
+				zap.String("username", account.Username),
+			)
+			return ErrDatabase
 		}
 
 		if req.Password != "" {
 			err = tx.UpdateAccountPassword(ctx, created.ID, req.Password)
-			if err != nil {
+			if errors.Is(err, ErrInvalidPassword) {
 				return err
+			} else if err != nil {
+				s.logger.Error("failed to set account password", zap.Error(err), zap.Int64("id", created.ID))
+				return ErrDatabase
 			}
 		}
 		return nil
 	})
-	if database.IsUniqueConstraintError(err) {
-		return nil, ErrUsernameExists
-	} else if err != nil {
-		s.logger.Error("failed to create account",
-			zap.Error(err),
-			zap.String("type", account.Type.String()),
-			zap.String("username", account.Username),
-		)
-		return nil, ErrDatabase
+	if err != nil {
+		return nil, err
 	}
 
 	return accountToProto(created), nil
@@ -417,6 +420,9 @@ func (s *Server) DeleteServiceCredential(ctx context.Context, req *gen.DeleteSer
 }
 
 func (s *Server) UpdateAccountPassword(ctx context.Context, req *gen.UpdateAccountPasswordRequest) (*gen.UpdateAccountPasswordResponse, error) {
+	if req.Id == "" {
+		return nil, status.Error(codes.InvalidArgument, "id is required")
+	}
 	if !permitPassword(req.NewPassword) {
 		return nil, ErrInvalidPassword
 	}
@@ -428,8 +434,20 @@ func (s *Server) UpdateAccountPassword(ctx context.Context, req *gen.UpdateAccou
 
 	err := s.store.Write(ctx, func(tx *Tx) error {
 		if req.OldPassword != "" {
-			err := tx.CheckAccountPassword(ctx, id, req.OldPassword)
-			if err != nil {
+			_, err := tx.GetAccount(ctx, id)
+			if errors.Is(err, sql.ErrNoRows) {
+				return ErrAccountNotFound
+			} else if err != nil {
+				return err
+			}
+
+			err = tx.CheckAccountPassword(ctx, id, req.OldPassword)
+			if errors.Is(err, sql.ErrNoRows) {
+				// account has no password saved
+				return ErrIncorrectPassword
+			} else if errors.Is(err, pass.ErrMismatchedHashAndPassword) {
+				return ErrIncorrectPassword
+			} else if err != nil {
 				return err
 			}
 		}

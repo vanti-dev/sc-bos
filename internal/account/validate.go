@@ -6,7 +6,7 @@ import (
 
 const (
 	minPasswordLength = 10
-	maxPasswordLength = 100
+	maxPasswordLength = 72 // max password length supported by bcrypt
 )
 
 func permitPassword(password string) bool {

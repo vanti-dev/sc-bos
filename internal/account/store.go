@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"io"
 
 	"go.uber.org/zap"
@@ -94,11 +95,13 @@ func (tx *Tx) UpdateAccountPassword(ctx context.Context, accountID int64, passwo
 	}
 
 	account, err := tx.GetAccount(ctx, accountID)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrAccountNotFound
+	} else if err != nil {
 		return err
 	}
 	if account.Type != gen.Account_USER_ACCOUNT.String() {
-		return ErrUnexpectedPassword
+		return ErrUnexpectedPasswordUpdate
 	}
 
 	return tx.UpdateAccountPasswordHash(ctx, queries.UpdateAccountPasswordHashParams{
