@@ -503,7 +503,7 @@ func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen
 
 	res := &gen.ListRolesResponse{}
 	err := s.store.Read(ctx, func(tx *Tx) error {
-		page, err := tx.ListRolesWithPermissions(ctx, queries.ListRolesWithPermissionsParams{
+		page, err := tx.ListRolesAndPermissions(ctx, queries.ListRolesAndPermissionsParams{
 			AfterID: afterID,
 			Limit:   pageSize + 1, // fetch one extra to determine if there are more
 		})

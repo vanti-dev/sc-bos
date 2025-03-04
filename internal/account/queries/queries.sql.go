@@ -624,7 +624,7 @@ func (q *Queries) ListRoles(ctx context.Context, arg ListRolesParams) ([]Role, e
 	return items, nil
 }
 
-const listRolesWithPermissions = `-- name: ListRolesWithPermissions :many
+const listRolesAndPermissions = `-- name: ListRolesAndPermissions :many
 SELECT roles.id, roles.display_name, roles.description, group_concat(role_permissions.permission, ',') AS permissions
 FROM roles
 LEFT OUTER JOIN role_permissions ON roles.id = role_permissions.role_id
@@ -634,25 +634,25 @@ ORDER BY roles.id
 LIMIT ?2
 `
 
-type ListRolesWithPermissionsParams struct {
+type ListRolesAndPermissionsParams struct {
 	AfterID int64
 	Limit   int64
 }
 
-type ListRolesWithPermissionsRow struct {
+type ListRolesAndPermissionsRow struct {
 	Role        Role
 	Permissions string
 }
 
-func (q *Queries) ListRolesWithPermissions(ctx context.Context, arg ListRolesWithPermissionsParams) ([]ListRolesWithPermissionsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listRolesWithPermissions, arg.AfterID, arg.Limit)
+func (q *Queries) ListRolesAndPermissions(ctx context.Context, arg ListRolesAndPermissionsParams) ([]ListRolesAndPermissionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listRolesAndPermissions, arg.AfterID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListRolesWithPermissionsRow
+	var items []ListRolesAndPermissionsRow
 	for rows.Next() {
-		var i ListRolesWithPermissionsRow
+		var i ListRolesAndPermissionsRow
 		if err := rows.Scan(
 			&i.Role.ID,
 			&i.Role.DisplayName,

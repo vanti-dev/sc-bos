@@ -87,7 +87,7 @@ WHERE id > :after_id
 ORDER BY id
 LIMIT :limit;
 
--- name: ListRolesWithPermissions :many
+-- name: ListRolesAndPermissions :many
 SELECT sqlc.embed(roles), group_concat(role_permissions.permission, ',') AS permissions
 FROM roles
 LEFT OUTER JOIN role_permissions ON roles.id = role_permissions.role_id
