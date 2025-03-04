@@ -743,8 +743,8 @@ func TestServer_DeleteAccount(t *testing.T) {
 	//   - are deleted when the account is deleted
 	role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
 		Role: &gen.Role{
-			DisplayName: "Foo Role",
-			Permissions: []string{"foo"},
+			DisplayName:   "Foo Role",
+			PermissionIds: []string{"foo"},
 		},
 	})
 	if err != nil {
@@ -1218,16 +1218,16 @@ func TestServer_Role(t *testing.T) {
 			Role: &gen.Role{
 				DisplayName: displayName,
 				// supply the permissions shuffled to check they are returned in order instead
-				Permissions: shuffledPermissions(numPermissions),
+				PermissionIds: shuffledPermissions(numPermissions),
 			},
 		})
 		if err != nil {
 			t.Fatalf("failed to create role %q: %v", displayName, err)
 		}
 		expect := &gen.Role{
-			Id:          role.Id,
-			DisplayName: displayName,
-			Permissions: orderedPermissions(numPermissions),
+			Id:            role.Id,
+			DisplayName:   displayName,
+			PermissionIds: orderedPermissions(numPermissions),
 		}
 		diff := cmp.Diff(expect, role, protocmp.Transform())
 		if diff != "" {
@@ -1270,12 +1270,12 @@ func TestServer_Role(t *testing.T) {
 	// test that roles can be updated
 	t.Log("UpdateRole:")
 	role := roles[0]
-	role.Permissions = append(role.Permissions, "000-new-permission") // should go at the beginning
+	role.PermissionIds = append(role.PermissionIds, "000-new-permission") // should go at the beginning
 	role.DisplayName += " MODIFIED"
 	updated, err := server.UpdateRole(ctx, &gen.UpdateRoleRequest{
 		Role: role,
 	})
-	slices.Sort(role.Permissions)
+	slices.Sort(role.PermissionIds)
 	checkNilIfErrored(t, role, err)
 	if err != nil {
 		t.Fatalf("failed to update role: %v", err)
@@ -1356,21 +1356,21 @@ func TestServer_UpdateRole(t *testing.T) {
 	cases := map[string]testCase{
 		"empty update": {
 			initial: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: []string{"foo", "bar"},
+				DisplayName:   "Role 1",
+				PermissionIds: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{},
 			},
 			expected: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: []string{"bar", "foo"},
+				DisplayName:   "Role 1",
+				PermissionIds: []string{"bar", "foo"},
 			},
 		},
 		"update_display_name_implicit": {
 			initial: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: []string{"foo", "bar"},
+				DisplayName:   "Role 1",
+				PermissionIds: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{
@@ -1378,73 +1378,73 @@ func TestServer_UpdateRole(t *testing.T) {
 				},
 			},
 			expected: &gen.Role{
-				DisplayName: "Role 1 MODIFIED",
-				Permissions: []string{"bar", "foo"},
+				DisplayName:   "Role 1 MODIFIED",
+				PermissionIds: []string{"bar", "foo"},
 			},
 		},
 		"update_display_name_explicit": {
 			initial: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: []string{"foo", "bar"},
+				DisplayName:   "Role 1",
+				PermissionIds: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{
-					DisplayName: "Role 1 MODIFIED",
-					Permissions: []string{"foo2", "bar2"},
+					DisplayName:   "Role 1 MODIFIED",
+					PermissionIds: []string{"foo2", "bar2"},
 				},
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"display_name"}},
 			},
 			expected: &gen.Role{
-				DisplayName: "Role 1 MODIFIED",
-				Permissions: []string{"bar", "foo"},
+				DisplayName:   "Role 1 MODIFIED",
+				PermissionIds: []string{"bar", "foo"},
 			},
 		},
 		"update_permissions_implicit": {
 			initial: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: []string{"foo", "bar"},
+				DisplayName:   "Role 1",
+				PermissionIds: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{
-					Permissions: []string{"foo2", "bar2"},
+					PermissionIds: []string{"foo2", "bar2"},
 				},
 			},
 			expected: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: []string{"bar2", "foo2"},
+				DisplayName:   "Role 1",
+				PermissionIds: []string{"bar2", "foo2"},
 			},
 		},
 		"update_permissions_explicit": {
 			initial: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: []string{"foo", "bar"},
+				DisplayName:   "Role 1",
+				PermissionIds: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{
-					DisplayName: "Role 1 MODIFIED",
-					Permissions: []string{"foo2", "bar2"},
+					DisplayName:   "Role 1 MODIFIED",
+					PermissionIds: []string{"foo2", "bar2"},
 				},
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permissions"}},
 			},
 			expected: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: []string{"bar2", "foo2"},
+				DisplayName:   "Role 1",
+				PermissionIds: []string{"bar2", "foo2"},
 			},
 		},
 		"update_permissions_empty": {
 			initial: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: []string{"foo", "bar"},
+				DisplayName:   "Role 1",
+				PermissionIds: []string{"foo", "bar"},
 			},
 			update: &gen.UpdateRoleRequest{
 				Role: &gen.Role{
-					Permissions: nil,
+					PermissionIds: nil,
 				},
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permissions"}},
 			},
 			expected: &gen.Role{
-				DisplayName: "Role 1",
-				Permissions: nil,
+				DisplayName:   "Role 1",
+				PermissionIds: nil,
 			},
 		},
 	}
@@ -1553,8 +1553,8 @@ func TestServer_RoleAssignments(t *testing.T) {
 		t.Helper()
 		res, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
 			Role: &gen.Role{
-				DisplayName: displayName,
-				Permissions: permissions,
+				DisplayName:   displayName,
+				PermissionIds: permissions,
 			},
 		})
 		checkNilIfErrored(t, res, err)

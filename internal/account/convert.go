@@ -57,9 +57,9 @@ func accountToProto(account queries.Account) *gen.Account {
 
 func roleToProto(role queries.Role, permissions []string) *gen.Role {
 	return &gen.Role{
-		Id:          formatID(role.ID),
-		DisplayName: role.DisplayName,
-		Permissions: permissions,
+		Id:            formatID(role.ID),
+		DisplayName:   role.DisplayName,
+		PermissionIds: permissions,
 	}
 }
 
