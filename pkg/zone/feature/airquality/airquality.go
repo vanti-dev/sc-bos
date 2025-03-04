@@ -7,7 +7,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
@@ -51,7 +51,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 
 		f.devices.Add(cfg.AirQualitySensors...)
-		announce.Announce(cfg.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensor.WrapApi(group))))
+		announce.Announce(cfg.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensorpb.WrapApi(group))))
 	}
 
 	return nil

@@ -8,7 +8,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/smart-core-os/sc-golang/pkg/trait/openclose"
+	"github.com/smart-core-os/sc-golang/pkg/trait/openclosepb"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock/auto"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -24,9 +24,9 @@ func mockOpenClose(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 
 	opts = append(opts, parseOpenClosePresets(traitMd, deviceName, logger)...)
 
-	model := openclose.NewModel(opts...)
-	server := openclose.NewModelServer(model)
-	return []wrap.ServiceUnwrapper{openclose.WrapApi(server), openclose.WrapInfo(server)}, auto.OpenClose(model)
+	model := openclosepb.NewModel(opts...)
+	server := openclosepb.NewModelServer(model)
+	return []wrap.ServiceUnwrapper{openclosepb.WrapApi(server), openclosepb.WrapInfo(server)}, auto.OpenClose(model)
 }
 
 func parseOpenClosePresets(traitMd *traits.TraitMetadata, deviceName string, logger *zap.Logger) []resource.Option {
@@ -92,7 +92,7 @@ func parseOpenClosePresets(traitMd *traits.TraitMetadata, deviceName string, log
 			Name:  presetCfg.Name,
 			Title: presetCfg.Title,
 		}
-		opts = append(opts, openclose.WithPreset(desc, positions...))
+		opts = append(opts, openclosepb.WithPreset(desc, positions...))
 	}
 	return opts
 }

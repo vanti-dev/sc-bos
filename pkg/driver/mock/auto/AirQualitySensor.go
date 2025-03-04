@@ -7,11 +7,11 @@ import (
 	"golang.org/x/exp/rand"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-func AirQualitySensorAuto(model *airqualitysensor.Model) *service.Service[string] {
+func AirQualitySensorAuto(model *airqualitysensorpb.Model) *service.Service[string] {
 	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		go func() {
 			ticker := time.NewTicker(30 * time.Second)

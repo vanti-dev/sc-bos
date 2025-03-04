@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
@@ -48,19 +48,19 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		if len(cfg.EnterLeaveOccupancySensors) > 0 {
 			elServer := &enterLeave{
-				model:  occupancysensor.NewModel(),
+				model:  occupancysensorpb.NewModel(),
 				names:  cfg.EnterLeaveOccupancySensors,
 				logger: logger,
 			}
 			if err := f.clients.Client(&elServer.client); err != nil {
 				return err
 			}
-			group.clients = append(group.clients, occupancysensor.WrapApi(elServer))
+			group.clients = append(group.clients, occupancysensorpb.WrapApi(elServer))
 		}
 
 		f.devices.Add(cfg.OccupancySensors...)
 		f.devices.Add(cfg.EnterLeaveOccupancySensors...)
-		announce.Announce(cfg.Name, node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensor.WrapApi(group))))
+		announce.Announce(cfg.Name, node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensorpb.WrapApi(group))))
 	}
 
 	return nil

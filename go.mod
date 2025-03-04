@@ -9,7 +9,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/eclipse/paho.mqtt.golang v1.4.2
-	github.com/go-jose/go-jose/v4 v4.0.4
+	github.com/go-jose/go-jose/v4 v4.0.5
 	github.com/google/go-cmp v0.6.0
 	github.com/google/renameio/v2 v2.0.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -28,8 +28,8 @@ require (
 	github.com/rs/cors v1.8.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.51
-	github.com/smart-core-os/sc-golang v0.0.0-20250220152000-a699795e09b6
-	github.com/stretchr/testify v1.9.0
+	github.com/smart-core-os/sc-golang v0.0.0-20250226093734-ac0bb94e2f8f
+	github.com/stretchr/testify v1.10.0
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
 	github.com/vanti-dev/gobacnet v0.0.0-20250122134204-5b55cc2d13fe
 	go.etcd.io/bbolt v1.3.10

@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
+	"github.com/smart-core-os/sc-golang/pkg/trait/publicationpb"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
@@ -66,7 +66,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		// Note, ctx in cancelled each time config is updated (and on stop) because we use MonoApply in NewSystem
 		announcer := s.announcer.Replace(ctx)
-		announcer.Announce(s.name, node.HasTrait(trait.Publication, node.WithClients(publication.WrapApi(server))))
+		announcer.Announce(s.name, node.HasTrait(trait.Publication, node.WithClients(publicationpb.WrapApi(server))))
 	default:
 		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)
 	}

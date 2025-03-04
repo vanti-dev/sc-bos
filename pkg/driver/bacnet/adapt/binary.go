@@ -8,7 +8,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoffpb"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/property"
 	bactypes "github.com/vanti-dev/gobacnet/types"
@@ -23,7 +23,7 @@ func BinaryObject(prefix string, client *gobacnet.Client, device bactypes.Device
 	case "":
 		return nil, ErrNoDefault
 	case trait.OnOff:
-		model := onoff.NewModel()
+		model := onoffpb.NewModel()
 		return &binaryOnOff{
 			prefix:   prefix,
 			client:   client,
@@ -32,7 +32,7 @@ func BinaryObject(prefix string, client *gobacnet.Client, device bactypes.Device
 			statuses: statuses,
 
 			model:       model,
-			ModelServer: onoff.NewModelServer(model),
+			ModelServer: onoffpb.NewModelServer(model),
 		}, nil
 	}
 
@@ -46,8 +46,8 @@ type binaryOnOff struct {
 	object   config.Object
 	statuses *statuspb.Map
 
-	model *onoff.Model
-	*onoff.ModelServer
+	model *onoffpb.Model
+	*onoffpb.ModelServer
 }
 
 func (b *binaryOnOff) GetOnOff(ctx context.Context, request *traits.GetOnOffRequest) (*traits.OnOff, error) {
@@ -94,7 +94,7 @@ func (b *binaryOnOff) PullOnOff(request *traits.PullOnOffRequest, server traits.
 
 func (b *binaryOnOff) AnnounceSelf(a node.Announcer) node.Undo {
 	return a.Announce(b.name(),
-		node.HasTrait(trait.OnOff, node.WithClients(onoff.WrapApi(b))),
+		node.HasTrait(trait.OnOff, node.WithClients(onoffpb.WrapApi(b))),
 	)
 }
 

@@ -8,7 +8,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
@@ -51,7 +51,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			logger:   logger,
 		}
 		f.devices.Add(t.Thermostats...)
-		announce.Announce(name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(group))))
+		announce.Announce(name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperaturepb.WrapApi(group))))
 		return nil
 	}
 

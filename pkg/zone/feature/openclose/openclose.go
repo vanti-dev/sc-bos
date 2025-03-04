@@ -12,7 +12,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/openclose"
+	"github.com/smart-core-os/sc-golang/pkg/trait/openclosepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
@@ -60,7 +60,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			logger:    logger,
 		}
 		f.devices.Add(devices...)
-		announce.Announce(name, node.HasTrait(trait.OpenClose, node.WithClients(openclose.WrapApi(group))))
+		announce.Announce(name, node.HasTrait(trait.OpenClose, node.WithClients(openclosepb.WrapApi(group))))
 	}
 
 	announceGroup(cfg.Name, cfg.OpenClose)

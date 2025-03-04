@@ -15,8 +15,8 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/metadata"
-	"github.com/smart-core-os/sc-golang/pkg/trait/parent"
+	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
+	"github.com/smart-core-os/sc-golang/pkg/trait/parentpb"
 	"github.com/vanti-dev/sc-bos/internal/router"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 )
@@ -35,11 +35,11 @@ type Node struct {
 
 	// children keeps track of all the names that have been announced to this node.
 	// Lazy, initialised when addChildTrait via Announce(HasTrait) or Register are called.
-	children *parent.Model
+	children *parentpb.Model
 
 	// allMetadata allows users of the node to be notified of any metadata changes via Announce or when
 	// that announcement is undone.
-	allMetadata *metadata.Collection
+	allMetadata *metadatapb.Collection
 
 	Logger *zap.Logger
 }
@@ -59,16 +59,16 @@ func New(name string) *Node {
 		router: router.New(router.WithKeyInterceptor(func(key string) (mappedKey string, err error) {
 			return mapID(key), nil
 		})),
-		children:    parent.NewModel(),
+		children:    parentpb.NewModel(),
 		Logger:      zap.NewNop(),
-		allMetadata: metadata.NewCollection(resource.WithIDInterceptor(mapID)),
+		allMetadata: metadatapb.NewCollection(resource.WithIDInterceptor(mapID)),
 	}
 
 	// metadata should be supported by default
-	traits.RegisterMetadataApiServer(node.router, metadata.NewCollectionServer(node.allMetadata))
+	traits.RegisterMetadataApiServer(node.router, metadatapb.NewCollectionServer(node.allMetadata))
 	_ = node.Announce(name, HasTrait(trait.Metadata))
 	node.announceLocked(name,
-		HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parent.NewModelServer(node.children))),
+		HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parentpb.NewModelServer(node.children))),
 		HasTrait(trait.Parent),
 	)
 	return node

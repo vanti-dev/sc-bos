@@ -10,7 +10,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/emergency"
+	"github.com/smart-core-os/sc-golang/pkg/trait/emergencypb"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/enum/lifesafetystate"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
@@ -64,7 +64,7 @@ type emergencyImpl struct {
 	statuses *statuspb.Map
 	logger   *zap.Logger
 
-	model *emergency.MemoryDevice
+	model *emergencypb.MemoryDevice
 	traits.EmergencyApiServer
 	config   emergencyConfig
 	pollTask *task.Intermittent
@@ -75,7 +75,7 @@ func newEmergency(client *gobacnet.Client, devices known.Context, statuses *stat
 	if err != nil {
 		return nil, err
 	}
-	model := emergency.NewMemoryDevice()
+	model := emergencypb.NewMemoryDevice()
 	t := &emergencyImpl{
 		client:             client,
 		known:              devices,
@@ -98,7 +98,7 @@ func (t *emergencyImpl) startPoll(init context.Context) (stop task.StopFn, err e
 }
 
 func (t *emergencyImpl) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(t.config.Name, node.HasTrait(trait.Emergency, node.WithClients(emergency.WrapApi(t))))
+	return a.Announce(t.config.Name, node.HasTrait(trait.Emergency, node.WithClients(emergencypb.WrapApi(t))))
 }
 
 func (t *emergencyImpl) GetEmergency(ctx context.Context, request *traits.GetEmergencyRequest) (*traits.Emergency, error) {

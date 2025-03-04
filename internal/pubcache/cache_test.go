@@ -11,7 +11,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
+	"github.com/smart-core-os/sc-golang/pkg/trait/publicationpb"
 )
 
 func TestCache_Pull(t *testing.T) {
@@ -26,11 +26,11 @@ func TestCache_Pull(t *testing.T) {
 		PublishTime: timestamppb.Now(),
 		MediaType:   "application/json",
 	}
-	model := publication.NewModel(
+	model := publicationpb.NewModel(
 		resource.WithInitialRecord(id, initial),
 	)
-	modelServer := publication.NewModelServer(model)
-	modelClient := publication.WrapApi(modelServer)
+	modelServer := publicationpb.NewModelServer(model)
+	modelClient := publicationpb.WrapApi(modelServer)
 
 	cache := New(ctx, modelClient, "", id)
 

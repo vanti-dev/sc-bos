@@ -12,7 +12,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/azureiot"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -21,9 +21,9 @@ import (
 func main() {
 	root := node.New("example-azureiot")
 
-	model := airqualitysensor.NewModel(airqualitysensor.WithInitialAirQuality(iaq()))
+	model := airqualitysensorpb.NewModel(airqualitysensorpb.WithInitialAirQuality(iaq()))
 	root.Announce("IAQ-001", node.HasTrait(trait.AirQualitySensor, node.WithClients(
-		airqualitysensor.WrapApi(airqualitysensor.NewModelServer(model)))))
+		airqualitysensorpb.WrapApi(airqualitysensorpb.NewModelServer(model)))))
 
 	l, _ := zap.NewDevelopment()
 	services := auto.Services{

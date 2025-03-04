@@ -7,7 +7,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/mode"
+	"github.com/smart-core-os/sc-golang/pkg/trait/modepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
@@ -51,7 +51,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 		cfg:    cfg,
 		logger: logger,
 	}
-	announce.Announce(cfg.Name, node.HasTrait(trait.Mode, node.WithClients(mode.WrapApi(group), mode.WrapInfo(group))))
+	announce.Announce(cfg.Name, node.HasTrait(trait.Mode, node.WithClients(modepb.WrapApi(group), modepb.WrapInfo(group))))
 
 	return nil
 }
