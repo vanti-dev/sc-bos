@@ -12,6 +12,9 @@ service AccountApiService {
   rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
   rpc CreateAccount(CreateAccountRequest) returns (Account);
   rpc UpdateAccount(UpdateAccountRequest) returns (Account);
+  // Updates the password for a user account.
+  // If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
+  // If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
   rpc UpdateAccountPassword(UpdateAccountPasswordRequest) returns (UpdateAccountPasswordResponse);
   rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
 
@@ -55,6 +58,7 @@ message CreateAccountRequest {
   // For user accounts, the initial password to set.
   // If absent, the account will be created without a password. The password must then be set with UpdateAccountPassword
   // before the account can be used.
+  // Follows the same rules as UpdateAccountPassword.new_password.
   string password = 3;
 }
 
@@ -98,6 +102,8 @@ message UpdateAccountPasswordRequest {
   string id = 2;
 
   // The new password to set.
+  // The password must be between 10 and 72 characters long.
+  // Leading and trailing whitespace is stripped.
   string new_password = 3;
   // The old password to verify. Required unless you have 'account:admin' permission.
   string old_password = 4;
