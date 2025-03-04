@@ -803,3 +803,143 @@ var AccountApiService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "account.proto",
 }
+
+const (
+	AccountInfoService_GetPermission_FullMethodName   = "/smartcore.bos.AccountInfoService/GetPermission"
+	AccountInfoService_ListPermissions_FullMethodName = "/smartcore.bos.AccountInfoService/ListPermissions"
+)
+
+// AccountInfoServiceClient is the client API for AccountInfoService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AccountInfoServiceClient interface {
+	GetPermission(ctx context.Context, in *GetPermissionRequest, opts ...grpc.CallOption) (*Permission, error)
+	ListPermissions(ctx context.Context, in *ListPermissionsRequest, opts ...grpc.CallOption) (*ListPermissionsResponse, error)
+}
+
+type accountInfoServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAccountInfoServiceClient(cc grpc.ClientConnInterface) AccountInfoServiceClient {
+	return &accountInfoServiceClient{cc}
+}
+
+func (c *accountInfoServiceClient) GetPermission(ctx context.Context, in *GetPermissionRequest, opts ...grpc.CallOption) (*Permission, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Permission)
+	err := c.cc.Invoke(ctx, AccountInfoService_GetPermission_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accountInfoServiceClient) ListPermissions(ctx context.Context, in *ListPermissionsRequest, opts ...grpc.CallOption) (*ListPermissionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPermissionsResponse)
+	err := c.cc.Invoke(ctx, AccountInfoService_ListPermissions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AccountInfoServiceServer is the server API for AccountInfoService service.
+// All implementations must embed UnimplementedAccountInfoServiceServer
+// for forward compatibility.
+type AccountInfoServiceServer interface {
+	GetPermission(context.Context, *GetPermissionRequest) (*Permission, error)
+	ListPermissions(context.Context, *ListPermissionsRequest) (*ListPermissionsResponse, error)
+	mustEmbedUnimplementedAccountInfoServiceServer()
+}
+
+// UnimplementedAccountInfoServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedAccountInfoServiceServer struct{}
+
+func (UnimplementedAccountInfoServiceServer) GetPermission(context.Context, *GetPermissionRequest) (*Permission, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPermission not implemented")
+}
+func (UnimplementedAccountInfoServiceServer) ListPermissions(context.Context, *ListPermissionsRequest) (*ListPermissionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPermissions not implemented")
+}
+func (UnimplementedAccountInfoServiceServer) mustEmbedUnimplementedAccountInfoServiceServer() {}
+func (UnimplementedAccountInfoServiceServer) testEmbeddedByValue()                            {}
+
+// UnsafeAccountInfoServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AccountInfoServiceServer will
+// result in compilation errors.
+type UnsafeAccountInfoServiceServer interface {
+	mustEmbedUnimplementedAccountInfoServiceServer()
+}
+
+func RegisterAccountInfoServiceServer(s grpc.ServiceRegistrar, srv AccountInfoServiceServer) {
+	// If the following call pancis, it indicates UnimplementedAccountInfoServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&AccountInfoService_ServiceDesc, srv)
+}
+
+func _AccountInfoService_GetPermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPermissionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountInfoServiceServer).GetPermission(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountInfoService_GetPermission_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountInfoServiceServer).GetPermission(ctx, req.(*GetPermissionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccountInfoService_ListPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountInfoServiceServer).ListPermissions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountInfoService_ListPermissions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountInfoServiceServer).ListPermissions(ctx, req.(*ListPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AccountInfoService_ServiceDesc is the grpc.ServiceDesc for AccountInfoService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AccountInfoService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "smartcore.bos.AccountInfoService",
+	HandlerType: (*AccountInfoServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetPermission",
+			Handler:    _AccountInfoService_GetPermission_Handler,
+		},
+		{
+			MethodName: "ListPermissions",
+			Handler:    _AccountInfoService_ListPermissions_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "account.proto",
+}

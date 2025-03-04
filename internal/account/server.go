@@ -22,6 +22,7 @@ var (
 	ErrRoleNotFound              = status.Error(codes.NotFound, "role not found")
 	ErrRoleAssignmentNotFound    = status.Error(codes.NotFound, "role assignment not found")
 	ErrServiceCredentialNotFound = status.Error(codes.NotFound, "service credential not found")
+	ErrPermissionNotFound        = status.Error(codes.NotFound, "permission not found")
 	ErrInvalidAccountKind        = status.Error(codes.InvalidArgument, "invalid account kind")
 	ErrMissingUsername           = status.Error(codes.InvalidArgument, "user account requires username")
 	ErrMissingDisplayName        = status.Error(codes.InvalidArgument, "account requires display name")
@@ -43,6 +44,7 @@ var (
 
 type Server struct {
 	gen.UnimplementedAccountApiServiceServer
+	gen.UnimplementedAccountInfoServiceServer
 	store  *Store
 	logger *zap.Logger
 }
@@ -557,7 +559,7 @@ func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*g
 			return err
 		}
 
-		for _, perm := range req.Role.Permissions {
+		for _, perm := range req.Role.PermissionIds {
 			err = tx.AddRolePermission(ctx, queries.AddRolePermissionParams{
 				RoleID:     role.ID,
 				Permission: perm,
@@ -652,7 +654,7 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 			}
 
 			// add new permissions
-			for _, perm := range req.Role.Permissions {
+			for _, perm := range req.Role.PermissionIds {
 				err = tx.AddRolePermission(ctx, queries.AddRolePermissionParams{
 					RoleID:     id,
 					Permission: perm,
@@ -849,6 +851,16 @@ func (s *Server) DeleteRoleAssignment(ctx context.Context, req *gen.DeleteRoleAs
 	}
 
 	return &gen.DeleteRoleAssignmentResponse{}, nil
+}
+
+func (s *Server) GetPermission(ctx context.Context, req *gen.GetPermissionRequest) (*gen.Permission, error) {
+	// TODO: add list of valid permissions and support fetching them
+	return nil, ErrPermissionNotFound
+}
+
+func (s *Server) ListPermissions(ctx context.Context, req *gen.ListPermissionsRequest) (*gen.ListPermissionsResponse, error) {
+	// TODO: add list of valid permissions and support fetching them
+	return &gen.ListPermissionsResponse{}, nil
 }
 
 func resolvePageSize(pageSize int32) int64 {

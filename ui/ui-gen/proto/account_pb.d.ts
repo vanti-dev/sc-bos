@@ -636,6 +636,78 @@ export namespace DeleteRoleAssignmentResponse {
   }
 }
 
+export class GetPermissionRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): GetPermissionRequest;
+
+  getId(): string;
+  setId(value: string): GetPermissionRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetPermissionRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetPermissionRequest): GetPermissionRequest.AsObject;
+  static serializeBinaryToWriter(message: GetPermissionRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetPermissionRequest;
+  static deserializeBinaryFromReader(message: GetPermissionRequest, reader: jspb.BinaryReader): GetPermissionRequest;
+}
+
+export namespace GetPermissionRequest {
+  export type AsObject = {
+    name: string,
+    id: string,
+  }
+}
+
+export class ListPermissionsRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): ListPermissionsRequest;
+
+  getPageSize(): number;
+  setPageSize(value: number): ListPermissionsRequest;
+
+  getPageToken(): string;
+  setPageToken(value: string): ListPermissionsRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListPermissionsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListPermissionsRequest): ListPermissionsRequest.AsObject;
+  static serializeBinaryToWriter(message: ListPermissionsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListPermissionsRequest;
+  static deserializeBinaryFromReader(message: ListPermissionsRequest, reader: jspb.BinaryReader): ListPermissionsRequest;
+}
+
+export namespace ListPermissionsRequest {
+  export type AsObject = {
+    name: string,
+    pageSize: number,
+    pageToken: string,
+  }
+}
+
+export class ListPermissionsResponse extends jspb.Message {
+  getPermissionsList(): Array<Permission>;
+  setPermissionsList(value: Array<Permission>): ListPermissionsResponse;
+  clearPermissionsList(): ListPermissionsResponse;
+  addPermissions(value?: Permission, index?: number): Permission;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): ListPermissionsResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListPermissionsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListPermissionsResponse): ListPermissionsResponse.AsObject;
+  static serializeBinaryToWriter(message: ListPermissionsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListPermissionsResponse;
+  static deserializeBinaryFromReader(message: ListPermissionsResponse, reader: jspb.BinaryReader): ListPermissionsResponse;
+}
+
+export namespace ListPermissionsResponse {
+  export type AsObject = {
+    permissionsList: Array<Permission.AsObject>,
+    nextPageToken: string,
+  }
+}
+
 export class Account extends jspb.Message {
   getId(): string;
   setId(value: string): Account;
@@ -688,10 +760,10 @@ export class Role extends jspb.Message {
   getDescription(): string;
   setDescription(value: string): Role;
 
-  getPermissionsList(): Array<string>;
-  setPermissionsList(value: Array<string>): Role;
-  clearPermissionsList(): Role;
-  addPermissions(value: string, index?: number): Role;
+  getPermissionIdsList(): Array<string>;
+  setPermissionIdsList(value: Array<string>): Role;
+  clearPermissionIdsList(): Role;
+  addPermissionIds(value: string, index?: number): Role;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Role.AsObject;
@@ -706,7 +778,7 @@ export namespace Role {
     id: string,
     displayName: string,
     description: string,
-    permissionsList: Array<string>,
+    permissionIdsList: Array<string>,
   }
 }
 
@@ -813,6 +885,32 @@ export namespace ServiceCredential {
     secret: string,
     createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     expireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+  }
+}
+
+export class Permission extends jspb.Message {
+  getId(): string;
+  setId(value: string): Permission;
+
+  getDisplayName(): string;
+  setDisplayName(value: string): Permission;
+
+  getDescription(): string;
+  setDescription(value: string): Permission;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Permission.AsObject;
+  static toObject(includeInstance: boolean, msg: Permission): Permission.AsObject;
+  static serializeBinaryToWriter(message: Permission, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Permission;
+  static deserializeBinaryFromReader(message: Permission, reader: jspb.BinaryReader): Permission;
+}
+
+export namespace Permission {
+  export type AsObject = {
+    id: string,
+    displayName: string,
+    description: string,
   }
 }
 

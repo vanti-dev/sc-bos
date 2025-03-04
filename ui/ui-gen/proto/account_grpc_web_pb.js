@@ -1238,5 +1238,179 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.deleteRoleAssignmen
 };
 
 
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.AccountInfoServiceClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.AccountInfoServicePromiseClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.GetPermissionRequest,
+ *   !proto.smartcore.bos.Permission>}
+ */
+const methodDescriptor_AccountInfoService_GetPermission = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountInfoService/GetPermission',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.GetPermissionRequest,
+  proto.smartcore.bos.Permission,
+  /**
+   * @param {!proto.smartcore.bos.GetPermissionRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.Permission.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.GetPermissionRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Permission)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Permission>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AccountInfoServiceClient.prototype.getPermission =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AccountInfoService/GetPermission',
+      request,
+      metadata || {},
+      methodDescriptor_AccountInfoService_GetPermission,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.GetPermissionRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.Permission>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.AccountInfoServicePromiseClient.prototype.getPermission =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AccountInfoService/GetPermission',
+      request,
+      metadata || {},
+      methodDescriptor_AccountInfoService_GetPermission);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.ListPermissionsRequest,
+ *   !proto.smartcore.bos.ListPermissionsResponse>}
+ */
+const methodDescriptor_AccountInfoService_ListPermissions = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountInfoService/ListPermissions',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.ListPermissionsRequest,
+  proto.smartcore.bos.ListPermissionsResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListPermissionsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListPermissionsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.ListPermissionsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListPermissionsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListPermissionsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AccountInfoServiceClient.prototype.listPermissions =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AccountInfoService/ListPermissions',
+      request,
+      metadata || {},
+      methodDescriptor_AccountInfoService_ListPermissions,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.ListPermissionsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.ListPermissionsResponse>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.AccountInfoServicePromiseClient.prototype.listPermissions =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AccountInfoService/ListPermissions',
+      request,
+      metadata || {},
+      methodDescriptor_AccountInfoService_ListPermissions);
+};
+
+
 module.exports = proto.smartcore.bos;
 

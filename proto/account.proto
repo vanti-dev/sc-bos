@@ -32,6 +32,11 @@ service AccountApiService {
   rpc DeleteRoleAssignment(DeleteRoleAssignmentRequest) returns (DeleteRoleAssignmentResponse);
 }
 
+service AccountInfoService {
+  rpc GetPermission(GetPermissionRequest) returns (Permission);
+  rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse);
+}
+
 message GetAccountRequest {
   // The name of the node where the account is located.
   // Optional - if absent, the node you are connected to is assumed.
@@ -269,6 +274,33 @@ message DeleteRoleAssignmentRequest {
 
 message DeleteRoleAssignmentResponse {}
 
+message GetPermissionRequest {
+  // The name of the node where the permission is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the permission to get.
+  string id = 2;
+}
+
+message ListPermissionsRequest {
+  // The name of the node to list permissions for.
+  string name = 1;
+
+  // The maximum number of permissions to return in a single response.
+  // If there are more results available, the response will contain a next_page_token to get them.
+  int32 page_size = 2;
+  // Token from previous ListPermissions response, to get the next page of results.
+  string page_token = 3;
+}
+
+message ListPermissionsResponse {
+  repeated Permission permissions = 1;
+  // Opaque value which can be provided to ListPermissions to get the next page of results.
+  // Absent if there are no more results.
+  string next_page_token = 2;
+}
+
 message Account {
   // Unique identifier for this account. Consistent for the life of the account.
   // Generated automatically on account creation.
@@ -306,7 +338,7 @@ message Role {
   // Longer human-readable description of this role, for display purposes. Optional.
   string description = 3;
   // The permissions granted by this role.
-  repeated string permissions = 4;
+  repeated string permission_ids = 4;
 }
 
 // A RoleAssignment is an assignment of a Role to an Account.
@@ -330,10 +362,28 @@ message RoleAssignment {
 
   enum ResourceType {
     RESOURCE_TYPE_UNSPECIFIED = 0;
+    // Matches a single resource with the specified Smart Core name.
     NAMED_RESOURCE = 1;
+    // Matches resources whose Smart Core name starts with the specified prefix, separated from an optional suffix
+    // by a '/'.
+    // Example:
+    //
+    //    Scope {
+    //      resource_type: NAMED_RESOURCE_PATH_PREFIX
+    //      resource: "foo/bar"
+    //    }
+    //
+    //    Matches resources with Smart Core names:
+    //      - foo/bar
+    //      - foo/bar/baz
+    //    Does not match:
+    //      - foo/barbaz
     NAMED_RESOURCE_PATH_PREFIX = 2;
+    // Matches resources advertised by the Smart Core node with the given name.
     NODE = 3;
+    // Matches resources whose advertised metadata subsystem property matches the specified value.
     SUBSYSTEM = 4;
+    // Matches resources whose advertised metadata zone property matches the specified value.
     ZONE = 5;
   }
 }
@@ -357,4 +407,15 @@ message ServiceCredential {
   // Optional - if absent, the credential will not expire.
   // Must be in the future at the time of creation.
   google.protobuf.Timestamp expire_time = 6;
+}
+
+// A permission is a named action that can be granted to a role.
+// The set of valid permissions is determined statically by the system, and cannot be modified at runtime.
+message Permission {
+  // Unique identifier for this permission.
+  // Will remain stable for the lifetime of the system.
+  string id = 1;
+
+  string display_name = 2;
+  string description = 3;
 }

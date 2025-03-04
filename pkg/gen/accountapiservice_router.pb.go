@@ -140,13 +140,13 @@ func (r *AccountApiServiceRouter) GetServiceCredential(ctx context.Context, requ
 	return child.GetServiceCredential(ctx, request)
 }
 
-func (r *AccountApiServiceRouter) ListServiceCredential(ctx context.Context, request *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error) {
+func (r *AccountApiServiceRouter) ListServiceCredentials(ctx context.Context, request *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error) {
 	child, err := r.GetAccountApiServiceClient(request.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return child.ListServiceCredential(ctx, request)
+	return child.ListServiceCredentials(ctx, request)
 }
 
 func (r *AccountApiServiceRouter) CreateServiceCredential(ctx context.Context, request *CreateServiceCredentialRequest) (*ServiceCredential, error) {

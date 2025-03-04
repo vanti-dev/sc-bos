@@ -143,6 +143,27 @@ export class AccountApiServiceClient {
 
 }
 
+export class AccountInfoServiceClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  getPermission(
+    request: account_pb.GetPermissionRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: account_pb.Permission) => void
+  ): grpcWeb.ClientReadableStream<account_pb.Permission>;
+
+  listPermissions(
+    request: account_pb.ListPermissionsRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: account_pb.ListPermissionsResponse) => void
+  ): grpcWeb.ClientReadableStream<account_pb.ListPermissionsResponse>;
+
+}
+
 export class AccountApiServicePromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
@@ -242,6 +263,23 @@ export class AccountApiServicePromiseClient {
     request: account_pb.DeleteRoleAssignmentRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<account_pb.DeleteRoleAssignmentResponse>;
+
+}
+
+export class AccountInfoServicePromiseClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  getPermission(
+    request: account_pb.GetPermissionRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<account_pb.Permission>;
+
+  listPermissions(
+    request: account_pb.ListPermissionsRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<account_pb.ListPermissionsResponse>;
 
 }
 
