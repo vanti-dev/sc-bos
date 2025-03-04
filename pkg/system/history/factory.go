@@ -7,10 +7,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/history"
 	"github.com/vanti-dev/sc-bos/pkg/history/boltstore"
@@ -35,6 +37,7 @@ func NewSystem(services system.Services) *System {
 		name:      services.Node.Name(),
 		announcer: node.NewReplaceAnnouncer(services.Node),
 		db:        services.Database,
+		stores:    services.Stores,
 		logger:    logger,
 	}
 	s.Service = service.New(
@@ -51,6 +54,7 @@ type System struct {
 	name      string
 	announcer *node.ReplaceAnnouncer
 	db        *bolthold.Store
+	stores    *stores.Stores
 
 	logger *zap.Logger
 }
@@ -67,7 +71,13 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	switch cfg.Storage.Type {
 	case config.StorageTypePostgres:
-		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		var pool *pgxpool.Pool
+		var err error
+		if cfg.Storage.ConnectConfig.IsZero() {
+			_, _, pool, err = s.stores.Postgres()
+		} else {
+			pool, err = pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		}
 		if err != nil {
 			return fmt.Errorf("connect: %w", err)
 		}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -23,6 +24,7 @@ type Services struct {
 	Node            *node.Node // for advertising devices
 	CohortManager   node.Remote
 	Database        *bolthold.Store
+	Stores          *stores.Stores
 	HTTPMux         *http.ServeMux      // to allow systems to serve http requests
 	TokenValidators *token.ValidatorSet // to allow systems to contribute towards client validation
 

@@ -30,3 +30,7 @@ func Connect(ctx context.Context, sysConf ConnectConfig) (*pgxpool.Pool, error) 
 
 	return pgxpool.ConnectConfig(ctx, poolConfig)
 }
+
+func (cc ConnectConfig) IsZero() bool {
+	return cc.URI == ""
+}

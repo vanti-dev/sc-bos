@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -16,6 +17,7 @@ type Services struct {
 	Logger          *zap.Logger
 	Node            *node.Node // for advertising devices
 	Database        *bolthold.Store
+	Stores          *stores.Stores
 	GRPCServices    grpc.ServiceRegistrar // for registering non-routed services
 	CohortManager   node.Remote
 	ClientTLSConfig *tls.Config

@@ -31,6 +31,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/app/files"
 	http2 "github.com/vanti-dev/sc-bos/pkg/app/http"
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
@@ -97,6 +98,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		logger.Warn("failed to open local database file - some system components may fail", zap.Error(err),
 			zap.String("path", dbPath))
 	}
+
+	// configurable shared storage for more permanent data
+	store := stores.New(config.Stores)
 
 	certConfig := config.CertConfig
 	// Create a private key if it doesn't exist.
@@ -321,6 +325,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Node:             rootNode,
 		Tasks:            &task.Group{},
 		Database:         db,
+		Stores:           store,
 		TokenValidators:  tokenValidator,
 		GRPCCerts:        systemSource,
 		ReflectionServer: reflectionServer,
@@ -332,6 +337,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		ManagerConn:      manager,
 	}
 	c.Defer(manager.Close)
+	c.Defer(store.Close)
 	return c, nil
 }
 
@@ -393,6 +399,7 @@ type Controller struct {
 	Database        *bolthold.Store
 	TokenValidators *token.ValidatorSet
 	GRPCCerts       *pki.SourceSet
+	Stores          *stores.Stores
 
 	ReflectionServer *reflectionapi.Server
 

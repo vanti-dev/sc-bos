@@ -7,12 +7,14 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -36,7 +38,8 @@ func NewAutomation(services auto.Services) service.Lifecycle {
 		announcer: node.NewReplaceAnnouncer(services.Node),
 		logger:    services.Logger.Named("history"),
 
-		db: services.Database,
+		db:     services.Database,
+		stores: services.Stores,
 
 		cohortManagerName: "", // use the default
 		cohortManager:     services.CohortManager,
@@ -56,7 +59,8 @@ type automation struct {
 	announcer *node.ReplaceAnnouncer
 	logger    *zap.Logger
 
-	db *bolthold.Store
+	db     *bolthold.Store
+	stores *stores.Stores
 
 	cohortManagerName string
 	cohortManager     node.Remote
@@ -68,7 +72,15 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	var store history.Store
 	switch cfg.Storage.Type {
 	case "postgres":
-		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		var pool *pgxpool.Pool
+		var err error
+		if cfg.Storage.ConnectConfig.IsZero() {
+			// use admin pool (for now) as we know it will support create table operations
+			// todo: update store to support r, w, admin pools
+			_, _, pool, err = a.stores.Postgres()
+		} else {
+			pool, err = pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		}
 		if err != nil {
 			return err
 		}
