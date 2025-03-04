@@ -906,7 +906,7 @@ func TestServer_ServiceCredentials(t *testing.T) {
 	}
 
 	var creds []*gen.ServiceCredential
-	expiry := time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC)
+	expiry := time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)
 	for i := range maxServiceCredentialsPerAccount {
 		cred, err := server.CreateServiceCredential(ctx, &gen.CreateServiceCredentialRequest{
 			ServiceCredential: &gen.ServiceCredential{
