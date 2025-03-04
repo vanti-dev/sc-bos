@@ -7,12 +7,14 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"go.uber.org/multierr"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
+	historyconfig "github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
 )
@@ -20,9 +22,35 @@ import (
 // BacnetConfigForFloor is basically just a wrapper around the root config with support for automations and traits
 type BacnetConfigForFloor struct {
 	Root
-	Devices     []Device
-	Automations []map[string]any // map looks like config that embeds auto.Config
-	Traits      []map[string]any // map looks like config that embeds config.Trait
+	Devices      []Device
+	Automations  []map[string]any // map looks like config that embeds auto.Config
+	Traits       []map[string]any // map looks like config that embeds config.Trait
+	AddHistories []trait.Name
+}
+
+func (bc *BacnetConfigForFloor) addHistoryForTraits(traits []map[string]any) []map[string]any {
+	var allConfigs []map[string]any
+	for _, t := range traits {
+		if kind, ok := t["kind"]; ok {
+			for _, traitWithHistory := range bc.AddHistories {
+				if kind == traitWithHistory {
+					name := t["name"].(string)
+					c := make(map[string]any)
+					c["name"] = strings.Replace(name, "devices", "history", 1)
+					c["type"] = "history"
+					c["source"] = &historyconfig.Source{
+						Name:  name,
+						Trait: traitWithHistory,
+					}
+					c["storage"] = &historyconfig.Storage{
+						Type: "hub",
+					}
+					allConfigs = append(allConfigs, c)
+				}
+			}
+		}
+	}
+	return allConfigs
 }
 
 // WriteBacnetConfig writes bacnet config for each floor to the given directories for each floor
@@ -37,6 +65,12 @@ func WriteBacnetConfig(configPerFloor map[string]*BacnetConfigForFloor, dirForFl
 		configRoot = "config"
 	}
 	for floor, cfg := range configPerFloor {
+
+		if len(cfg.AddHistories) > 0 {
+			autos := cfg.addHistoryForTraits(cfg.Traits)
+			cfg.Automations = append(cfg.Automations, autos...)
+		}
+
 		sortDevices(cfg.Devices)
 		sortRawConfig(cfg.Traits)
 		sortRawConfig(cfg.Automations)
