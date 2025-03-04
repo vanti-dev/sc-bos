@@ -26,7 +26,11 @@ type airQualityConfig struct {
 	config.Trait
 	AirPressure *config.ValueSource `json:"airPressure,omitempty"`
 	Co2         *config.ValueSource `json:"co2,omitempty"`
-	VOC         *config.ValueSource `json:"voc,omitempty"`
+	// A measure of particles in the air measuring 10 microns or less in size, in micrograms per cubic meter.
+	Pm10 *config.ValueSource `json:"pm10,omitempty"`
+	// A measure of particles in the air measuring 2.5 microns or less in size, in micrograms per cubic meter.
+	Pm25 *config.ValueSource `json:"pm25,omitempty"`
+	VOC  *config.ValueSource `json:"voc,omitempty"`
 }
 
 func readAirQualitySensorConfig(raw []byte) (cfg airQualityConfig, err error) {
@@ -120,6 +124,30 @@ func (aq *airQualitySensor) pollPeer(ctx context.Context) (*traits.AirQuality, e
 				return comm.ErrReadProperty{Prop: "co2", Cause: err}
 			}
 			data.CarbonDioxideLevel = &co2
+			return nil
+		})
+	}
+	if aq.config.Pm10 != nil {
+		readValues = append(readValues, *aq.config.Pm10)
+		requestNames = append(requestNames, "Pm10")
+		resProcessors = append(resProcessors, func(response any) error {
+			pm10, err := comm.Float32Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "pm10", Cause: err}
+			}
+			data.ParticulateMatter_10 = &pm10
+			return nil
+		})
+	}
+	if aq.config.Pm25 != nil {
+		readValues = append(readValues, *aq.config.Pm25)
+		requestNames = append(requestNames, "Pm25")
+		resProcessors = append(resProcessors, func(response any) error {
+			pm25, err := comm.Float32Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "pm25", Cause: err}
+			}
+			data.ParticulateMatter_25 = &pm25
 			return nil
 		})
 	}
