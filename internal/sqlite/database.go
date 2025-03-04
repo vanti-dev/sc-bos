@@ -1,4 +1,4 @@
-// Package database provides an easy way to work with SQLite databases.
+// Package sqlite provides an easy way to work with SQLite databases.
 //
 // The database is opened with Open (for file DBs) or OpenMemory (for in-memory DBs).
 // A Database automatically uses connection pooling for best performance.
@@ -6,7 +6,7 @@
 // Supports a basic schema migration system. Migrations can be loaded from a directory using LoadVersionedSchema,
 // and applied to the database. The package keeps track of the current schema version in the database's
 // user_version PRAGMA.
-package database
+package sqlite
 
 import (
 	"context"

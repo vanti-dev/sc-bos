@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/account/queries"
-	"github.com/vanti-dev/sc-bos/internal/database"
+	"github.com/vanti-dev/sc-bos/internal/sqlite"
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -157,7 +157,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		default:
 			panic("already validated account kind")
 		}
-		if database.IsUniqueConstraintError(err) {
+		if sqlite.IsUniqueConstraintError(err) {
 			return ErrUsernameExists
 		} else if err != nil {
 			s.logger.Error("failed to create account",
@@ -265,7 +265,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 				ID:       id,
 				Username: sql.NullString{Valid: true, String: req.Account.Username},
 			})
-			if database.IsUniqueConstraintError(err) {
+			if sqlite.IsUniqueConstraintError(err) {
 				return ErrUsernameExists
 			} else if err != nil {
 				s.logger.Error("failed to update account username", zap.Error(err),
@@ -687,7 +687,7 @@ func (s *Server) DeleteRole(ctx context.Context, req *gen.DeleteRoleRequest) (*g
 	var deleted bool
 	err := s.store.Write(ctx, func(tx *Tx) error {
 		rowsDeleted, err := tx.DeleteRole(ctx, id)
-		if database.IsForeignKeyError(err) {
+		if sqlite.IsForeignKeyError(err) {
 			return ErrRoleInUse
 		} else if err != nil {
 			s.logger.Error("failed to delete role", zap.Error(err), zap.String("id", req.Id))

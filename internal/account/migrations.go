@@ -3,7 +3,7 @@ package account
 import (
 	"embed"
 
-	"github.com/vanti-dev/sc-bos/internal/database"
+	"github.com/vanti-dev/sc-bos/internal/sqlite"
 )
 
 // Migrations contains the SQL migrations for the queries schema.
@@ -11,4 +11,4 @@ import (
 //go:embed migrations/*.sql
 var migrationsFS embed.FS
 
-var schema = database.MustLoadVersionedSchema(migrationsFS, "migrations")
+var schema = sqlite.MustLoadVersionedSchema(migrationsFS, "migrations")

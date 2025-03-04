@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/account/queries"
-	"github.com/vanti-dev/sc-bos/internal/database"
+	"github.com/vanti-dev/sc-bos/internal/sqlite"
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -24,13 +24,13 @@ const appID = 0x5C0501
 const maxServiceCredentialsPerAccount = 2
 
 type Store struct {
-	db *database.Database
+	db *sqlite.Database
 }
 
 func OpenStore(ctx context.Context, path string, logger *zap.Logger) (*Store, error) {
-	db, err := database.Open(ctx, path,
-		database.WithLogger(logger),
-		database.WithApplicationID(appID),
+	db, err := sqlite.Open(ctx, path,
+		sqlite.WithLogger(logger),
+		sqlite.WithApplicationID(appID),
 	)
 	if err != nil {
 		return nil, err
@@ -47,9 +47,9 @@ func OpenStore(ctx context.Context, path string, logger *zap.Logger) (*Store, er
 }
 
 func NewMemoryStore(logger *zap.Logger) *Store {
-	db := database.OpenMemory(
-		database.WithLogger(logger),
-		database.WithApplicationID(appID),
+	db := sqlite.OpenMemory(
+		sqlite.WithLogger(logger),
+		sqlite.WithApplicationID(appID),
 	)
 
 	err := db.Migrate(context.Background(), schema)
