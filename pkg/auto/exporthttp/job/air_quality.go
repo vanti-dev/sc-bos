@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/types"
 )
 
 // AirQualityJob gets average Co2 at current point in time
@@ -22,10 +22,6 @@ type AirQualityJob struct {
 
 func (a *AirQualityJob) GetName() string {
 	return "air_quality"
-}
-
-func (a *AirQualityJob) GetClients() []any {
-	return []any{&a.client}
 }
 
 func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {

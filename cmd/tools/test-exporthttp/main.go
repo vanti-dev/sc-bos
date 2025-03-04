@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
@@ -17,7 +17,7 @@ func main() {
 		panic(err)
 	}
 
-	announcer := node.New("wordpress-test")
+	announcer := node.New("exporthttp-test")
 
 	err = announceOccupancy(announcer, "pir/01", 8)
 	if err != nil {
@@ -63,7 +63,7 @@ func main() {
 		Now:    func() time.Time { return time.Now() },
 	}
 
-	lifecycle := wordpress.Factory.New(srv)
+	lifecycle := exporthttp.Factory.New(srv)
 	_, err = lifecycle.Configure([]byte(cfg))
 
 	if err != nil {
@@ -82,21 +82,21 @@ func main() {
 		}
 	}()
 
-	// wait for all automations for WordPress to finish
+	// wait for all automations in exporthttp to finish
 	time.Sleep(15 * time.Second)
 }
 
 const (
 	cfg = `
 {
-  "name":     "wordpress-test",
-  "type":     "wordpress",
+  "name":     "exporthttp-test",
+  "type":     "exporthttp",
   "disabled": false,
-  "baseUrl": "https://vanti-plugin-test-com.stackstaging.com/wp-json/recording/v1/create",
+  "baseUrl": "",
   "site":     "abc-test1",
   "authentication": {
 	"type":       "Bearer",
-	"secretFile": "./.data/secrets/wordpress"
+	"secretFile": ""
   },
   "sources": {
 	"occupancy":    {

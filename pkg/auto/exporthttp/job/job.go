@@ -4,12 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/config"
+	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 var (
@@ -29,7 +33,6 @@ type Job interface {
 	GetUrl() string
 	GetSite() string
 	GetTicker() *time.Ticker
-	GetClients() []any
 
 	Do(ctx context.Context, sendFn sender) error
 	Stop()
@@ -97,7 +100,7 @@ func (b *BaseJob) Stop() {
 	b.Ticker.Stop()
 }
 
-func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
+func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 	var jobs []Job
 
 	if cfg.Sources.Occupancy != nil && len(cfg.Sources.Occupancy.Sensors) > 0 {
@@ -109,6 +112,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 				Logger: logger,
 			},
 			Sensors: cfg.Sources.Occupancy.Sensors,
+			client:  traits.NewOccupancySensorApiClient(node.ClientConn()),
 		}
 
 		jobs = append(jobs, occ)
@@ -122,6 +126,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 				Logger: logger,
 			},
 			Sensors: cfg.Sources.Temperature.Sensors,
+			client:  traits.NewAirTemperatureApiClient(node.ClientConn()),
 		}
 
 		jobs = append(jobs, temperature)
@@ -135,8 +140,10 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 				Ticker: time.NewTicker(interval),
 				Logger: logger,
 			},
-			Meters:   cfg.Sources.Energy.Meters,
-			Interval: interval,
+			Meters:     cfg.Sources.Energy.Meters,
+			Interval:   interval,
+			client:     gen.NewMeterHistoryClient(node.ClientConn()),
+			infoClient: gen.NewMeterInfoClient(node.ClientConn()),
 		}
 
 		jobs = append(jobs, energy)
@@ -150,6 +157,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 				Logger: logger,
 			},
 			Sensors: cfg.Sources.AirQuality.Sensors,
+			client:  traits.NewAirQualitySensorApiClient(node.ClientConn()),
 		}
 
 		jobs = append(jobs, air)
@@ -163,8 +171,10 @@ func FromConfig(cfg config.Root, logger *zap.Logger) []Job {
 				Ticker: time.NewTicker(interval),
 				Logger: logger,
 			},
-			Meters:   cfg.Sources.Energy.Meters,
-			Interval: interval,
+			Meters:     cfg.Sources.Energy.Meters,
+			Interval:   interval,
+			client:     gen.NewMeterHistoryClient(node.ClientConn()),
+			infoClient: gen.NewMeterInfoClient(node.ClientConn()),
 		}
 
 		jobs = append(jobs, water)

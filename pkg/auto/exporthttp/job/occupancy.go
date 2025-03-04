@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/types"
 )
 
 // OccupancyJob gets occupancy at current point in time
@@ -20,10 +20,6 @@ type OccupancyJob struct {
 
 func (o *OccupancyJob) GetName() string {
 	return "occupancy"
-}
-
-func (o *OccupancyJob) GetClients() []any {
-	return []any{&o.client}
 }
 
 func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {

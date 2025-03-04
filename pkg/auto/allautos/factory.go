@@ -5,6 +5,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/azureiot"
 	"github.com/vanti-dev/sc-bos/pkg/auto/bms"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights"
 	"github.com/vanti-dev/sc-bos/pkg/auto/meteremail"
@@ -14,7 +15,6 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/statusalerts"
 	"github.com/vanti-dev/sc-bos/pkg/auto/statusemail"
 	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress"
 )
 
 // Factories returns a new map containing all known auto factories.
@@ -32,6 +32,6 @@ func Factories() map[string]auto.Factory {
 		statusalerts.AutoName:       statusalerts.Factory,
 		statusemail.AutoName:        statusemail.Factory,
 		udmi.AutoType:               udmi.Factory,
-		wordpress.AutoName:          wordpress.Factory,
+		exporthttp.AutoName:         exporthttp.Factory,
 	}
 }

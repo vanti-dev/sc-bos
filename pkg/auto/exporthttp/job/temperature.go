@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/types"
 )
 
 // TemperatureJob gets average air temperature at current point in time
@@ -22,10 +22,6 @@ type TemperatureJob struct {
 
 func (t *TemperatureJob) GetName() string {
 	return "temperature"
-}
-
-func (t *TemperatureJob) GetClients() []any {
-	return []any{&t.client}
 }
 
 func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {

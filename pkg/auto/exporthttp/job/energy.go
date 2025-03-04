@@ -9,7 +9,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/types"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/types"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -24,10 +24,6 @@ type EnergyJob struct {
 
 func (e *EnergyJob) GetName() string {
 	return "energy"
-}
-
-func (e *EnergyJob) GetClients() []any {
-	return []any{&e.client, &e.infoClient}
 }
 
 func (e *EnergyJob) GetInterval() time.Duration {

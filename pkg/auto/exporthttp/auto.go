@@ -1,11 +1,11 @@
-// Package wordpress provides a simple and flexible way to automate
-// the process of posting recordings to a WordPress REST API endpoint.
+// Package exporthttp provides a simple and flexible way to automate
+// the process of POSTing recordings to a REST API endpoint.
 // It supports scheduled or regular posting of recordings
 //
 // This package is designed to be extensible, enabling future
 // support for other CMS platforms or REST APIs. It abstracts
 // the complexities of API interactions
-package wordpress
+package exporthttp
 
 import (
 	"context"
@@ -14,13 +14,13 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/config"
-	wordpressHttp "github.com/vanti-dev/sc-bos/pkg/auto/wordpress/http"
-	"github.com/vanti-dev/sc-bos/pkg/auto/wordpress/job"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/config"
+	exportHttp "github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/http"
+	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/job"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-const AutoName = "wordpress"
+const AutoName = "exporthttp"
 
 var Factory auto.Factory = factory{}
 
@@ -41,28 +41,17 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := a.Logger.Named(cfg.Name).With(zap.String("baseUrl", cfg.BaseUrl))
 
-	jobs := job.FromConfig(cfg, logger)
+	jobs := job.FromConfig(cfg, logger, a.Node)
 
 	if len(jobs) < 1 {
 		return nil
 	}
 
-	// set up
-	for _, jb := range jobs {
-		for _, cli := range jb.GetClients() {
-			if err := a.Node.Client(cli); err != nil {
-				logger.Warn(fmt.Sprintf("failed to create %s client", jb.GetName()), zap.Error(err))
-
-				return err
-			}
-		}
-	}
-
-	var client *wordpressHttp.Client
+	var client *exportHttp.Client
 
 	switch cfg.Auth.Type {
 	case config.AuthenticationBearer:
-		client = wordpressHttp.New(wordpressHttp.WithAuthorizationBearer(cfg.Auth.Token), wordpressHttp.WithLogger(cfg.Logs, logger))
+		client = exportHttp.New(exportHttp.WithAuthorizationBearer(cfg.Auth.Token), exportHttp.WithLogger(cfg.Logs, logger))
 	default:
 		return fmt.Errorf("authentication type %s not supported", cfg.Auth.Type)
 	}
