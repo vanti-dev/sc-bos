@@ -23,117 +23,198 @@ import (
 )
 
 func TestServer_CreateAccount(t *testing.T) {
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
-
-	createAccount := func(req *gen.CreateAccountRequest) *gen.Account {
-		t.Helper()
-		res, err := server.CreateAccount(context.Background(), req)
-		checkNilIfErrored(t, res, err)
-		if err != nil {
-			t.Fatalf("failed to create account: %v", err)
-		}
-		return res
-	}
-	failCreateAccount := func(req *gen.CreateAccountRequest, code codes.Code) {
-		t.Helper()
-		res, err := server.CreateAccount(context.Background(), req)
-		checkNilIfErrored(t, res, err)
-		if status.Code(err) != code {
-			t.Errorf("expected error code %v, got %v", code, status.Code(err))
-		}
-	}
-	checkAccount := func(account, expect *gen.Account) {
-		t.Helper()
-		diff := cmp.Diff(expect, account,
-			protocmp.Transform(),
-			protocmp.IgnoreFields(&gen.Account{}, "id", "create_time"),
-		)
-		if diff != "" {
-			t.Errorf("unexpected provided account value (-got +want):\n%s", diff)
-		}
-
-		// also retrieve using GetAccount and check it matches
-		id := account.Id
-		expect = proto.Clone(expect).(*gen.Account)
-		expect.Id = id
-		expect.CreateTime = account.CreateTime
-		account, err := server.GetAccount(context.Background(), &gen.GetAccountRequest{Id: id})
-		checkNilIfErrored(t, account, err)
-		if err != nil {
-			t.Fatalf("failed to get account %q: %v", id, err)
-		}
-		diff = cmp.Diff(expect, account, protocmp.Transform())
-		if diff != "" {
-			t.Errorf("unexpected retrieved account value (-got +want):\n%s", diff)
-		}
+	type testCase struct {
+		others []*gen.Account // other accounts that should be created before the test account
+		req    *gen.CreateAccountRequest
+		expect *gen.Account
+		code   codes.Code
 	}
 
-	user1 := createAccount(&gen.CreateAccountRequest{
-		Account: &gen.Account{
-			Type:        gen.Account_USER_ACCOUNT,
-			DisplayName: "User 1",
-			Username:    "user1",
+	cases := map[string]testCase{
+		"user_account_no_password": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			expect: &gen.Account{
+				Type:        gen.Account_USER_ACCOUNT,
+				DisplayName: "User 1",
+				Username:    "user1",
+			},
 		},
-	})
-	checkAccount(user1, &gen.Account{
-		Type:        gen.Account_USER_ACCOUNT,
-		DisplayName: "User 1",
-		Username:    "user1",
-	})
-	user2 := createAccount(&gen.CreateAccountRequest{
-		Account: &gen.Account{
-			Type:        gen.Account_USER_ACCOUNT,
-			DisplayName: "User 2",
-			Username:    "user2",
+		"user_account_with_password": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 2",
+					Username:    "user2",
+				},
+				Password: "user2Password",
+			},
+			expect: &gen.Account{
+				Type:        gen.Account_USER_ACCOUNT,
+				DisplayName: "User 2",
+				Username:    "user2",
+			},
 		},
-		Password: "user2Password",
-	})
-	checkAccount(user2, &gen.Account{
-		Type:        gen.Account_USER_ACCOUNT,
-		DisplayName: "User 2",
-		Username:    "user2",
-	})
-	service := createAccount(&gen.CreateAccountRequest{
-		Account: &gen.Account{
-			Type:        gen.Account_SERVICE_ACCOUNT,
-			DisplayName: "Service",
+		"user_account_short_password": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 3",
+					Username:    "user3",
+				},
+				Password: "short",
+			},
+			code: codes.InvalidArgument,
 		},
-	})
-	checkAccount(service, &gen.Account{
-		Type:        gen.Account_SERVICE_ACCOUNT,
-		DisplayName: "Service",
-	})
+		"user_account_long_password": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 4",
+					Username:    "user4",
+				},
+				Password: strings.Repeat("a", 101),
+			},
+			code: codes.InvalidArgument,
+		},
+		"user_account_short_password_whitespace": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 5",
+					Username:    "user5",
+				},
+				Password: " short        ",
+			},
+			code: codes.InvalidArgument,
+		},
+		"service_account": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: "Service",
+				},
+			},
+			expect: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+			},
+		},
+		"service_account_password": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: "Service",
+				},
+				Password: "servicePassword",
+			},
+			code: codes.InvalidArgument,
+		},
+		"missing_account_kind": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					DisplayName: "Missing Kind",
+				},
+			},
+			code: codes.InvalidArgument,
+		},
+		"missing_display_name": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:     gen.Account_USER_ACCOUNT,
+					Username: "foo",
+				},
+			},
+			code: codes.InvalidArgument,
+		},
+		"missing_username_for_user_account": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "Missing Username",
+				},
+			},
+			code: codes.InvalidArgument,
+		},
+		"username_supplied_for_service_account": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: "Service Account",
+					Username:    "service",
+				},
+			},
+			code: codes.InvalidArgument,
+		},
+		"username_conflict": {
+			others: []*gen.Account{
+				{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    "user1",
+				},
+			},
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1A",
+					Username:    "user1",
+				},
+			},
+			code: codes.AlreadyExists,
+		},
+	}
 
-	// missing account kind
-	failCreateAccount(&gen.CreateAccountRequest{
-		Account: &gen.Account{
-			DisplayName: "Missing Kind",
-		},
-	}, codes.InvalidArgument)
-	// missing display name
-	failCreateAccount(&gen.CreateAccountRequest{
-		Account: &gen.Account{
-			Type:     gen.Account_USER_ACCOUNT,
-			Username: "foo",
-		},
-	}, codes.InvalidArgument)
-	// missing username for user account
-	failCreateAccount(&gen.CreateAccountRequest{
-		Account: &gen.Account{
-			Type:        gen.Account_USER_ACCOUNT,
-			DisplayName: "Missing Username",
-		},
-	}, codes.InvalidArgument)
-	// username supplied for service account
-	failCreateAccount(&gen.CreateAccountRequest{
-		Account: &gen.Account{
-			Type:        gen.Account_SERVICE_ACCOUNT,
-			DisplayName: "Service Account",
-			Username:    "service",
-		},
-	}, codes.InvalidArgument)
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			store := NewMemoryStore(zap.NewNop())
+			server := NewServer(store, zap.NewNop())
 
+			for _, other := range tc.others {
+				_, err := server.CreateAccount(context.Background(), &gen.CreateAccountRequest{Account: other})
+				if err != nil {
+					t.Fatalf("failed to create other account: %v", err)
+				}
+			}
+
+			res, err := server.CreateAccount(context.Background(), tc.req)
+			if tc.code != codes.OK {
+				if status.Code(err) != tc.code {
+					t.Fatalf("expected error code %v, got %v", tc.code, status.Code(err))
+				}
+				return
+			}
+			checkNilIfErrored(t, res, err)
+			t.Helper()
+			diff := cmp.Diff(tc.expect, res,
+				protocmp.Transform(),
+				protocmp.IgnoreFields(&gen.Account{}, "id", "create_time"),
+			)
+			if diff != "" {
+				t.Errorf("unexpected provided account value (-want +got):\n%s", diff)
+			}
+
+			// also retrieve using GetAccount and check it matches
+			id := res.Id
+			expect := proto.Clone(tc.expect).(*gen.Account)
+			expect.Id = id
+			expect.CreateTime = res.CreateTime
+			account, err := server.GetAccount(context.Background(), &gen.GetAccountRequest{Id: id})
+			checkNilIfErrored(t, account, err)
+			if err != nil {
+				t.Fatalf("failed to get account %q: %v", id, err)
+			}
+			diff = cmp.Diff(expect, account, protocmp.Transform())
+			if diff != "" {
+				t.Errorf("unexpected retrieved account value (-want +got):\n%s", diff)
+			}
+		})
+	}
 }
 
 // tests ordering and pagination of ListAccounts
