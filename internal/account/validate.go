@@ -1,15 +1,19 @@
 package account
 
 import (
+	"regexp"
 	"strings"
 )
 
 const (
 	minPasswordLength = 10
 	maxPasswordLength = 72 // max password length supported by bcrypt
+	minUsernameLength = 3
+	maxUsernameLength = 100
 )
 
 func permitPassword(password string) bool {
+	password = normalisePassword(password)
 	return len(password) >= minPasswordLength && len(password) <= maxPasswordLength
 }
 
@@ -22,5 +26,10 @@ func validateDisplayName(title string) bool {
 }
 
 func validateUsername(username string) bool {
-	return len(username) > 0
+	if len(username) < minUsernameLength || len(username) > maxUsernameLength {
+		return false
+	}
+	return usernameRegexp.MatchString(username)
 }
+
+var usernameRegexp = regexp.MustCompile(`^[a-zA-Z0-9._@\-]+$`)

@@ -32,6 +32,7 @@ var (
 	ErrUsernameExists            = status.Error(codes.AlreadyExists, "username already exists")
 	ErrUnexpectedPasswordCreate  = status.Error(codes.InvalidArgument, "only user account can have password")
 	ErrUnexpectedPasswordUpdate  = status.Error(codes.FailedPrecondition, "only user account can have password")
+	ErrInvalidUsername           = status.Error(codes.InvalidArgument, "invalid username")
 	ErrInvalidDisplayName        = status.Error(codes.InvalidArgument, "invalid display name")
 	ErrInvalidPassword           = status.Error(codes.InvalidArgument, "password does not comply with policy")
 	ErrIncorrectPassword         = status.Error(codes.FailedPrecondition, "incorrect password")
@@ -125,6 +126,9 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 	case gen.Account_USER_ACCOUNT:
 		if account.Username == "" {
 			return nil, ErrMissingUsername
+		}
+		if !validateUsername(account.Username) {
+			return nil, ErrInvalidUsername
 		}
 	case gen.Account_SERVICE_ACCOUNT:
 		if account.Username != "" {
@@ -253,7 +257,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 
 		if updateUsername {
 			if !validateUsername(req.Account.Username) {
-				return ErrMissingUsername
+				return ErrInvalidUsername
 			}
 			err = tx.UpdateAccountUsername(ctx, queries.UpdateAccountUsernameParams{
 				ID:       id,

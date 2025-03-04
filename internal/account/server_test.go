@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand/v2"
 	"strings"
@@ -299,7 +300,8 @@ func TestServer_ListAccounts(t *testing.T) {
 func TestServer_UpdateAccount(t *testing.T) {
 	ctx := context.Background()
 	type testCase struct {
-		initial  *gen.Account
+		others   []*gen.Account // other accounts that should be created before the test account
+		initial  *gen.Account   // initial account to create
 		update   *gen.UpdateAccountRequest
 		expected *gen.Account
 		code     codes.Code
@@ -530,12 +532,45 @@ func TestServer_UpdateAccount(t *testing.T) {
 				DisplayName: "Service MODIFIED",
 			},
 		},
+		"username_conflict": {
+			others: []*gen.Account{
+				{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "Foo",
+					Username:    "foo",
+				},
+			},
+			initial: &gen.Account{
+				Type:        gen.Account_USER_ACCOUNT,
+				DisplayName: "Bar",
+				Username:    "bar",
+			},
+			update: &gen.UpdateAccountRequest{
+				Account: &gen.Account{
+					Username: "foo",
+				},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
+			},
+			expected: &gen.Account{
+				Type:        gen.Account_USER_ACCOUNT,
+				DisplayName: "Bar",
+				Username:    "bar",
+			},
+			code: codes.AlreadyExists,
+		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			store := NewMemoryStore(zap.NewNop())
 			server := NewServer(store, zap.NewNop())
+
+			for _, other := range tc.others {
+				_, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{Account: other})
+				if err != nil {
+					t.Fatalf("failed to create other account: %v", err)
+				}
+			}
 
 			account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{Account: tc.initial})
 			checkNilIfErrored(t, account, err)
@@ -558,7 +593,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 			if updated != nil {
 				diff := cmp.Diff(expected, updated, protocmp.Transform())
 				if diff != "" {
-					t.Errorf("unexpected updated account value (-got +want):\n%s", diff)
+					t.Errorf("unexpected updated account value (-want +got):\n%s", diff)
 				}
 			}
 
@@ -570,9 +605,98 @@ func TestServer_UpdateAccount(t *testing.T) {
 			}
 			diff := cmp.Diff(expected, account, protocmp.Transform())
 			if diff != "" {
-				t.Errorf("unexpected retrieved account value (-got +want):\n%s", diff)
+				t.Errorf("unexpected retrieved account value (-want +got):\n%s", diff)
 			}
 		})
+	}
+}
+
+var validUsernames = []string{
+	"foo",
+	"foo.bar",
+	"foo-bar",
+	"foo_bar",
+	"foo123",
+	"foo@example.com",
+	strings.Repeat("a", maxUsernameLength),
+}
+
+var invalidUsernames = []string{
+	"ab",
+	"foo bar",
+	"foo\nbar",
+	"foo😀bar",
+	"foo/bar",
+	"foo\\bar",
+	"foo:bar",
+}
+
+func TestServer_CreateAccount_Usernames(t *testing.T) {
+	template := &gen.CreateAccountRequest{
+		Account: &gen.Account{
+			Type:        gen.Account_USER_ACCOUNT,
+			DisplayName: "User",
+		},
+	}
+
+	ctx := context.Background()
+	store := NewMemoryStore(zap.NewNop())
+	server := NewServer(store, zap.NewNop())
+	for _, username := range validUsernames {
+		req := proto.Clone(template).(*gen.CreateAccountRequest)
+		req.Account.Username = username
+		_, err := server.CreateAccount(ctx, req)
+		if err != nil {
+			t.Errorf("valid username %q failed: %v", username, err)
+		}
+	}
+	for _, username := range invalidUsernames {
+		req := proto.Clone(template).(*gen.CreateAccountRequest)
+		req.Account.Username = username
+		_, err := server.CreateAccount(ctx, req)
+		if !errors.Is(err, ErrInvalidUsername) {
+			t.Errorf("invalid username %q returned %v", username, err)
+		}
+	}
+}
+
+func TestServer_UpdateAccount_Usernames(t *testing.T) {
+	ctx := context.Background()
+	store := NewMemoryStore(zap.NewNop())
+	server := NewServer(store, zap.NewNop())
+
+	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
+		Account: &gen.Account{
+			Type:        gen.Account_USER_ACCOUNT,
+			DisplayName: "User",
+			Username:    "user",
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to set up test account: %v", err)
+	}
+
+	template := &gen.UpdateAccountRequest{
+		Account: &gen.Account{
+			Id: account.Id,
+		},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
+	}
+	for _, username := range validUsernames {
+		req := proto.Clone(template).(*gen.UpdateAccountRequest)
+		req.Account.Username = username
+		_, err := server.UpdateAccount(ctx, req)
+		if err != nil {
+			t.Errorf("valid username %q failed: %v", username, err)
+		}
+	}
+	for _, username := range invalidUsernames {
+		req := proto.Clone(template).(*gen.UpdateAccountRequest)
+		req.Account.Username = username
+		_, err := server.UpdateAccount(ctx, req)
+		if !errors.Is(err, ErrInvalidUsername) {
+			t.Errorf("invalid username %q returned %v", username, err)
+		}
 	}
 }
 
@@ -759,7 +883,7 @@ func TestServer_ServiceCredentials(t *testing.T) {
 			protocmp.IgnoreFields(&gen.ServiceCredential{}, "secret"),
 		)
 		if diff != "" {
-			t.Errorf("unexpected service credentials (-got +want):\n%s", diff)
+			t.Errorf("unexpected service credentials (-want +got):\n%s", diff)
 		}
 
 		// fetch them individually, checking we get the same result as in the list
@@ -776,7 +900,7 @@ func TestServer_ServiceCredentials(t *testing.T) {
 			}
 			diff = cmp.Diff(cred, fetched, protocmp.Transform())
 			if diff != "" {
-				t.Errorf("unexpected fetched service credential %q (-got +want):\n%s", cred.Id, diff)
+				t.Errorf("unexpected fetched service credential %q (-want +got):\n%s", cred.Id, diff)
 			}
 		}
 	}
@@ -1107,7 +1231,7 @@ func TestServer_Role(t *testing.T) {
 		}
 		diff := cmp.Diff(expect, role, protocmp.Transform())
 		if diff != "" {
-			t.Errorf("unexpected role value (-got +want):\n%s", diff)
+			t.Errorf("unexpected role value (-want +got):\n%s", diff)
 		}
 
 		roles = append(roles, role)
@@ -1158,7 +1282,7 @@ func TestServer_Role(t *testing.T) {
 	}
 	diff := cmp.Diff(role, updated, protocmp.Transform())
 	if diff != "" {
-		t.Errorf("unexpected updated role value (-got +want):\n%s", diff)
+		t.Errorf("unexpected updated role value (-want +got):\n%s", diff)
 	}
 	// test that update is persisted
 	updated, err = server.GetRole(ctx, &gen.GetRoleRequest{Id: role.Id})
@@ -1168,7 +1292,7 @@ func TestServer_Role(t *testing.T) {
 	}
 	diff = cmp.Diff(role, updated, protocmp.Transform())
 	if diff != "" {
-		t.Errorf("unexpected retrieved role value (-got +want):\n%s", diff)
+		t.Errorf("unexpected retrieved role value (-want +got):\n%s", diff)
 	}
 
 	// test that a role can't be deleted if it is assigned
@@ -1354,7 +1478,7 @@ func TestServer_UpdateRole(t *testing.T) {
 			if updated != nil {
 				diff := cmp.Diff(expected, updated, protocmp.Transform())
 				if diff != "" {
-					t.Errorf("unexpected updated role value (-got +want):\n%s", diff)
+					t.Errorf("unexpected updated role value (-want +got):\n%s", diff)
 				}
 			}
 
@@ -1366,7 +1490,7 @@ func TestServer_UpdateRole(t *testing.T) {
 			}
 			diff := cmp.Diff(expected, role, protocmp.Transform())
 			if diff != "" {
-				t.Errorf("unexpected retrieved role value (-got +want):\n%s", diff)
+				t.Errorf("unexpected retrieved role value (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -1397,7 +1521,7 @@ func comparePages[T messageWithID](t *testing.T, pageSize int32, expect []T, got
 			protocmp.IgnoreFields(zero, ignoreFields...),
 		)
 		if diff != "" {
-			t.Errorf("unexpected page %d contents (-got +want):\n%s", i, diff)
+			t.Errorf("unexpected page %d contents (-want +got):\n%s", i, diff)
 		}
 	}
 

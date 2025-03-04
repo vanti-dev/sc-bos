@@ -284,6 +284,8 @@ message Account {
   string display_name = 4;
 
   // For user accounts, the username to use for authentication.
+  // A valid username is between 3 and 100 characters.
+  // ASCII alphanumerics, and the following special characters are allowed: .-_@
   string username = 5;
 
   enum Type {
