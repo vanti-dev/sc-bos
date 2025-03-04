@@ -182,10 +182,14 @@ type opts struct {
 }
 
 func (db *Database) Close() error {
-	err := db.writer.Close()
 	if db.freeMemDB != "" {
-		memdb.Delete(db.freeMemDB)
+		defer memdb.Delete(db.freeMemDB)
 	}
+	err := db.writer.Close()
+	if err != nil {
+		return err
+	}
+	err = db.reader.Close()
 	return err
 }
 
