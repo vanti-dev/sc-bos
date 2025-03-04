@@ -512,8 +512,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.getServiceCredentia
  *   !proto.smartcore.bos.ListServiceCredentialsRequest,
  *   !proto.smartcore.bos.ListServiceCredentialsResponse>}
  */
-const methodDescriptor_AccountApiService_ListServiceCredential = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/ListServiceCredential',
+const methodDescriptor_AccountApiService_ListServiceCredentials = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApiService/ListServiceCredentials',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.ListServiceCredentialsRequest,
   proto.smartcore.bos.ListServiceCredentialsResponse,
@@ -538,13 +538,13 @@ const methodDescriptor_AccountApiService_ListServiceCredential = new grpc.web.Me
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListServiceCredentialsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.listServiceCredential =
+proto.smartcore.bos.AccountApiServiceClient.prototype.listServiceCredentials =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListServiceCredential',
+      '/smartcore.bos.AccountApiService/ListServiceCredentials',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListServiceCredential,
+      methodDescriptor_AccountApiService_ListServiceCredentials,
       callback);
 };
 
@@ -557,13 +557,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.listServiceCredential =
  * @return {!Promise<!proto.smartcore.bos.ListServiceCredentialsResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listServiceCredential =
+proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listServiceCredentials =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListServiceCredential',
+      '/smartcore.bos.AccountApiService/ListServiceCredentials',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListServiceCredential);
+      methodDescriptor_AccountApiService_ListServiceCredentials);
 };
 
 

@@ -57,7 +57,7 @@ export class AccountApiServiceClient {
                response: account_pb.ServiceCredential) => void
   ): grpcWeb.ClientReadableStream<account_pb.ServiceCredential>;
 
-  listServiceCredential(
+  listServiceCredentials(
     request: account_pb.ListServiceCredentialsRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
@@ -183,7 +183,7 @@ export class AccountApiServicePromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<account_pb.ServiceCredential>;
 
-  listServiceCredential(
+  listServiceCredentials(
     request: account_pb.ListServiceCredentialsRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<account_pb.ListServiceCredentialsResponse>;

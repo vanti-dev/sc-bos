@@ -26,7 +26,7 @@ const (
 	AccountApiService_UpdateAccountPassword_FullMethodName   = "/smartcore.bos.AccountApiService/UpdateAccountPassword"
 	AccountApiService_DeleteAccount_FullMethodName           = "/smartcore.bos.AccountApiService/DeleteAccount"
 	AccountApiService_GetServiceCredential_FullMethodName    = "/smartcore.bos.AccountApiService/GetServiceCredential"
-	AccountApiService_ListServiceCredential_FullMethodName   = "/smartcore.bos.AccountApiService/ListServiceCredential"
+	AccountApiService_ListServiceCredentials_FullMethodName  = "/smartcore.bos.AccountApiService/ListServiceCredentials"
 	AccountApiService_CreateServiceCredential_FullMethodName = "/smartcore.bos.AccountApiService/CreateServiceCredential"
 	AccountApiService_DeleteServiceCredential_FullMethodName = "/smartcore.bos.AccountApiService/DeleteServiceCredential"
 	AccountApiService_GetRole_FullMethodName                 = "/smartcore.bos.AccountApiService/GetRole"
@@ -51,7 +51,7 @@ type AccountApiServiceClient interface {
 	UpdateAccountPassword(ctx context.Context, in *UpdateAccountPasswordRequest, opts ...grpc.CallOption) (*UpdateAccountPasswordResponse, error)
 	DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error)
 	GetServiceCredential(ctx context.Context, in *GetServiceCredentialRequest, opts ...grpc.CallOption) (*ServiceCredential, error)
-	ListServiceCredential(ctx context.Context, in *ListServiceCredentialsRequest, opts ...grpc.CallOption) (*ListServiceCredentialsResponse, error)
+	ListServiceCredentials(ctx context.Context, in *ListServiceCredentialsRequest, opts ...grpc.CallOption) (*ListServiceCredentialsResponse, error)
 	CreateServiceCredential(ctx context.Context, in *CreateServiceCredentialRequest, opts ...grpc.CallOption) (*ServiceCredential, error)
 	DeleteServiceCredential(ctx context.Context, in *DeleteServiceCredentialRequest, opts ...grpc.CallOption) (*DeleteServiceCredentialResponse, error)
 	GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*Role, error)
@@ -143,10 +143,10 @@ func (c *accountApiServiceClient) GetServiceCredential(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *accountApiServiceClient) ListServiceCredential(ctx context.Context, in *ListServiceCredentialsRequest, opts ...grpc.CallOption) (*ListServiceCredentialsResponse, error) {
+func (c *accountApiServiceClient) ListServiceCredentials(ctx context.Context, in *ListServiceCredentialsRequest, opts ...grpc.CallOption) (*ListServiceCredentialsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListServiceCredentialsResponse)
-	err := c.cc.Invoke(ctx, AccountApiService_ListServiceCredential_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, AccountApiService_ListServiceCredentials_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +274,7 @@ type AccountApiServiceServer interface {
 	UpdateAccountPassword(context.Context, *UpdateAccountPasswordRequest) (*UpdateAccountPasswordResponse, error)
 	DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error)
 	GetServiceCredential(context.Context, *GetServiceCredentialRequest) (*ServiceCredential, error)
-	ListServiceCredential(context.Context, *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error)
+	ListServiceCredentials(context.Context, *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error)
 	CreateServiceCredential(context.Context, *CreateServiceCredentialRequest) (*ServiceCredential, error)
 	DeleteServiceCredential(context.Context, *DeleteServiceCredentialRequest) (*DeleteServiceCredentialResponse, error)
 	GetRole(context.Context, *GetRoleRequest) (*Role, error)
@@ -317,8 +317,8 @@ func (UnimplementedAccountApiServiceServer) DeleteAccount(context.Context, *Dele
 func (UnimplementedAccountApiServiceServer) GetServiceCredential(context.Context, *GetServiceCredentialRequest) (*ServiceCredential, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServiceCredential not implemented")
 }
-func (UnimplementedAccountApiServiceServer) ListServiceCredential(context.Context, *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListServiceCredential not implemented")
+func (UnimplementedAccountApiServiceServer) ListServiceCredentials(context.Context, *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListServiceCredentials not implemented")
 }
 func (UnimplementedAccountApiServiceServer) CreateServiceCredential(context.Context, *CreateServiceCredentialRequest) (*ServiceCredential, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateServiceCredential not implemented")
@@ -500,20 +500,20 @@ func _AccountApiService_GetServiceCredential_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AccountApiService_ListServiceCredential_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AccountApiService_ListServiceCredentials_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListServiceCredentialsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccountApiServiceServer).ListServiceCredential(ctx, in)
+		return srv.(AccountApiServiceServer).ListServiceCredentials(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AccountApiService_ListServiceCredential_FullMethodName,
+		FullMethod: AccountApiService_ListServiceCredentials_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountApiServiceServer).ListServiceCredential(ctx, req.(*ListServiceCredentialsRequest))
+		return srv.(AccountApiServiceServer).ListServiceCredentials(ctx, req.(*ListServiceCredentialsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -752,8 +752,8 @@ var AccountApiService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AccountApiService_GetServiceCredential_Handler,
 		},
 		{
-			MethodName: "ListServiceCredential",
-			Handler:    _AccountApiService_ListServiceCredential_Handler,
+			MethodName: "ListServiceCredentials",
+			Handler:    _AccountApiService_ListServiceCredentials_Handler,
 		},
 		{
 			MethodName: "CreateServiceCredential",

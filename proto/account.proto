@@ -16,7 +16,7 @@ service AccountApiService {
   rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
 
   rpc GetServiceCredential(GetServiceCredentialRequest) returns (ServiceCredential);
-  rpc ListServiceCredential(ListServiceCredentialsRequest) returns (ListServiceCredentialsResponse);
+  rpc ListServiceCredentials(ListServiceCredentialsRequest) returns (ListServiceCredentialsResponse);
   rpc CreateServiceCredential(CreateServiceCredentialRequest) returns (ServiceCredential);
   rpc DeleteServiceCredential(DeleteServiceCredentialRequest) returns (DeleteServiceCredentialResponse);
 
