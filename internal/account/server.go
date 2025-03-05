@@ -155,7 +155,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		case gen.Account_SERVICE_ACCOUNT:
 			created, err = tx.CreateServiceAccount(ctx, account.DisplayName)
 		default:
-			panic("already validated account kind")
+			return ErrInvalidAccountKind
 		}
 		if sqlite.IsUniqueConstraintError(err) {
 			return ErrUsernameExists
