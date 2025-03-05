@@ -65,6 +65,9 @@ func Multiplex(jobs ...Job) *Mulpx {
 		j := job
 
 		out.group.Go(func() error {
+			// trigger after boot up so we export some values immediately
+			out.C <- j
+
 			for range j.GetTicker().C {
 				out.C <- j
 			}
