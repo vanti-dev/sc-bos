@@ -90,6 +90,12 @@ func RetryWithMaxAttempts(n int) RetryOption {
 	}
 }
 
+func RetryWithMinDelay(d time.Duration) RetryOption {
+	return func(o *retryOptions) {
+		o.MinDelay = d
+	}
+}
+
 func RetryWithLogger(l func(logContext RetryContext)) RetryOption {
 	if l == nil {
 		l = func(logContext RetryContext) {}

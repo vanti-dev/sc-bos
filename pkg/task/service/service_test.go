@@ -316,7 +316,7 @@ func TestLifecycle(t *testing.T) {
 
 	t.Run("retry", func(t *testing.T) {
 		l := newRetryLogger(t)
-		tt := newLifecycleTester(t, WithRetry[string](RetryWithLogger(l.Log), RetryWithInitialDelay(10*time.Millisecond)))
+		tt := newLifecycleTester(t, WithRetry[string](RetryWithLogger(l.Log), RetryWithInitialDelay(10*time.Millisecond), RetryWithMinDelay(10*time.Millisecond)))
 		applyErr := errors.New("expected apply error")
 		tt.setupApply().withErr(applyErr)
 		unblock := tt.setupApply().withTick().blockUntilCall()
