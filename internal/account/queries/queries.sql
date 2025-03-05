@@ -106,6 +106,11 @@ UPDATE roles
 SET display_name = :display_name
 WHERE id = :id;
 
+-- name: UpdateRoleDescription :execrows
+UPDATE roles
+SET description = :description
+WHERE id = :id;
+
 -- name: DeleteRole :execrows
 DELETE FROM roles
 WHERE id = :id;

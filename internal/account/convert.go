@@ -56,11 +56,15 @@ func accountToProto(account queries.Account) *gen.Account {
 }
 
 func roleToProto(role queries.Role, permissions []string) *gen.Role {
-	return &gen.Role{
+	protoRole := &gen.Role{
 		Id:            formatID(role.ID),
 		DisplayName:   role.DisplayName,
 		PermissionIds: permissions,
 	}
+	if role.Description.Valid {
+		protoRole.Description = role.Description.String
+	}
+	return protoRole
 }
 
 func serviceCredentialToProto(cred queries.ServiceCredential, secret string) *gen.ServiceCredential {

@@ -721,6 +721,25 @@ func (q *Queries) UpdateAccountUsername(ctx context.Context, arg UpdateAccountUs
 	return err
 }
 
+const updateRoleDescription = `-- name: UpdateRoleDescription :execrows
+UPDATE roles
+SET description = ?1
+WHERE id = ?2
+`
+
+type UpdateRoleDescriptionParams struct {
+	Description sql.NullString
+	ID          int64
+}
+
+func (q *Queries) UpdateRoleDescription(ctx context.Context, arg UpdateRoleDescriptionParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateRoleDescription, arg.Description, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const updateRoleDisplayName = `-- name: UpdateRoleDisplayName :execrows
 UPDATE roles
 SET display_name = ?1

@@ -1220,6 +1220,7 @@ func TestServer_Role(t *testing.T) {
 	const numRoles = 200
 	const numPermissions = 10
 
+	const description = "A role for testing"
 	var roles []*gen.Role
 	t.Log("CreateRole:")
 	for i := range numRoles {
@@ -1229,6 +1230,7 @@ func TestServer_Role(t *testing.T) {
 				DisplayName: displayName,
 				// supply the permissions shuffled to check they are returned in order instead
 				PermissionIds: shuffledPermissions(numPermissions),
+				Description:   description,
 			},
 		})
 		if err != nil {
@@ -1238,6 +1240,7 @@ func TestServer_Role(t *testing.T) {
 			Id:            role.Id,
 			DisplayName:   displayName,
 			PermissionIds: orderedPermissions(numPermissions),
+			Description:   description,
 		}
 		diff := cmp.Diff(expect, role, protocmp.Transform())
 		if diff != "" {
@@ -1439,7 +1442,7 @@ func TestServer_UpdateRole(t *testing.T) {
 					DisplayName:   "Role 1 MODIFIED",
 					PermissionIds: []string{"foo2", "bar2"},
 				},
-				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permissions"}},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permission_ids"}},
 			},
 			expected: &gen.Role{
 				DisplayName:   "Role 1",
@@ -1455,11 +1458,53 @@ func TestServer_UpdateRole(t *testing.T) {
 				Role: &gen.Role{
 					PermissionIds: nil,
 				},
-				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permissions"}},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"permission_ids"}},
 			},
 			expected: &gen.Role{
 				DisplayName:   "Role 1",
 				PermissionIds: nil,
+			},
+		},
+		"update_description_implicit": {
+			initial: &gen.Role{
+				DisplayName: "Role 1",
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{
+					Description: "A role for testing",
+				},
+			},
+			expected: &gen.Role{
+				DisplayName: "Role 1",
+				Description: "A role for testing",
+			},
+		},
+		"update_description_explicit": {
+			initial: &gen.Role{
+				DisplayName: "Role 1",
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{
+					Description: "A role for testing",
+				},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"description"}},
+			},
+			expected: &gen.Role{
+				DisplayName: "Role 1",
+				Description: "A role for testing",
+			},
+		},
+		"update_description_clear": {
+			initial: &gen.Role{
+				DisplayName: "Role 1",
+				Description: "A role for testing",
+			},
+			update: &gen.UpdateRoleRequest{
+				Role:       &gen.Role{},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"description"}},
+			},
+			expected: &gen.Role{
+				DisplayName: "Role 1",
 			},
 		},
 	}

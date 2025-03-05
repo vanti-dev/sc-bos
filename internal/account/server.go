@@ -587,8 +587,9 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 	}
 
 	const (
-		fieldDisplayName = "display_name"
-		fieldPermissions = "permissions"
+		fieldDisplayName   = "display_name"
+		fieldPermissionIDs = "permission_ids"
+		fieldDescription   = "description"
 	)
 	mask, err := resolveMask(req.Role, req.UpdateMask)
 	if err != nil {
@@ -619,6 +620,7 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 		var (
 			updateDisplayName bool
 			updatePermissions bool
+			updateDescription bool
 		)
 		fields, err := fieldsToUpdate(roleToProto(role, permissions), req.Role, mask)
 		if err != nil {
@@ -628,8 +630,10 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 			switch field {
 			case fieldDisplayName:
 				updateDisplayName = true
-			case fieldPermissions:
+			case fieldPermissionIDs:
 				updatePermissions = true
+			case fieldDescription:
+				updateDescription = true
 			default:
 				return status.Errorf(codes.InvalidArgument, "field %q unsupported for update", field)
 			}
@@ -644,6 +648,21 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 				return err
 			}
 			role.DisplayName = req.Role.DisplayName
+		}
+
+		if updateDescription {
+			var value sql.NullString
+			if req.Role.Description != "" {
+				value = sql.NullString{String: req.Role.Description, Valid: true}
+			}
+			_, err = tx.UpdateRoleDescription(ctx, queries.UpdateRoleDescriptionParams{
+				ID:          id,
+				Description: value,
+			})
+			if err != nil {
+				return err
+			}
+			role.Description = value
 		}
 
 		if updatePermissions {
@@ -846,7 +865,7 @@ func (s *Server) DeleteRoleAssignment(ctx context.Context, req *gen.DeleteRoleAs
 		s.logger.Error("failed to delete role assignment", zap.Error(err), zap.String("id", req.Id))
 		return nil, ErrDatabase
 	}
-	if !deleted {
+	if !deleted && !req.AllowMissing {
 		return nil, ErrRoleAssignmentNotFound
 	}
 
