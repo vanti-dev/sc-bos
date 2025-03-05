@@ -35,6 +35,7 @@ var (
 	ErrUnexpectedPasswordUpdate  = status.Error(codes.FailedPrecondition, "only user account can have password")
 	ErrInvalidUsername           = status.Error(codes.InvalidArgument, "invalid username")
 	ErrInvalidDisplayName        = status.Error(codes.InvalidArgument, "invalid display name")
+	ErrInvalidDescription        = status.Error(codes.InvalidArgument, "invalid description")
 	ErrInvalidPassword           = status.Error(codes.InvalidArgument, "password does not comply with policy")
 	ErrIncorrectPassword         = status.Error(codes.FailedPrecondition, "incorrect password")
 	ErrInvalidPageToken          = status.Error(codes.InvalidArgument, "invalid page token")
@@ -541,6 +542,9 @@ func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*g
 	if !validateDisplayName(req.Role.DisplayName) {
 		return nil, ErrInvalidDisplayName
 	}
+	if !validateDescription(req.Role.Description) {
+		return nil, ErrInvalidDescription
+	}
 
 	var (
 		role        queries.Role
@@ -640,6 +644,10 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 		}
 
 		if updateDisplayName {
+			if !validateDisplayName(req.Role.DisplayName) {
+				return ErrInvalidDisplayName
+			}
+
 			_, err = tx.UpdateRoleDisplayName(ctx, queries.UpdateRoleDisplayNameParams{
 				ID:          id,
 				DisplayName: req.Role.DisplayName,
@@ -651,6 +659,10 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 		}
 
 		if updateDescription {
+			if !validateDescription(req.Role.Description) {
+				return ErrInvalidDescription
+			}
+
 			var value sql.NullString
 			if req.Role.Description != "" {
 				value = sql.NullString{String: req.Role.Description, Valid: true}

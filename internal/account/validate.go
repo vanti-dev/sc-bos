@@ -6,10 +6,14 @@ import (
 )
 
 const (
-	minPasswordLength = 10
-	maxPasswordLength = 72 // max password length supported by bcrypt
-	minUsernameLength = 3
-	maxUsernameLength = 100
+	minPasswordLength    = 10
+	maxPasswordLength    = 72 // max password length supported by bcrypt
+	minUsernameLength    = 3
+	maxUsernameLength    = 100
+	minDisplayNameLength = 1
+	maxDisplayNameLength = 100
+	minDescriptionLength = 0
+	maxDescriptionLength = 10000
 )
 
 func permitPassword(password string) bool {
@@ -21,8 +25,8 @@ func normalisePassword(password string) string {
 	return strings.TrimSpace(password)
 }
 
-func validateDisplayName(title string) bool {
-	return len(title) > 0
+func validateDisplayName(displayName string) bool {
+	return len(displayName) >= minDisplayNameLength && len(displayName) <= maxDisplayNameLength
 }
 
 func validateUsername(username string) bool {
@@ -33,3 +37,7 @@ func validateUsername(username string) bool {
 }
 
 var usernameRegexp = regexp.MustCompile(`^[a-zA-Z0-9._@\-]+$`)
+
+func validateDescription(description string) bool {
+	return len(description) >= minDescriptionLength && len(description) <= maxDescriptionLength
+}

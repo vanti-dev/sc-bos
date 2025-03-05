@@ -1213,6 +1213,8 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 }
 
 func TestServer_Role(t *testing.T) {
+	// tests a sequence of role operations, checking that role lifecycles are handled correctly
+
 	ctx := context.Background()
 	store := NewMemoryStore(zap.NewNop())
 	server := NewServer(store, zap.NewNop())
@@ -1362,6 +1364,110 @@ func TestServer_Role(t *testing.T) {
 	}
 }
 
+func TestServer_CreateRole(t *testing.T) {
+	ctx := context.Background()
+
+	type testCase struct {
+		role *gen.Role
+		err  error
+	}
+
+	cases := map[string]testCase{
+		"missing_display_name": {
+			role: &gen.Role{},
+			err:  ErrInvalidDisplayName,
+		},
+		"display_name_too_long": {
+			role: &gen.Role{DisplayName: strings.Repeat("a", maxDisplayNameLength+1)},
+			err:  ErrInvalidDisplayName,
+		},
+		"long_display_name": {
+			role: &gen.Role{DisplayName: strings.Repeat("a", maxDisplayNameLength)},
+		},
+		"short_display_name": {
+			role: &gen.Role{DisplayName: "Role"},
+		},
+		"short_description": {
+			role: &gen.Role{
+				DisplayName: "Role",
+				Description: "Role Description",
+			},
+		},
+		"description_too_long": {
+			role: &gen.Role{
+				DisplayName: "Role",
+				Description: strings.Repeat("a", maxDescriptionLength+1),
+			},
+			err: ErrInvalidDescription,
+		},
+		"long_description": {
+			role: &gen.Role{
+				DisplayName: "Role",
+				Description: strings.Repeat("a", maxDescriptionLength),
+			},
+		},
+		"single_permission": {
+			role: &gen.Role{
+				DisplayName:   "Role",
+				PermissionIds: []string{"foo"},
+			},
+		},
+		"multiple_permissions_ordered": {
+			role: &gen.Role{
+				DisplayName:   "Role",
+				PermissionIds: []string{"bar", "baz", "foo"},
+			},
+		},
+		"multiple_permissions_unordered": {
+			role: &gen.Role{
+				DisplayName:   "Role",
+				PermissionIds: []string{"foo", "bar", "baz"},
+			},
+		},
+		"duplicate_permissions": {
+			role: &gen.Role{
+				DisplayName:   "Role",
+				PermissionIds: []string{"foo", "bar", "foo"},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			store := NewMemoryStore(zap.NewNop())
+			server := NewServer(store, zap.NewNop())
+
+			created, err := server.CreateRole(ctx, &gen.CreateRoleRequest{Role: tc.role})
+			if !errors.Is(err, tc.err) {
+				t.Errorf("expected error %v, got %v", tc.err, err)
+			}
+
+			if created != nil {
+				expect := proto.Clone(tc.role).(*gen.Role)
+				expect.Id = created.Id
+				// normalise the permission IDs
+				slices.Sort(expect.PermissionIds)
+				expect.PermissionIds = slices.Compact(expect.PermissionIds)
+
+				diff := cmp.Diff(expect, created, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("unexpected created role value (-want +got):\n%s", diff)
+				}
+
+				fetched, err := server.GetRole(ctx, &gen.GetRoleRequest{Id: created.Id})
+				if err != nil {
+					t.Errorf("failed to fetch created role: %v", err)
+				}
+
+				diff = cmp.Diff(expect, fetched, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("unexpected fetched role value (-want +got):\n%s", diff)
+				}
+			}
+		})
+	}
+}
+
 func TestServer_UpdateRole(t *testing.T) {
 	ctx := context.Background()
 
@@ -1416,6 +1522,33 @@ func TestServer_UpdateRole(t *testing.T) {
 				DisplayName:   "Role 1 MODIFIED",
 				PermissionIds: []string{"bar", "foo"},
 			},
+		},
+		"update_display_name_clear": {
+			initial: &gen.Role{
+				DisplayName: "Role 1",
+			},
+			update: &gen.UpdateRoleRequest{
+				Role:       &gen.Role{},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"display_name"}},
+			},
+			expected: &gen.Role{
+				DisplayName: "Role 1",
+			},
+			code: codes.InvalidArgument,
+		},
+		"update_display_name_too_long": {
+			initial: &gen.Role{
+				DisplayName: "Role 1",
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{
+					DisplayName: strings.Repeat("a", maxDisplayNameLength+1),
+				},
+			},
+			expected: &gen.Role{
+				DisplayName: "Role 1",
+			},
+			code: codes.InvalidArgument,
 		},
 		"update_permissions_implicit": {
 			initial: &gen.Role{
@@ -1506,6 +1639,18 @@ func TestServer_UpdateRole(t *testing.T) {
 			expected: &gen.Role{
 				DisplayName: "Role 1",
 			},
+		},
+		"update_description_invalid": {
+			initial: &gen.Role{
+				DisplayName: "Role 1",
+			},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{Description: strings.Repeat("a", maxDescriptionLength+1)},
+			},
+			expected: &gen.Role{
+				DisplayName: "Role 1",
+			},
+			code: codes.InvalidArgument,
 		},
 	}
 
