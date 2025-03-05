@@ -312,6 +312,8 @@ func (l *Service[C]) applyConfig(state State, config C) (State, error) {
 			retry.Delay = time.Duration(float64(l.retry.InitialDelay) * math.Pow(l.retry.Factor, float64(retry.Attempt-1)))
 			if retry.Delay > l.retry.MaxDelay {
 				retry.Delay = l.retry.MaxDelay
+			} else if retry.Delay < l.retry.MinDelay {
+				retry.Delay = l.retry.MinDelay
 			}
 
 			// abort if we've exhausted our retry attempts
