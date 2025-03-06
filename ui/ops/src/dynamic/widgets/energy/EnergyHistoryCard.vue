@@ -165,6 +165,10 @@ const chartOptions = computed(() => {
     scales: {
       y: {
         stacked: true,
+        title: {
+          display: true,
+          text: unit.value
+        },
         border: {
           color: 'transparent'
         },
