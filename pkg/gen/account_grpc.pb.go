@@ -48,6 +48,9 @@ type AccountApiServiceClient interface {
 	ListAccounts(ctx context.Context, in *ListAccountsRequest, opts ...grpc.CallOption) (*ListAccountsResponse, error)
 	CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*Account, error)
 	UpdateAccount(ctx context.Context, in *UpdateAccountRequest, opts ...grpc.CallOption) (*Account, error)
+	// Updates the password for a user account.
+	// If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
+	// If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
 	UpdateAccountPassword(ctx context.Context, in *UpdateAccountPasswordRequest, opts ...grpc.CallOption) (*UpdateAccountPasswordResponse, error)
 	DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error)
 	GetServiceCredential(ctx context.Context, in *GetServiceCredentialRequest, opts ...grpc.CallOption) (*ServiceCredential, error)
@@ -271,6 +274,9 @@ type AccountApiServiceServer interface {
 	ListAccounts(context.Context, *ListAccountsRequest) (*ListAccountsResponse, error)
 	CreateAccount(context.Context, *CreateAccountRequest) (*Account, error)
 	UpdateAccount(context.Context, *UpdateAccountRequest) (*Account, error)
+	// Updates the password for a user account.
+	// If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
+	// If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
 	UpdateAccountPassword(context.Context, *UpdateAccountPasswordRequest) (*UpdateAccountPasswordResponse, error)
 	DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error)
 	GetServiceCredential(context.Context, *GetServiceCredentialRequest) (*ServiceCredential, error)
@@ -805,8 +811,9 @@ var AccountApiService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	AccountInfoService_GetPermission_FullMethodName   = "/smartcore.bos.AccountInfoService/GetPermission"
-	AccountInfoService_ListPermissions_FullMethodName = "/smartcore.bos.AccountInfoService/ListPermissions"
+	AccountInfoService_GetPermission_FullMethodName    = "/smartcore.bos.AccountInfoService/GetPermission"
+	AccountInfoService_ListPermissions_FullMethodName  = "/smartcore.bos.AccountInfoService/ListPermissions"
+	AccountInfoService_GetAccountLimits_FullMethodName = "/smartcore.bos.AccountInfoService/GetAccountLimits"
 )
 
 // AccountInfoServiceClient is the client API for AccountInfoService service.
@@ -815,6 +822,7 @@ const (
 type AccountInfoServiceClient interface {
 	GetPermission(ctx context.Context, in *GetPermissionRequest, opts ...grpc.CallOption) (*Permission, error)
 	ListPermissions(ctx context.Context, in *ListPermissionsRequest, opts ...grpc.CallOption) (*ListPermissionsResponse, error)
+	GetAccountLimits(ctx context.Context, in *GetAccountLimitsRequest, opts ...grpc.CallOption) (*AccountLimits, error)
 }
 
 type accountInfoServiceClient struct {
@@ -845,12 +853,23 @@ func (c *accountInfoServiceClient) ListPermissions(ctx context.Context, in *List
 	return out, nil
 }
 
+func (c *accountInfoServiceClient) GetAccountLimits(ctx context.Context, in *GetAccountLimitsRequest, opts ...grpc.CallOption) (*AccountLimits, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AccountLimits)
+	err := c.cc.Invoke(ctx, AccountInfoService_GetAccountLimits_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountInfoServiceServer is the server API for AccountInfoService service.
 // All implementations must embed UnimplementedAccountInfoServiceServer
 // for forward compatibility.
 type AccountInfoServiceServer interface {
 	GetPermission(context.Context, *GetPermissionRequest) (*Permission, error)
 	ListPermissions(context.Context, *ListPermissionsRequest) (*ListPermissionsResponse, error)
+	GetAccountLimits(context.Context, *GetAccountLimitsRequest) (*AccountLimits, error)
 	mustEmbedUnimplementedAccountInfoServiceServer()
 }
 
@@ -866,6 +885,9 @@ func (UnimplementedAccountInfoServiceServer) GetPermission(context.Context, *Get
 }
 func (UnimplementedAccountInfoServiceServer) ListPermissions(context.Context, *ListPermissionsRequest) (*ListPermissionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPermissions not implemented")
+}
+func (UnimplementedAccountInfoServiceServer) GetAccountLimits(context.Context, *GetAccountLimitsRequest) (*AccountLimits, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAccountLimits not implemented")
 }
 func (UnimplementedAccountInfoServiceServer) mustEmbedUnimplementedAccountInfoServiceServer() {}
 func (UnimplementedAccountInfoServiceServer) testEmbeddedByValue()                            {}
@@ -924,6 +946,24 @@ func _AccountInfoService_ListPermissions_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountInfoService_GetAccountLimits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAccountLimitsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountInfoServiceServer).GetAccountLimits(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountInfoService_GetAccountLimits_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountInfoServiceServer).GetAccountLimits(ctx, req.(*GetAccountLimitsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccountInfoService_ServiceDesc is the grpc.ServiceDesc for AccountInfoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -938,6 +978,10 @@ var AccountInfoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPermissions",
 			Handler:    _AccountInfoService_ListPermissions_Handler,
+		},
+		{
+			MethodName: "GetAccountLimits",
+			Handler:    _AccountInfoService_GetAccountLimits_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

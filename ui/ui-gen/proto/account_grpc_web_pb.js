@@ -1412,5 +1412,66 @@ proto.smartcore.bos.AccountInfoServicePromiseClient.prototype.listPermissions =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.GetAccountLimitsRequest,
+ *   !proto.smartcore.bos.AccountLimits>}
+ */
+const methodDescriptor_AccountInfoService_GetAccountLimits = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountInfoService/GetAccountLimits',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.GetAccountLimitsRequest,
+  proto.smartcore.bos.AccountLimits,
+  /**
+   * @param {!proto.smartcore.bos.GetAccountLimitsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.AccountLimits.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.GetAccountLimitsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.AccountLimits)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.AccountLimits>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AccountInfoServiceClient.prototype.getAccountLimits =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AccountInfoService/GetAccountLimits',
+      request,
+      metadata || {},
+      methodDescriptor_AccountInfoService_GetAccountLimits,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.GetAccountLimitsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.AccountLimits>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.AccountInfoServicePromiseClient.prototype.getAccountLimits =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AccountInfoService/GetAccountLimits',
+      request,
+      metadata || {},
+      methodDescriptor_AccountInfoService_GetAccountLimits);
+};
+
+
 module.exports = proto.smartcore.bos;
 

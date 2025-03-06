@@ -38,6 +38,7 @@ service AccountApiService {
 service AccountInfoService {
   rpc GetPermission(GetPermissionRequest) returns (Permission);
   rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse);
+  rpc GetAccountLimits(GetAccountLimitsRequest) returns (AccountLimits);
 }
 
 message GetAccountRequest {
@@ -319,6 +320,11 @@ message ListPermissionsResponse {
   string next_page_token = 2;
 }
 
+message GetAccountLimitsRequest {
+  // The name of the node. Defaults to the node you are connected to.
+  string name = 1;
+}
+
 message Account {
   // Unique identifier for this account. Consistent for the life of the account.
   // Generated automatically on account creation.
@@ -436,4 +442,18 @@ message Permission {
 
   string display_name = 2;
   string description = 3;
+}
+
+message AccountLimits {
+  message Field {
+    int32 min_length = 1;
+    int32 max_length = 2;
+  }
+
+  Field username = 1;
+  Field password = 2;
+  Field display_name = 3;
+  Field description = 4;
+
+  int32 max_service_credentials_per_account = 5;
 }

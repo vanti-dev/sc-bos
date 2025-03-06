@@ -724,6 +724,24 @@ export namespace ListPermissionsResponse {
   }
 }
 
+export class GetAccountLimitsRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): GetAccountLimitsRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetAccountLimitsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetAccountLimitsRequest): GetAccountLimitsRequest.AsObject;
+  static serializeBinaryToWriter(message: GetAccountLimitsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetAccountLimitsRequest;
+  static deserializeBinaryFromReader(message: GetAccountLimitsRequest, reader: jspb.BinaryReader): GetAccountLimitsRequest;
+}
+
+export namespace GetAccountLimitsRequest {
+  export type AsObject = {
+    name: string,
+  }
+}
+
 export class Account extends jspb.Message {
   getId(): string;
   setId(value: string): Account;
@@ -928,5 +946,70 @@ export namespace Permission {
     displayName: string,
     description: string,
   }
+}
+
+export class AccountLimits extends jspb.Message {
+  getUsername(): AccountLimits.Field | undefined;
+  setUsername(value?: AccountLimits.Field): AccountLimits;
+  hasUsername(): boolean;
+  clearUsername(): AccountLimits;
+
+  getPassword(): AccountLimits.Field | undefined;
+  setPassword(value?: AccountLimits.Field): AccountLimits;
+  hasPassword(): boolean;
+  clearPassword(): AccountLimits;
+
+  getDisplayName(): AccountLimits.Field | undefined;
+  setDisplayName(value?: AccountLimits.Field): AccountLimits;
+  hasDisplayName(): boolean;
+  clearDisplayName(): AccountLimits;
+
+  getDescription(): AccountLimits.Field | undefined;
+  setDescription(value?: AccountLimits.Field): AccountLimits;
+  hasDescription(): boolean;
+  clearDescription(): AccountLimits;
+
+  getMaxServiceCredentialsPerAccount(): number;
+  setMaxServiceCredentialsPerAccount(value: number): AccountLimits;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AccountLimits.AsObject;
+  static toObject(includeInstance: boolean, msg: AccountLimits): AccountLimits.AsObject;
+  static serializeBinaryToWriter(message: AccountLimits, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AccountLimits;
+  static deserializeBinaryFromReader(message: AccountLimits, reader: jspb.BinaryReader): AccountLimits;
+}
+
+export namespace AccountLimits {
+  export type AsObject = {
+    username?: AccountLimits.Field.AsObject,
+    password?: AccountLimits.Field.AsObject,
+    displayName?: AccountLimits.Field.AsObject,
+    description?: AccountLimits.Field.AsObject,
+    maxServiceCredentialsPerAccount: number,
+  }
+
+  export class Field extends jspb.Message {
+    getMinLength(): number;
+    setMinLength(value: number): Field;
+
+    getMaxLength(): number;
+    setMaxLength(value: number): Field;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Field.AsObject;
+    static toObject(includeInstance: boolean, msg: Field): Field.AsObject;
+    static serializeBinaryToWriter(message: Field, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Field;
+    static deserializeBinaryFromReader(message: Field, reader: jspb.BinaryReader): Field;
+  }
+
+  export namespace Field {
+    export type AsObject = {
+      minLength: number,
+      maxLength: number,
+    }
+  }
+
 }
 

@@ -894,6 +894,28 @@ func (s *Server) ListPermissions(ctx context.Context, req *gen.ListPermissionsRe
 	return &gen.ListPermissionsResponse{}, nil
 }
 
+func (s *Server) GetAccountLimits(ctx context.Context, req *gen.GetAccountLimitsRequest) (*gen.AccountLimits, error) {
+	return &gen.AccountLimits{
+		Username: &gen.AccountLimits_Field{
+			MinLength: minUsernameLength,
+			MaxLength: maxUsernameLength,
+		},
+		Password: &gen.AccountLimits_Field{
+			MinLength: minPasswordLength,
+			MaxLength: maxPasswordLength,
+		},
+		DisplayName: &gen.AccountLimits_Field{
+			MinLength: minDisplayNameLength,
+			MaxLength: maxDisplayNameLength,
+		},
+		Description: &gen.AccountLimits_Field{
+			MinLength: minDescriptionLength,
+			MaxLength: maxDescriptionLength,
+		},
+		MaxServiceCredentialsPerAccount: maxServiceCredentialsPerAccount,
+	}, nil
+}
+
 func resolvePageSize(pageSize int32) int64 {
 	if pageSize == 0 {
 		return defaultPageSize

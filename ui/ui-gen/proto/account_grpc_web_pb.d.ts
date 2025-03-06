@@ -162,6 +162,13 @@ export class AccountInfoServiceClient {
                response: account_pb.ListPermissionsResponse) => void
   ): grpcWeb.ClientReadableStream<account_pb.ListPermissionsResponse>;
 
+  getAccountLimits(
+    request: account_pb.GetAccountLimitsRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: account_pb.AccountLimits) => void
+  ): grpcWeb.ClientReadableStream<account_pb.AccountLimits>;
+
 }
 
 export class AccountApiServicePromiseClient {
@@ -280,6 +287,11 @@ export class AccountInfoServicePromiseClient {
     request: account_pb.ListPermissionsRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<account_pb.ListPermissionsResponse>;
+
+  getAccountLimits(
+    request: account_pb.GetAccountLimitsRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<account_pb.AccountLimits>;
 
 }
 

@@ -94,3 +94,12 @@ func (r *AccountInfoServiceRouter) ListPermissions(ctx context.Context, request 
 
 	return child.ListPermissions(ctx, request)
 }
+
+func (r *AccountInfoServiceRouter) GetAccountLimits(ctx context.Context, request *GetAccountLimitsRequest) (*AccountLimits, error) {
+	child, err := r.GetAccountInfoServiceClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.GetAccountLimits(ctx, request)
+}
