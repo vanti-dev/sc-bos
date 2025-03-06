@@ -49,6 +49,24 @@ func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool
 		cmp = func(v string) bool {
 			return strings.Contains(strings.ToLower(v), ls)
 		}
+	case *gen.Device_Query_Condition_StringIn:
+		set := make(map[string]struct{}, len(c.StringIn.Strings))
+		for _, s := range c.StringIn.Strings {
+			set[s] = struct{}{}
+		}
+		cmp = func(v string) bool {
+			_, ok := set[v]
+			return ok
+		}
+	case *gen.Device_Query_Condition_StringInFold:
+		set := make(map[string]struct{}, len(c.StringInFold.Strings))
+		for _, s := range c.StringInFold.Strings {
+			set[strings.ToLower(s)] = struct{}{}
+		}
+		cmp = func(v string) bool {
+			_, ok := set[strings.ToLower(v)]
+			return ok
+		}
 	default:
 		return false
 	}

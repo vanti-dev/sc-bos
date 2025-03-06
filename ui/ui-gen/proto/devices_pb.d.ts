@@ -65,6 +65,16 @@ export namespace Device {
       getStringContainsFold(): string;
       setStringContainsFold(value: string): Condition;
 
+      getStringIn(): Device.Query.StringList | undefined;
+      setStringIn(value?: Device.Query.StringList): Condition;
+      hasStringIn(): boolean;
+      clearStringIn(): Condition;
+
+      getStringInFold(): Device.Query.StringList | undefined;
+      setStringInFold(value?: Device.Query.StringList): Condition;
+      hasStringInFold(): boolean;
+      clearStringInFold(): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -82,6 +92,8 @@ export namespace Device {
         stringEqualFold: string,
         stringContains: string,
         stringContainsFold: string,
+        stringIn?: Device.Query.StringList.AsObject,
+        stringInFold?: Device.Query.StringList.AsObject,
       }
 
       export enum ValueCase { 
@@ -90,6 +102,29 @@ export namespace Device {
         STRING_EQUAL_FOLD = 3,
         STRING_CONTAINS = 4,
         STRING_CONTAINS_FOLD = 5,
+        STRING_IN = 6,
+        STRING_IN_FOLD = 7,
+      }
+    }
+
+
+    export class StringList extends jspb.Message {
+      getStringsList(): Array<string>;
+      setStringsList(value: Array<string>): StringList;
+      clearStringsList(): StringList;
+      addStrings(value: string, index?: number): StringList;
+
+      serializeBinary(): Uint8Array;
+      toObject(includeInstance?: boolean): StringList.AsObject;
+      static toObject(includeInstance: boolean, msg: StringList): StringList.AsObject;
+      static serializeBinaryToWriter(message: StringList, writer: jspb.BinaryWriter): void;
+      static deserializeBinary(bytes: Uint8Array): StringList;
+      static deserializeBinaryFromReader(message: StringList, reader: jspb.BinaryReader): StringList;
+    }
+
+    export namespace StringList {
+      export type AsObject = {
+        stringsList: Array<string>,
       }
     }
 

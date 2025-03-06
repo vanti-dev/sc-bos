@@ -48,6 +48,9 @@ func (s *Server) GetDownloadDevicesUrl(_ context.Context, request *gen.GetDownlo
 	default:
 		return nil, status.Errorf(codes.InvalidArgument, "unsupported media type %q", request.MediaType)
 	}
+	if err := validateQuery(request.Query); err != nil {
+		return nil, err
+	}
 
 	expireAfter := s.now().Add(s.downloadExpiry)
 	tokenStr, err := s.signAndSerializeDownloadToken(&DownloadToken{Request: request}, expireAfter)

@@ -128,12 +128,27 @@ function deviceQueryFromObject(obj) {
   if (!obj) return undefined;
   const dst = new Device.Query();
   for (const item of (obj.conditionsList ?? [])) {
-    const dstItem = new Device.Query.Condition();
-    setProperties(dstItem, item, 'field',
-        'stringEqual', 'stringEqualFold',
-        'stringContains', 'stringContainsFold'
-    );
-    dst.addConditions(dstItem);
+    dst.addConditions(deviceQueryConditionFromObject(item));
+  }
+  return dst;
+}
+
+/**
+ * @param {Partial<Device.Query.Condition.AsObject>} obj
+ * @return {undefined|Device.Query.Condition}
+ */
+function deviceQueryConditionFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new Device.Query.Condition();
+  setProperties(dst, obj, 'field',
+      'stringEqual', 'stringEqualFold',
+      'stringContains', 'stringContainsFold'
+  );
+  if (obj.stringIn) {
+    dst.setStringIn(new Device.Query.StringList().setStringsList(obj.stringIn.stringsList));
+  }
+  if (obj.stringInFold) {
+    dst.setStringInFold(new Device.Query.StringList().setStringsList(obj.stringInFold.stringsList));
   }
   return dst;
 }

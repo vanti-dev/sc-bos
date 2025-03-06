@@ -42,9 +42,23 @@ message Device {
         // Compare the field using contains in a case insensitive manner.
         string string_contains_fold = 5;
 
+        // Compare the field to any of these strings using case sensitive comparison.
+        // The server may have limits on the number of strings that can be compared.
+        StringList string_in = 6;
+        // Compare the field to any of these strings using a simple unicode case folding comparison.
+        // The server may have limits on the number of strings that can be compared.
+        StringList string_in_fold = 7;
+
         // there's room here for additional rhs values for the field, but we don't need any
       }
     }
+    // A list of strings, because oneof can't be repeated.
+    message StringList {
+      repeated string strings = 1;
+    }
+
+    // Conditions that must match for the device to be included in the results.
+    // Each condition is applied as an AND operation.
     repeated Condition conditions = 1;
   }
 }
