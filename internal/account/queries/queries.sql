@@ -16,13 +16,13 @@ FROM accounts
 WHERE username = :username;
 
 -- name: CreateUserAccount :one
-INSERT INTO accounts (username, display_name, type, create_time)
-VALUES (:username, :display_name, 'USER_ACCOUNT', datetime('now', 'subsec'))
+INSERT INTO accounts (username, display_name, description, type, create_time)
+VALUES (:username, :display_name, :description, 'USER_ACCOUNT', datetime('now', 'subsec'))
 RETURNING *;
 
 -- name: CreateServiceAccount :one
-INSERT INTO accounts (display_name, type, create_time)
-VALUES (:display_name, 'SERVICE_ACCOUNT', datetime('now', 'subsec'))
+INSERT INTO accounts (display_name, description, type, create_time)
+VALUES (:display_name, :description, 'SERVICE_ACCOUNT', datetime('now', 'subsec'))
 RETURNING *;
 
 -- name: GetAccountPasswordHash :one
@@ -46,13 +46,18 @@ UPDATE accounts
 SET username = :username
 WHERE id = :id;
 
+-- name: UpdateAccountDescription :exec
+UPDATE accounts
+SET description = :description
+WHERE id = :id;
+
 -- name: DeleteAccount :execrows
 DELETE FROM accounts
 WHERE id = :id;
 
 -- name: CreateServiceCredential :one
-INSERT INTO service_credentials (account_id, display_name, secret_hash, create_time, expire_time)
-VALUES (:account_id, :display_name, :secret_hash, datetime('now', 'subsec'), :expire_time)
+INSERT INTO service_credentials (account_id, display_name, description, secret_hash, create_time, expire_time)
+VALUES (:account_id, :display_name, :description, :secret_hash, datetime('now', 'subsec'), :expire_time)
 RETURNING *;
 
 -- name: GetServiceCredential :one

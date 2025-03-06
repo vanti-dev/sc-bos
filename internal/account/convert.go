@@ -37,22 +37,19 @@ func parsePageToken(token string) (int64, bool) {
 }
 
 func accountToProto(account queries.Account) *gen.Account {
-	var (
-		username string
-		// default to ACCOUNT_TYPE_UNSPECIFIED
-		type_ = gen.Account_Type(gen.Account_Type_value[account.Type])
-	)
-	if account.Username.Valid {
-		username = account.Username.String
-	}
-
-	return &gen.Account{
+	converted := &gen.Account{
 		Id:          formatID(account.ID),
-		Username:    username,
 		DisplayName: account.DisplayName,
-		Type:        type_,
+		Type:        gen.Account_Type(gen.Account_Type_value[account.Type]), // default to ACCOUNT_TYPE_UNSPECIFIED
 		CreateTime:  timestamppb.New(account.CreateTime),
 	}
+	if account.Username.Valid {
+		converted.Username = account.Username.String
+	}
+	if account.Description.Valid {
+		converted.Description = account.Description.String
+	}
+	return converted
 }
 
 func roleToProto(role queries.Role, permissions []string) *gen.Role {
@@ -68,13 +65,19 @@ func roleToProto(role queries.Role, permissions []string) *gen.Role {
 }
 
 func serviceCredentialToProto(cred queries.ServiceCredential, secret string) *gen.ServiceCredential {
-	return &gen.ServiceCredential{
+	converted := &gen.ServiceCredential{
 		Id:          formatID(cred.ID),
 		DisplayName: cred.DisplayName,
 		CreateTime:  timestamppb.New(cred.CreateTime),
-		ExpireTime:  timestamppb.New(cred.ExpireTime.Time),
 		Secret:      secret,
 	}
+	if cred.ExpireTime.Valid {
+		converted.ExpireTime = timestamppb.New(cred.ExpireTime.Time)
+	}
+	if cred.Description.Valid {
+		converted.Description = cred.Description.String
+	}
+	return converted
 }
 
 func roleAssignmentToProto(assignment queries.RoleAssignment) *gen.RoleAssignment {

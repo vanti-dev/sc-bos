@@ -13,6 +13,7 @@ type Account struct {
 	ID          int64
 	Username    sql.NullString
 	DisplayName string
+	Description sql.NullString
 	Type        string
 	CreateTime  time.Time
 }
@@ -45,6 +46,7 @@ type ServiceCredential struct {
 	ID          int64
 	AccountID   int64
 	DisplayName string
+	Description sql.NullString
 	SecretHash  []byte
 	CreateTime  time.Time
 	ExpireTime  sql.NullTime

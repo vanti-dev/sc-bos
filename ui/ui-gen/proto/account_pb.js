@@ -6446,7 +6446,8 @@ id: jspb.Message.getFieldWithDefault(msg, 1, ""),
 createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
 type: jspb.Message.getFieldWithDefault(msg, 3, 0),
 displayName: jspb.Message.getFieldWithDefault(msg, 4, ""),
-username: jspb.Message.getFieldWithDefault(msg, 5, "")
+description: jspb.Message.getFieldWithDefault(msg, 5, ""),
+username: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -6501,6 +6502,10 @@ proto.smartcore.bos.Account.deserializeBinaryFromReader = function(msg, reader) 
       msg.setDisplayName(value);
       break;
     case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDescription(value);
+      break;
+    case 6:
       var value = /** @type {string} */ (reader.readString());
       msg.setUsername(value);
       break;
@@ -6562,10 +6567,17 @@ proto.smartcore.bos.Account.serializeBinaryToWriter = function(message, writer) 
       f
     );
   }
-  f = message.getUsername();
+  f = message.getDescription();
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getUsername();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -6673,10 +6685,10 @@ proto.smartcore.bos.Account.prototype.setDisplayName = function(value) {
 
 
 /**
- * optional string username = 5;
+ * optional string description = 5;
  * @return {string}
  */
-proto.smartcore.bos.Account.prototype.getUsername = function() {
+proto.smartcore.bos.Account.prototype.getDescription = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -6685,8 +6697,26 @@ proto.smartcore.bos.Account.prototype.getUsername = function() {
  * @param {string} value
  * @return {!proto.smartcore.bos.Account} returns this
  */
-proto.smartcore.bos.Account.prototype.setUsername = function(value) {
+proto.smartcore.bos.Account.prototype.setDescription = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string username = 6;
+ * @return {string}
+ */
+proto.smartcore.bos.Account.prototype.getUsername = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Account} returns this
+ */
+proto.smartcore.bos.Account.prototype.setUsername = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 
@@ -7384,7 +7414,8 @@ proto.smartcore.bos.ServiceCredential.toObject = function(includeInstance, msg) 
 id: jspb.Message.getFieldWithDefault(msg, 1, ""),
 accountId: jspb.Message.getFieldWithDefault(msg, 2, ""),
 displayName: jspb.Message.getFieldWithDefault(msg, 3, ""),
-secret: jspb.Message.getFieldWithDefault(msg, 4, ""),
+description: jspb.Message.getFieldWithDefault(msg, 4, ""),
+secret: jspb.Message.getFieldWithDefault(msg, 5, ""),
 createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
 expireTime: (f = msg.getExpireTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
@@ -7437,14 +7468,18 @@ proto.smartcore.bos.ServiceCredential.deserializeBinaryFromReader = function(msg
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
-      msg.setSecret(value);
+      msg.setDescription(value);
       break;
     case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSecret(value);
+      break;
+    case 6:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setCreateTime(value);
       break;
-    case 6:
+    case 7:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setExpireTime(value);
@@ -7499,17 +7534,24 @@ proto.smartcore.bos.ServiceCredential.serializeBinaryToWriter = function(message
       f
     );
   }
-  f = message.getSecret();
+  f = message.getDescription();
   if (f.length > 0) {
     writer.writeString(
       4,
       f
     );
   }
+  f = message.getSecret();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
+      f
+    );
+  }
   f = message.getCreateTime();
   if (f != null) {
     writer.writeMessage(
-      5,
+      6,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
@@ -7517,7 +7559,7 @@ proto.smartcore.bos.ServiceCredential.serializeBinaryToWriter = function(message
   f = message.getExpireTime();
   if (f != null) {
     writer.writeMessage(
-      6,
+      7,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
@@ -7580,10 +7622,10 @@ proto.smartcore.bos.ServiceCredential.prototype.setDisplayName = function(value)
 
 
 /**
- * optional string secret = 4;
+ * optional string description = 4;
  * @return {string}
  */
-proto.smartcore.bos.ServiceCredential.prototype.getSecret = function() {
+proto.smartcore.bos.ServiceCredential.prototype.getDescription = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -7592,18 +7634,36 @@ proto.smartcore.bos.ServiceCredential.prototype.getSecret = function() {
  * @param {string} value
  * @return {!proto.smartcore.bos.ServiceCredential} returns this
  */
-proto.smartcore.bos.ServiceCredential.prototype.setSecret = function(value) {
+proto.smartcore.bos.ServiceCredential.prototype.setDescription = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
 /**
- * optional google.protobuf.Timestamp create_time = 5;
+ * optional string secret = 5;
+ * @return {string}
+ */
+proto.smartcore.bos.ServiceCredential.prototype.getSecret = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ServiceCredential} returns this
+ */
+proto.smartcore.bos.ServiceCredential.prototype.setSecret = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional google.protobuf.Timestamp create_time = 6;
  * @return {?proto.google.protobuf.Timestamp}
  */
 proto.smartcore.bos.ServiceCredential.prototype.getCreateTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 5));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 6));
 };
 
 
@@ -7612,7 +7672,7 @@ proto.smartcore.bos.ServiceCredential.prototype.getCreateTime = function() {
  * @return {!proto.smartcore.bos.ServiceCredential} returns this
 */
 proto.smartcore.bos.ServiceCredential.prototype.setCreateTime = function(value) {
-  return jspb.Message.setWrapperField(this, 5, value);
+  return jspb.Message.setWrapperField(this, 6, value);
 };
 
 
@@ -7630,17 +7690,17 @@ proto.smartcore.bos.ServiceCredential.prototype.clearCreateTime = function() {
  * @return {boolean}
  */
 proto.smartcore.bos.ServiceCredential.prototype.hasCreateTime = function() {
-  return jspb.Message.getField(this, 5) != null;
+  return jspb.Message.getField(this, 6) != null;
 };
 
 
 /**
- * optional google.protobuf.Timestamp expire_time = 6;
+ * optional google.protobuf.Timestamp expire_time = 7;
  * @return {?proto.google.protobuf.Timestamp}
  */
 proto.smartcore.bos.ServiceCredential.prototype.getExpireTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 6));
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 7));
 };
 
 
@@ -7649,7 +7709,7 @@ proto.smartcore.bos.ServiceCredential.prototype.getExpireTime = function() {
  * @return {!proto.smartcore.bos.ServiceCredential} returns this
 */
 proto.smartcore.bos.ServiceCredential.prototype.setExpireTime = function(value) {
-  return jspb.Message.setWrapperField(this, 6, value);
+  return jspb.Message.setWrapperField(this, 7, value);
 };
 
 
@@ -7667,7 +7727,7 @@ proto.smartcore.bos.ServiceCredential.prototype.clearExpireTime = function() {
  * @return {boolean}
  */
 proto.smartcore.bos.ServiceCredential.prototype.hasExpireTime = function() {
-  return jspb.Message.getField(this, 6) != null;
+  return jspb.Message.getField(this, 7) != null;
 };
 
 

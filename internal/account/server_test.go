@@ -133,11 +133,94 @@ func TestServer_CreateAccount(t *testing.T) {
 			},
 			code: codes.InvalidArgument,
 		},
+		"display_name_long": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: strings.Repeat("a", maxDisplayNameLength),
+				},
+			},
+			expect: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: strings.Repeat("a", maxDisplayNameLength),
+			},
+		},
+		"display_name_too_long": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: strings.Repeat("a", maxDisplayNameLength+1),
+				},
+			},
+			code: codes.InvalidArgument,
+		},
 		"missing_username_for_user_account": {
 			req: &gen.CreateAccountRequest{
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "Missing Username",
+				},
+			},
+			code: codes.InvalidArgument,
+		},
+		"username_long": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    strings.Repeat("a", maxUsernameLength),
+				},
+			},
+			expect: &gen.Account{
+				Type:        gen.Account_USER_ACCOUNT,
+				DisplayName: "User 1",
+				Username:    strings.Repeat("a", maxUsernameLength),
+			},
+		},
+		"username_too_long": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User 1",
+					Username:    strings.Repeat("a", maxUsernameLength+1),
+				},
+			},
+			code: codes.InvalidArgument,
+		},
+		"description_short": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: "Service",
+					Description: "a description",
+				},
+			},
+			expect: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+				Description: "a description",
+			},
+		},
+		"description_long": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: "Service",
+					Description: strings.Repeat("a", maxDescriptionLength),
+				},
+			},
+			expect: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+				Description: strings.Repeat("a", maxDescriptionLength),
+			},
+		},
+		"description_too_long": {
+			req: &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: "Service",
+					Description: strings.Repeat("a", maxDescriptionLength+1),
 				},
 			},
 			code: codes.InvalidArgument,
@@ -191,14 +274,10 @@ func TestServer_CreateAccount(t *testing.T) {
 			}
 
 			res, err := server.CreateAccount(context.Background(), tc.req)
-			if tc.code != codes.OK {
-				if status.Code(err) != tc.code {
-					t.Fatalf("expected error code %v, got %v", tc.code, status.Code(err))
-				}
-				return
-			}
 			checkNilIfErrored(t, res, err)
-			t.Helper()
+			if status.Code(err) != tc.code {
+				t.Errorf("expected error with code %v, got %v", tc.code, err)
+			}
 			diff := cmp.Diff(tc.expect, res,
 				protocmp.Transform(),
 				protocmp.IgnoreFields(&gen.Account{}, "id", "create_time"),
@@ -208,18 +287,23 @@ func TestServer_CreateAccount(t *testing.T) {
 			}
 
 			// also retrieve using GetAccount and check it matches
-			id := res.Id
-			expect := proto.Clone(tc.expect).(*gen.Account)
-			expect.Id = id
-			expect.CreateTime = res.CreateTime
-			account, err := server.GetAccount(context.Background(), &gen.GetAccountRequest{Id: id})
-			checkNilIfErrored(t, account, err)
-			if err != nil {
-				t.Fatalf("failed to get account %q: %v", id, err)
-			}
-			diff = cmp.Diff(expect, account, protocmp.Transform())
-			if diff != "" {
-				t.Errorf("unexpected retrieved account value (-want +got):\n%s", diff)
+			if res != nil {
+				id := res.Id
+				var expect *gen.Account
+				if tc.expect != nil {
+					expect = proto.Clone(tc.expect).(*gen.Account)
+					expect.Id = id
+					expect.CreateTime = res.CreateTime
+				}
+				account, err := server.GetAccount(context.Background(), &gen.GetAccountRequest{Id: id})
+				checkNilIfErrored(t, account, err)
+				if err != nil {
+					t.Fatalf("failed to get account %q: %v", id, err)
+				}
+				diff = cmp.Diff(expect, account, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("unexpected retrieved account value (-want +got):\n%s", diff)
+				}
 			}
 		})
 	}
@@ -465,6 +549,55 @@ func TestServer_UpdateAccount(t *testing.T) {
 				DisplayName: "Service",
 			},
 		},
+		"update_description_implicit": {
+			initial: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+			},
+			update: &gen.UpdateAccountRequest{
+				Account: &gen.Account{
+					Description: "Description",
+				},
+			},
+			expected: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+				Description: "Description",
+			},
+		},
+		"update_description_explicit": {
+			initial: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+				Description: "Before",
+			},
+			update: &gen.UpdateAccountRequest{
+				Account: &gen.Account{
+					Description: "After",
+				},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"description"}},
+			},
+			expected: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+				Description: "After",
+			},
+		},
+		"update_description_empty": {
+			initial: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+				Description: "Before",
+			},
+			update: &gen.UpdateAccountRequest{
+				Account:    &gen.Account{},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"description"}},
+			},
+			expected: &gen.Account{
+				Type:        gen.Account_SERVICE_ACCOUNT,
+				DisplayName: "Service",
+			},
+		},
 		"invalid_update_mask": {
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
@@ -487,6 +620,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
 				Username:    "user1",
+				Description: "Description",
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
@@ -1019,6 +1153,115 @@ func TestServer_ServiceCredentials(t *testing.T) {
 		t.Errorf("expected NotFound error querying for credentials of deleted account, got %v", err)
 	}
 
+}
+
+func TestServer_CreateServiceCredential(t *testing.T) {
+	type testCase struct {
+		req    *gen.CreateServiceCredentialRequest
+		expect *gen.ServiceCredential
+		code   codes.Code
+	}
+
+	cases := map[string]testCase{
+		"no_expiry": {
+			req: &gen.CreateServiceCredentialRequest{
+				ServiceCredential: &gen.ServiceCredential{
+					DisplayName: "Credential 1",
+				},
+			},
+			expect: &gen.ServiceCredential{
+				DisplayName: "Credential 1",
+			},
+		},
+		"expiry": {
+			req: &gen.CreateServiceCredentialRequest{
+				ServiceCredential: &gen.ServiceCredential{
+					DisplayName: "Credential 2",
+					ExpireTime:  timestamppb.New(time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)),
+				},
+			},
+			expect: &gen.ServiceCredential{
+				DisplayName: "Credential 2",
+				ExpireTime:  timestamppb.New(time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)),
+			},
+		},
+		"no_display_name": {
+			req: &gen.CreateServiceCredentialRequest{
+				ServiceCredential: &gen.ServiceCredential{},
+			},
+			code: codes.InvalidArgument,
+		},
+		"long_display_name": {
+			req: &gen.CreateServiceCredentialRequest{
+				ServiceCredential: &gen.ServiceCredential{
+					DisplayName: strings.Repeat("a", maxDisplayNameLength),
+				},
+			},
+			expect: &gen.ServiceCredential{
+				DisplayName: strings.Repeat("a", maxDisplayNameLength),
+			},
+		},
+		"display_name_too_long": {
+			req: &gen.CreateServiceCredentialRequest{
+				ServiceCredential: &gen.ServiceCredential{
+					DisplayName: strings.Repeat("a", maxDisplayNameLength+1),
+				},
+			},
+			code: codes.InvalidArgument,
+		},
+		"description": {
+			req: &gen.CreateServiceCredentialRequest{
+				ServiceCredential: &gen.ServiceCredential{
+					DisplayName: "Credential 3",
+					Description: "This is a description",
+				},
+			},
+			expect: &gen.ServiceCredential{
+				DisplayName: "Credential 3",
+				Description: "This is a description",
+			},
+		},
+		"nil": {
+			req:  &gen.CreateServiceCredentialRequest{},
+			code: codes.InvalidArgument,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			logger := testLogger(t)
+			store := NewMemoryStore(logger)
+			server := NewServer(store, logger)
+
+			account, err := server.CreateAccount(context.Background(), &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_SERVICE_ACCOUNT,
+					DisplayName: "Service",
+				},
+			})
+			if err != nil {
+				t.Fatalf("failed to create account: %v", err)
+			}
+
+			req := proto.Clone(tc.req).(*gen.CreateServiceCredentialRequest)
+			if req.ServiceCredential != nil {
+				req.ServiceCredential.AccountId = account.Id
+			}
+			created, err := server.CreateServiceCredential(context.Background(), req)
+			checkNilIfErrored(t, created, err)
+			if status.Code(err) != tc.code {
+				t.Errorf("expected error with code %v, got %v", tc.code, err)
+			}
+
+			diff := cmp.Diff(tc.expect, created,
+				protocmp.Transform(),
+				protocmp.IgnoreFields(&gen.ServiceCredential{}, "id", "create_time", "secret"),
+			)
+			if diff != "" {
+				t.Errorf("unexpected provided service credential value (-want +got):\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestServer_UpdateAccountPassword(t *testing.T) {

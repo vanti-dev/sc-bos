@@ -126,6 +126,11 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 	}
 	if account.DisplayName == "" {
 		return nil, ErrMissingDisplayName
+	} else if !validateDisplayName(account.DisplayName) {
+		return nil, ErrInvalidDisplayName
+	}
+	if !validateDescription(account.Description) {
+		return nil, ErrInvalidDescription
 	}
 	switch account.Type {
 	case gen.Account_USER_ACCOUNT:
@@ -148,15 +153,24 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 
 	var created queries.Account
 	err := s.store.Write(ctx, func(tx *Tx) error {
+		var description sql.NullString
+		if req.Account.Description != "" {
+			description = sql.NullString{Valid: true, String: req.Account.Description}
+		}
+
 		var err error
 		switch req.Account.Type {
 		case gen.Account_USER_ACCOUNT:
 			created, err = tx.CreateUserAccount(ctx, queries.CreateUserAccountParams{
 				Username:    sql.NullString{Valid: true, String: account.Username},
 				DisplayName: account.DisplayName,
+				Description: description,
 			})
 		case gen.Account_SERVICE_ACCOUNT:
-			created, err = tx.CreateServiceAccount(ctx, account.DisplayName)
+			created, err = tx.CreateServiceAccount(ctx, queries.CreateServiceAccountParams{
+				DisplayName: account.DisplayName,
+				Description: description,
+			})
 		default:
 			return ErrInvalidAccountKind
 		}
@@ -186,6 +200,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountRequest) (*gen.Account, error) {
 	const (
 		fieldDisplayName = "display_name"
+		fieldDescription = "description"
 		fieldUsername    = "username"
 		fieldCreateTime  = "create_time"
 	)
@@ -217,6 +232,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		var (
 			updateUsername    bool
 			updateDisplayName bool
+			updateDescription bool
 		)
 		fields, err := fieldsToUpdate(accountToProto(account), req.Account, mask)
 		if err != nil {
@@ -228,6 +244,8 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 				updateDisplayName = true
 			case fieldUsername:
 				updateUsername = true
+			case fieldDescription:
+				updateDescription = true
 			default:
 				return status.Errorf(codes.InvalidArgument, "field %q unsupported for update", field)
 			}
@@ -267,6 +285,25 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 				return err
 			}
 			account.Username = sql.NullString{Valid: true, String: req.Account.Username}
+		}
+
+		if updateDescription {
+			if !validateDescription(req.Account.Description) {
+				return ErrInvalidResource
+			}
+			var description sql.NullString
+			if req.Account.Description != "" {
+				description = sql.NullString{Valid: true, String: req.Account.Description}
+			}
+
+			err = tx.UpdateAccountDescription(ctx, queries.UpdateAccountDescriptionParams{
+				ID:          id,
+				Description: description,
+			})
+			if err != nil {
+				return err
+			}
+			account.Description = description
 		}
 
 		return nil
@@ -366,6 +403,9 @@ func (s *Server) CreateServiceCredential(ctx context.Context, req *gen.CreateSer
 	if !validateDisplayName(req.ServiceCredential.DisplayName) {
 		return nil, ErrInvalidDisplayName
 	}
+	if !validateDescription(req.ServiceCredential.Description) {
+		return nil, ErrInvalidDescription
+	}
 
 	accountID, ok := parseID(req.ServiceCredential.AccountId)
 	if !ok {
@@ -374,12 +414,23 @@ func (s *Server) CreateServiceCredential(ctx context.Context, req *gen.CreateSer
 
 	var generated GeneratedServiceCredential
 	err := s.store.Write(ctx, func(tx *Tx) error {
-		var expiry sql.NullTime
+		var (
+			expireTime  sql.NullTime
+			description sql.NullString
+		)
 		if req.ServiceCredential.ExpireTime != nil {
-			expiry = sql.NullTime{Valid: true, Time: req.ServiceCredential.ExpireTime.AsTime()}
+			expireTime = sql.NullTime{Valid: true, Time: req.ServiceCredential.ExpireTime.AsTime()}
+		}
+		if req.ServiceCredential.Description != "" {
+			description = sql.NullString{Valid: true, String: req.ServiceCredential.Description}
 		}
 		var err error
-		generated, err = tx.GenerateServiceCredential(ctx, accountID, req.ServiceCredential.DisplayName, expiry)
+		generated, err = tx.GenerateServiceCredential(ctx, queries.ServiceCredential{
+			AccountID:   accountID,
+			DisplayName: req.ServiceCredential.DisplayName,
+			Description: description,
+			ExpireTime:  expireTime,
+		})
 		return err
 	})
 	if err != nil {

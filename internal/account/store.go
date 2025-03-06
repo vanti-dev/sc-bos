@@ -126,12 +126,12 @@ func (tx *Tx) CheckAccountPassword(ctx context.Context, accountID int64, passwor
 	return nil
 }
 
-func (tx *Tx) GenerateServiceCredential(ctx context.Context, accountID int64, displayName string, expiry sql.NullTime) (GeneratedServiceCredential, error) {
-	if !validateDisplayName(displayName) {
+func (tx *Tx) GenerateServiceCredential(ctx context.Context, create queries.ServiceCredential) (GeneratedServiceCredential, error) {
+	if !validateDisplayName(create.DisplayName) {
 		return GeneratedServiceCredential{}, status.Error(codes.InvalidArgument, "invalid display_name")
 	}
 
-	count, err := tx.CountServiceCredentialsForAccount(ctx, accountID)
+	count, err := tx.CountServiceCredentialsForAccount(ctx, create.AccountID)
 	if err != nil {
 		return GeneratedServiceCredential{}, err
 	}
@@ -148,9 +148,10 @@ func (tx *Tx) GenerateServiceCredential(ctx context.Context, accountID int64, di
 	hash := sha256.Sum256([]byte(secret))
 
 	cred, err := tx.CreateServiceCredential(ctx, queries.CreateServiceCredentialParams{
-		AccountID:   accountID,
-		DisplayName: displayName,
-		ExpireTime:  expiry,
+		AccountID:   create.AccountID,
+		DisplayName: create.DisplayName,
+		Description: create.Description,
+		ExpireTime:  create.ExpireTime,
 		SecretHash:  hash[:],
 	})
 	if err != nil {

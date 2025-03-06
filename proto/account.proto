@@ -337,12 +337,15 @@ message Account {
   // Immutable.
   Type type = 3;
 
+  // A human-readable name for this account, for display purposes. Required.
   string display_name = 4;
+  // A longer human-readable description of this account. Optional.
+  string description = 5;
 
   // For user accounts, the username to use for authentication.
   // A valid username is between 3 and 100 characters.
   // ASCII alphanumerics, and the following special characters are allowed: .-_@
-  string username = 5;
+  string username = 6;
 
   enum Type {
     ACCOUNT_TYPE_UNSPECIFIED = 0;
@@ -423,14 +426,17 @@ message ServiceCredential {
   // Must be present on creation.
   // A human-readable short name of the service credential, so that users can identify it.
   string display_name = 3;
+  // A long-form human-readable description of the service credential, such as its purpose.
+  // Optional.
+  string description = 4;
   // Output only. Only returned on creation.
-  string secret = 4;
+  string secret = 5;
   // Output only. Set automatically on creation.
-  google.protobuf.Timestamp create_time = 5;
+  google.protobuf.Timestamp create_time = 6;
   // As an input to CreateServiceCredential, this is the time the credential will expire.
   // Optional - if absent, the credential will not expire.
   // Must be in the future at the time of creation.
-  google.protobuf.Timestamp expire_time = 6;
+  google.protobuf.Timestamp expire_time = 7;
 }
 
 // A permission is a named action that can be granted to a role.

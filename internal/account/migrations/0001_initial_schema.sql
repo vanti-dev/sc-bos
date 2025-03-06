@@ -2,6 +2,7 @@ CREATE TABLE accounts (
     id              INTEGER PRIMARY KEY,
     username        TEXT,
     display_name    TEXT NOT NULL,
+    description     TEXT,
     type            TEXT NOT NULL,
     create_time     DATETIME NOT NULL,
 
@@ -14,6 +15,7 @@ CREATE TABLE service_credentials (
     id                  INTEGER PRIMARY KEY,
     account_id          INTEGER NOT NULL,
     display_name        TEXT NOT NULL,
+    description         TEXT,
     secret_hash         BLOB NOT NULL,
     create_time         DATETIME NOT NULL,
     expire_time         DATETIME,

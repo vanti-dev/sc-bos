@@ -757,6 +757,9 @@ export class Account extends jspb.Message {
   getDisplayName(): string;
   setDisplayName(value: string): Account;
 
+  getDescription(): string;
+  setDescription(value: string): Account;
+
   getUsername(): string;
   setUsername(value: string): Account;
 
@@ -774,6 +777,7 @@ export namespace Account {
     createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     type: Account.Type,
     displayName: string,
+    description: string,
     username: string,
   }
 
@@ -890,6 +894,9 @@ export class ServiceCredential extends jspb.Message {
   getDisplayName(): string;
   setDisplayName(value: string): ServiceCredential;
 
+  getDescription(): string;
+  setDescription(value: string): ServiceCredential;
+
   getSecret(): string;
   setSecret(value: string): ServiceCredential;
 
@@ -916,6 +923,7 @@ export namespace ServiceCredential {
     id: string,
     accountId: string,
     displayName: string,
+    description: string,
     secret: string,
     createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     expireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
