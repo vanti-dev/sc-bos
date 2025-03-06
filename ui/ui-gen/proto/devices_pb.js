@@ -438,8 +438,8 @@ proto.smartcore.bos.Device.prototype.toObject = function(opt_includeInstance) {
  */
 proto.smartcore.bos.Device.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    metadata: (f = msg.getMetadata()) && traits_metadata_pb.Metadata.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+metadata: (f = msg.getMetadata()) && traits_metadata_pb.Metadata.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -571,7 +571,7 @@ proto.smartcore.bos.Device.Query.prototype.toObject = function(opt_includeInstan
  */
 proto.smartcore.bos.Device.Query.toObject = function(includeInstance, msg) {
   var f, obj = {
-    conditionsList: jspb.Message.toObjectList(msg.getConditionsList(),
+conditionsList: jspb.Message.toObjectList(msg.getConditionsList(),
     proto.smartcore.bos.Device.Query.Condition.toObject, includeInstance)
   };
 
@@ -714,11 +714,11 @@ proto.smartcore.bos.Device.Query.Condition.prototype.toObject = function(opt_inc
  */
 proto.smartcore.bos.Device.Query.Condition.toObject = function(includeInstance, msg) {
   var f, obj = {
-    field: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    stringEqual: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    stringEqualFold: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    stringContains: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    stringContainsFold: jspb.Message.getFieldWithDefault(msg, 5, "")
+field: jspb.Message.getFieldWithDefault(msg, 1, ""),
+stringEqual: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f,
+stringEqualFold: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f,
+stringContains: (f = jspb.Message.getField(msg, 4)) == null ? undefined : f,
+stringContainsFold: (f = jspb.Message.getField(msg, 5)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1136,8 +1136,8 @@ proto.smartcore.bos.DevicesMetadata.prototype.toObject = function(opt_includeIns
  */
 proto.smartcore.bos.DevicesMetadata.toObject = function(includeInstance, msg) {
   var f, obj = {
-    totalCount: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    fieldCountsList: jspb.Message.toObjectList(msg.getFieldCountsList(),
+totalCount: jspb.Message.getFieldWithDefault(msg, 1, 0),
+fieldCountsList: jspb.Message.toObjectList(msg.getFieldCountsList(),
     proto.smartcore.bos.DevicesMetadata.StringFieldCount.toObject, includeInstance)
   };
 
@@ -1263,8 +1263,8 @@ proto.smartcore.bos.DevicesMetadata.StringFieldCount.prototype.toObject = functi
  */
 proto.smartcore.bos.DevicesMetadata.StringFieldCount.toObject = function(includeInstance, msg) {
   var f, obj = {
-    field: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    countsMap: (f = msg.getCountsMap()) ? f.toObject(includeInstance, undefined) : []
+field: jspb.Message.getFieldWithDefault(msg, 1, ""),
+countsMap: (f = msg.getCountsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -1434,7 +1434,7 @@ proto.smartcore.bos.DevicesMetadata.Include.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.DevicesMetadata.Include.toObject = function(includeInstance, msg) {
   var f, obj = {
-    fieldsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
+fieldsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1639,10 +1639,10 @@ proto.smartcore.bos.ListDevicesRequest.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.ListDevicesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f)
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
+pageToken: jspb.Message.getFieldWithDefault(msg, 4, ""),
+query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1908,10 +1908,10 @@ proto.smartcore.bos.ListDevicesResponse.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.ListDevicesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    devicesList: jspb.Message.toObjectList(msg.getDevicesList(),
+devicesList: jspb.Message.toObjectList(msg.getDevicesList(),
     proto.smartcore.bos.Device.toObject, includeInstance),
-    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -2121,9 +2121,9 @@ proto.smartcore.bos.PullDevicesRequest.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.PullDevicesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
-    query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f)
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
+query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2360,7 +2360,7 @@ proto.smartcore.bos.PullDevicesResponse.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.PullDevicesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullDevicesResponse.Change.toObject, includeInstance)
   };
 
@@ -2475,11 +2475,11 @@ proto.smartcore.bos.PullDevicesResponse.Change.prototype.toObject = function(opt
  */
 proto.smartcore.bos.PullDevicesResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    type: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    newValue: (f = msg.getNewValue()) && proto.smartcore.bos.Device.toObject(includeInstance, f),
-    oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.Device.toObject(includeInstance, f),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+type: jspb.Message.getFieldWithDefault(msg, 2, 0),
+newValue: (f = msg.getNewValue()) && proto.smartcore.bos.Device.toObject(includeInstance, f),
+oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.Device.toObject(includeInstance, f),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2826,8 +2826,8 @@ proto.smartcore.bos.GetDevicesMetadataRequest.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.GetDevicesMetadataRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f)
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3028,9 +3028,9 @@ proto.smartcore.bos.PullDevicesMetadataRequest.prototype.toObject = function(opt
  */
 proto.smartcore.bos.PullDevicesMetadataRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
   };
 
   if (includeInstance) {
@@ -3267,7 +3267,7 @@ proto.smartcore.bos.PullDevicesMetadataResponse.prototype.toObject = function(op
  */
 proto.smartcore.bos.PullDevicesMetadataResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullDevicesMetadataResponse.Change.toObject, includeInstance)
   };
 
@@ -3382,9 +3382,9 @@ proto.smartcore.bos.PullDevicesMetadataResponse.Change.prototype.toObject = func
  */
 proto.smartcore.bos.PullDevicesMetadataResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    devicesMetadata: (f = msg.getDevicesMetadata()) && proto.smartcore.bos.DevicesMetadata.toObject(includeInstance, f),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+devicesMetadata: (f = msg.getDevicesMetadata()) && proto.smartcore.bos.DevicesMetadata.toObject(includeInstance, f),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3652,9 +3652,9 @@ proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.toObject = function(o
  */
 proto.smartcore.bos.GetDownloadDevicesUrlRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f),
-    mediaType: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    history: (f = msg.getHistory()) && types_time_period_pb.Period.toObject(includeInstance, f)
+query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f),
+mediaType: jspb.Message.getFieldWithDefault(msg, 2, ""),
+history: (f = msg.getHistory()) && types_time_period_pb.Period.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3884,10 +3884,10 @@ proto.smartcore.bos.DownloadDevicesUrl.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.DownloadDevicesUrl.toObject = function(includeInstance, msg) {
   var f, obj = {
-    url: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    filename: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    mediaType: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    expireAfterTime: (f = msg.getExpireAfterTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+url: jspb.Message.getFieldWithDefault(msg, 1, ""),
+filename: jspb.Message.getFieldWithDefault(msg, 2, ""),
+mediaType: jspb.Message.getFieldWithDefault(msg, 3, ""),
+expireAfterTime: (f = msg.getExpireAfterTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {

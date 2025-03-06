@@ -213,9 +213,9 @@ proto.smartcore.bos.ButtonState.prototype.toObject = function(opt_includeInstanc
  */
 proto.smartcore.bos.ButtonState.toObject = function(includeInstance, msg) {
   var f, obj = {
-    state: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    stateChangeTime: (f = msg.getStateChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    mostRecentGesture: (f = msg.getMostRecentGesture()) && proto.smartcore.bos.ButtonState.Gesture.toObject(includeInstance, f)
+state: jspb.Message.getFieldWithDefault(msg, 1, 0),
+stateChangeTime: (f = msg.getStateChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+mostRecentGesture: (f = msg.getMostRecentGesture()) && proto.smartcore.bos.ButtonState.Gesture.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -362,11 +362,11 @@ proto.smartcore.bos.ButtonState.Gesture.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.ButtonState.Gesture.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    kind: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    count: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    startTime: (f = msg.getStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+kind: jspb.Message.getFieldWithDefault(msg, 2, 0),
+count: jspb.Message.getFieldWithDefault(msg, 3, 0),
+startTime: (f = msg.getStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -755,8 +755,8 @@ proto.smartcore.bos.GetButtonStateRequest.prototype.toObject = function(opt_incl
  */
 proto.smartcore.bos.GetButtonStateRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -936,9 +936,9 @@ proto.smartcore.bos.PullButtonStateRequest.prototype.toObject = function(opt_inc
  */
 proto.smartcore.bos.PullButtonStateRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -1154,7 +1154,7 @@ proto.smartcore.bos.PullButtonStateResponse.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.PullButtonStateResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullButtonStateResponse.Change.toObject, includeInstance)
   };
 
@@ -1269,9 +1269,9 @@ proto.smartcore.bos.PullButtonStateResponse.Change.prototype.toObject = function
  */
 proto.smartcore.bos.PullButtonStateResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    buttonState: (f = msg.getButtonState()) && proto.smartcore.bos.ButtonState.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+buttonState: (f = msg.getButtonState()) && proto.smartcore.bos.ButtonState.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1539,9 +1539,9 @@ proto.smartcore.bos.UpdateButtonStateRequest.prototype.toObject = function(opt_i
  */
 proto.smartcore.bos.UpdateButtonStateRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    updateMask: (f = msg.getUpdateMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    buttonState: (f = msg.getButtonState()) && proto.smartcore.bos.ButtonState.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+updateMask: (f = msg.getUpdateMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+buttonState: (f = msg.getButtonState()) && proto.smartcore.bos.ButtonState.toObject(includeInstance, f)
   };
 
   if (includeInstance) {

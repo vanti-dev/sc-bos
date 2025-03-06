@@ -99,12 +99,12 @@ proto.smartcore.bos.driver.axiomxa.SaveQRCredentialRequest.prototype.toObject = 
  */
 proto.smartcore.bos.driver.axiomxa.SaveQRCredentialRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    cardNumber: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    firstName: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    lastName: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    activeTime: (f = msg.getActiveTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    expireTime: (f = msg.getExpireTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+cardNumber: jspb.Message.getFieldWithDefault(msg, 2, 0),
+firstName: jspb.Message.getFieldWithDefault(msg, 3, ""),
+lastName: jspb.Message.getFieldWithDefault(msg, 4, ""),
+activeTime: (f = msg.getActiveTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+expireTime: (f = msg.getExpireTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {

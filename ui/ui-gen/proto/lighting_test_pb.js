@@ -330,9 +330,9 @@ proto.smartcore.bos.LightHealth.prototype.toObject = function(opt_includeInstanc
  */
 proto.smartcore.bos.LightHealth.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    updateTime: (f = msg.getUpdateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    faultsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+updateTime: (f = msg.getUpdateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+faultsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -589,12 +589,12 @@ proto.smartcore.bos.LightingEvent.prototype.toObject = function(opt_includeInsta
  */
 proto.smartcore.bos.LightingEvent.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    timestamp: (f = msg.getTimestamp()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    durationTestPass: (f = msg.getDurationTestPass()) && proto.smartcore.bos.LightingEvent.DurationTestPass.toObject(includeInstance, f),
-    functionTestPass: (f = msg.getFunctionTestPass()) && proto.smartcore.bos.LightingEvent.FunctionTestPass.toObject(includeInstance, f),
-    statusReport: (f = msg.getStatusReport()) && proto.smartcore.bos.LightingEvent.StatusReport.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+timestamp: (f = msg.getTimestamp()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+durationTestPass: (f = msg.getDurationTestPass()) && proto.smartcore.bos.LightingEvent.DurationTestPass.toObject(includeInstance, f),
+functionTestPass: (f = msg.getFunctionTestPass()) && proto.smartcore.bos.LightingEvent.FunctionTestPass.toObject(includeInstance, f),
+statusReport: (f = msg.getStatusReport()) && proto.smartcore.bos.LightingEvent.StatusReport.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -769,7 +769,7 @@ proto.smartcore.bos.LightingEvent.DurationTestPass.prototype.toObject = function
  */
 proto.smartcore.bos.LightingEvent.DurationTestPass.toObject = function(includeInstance, msg) {
   var f, obj = {
-    achievedDuration: (f = msg.getAchievedDuration()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f)
+achievedDuration: (f = msg.getAchievedDuration()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1028,7 +1028,7 @@ proto.smartcore.bos.LightingEvent.StatusReport.prototype.toObject = function(opt
  */
 proto.smartcore.bos.LightingEvent.StatusReport.toObject = function(includeInstance, msg) {
   var f, obj = {
-    faultsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
+faultsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1363,7 +1363,7 @@ proto.smartcore.bos.GetLightHealthRequest.prototype.toObject = function(opt_incl
  */
 proto.smartcore.bos.GetLightHealthRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -1493,8 +1493,8 @@ proto.smartcore.bos.ListLightHealthRequest.prototype.toObject = function(opt_inc
  */
 proto.smartcore.bos.ListLightHealthRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    pageSize: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
+pageSize: jspb.Message.getFieldWithDefault(msg, 1, 0),
+pageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -1660,9 +1660,9 @@ proto.smartcore.bos.ListLightHealthResponse.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.ListLightHealthResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    emergencyLightsList: jspb.Message.toObjectList(msg.getEmergencyLightsList(),
+emergencyLightsList: jspb.Message.toObjectList(msg.getEmergencyLightsList(),
     proto.smartcore.bos.LightHealth.toObject, includeInstance),
-    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -1843,8 +1843,8 @@ proto.smartcore.bos.ListLightEventsRequest.prototype.toObject = function(opt_inc
  */
 proto.smartcore.bos.ListLightEventsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    pageSize: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
+pageSize: jspb.Message.getFieldWithDefault(msg, 1, 0),
+pageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -2010,10 +2010,10 @@ proto.smartcore.bos.ListLightEventsResponse.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.ListLightEventsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    eventsList: jspb.Message.toObjectList(msg.getEventsList(),
+eventsList: jspb.Message.toObjectList(msg.getEventsList(),
     proto.smartcore.bos.LightingEvent.toObject, includeInstance),
-    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    futurePageToken: jspb.Message.getFieldWithDefault(msg, 3, "")
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+futurePageToken: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -2223,7 +2223,7 @@ proto.smartcore.bos.GetReportCSVRequest.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.GetReportCSVRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    includeHeader: jspb.Message.getBooleanFieldWithDefault(msg, 1, false)
+includeHeader: jspb.Message.getBooleanFieldWithDefault(msg, 1, false)
   };
 
   if (includeInstance) {
@@ -2353,7 +2353,7 @@ proto.smartcore.bos.ReportCSV.prototype.toObject = function(opt_includeInstance)
  */
 proto.smartcore.bos.ReportCSV.toObject = function(includeInstance, msg) {
   var f, obj = {
-    csv: msg.getCsv_asB64()
+csv: msg.getCsv_asB64()
   };
 
   if (includeInstance) {

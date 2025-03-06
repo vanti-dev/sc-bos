@@ -79,16 +79,16 @@ proto.smartcore.bos.Actor.prototype.toObject = function(opt_includeInstance) {
  */
 proto.smartcore.bos.Actor.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    title: jspb.Message.getFieldWithDefault(msg, 10, ""),
-    displayName: jspb.Message.getFieldWithDefault(msg, 11, ""),
-    picture: (f = msg.getPicture()) && types_image_pb.Image.toObject(includeInstance, f),
-    url: jspb.Message.getFieldWithDefault(msg, 13, ""),
-    email: jspb.Message.getFieldWithDefault(msg, 14, ""),
-    lastGrantTime: (f = msg.getLastGrantTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    lastGrantZone: jspb.Message.getFieldWithDefault(msg, 16, ""),
-    idsMap: (f = msg.getIdsMap()) ? f.toObject(includeInstance, undefined) : [],
-    moreMap: (f = msg.getMoreMap()) ? f.toObject(includeInstance, undefined) : []
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+title: jspb.Message.getFieldWithDefault(msg, 10, ""),
+displayName: jspb.Message.getFieldWithDefault(msg, 11, ""),
+picture: (f = msg.getPicture()) && types_image_pb.Image.toObject(includeInstance, f),
+url: jspb.Message.getFieldWithDefault(msg, 13, ""),
+email: jspb.Message.getFieldWithDefault(msg, 14, ""),
+lastGrantTime: (f = msg.getLastGrantTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+lastGrantZone: jspb.Message.getFieldWithDefault(msg, 16, ""),
+idsMap: (f = msg.getIdsMap()) ? f.toObject(includeInstance, undefined) : [],
+moreMap: (f = msg.getMoreMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {

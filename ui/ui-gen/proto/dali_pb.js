@@ -521,7 +521,7 @@ proto.smartcore.bos.driver.dali.GetGroupMembershipRequest.prototype.toObject = f
  */
 proto.smartcore.bos.driver.dali.GetGroupMembershipRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -658,7 +658,7 @@ proto.smartcore.bos.driver.dali.GetGroupMembershipResponse.prototype.toObject = 
  */
 proto.smartcore.bos.driver.dali.GetGroupMembershipResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    groupsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
+groupsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -809,8 +809,8 @@ proto.smartcore.bos.driver.dali.AddToGroupRequest.prototype.toObject = function(
  */
 proto.smartcore.bos.driver.dali.AddToGroupRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    group: jspb.Message.getFieldWithDefault(msg, 2, 0)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+group: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -1070,8 +1070,8 @@ proto.smartcore.bos.driver.dali.RemoveFromGroupRequest.prototype.toObject = func
  */
 proto.smartcore.bos.driver.dali.RemoveFromGroupRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    group: jspb.Message.getFieldWithDefault(msg, 2, 0)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+group: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -1338,14 +1338,14 @@ proto.smartcore.bos.driver.dali.EmergencyStatus.prototype.toObject = function(op
  */
 proto.smartcore.bos.driver.dali.EmergencyStatus.toObject = function(includeInstance, msg) {
   var f, obj = {
-    activeModesList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
-    pendingTestsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
-    overdueTestsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
-    resultsAvailableList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
-    inhibitActive: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
-    identificationActive: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
-    batteryLevelPercent: jspb.Message.getFloatingPointFieldWithDefault(msg, 7, 0.0),
-    failuresList: (f = jspb.Message.getRepeatedField(msg, 8)) == null ? undefined : f
+activeModesList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
+pendingTestsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
+overdueTestsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+resultsAvailableList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
+inhibitActive: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
+identificationActive: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
+batteryLevelPercent: jspb.Message.getFloatingPointFieldWithDefault(msg, 7, 0.0),
+failuresList: (f = jspb.Message.getRepeatedField(msg, 8)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1821,7 +1821,7 @@ proto.smartcore.bos.driver.dali.GetEmergencyStatusRequest.prototype.toObject = f
  */
 proto.smartcore.bos.driver.dali.GetEmergencyStatusRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -1958,7 +1958,7 @@ proto.smartcore.bos.driver.dali.ControlGearStatus.prototype.toObject = function(
  */
 proto.smartcore.bos.driver.dali.ControlGearStatus.toObject = function(includeInstance, msg) {
   var f, obj = {
-    failuresList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
+failuresList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -2118,7 +2118,7 @@ proto.smartcore.bos.driver.dali.GetControlGearStatusRequest.prototype.toObject =
  */
 proto.smartcore.bos.driver.dali.GetControlGearStatusRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -2248,7 +2248,7 @@ proto.smartcore.bos.driver.dali.IdentifyRequest.prototype.toObject = function(op
  */
 proto.smartcore.bos.driver.dali.IdentifyRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -2479,8 +2479,8 @@ proto.smartcore.bos.driver.dali.StartTestRequest.prototype.toObject = function(o
  */
 proto.smartcore.bos.driver.dali.StartTestRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    test: jspb.Message.getFieldWithDefault(msg, 2, 0)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+test: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -2740,7 +2740,7 @@ proto.smartcore.bos.driver.dali.StopTestRequest.prototype.toObject = function(op
  */
 proto.smartcore.bos.driver.dali.StopTestRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -2971,9 +2971,9 @@ proto.smartcore.bos.driver.dali.UpdateTestIntervalRequest.prototype.toObject = f
  */
 proto.smartcore.bos.driver.dali.UpdateTestIntervalRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    test: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    interval: (f = msg.getInterval()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+test: jspb.Message.getFieldWithDefault(msg, 2, 0),
+interval: (f = msg.getInterval()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3182,7 +3182,7 @@ proto.smartcore.bos.driver.dali.UpdateTestIntervalResponse.prototype.toObject = 
  */
 proto.smartcore.bos.driver.dali.UpdateTestIntervalResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    interval: (f = msg.getInterval()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f)
+interval: (f = msg.getInterval()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3333,10 +3333,10 @@ proto.smartcore.bos.driver.dali.TestResult.prototype.toObject = function(opt_inc
  */
 proto.smartcore.bos.driver.dali.TestResult.toObject = function(includeInstance, msg) {
   var f, obj = {
-    test: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    pass: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
-    duration: (f = msg.getDuration()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f),
-    etag: jspb.Message.getFieldWithDefault(msg, 6, "")
+test: jspb.Message.getFieldWithDefault(msg, 1, 0),
+pass: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+duration: (f = msg.getDuration()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f),
+etag: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -3574,8 +3574,8 @@ proto.smartcore.bos.driver.dali.GetTestResultRequest.prototype.toObject = functi
  */
 proto.smartcore.bos.driver.dali.GetTestResultRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    test: jspb.Message.getFieldWithDefault(msg, 2, 0)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+test: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -3734,9 +3734,9 @@ proto.smartcore.bos.driver.dali.DeleteTestResultRequest.prototype.toObject = fun
  */
 proto.smartcore.bos.driver.dali.DeleteTestResultRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    test: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    etag: jspb.Message.getFieldWithDefault(msg, 3, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+test: jspb.Message.getFieldWithDefault(msg, 2, 0),
+etag: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
