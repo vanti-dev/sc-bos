@@ -169,12 +169,19 @@ func TestServer_CreateAccount(t *testing.T) {
 			},
 			code: codes.AlreadyExists,
 		},
+		"nil": {
+			req: &gen.CreateAccountRequest{
+				Account: nil,
+			},
+			code: codes.InvalidArgument,
+		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			store := NewMemoryStore(zap.NewNop())
-			server := NewServer(store, zap.NewNop())
+			logger := testLogger(t)
+			store := NewMemoryStore(logger)
+			server := NewServer(store, logger)
 
 			for _, other := range tc.others {
 				_, err := server.CreateAccount(context.Background(), &gen.CreateAccountRequest{Account: other})
@@ -221,8 +228,9 @@ func TestServer_CreateAccount(t *testing.T) {
 // tests ordering and pagination of ListAccounts
 func TestServer_ListAccounts(t *testing.T) {
 	ctx := context.Background()
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
 
 	createAccount := func(ty gen.Account_Type, username, displayName string) string {
 		t.Helper()
@@ -558,12 +566,37 @@ func TestServer_UpdateAccount(t *testing.T) {
 			},
 			code: codes.AlreadyExists,
 		},
+		"not_exist": {
+			update: &gen.UpdateAccountRequest{
+				Account: &gen.Account{
+					Id:       "123",
+					Username: "bar",
+				},
+			},
+			code: codes.NotFound,
+		},
+		"invalid_id": {
+			update: &gen.UpdateAccountRequest{
+				Account: &gen.Account{
+					Id:          "invalid",
+					DisplayName: "Barbar",
+				},
+			},
+			code: codes.NotFound,
+		},
+		"nil": {
+			update: &gen.UpdateAccountRequest{
+				Account: nil,
+			},
+			code: codes.InvalidArgument,
+		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			store := NewMemoryStore(zap.NewNop())
-			server := NewServer(store, zap.NewNop())
+			logger := testLogger(t)
+			store := NewMemoryStore(logger)
+			server := NewServer(store, logger)
 
 			for _, other := range tc.others {
 				_, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{Account: other})
@@ -572,18 +605,27 @@ func TestServer_UpdateAccount(t *testing.T) {
 				}
 			}
 
-			account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{Account: tc.initial})
-			checkNilIfErrored(t, account, err)
-			if err != nil {
-				t.Fatalf("failed to create account: %v", err)
-			}
-			// inject ID, which is now known, into update and expected
-			id := account.Id
+			var (
+				account  *gen.Account
+				expected *gen.Account
+			)
 			update := proto.Clone(tc.update).(*gen.UpdateAccountRequest)
-			update.Account.Id = id
-			expected := proto.Clone(tc.expected).(*gen.Account)
-			expected.Id = id
-			expected.CreateTime = account.CreateTime
+			if tc.initial != nil {
+				var err error
+				account, err = server.CreateAccount(ctx, &gen.CreateAccountRequest{Account: tc.initial})
+				checkNilIfErrored(t, account, err)
+				if err != nil {
+					t.Fatalf("failed to create account: %v", err)
+				}
+				// inject ID, which is now known, into update and expected
+				update.Account.Id = account.Id
+			}
+			id := update.GetAccount().GetId()
+			if tc.expected != nil {
+				expected = proto.Clone(tc.expected).(*gen.Account)
+				expected.Id = id
+				expected.CreateTime = account.CreateTime
+			}
 
 			updated, err := server.UpdateAccount(ctx, update)
 			checkNilIfErrored(t, updated, err)
@@ -597,15 +639,17 @@ func TestServer_UpdateAccount(t *testing.T) {
 				}
 			}
 
-			// fetch again to check that the update was persisted
-			account, err = server.GetAccount(ctx, &gen.GetAccountRequest{Id: id})
-			checkNilIfErrored(t, account, err)
-			if err != nil {
-				t.Fatalf("failed to get account: %v", err)
-			}
-			diff := cmp.Diff(expected, account, protocmp.Transform())
-			if diff != "" {
-				t.Errorf("unexpected retrieved account value (-want +got):\n%s", diff)
+			if tc.expected != nil {
+				// fetch again to check that the update was persisted
+				account, err = server.GetAccount(ctx, &gen.GetAccountRequest{Id: id})
+				checkNilIfErrored(t, account, err)
+				if err != nil {
+					t.Fatalf("failed to get account: %v", err)
+				}
+				diff := cmp.Diff(expected, account, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("unexpected retrieved account value (-want +got):\n%s", diff)
+				}
 			}
 		})
 	}
@@ -640,8 +684,9 @@ func TestServer_CreateAccount_Usernames(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
 	for _, username := range validUsernames {
 		req := proto.Clone(template).(*gen.CreateAccountRequest)
 		req.Account.Username = username
@@ -662,8 +707,9 @@ func TestServer_CreateAccount_Usernames(t *testing.T) {
 
 func TestServer_UpdateAccount_Usernames(t *testing.T) {
 	ctx := context.Background()
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
 
 	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 		Account: &gen.Account{
@@ -702,8 +748,9 @@ func TestServer_UpdateAccount_Usernames(t *testing.T) {
 
 func TestServer_DeleteAccount(t *testing.T) {
 	ctx := context.Background()
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
 
 	createAccount := func(ty gen.Account_Type, username, displayName, password string) *gen.Account {
 		t.Helper()
@@ -816,8 +863,9 @@ func TestServer_DeleteAccount(t *testing.T) {
 // tests that uniqueness of usernames is enforced
 func TestServer_Account_Username(t *testing.T) {
 	ctx := context.Background()
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
 
 	_, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 		Account: &gen.Account{
@@ -866,8 +914,9 @@ func TestServer_Account_Username(t *testing.T) {
 
 func TestServer_ServiceCredentials(t *testing.T) {
 	ctx := context.Background()
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
 
 	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
 		Account: &gen.Account{
@@ -1162,8 +1211,9 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			store := NewMemoryStore(zap.NewNop())
-			server := NewServer(store, zap.NewNop())
+			logger := testLogger(t)
+			store := NewMemoryStore(logger)
+			server := NewServer(store, logger)
 
 			var account *gen.Account
 			var err error
@@ -1216,8 +1266,9 @@ func TestServer_Role(t *testing.T) {
 	// tests a sequence of role operations, checking that role lifecycles are handled correctly
 
 	ctx := context.Background()
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
 
 	const numRoles = 200
 	const numPermissions = 10
@@ -1430,12 +1481,17 @@ func TestServer_CreateRole(t *testing.T) {
 				PermissionIds: []string{"foo", "bar", "foo"},
 			},
 		},
+		"nil": {
+			role: nil,
+			err:  ErrResourceMissing,
+		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			store := NewMemoryStore(zap.NewNop())
-			server := NewServer(store, zap.NewNop())
+			logger := testLogger(t)
+			store := NewMemoryStore(logger)
+			server := NewServer(store, logger)
 
 			created, err := server.CreateRole(ctx, &gen.CreateRoleRequest{Role: tc.role})
 			if !errors.Is(err, tc.err) {
@@ -1652,12 +1708,19 @@ func TestServer_UpdateRole(t *testing.T) {
 			},
 			code: codes.InvalidArgument,
 		},
+		"nil": {
+			initial:  &gen.Role{DisplayName: "Role 1"},
+			update:   &gen.UpdateRoleRequest{Role: nil},
+			expected: &gen.Role{DisplayName: "Role 1"},
+			code:     codes.InvalidArgument,
+		},
 	}
 
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			store := NewMemoryStore(zap.NewNop())
-			server := NewServer(store, zap.NewNop())
+			logger := testLogger(t)
+			store := NewMemoryStore(logger)
+			server := NewServer(store, logger)
 
 			role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
 				Role: tc.initial,
@@ -1670,7 +1733,9 @@ func TestServer_UpdateRole(t *testing.T) {
 			// inject ID, which is now known, into update and expected
 			id := role.Id
 			update := proto.Clone(tc.update).(*gen.UpdateRoleRequest)
-			update.Role.Id = id
+			if update.Role != nil {
+				update.Role.Id = id
+			}
 			expected := proto.Clone(tc.expected).(*gen.Role)
 			expected.Id = id
 
@@ -1737,8 +1802,9 @@ func comparePages[T messageWithID](t *testing.T, pageSize int32, expect []T, got
 
 func TestServer_RoleAssignments(t *testing.T) {
 	ctx := context.Background()
-	store := NewMemoryStore(zap.NewNop())
-	server := NewServer(store, zap.NewNop())
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
 
 	createAccount := func(displayName string) *gen.Account {
 		t.Helper()
@@ -1904,6 +1970,206 @@ func TestServer_RoleAssignments(t *testing.T) {
 	}
 }
 
+func TestServer_CreateRoleAssignment(t *testing.T) {
+	ctx := context.Background()
+
+	type testCase struct {
+		existing []*gen.RoleAssignment
+		req      *gen.CreateRoleAssignmentRequest
+		code     codes.Code
+	}
+
+	// will be replaced with IDs created during the test run
+	const (
+		accountPlaceholder = "ACCOUNT PLACEHOLDER"
+		rolePlaceholder    = "ROLE PLACEHOLDER"
+	)
+
+	cases := map[string]testCase{
+		"role_does_not_exist": {
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    "999",
+				},
+			},
+			code: codes.NotFound,
+		},
+		"account_does_not_exist": {
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: "999",
+					RoleId:    rolePlaceholder,
+				},
+			},
+			code: codes.NotFound,
+		},
+		"role_id_invalid": {
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    "invalid",
+				},
+			},
+			code: codes.NotFound,
+		},
+		"account_id_invalid": {
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: "invalid",
+					RoleId:    rolePlaceholder,
+				},
+			},
+			code: codes.NotFound,
+		},
+		"scope_provided": {
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: gen.RoleAssignment_NAMED_RESOURCE,
+						Resource:     "named-resource",
+					},
+				},
+			},
+			code: codes.OK,
+		},
+		"scope_not_provided": {
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+				},
+			},
+			code: codes.OK,
+		},
+		"scope_invalid_resource_type": {
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: 500,
+						Resource:     "invalid resource type",
+					},
+				},
+			},
+			code: codes.InvalidArgument,
+		},
+		"scope_empty_resource_string": {
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: gen.RoleAssignment_NAMED_RESOURCE,
+						Resource:     "",
+					},
+				},
+			},
+			code: codes.InvalidArgument,
+		},
+		"conflict": {
+			existing: []*gen.RoleAssignment{
+				{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+				},
+			},
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: gen.RoleAssignment_NAMED_RESOURCE,
+						Resource:     "resource name",
+					},
+				},
+			},
+			code: codes.AlreadyExists,
+		},
+		"nil": {
+			req:  &gen.CreateRoleAssignmentRequest{},
+			code: codes.InvalidArgument,
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			logger := testLogger(t)
+			store := NewMemoryStore(logger)
+			server := NewServer(store, logger)
+
+			// Create a valid account and role for positive test cases
+			account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
+				Account: &gen.Account{
+					Type:        gen.Account_USER_ACCOUNT,
+					DisplayName: "User",
+					Username:    "user",
+				},
+			})
+			if err != nil {
+				t.Fatalf("failed to create account: %v", err)
+			}
+			role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
+				Role: &gen.Role{
+					DisplayName:   "Role",
+					PermissionIds: []string{"foo"},
+				},
+			})
+			if err != nil {
+				t.Fatalf("failed to create role: %v", err)
+			}
+
+			substitute := func(ra *gen.RoleAssignment) *gen.RoleAssignment {
+				if ra == nil {
+					return nil
+				}
+				// Inject valid IDs into the request if needed
+				cloned := proto.Clone(ra).(*gen.RoleAssignment)
+				if cloned.RoleId == rolePlaceholder {
+					cloned.RoleId = role.Id
+				}
+				if cloned.AccountId == accountPlaceholder {
+					cloned.AccountId = account.Id
+				}
+				return cloned
+			}
+
+			// Create any existing role assignments
+			for _, existing := range tc.existing {
+				existing = substitute(existing)
+
+				_, err = server.CreateRoleAssignment(ctx, &gen.CreateRoleAssignmentRequest{
+					RoleAssignment: existing,
+				})
+				if err != nil {
+					t.Fatalf("failed to create existing role assignment: %v", err)
+				}
+			}
+
+			req := proto.Clone(tc.req).(*gen.CreateRoleAssignmentRequest)
+			req.RoleAssignment = substitute(req.RoleAssignment)
+
+			created, err := server.CreateRoleAssignment(ctx, req)
+			if status.Code(err) != tc.code {
+				t.Errorf("expected error code %v, got %v", tc.code, err)
+			}
+
+			if created != nil {
+				expected := proto.Clone(req.RoleAssignment).(*gen.RoleAssignment)
+				expected.Id = created.Id
+
+				diff := cmp.Diff(expected, created, protocmp.Transform())
+				if diff != "" {
+					t.Errorf("unexpected created role assignment value (-want +got):\n%s", diff)
+				}
+			}
+		})
+	}
+}
+
 type messageWithID interface {
 	proto.Message
 	GetId() string
@@ -1934,4 +2200,13 @@ func orderedPermissions(n int) []string {
 		perms[i] = fmt.Sprintf("perm-%02d", i)
 	}
 	return perms
+}
+
+func testLogger(t *testing.T) *zap.Logger {
+	t.Helper()
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return logger
 }

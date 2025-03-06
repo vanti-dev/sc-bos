@@ -3,6 +3,8 @@ package account
 import (
 	"regexp"
 	"strings"
+
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 const (
@@ -40,4 +42,16 @@ var usernameRegexp = regexp.MustCompile(`^[a-zA-Z0-9._@\-]+$`)
 
 func validateDescription(description string) bool {
 	return len(description) >= minDescriptionLength && len(description) <= maxDescriptionLength
+}
+
+func validateResourceType(rt gen.RoleAssignment_ResourceType) bool {
+	if rt == gen.RoleAssignment_RESOURCE_TYPE_UNSPECIFIED {
+		return false
+	}
+	_, ok := gen.RoleAssignment_ResourceType_name[int32(rt)]
+	return ok
+}
+
+func validateResource(resource string) bool {
+	return len(resource) > 0
 }

@@ -31,16 +31,20 @@ var (
 	ErrUnexpectedServiceCreds    = status.Error(codes.FailedPrecondition, "user account cannot have service credentials")
 	ErrServiceCredentialLimit    = status.Error(codes.ResourceExhausted, "too many service credentials")
 	ErrUsernameExists            = status.Error(codes.AlreadyExists, "username already exists")
+	ErrRoleAssignmentExists      = status.Error(codes.AlreadyExists, "role assignment already exists")
 	ErrUnexpectedPasswordCreate  = status.Error(codes.InvalidArgument, "only user account can have password")
 	ErrUnexpectedPasswordUpdate  = status.Error(codes.FailedPrecondition, "only user account can have password")
 	ErrInvalidUsername           = status.Error(codes.InvalidArgument, "invalid username")
 	ErrInvalidDisplayName        = status.Error(codes.InvalidArgument, "invalid display name")
 	ErrInvalidDescription        = status.Error(codes.InvalidArgument, "invalid description")
 	ErrInvalidPassword           = status.Error(codes.InvalidArgument, "password does not comply with policy")
+	ErrInvalidResourceType       = status.Error(codes.InvalidArgument, "invalid scope resource type")
+	ErrInvalidResource           = status.Error(codes.InvalidArgument, "invalid scope resource")
 	ErrIncorrectPassword         = status.Error(codes.FailedPrecondition, "incorrect password")
 	ErrInvalidPageToken          = status.Error(codes.InvalidArgument, "invalid page token")
 	ErrInvalidFilter             = status.Error(codes.InvalidArgument, "invalid filter")
 	ErrRoleInUse                 = status.Error(codes.FailedPrecondition, "role is in use")
+	ErrResourceMissing           = status.Error(codes.InvalidArgument, "resource to create/update not supplied")
 )
 
 type Server struct {
@@ -70,8 +74,7 @@ func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*g
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrAccountNotFound
 	} else if err != nil {
-		s.logger.Error("failed to get account", zap.Error(err), zap.String("id", req.Id))
-		return nil, ErrDatabase
+		return nil, s.processError(err, zap.String("rpc", "GetAccount"), zap.String("id", req.Id))
 	}
 
 	return accountToProto(dbAccount), nil
@@ -106,12 +109,11 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 		return nil
 	})
 	if err != nil {
-		s.logger.Error("failed to list accounts",
-			zap.Error(err),
+		return nil, s.processError(err,
+			zap.String("rpc", "ListAccounts"),
 			zap.String("pageToken", req.PageToken),
-			zap.Int64("pageSize", pageSize),
+			zap.Int32("pageSize", req.PageSize),
 		)
-		return nil, ErrDatabase
 	}
 
 	return res, nil
@@ -161,12 +163,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		if sqlite.IsUniqueConstraintError(err) {
 			return ErrUsernameExists
 		} else if err != nil {
-			s.logger.Error("failed to create account",
-				zap.Error(err),
-				zap.String("type", account.Type.String()),
-				zap.String("username", account.Username),
-			)
-			return ErrDatabase
+			return err
 		}
 
 		if req.Password != "" {
@@ -174,14 +171,13 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 			if errors.Is(err, ErrInvalidPassword) {
 				return err
 			} else if err != nil {
-				s.logger.Error("failed to set account password", zap.Error(err), zap.Int64("id", created.ID))
-				return ErrDatabase
+				return err
 			}
 		}
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "CreateAccount"))
 	}
 
 	return accountToProto(created), nil
@@ -212,9 +208,10 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 	err = s.store.Write(ctx, func(tx *Tx) error {
 		var err error
 		account, err = tx.GetAccount(ctx, id)
-		if err != nil {
-			s.logger.Error("failed to get account", zap.Error(err), zap.String("id", req.Account.Id))
-			return ErrDatabase
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrAccountNotFound
+		} else if err != nil {
+			return err
 		}
 
 		var (
@@ -245,9 +242,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 				DisplayName: req.Account.DisplayName,
 			})
 			if err != nil {
-				s.logger.Error("failed to update account display name", zap.Error(err),
-					zap.String("id", req.Account.Id), zap.String("displayName", req.Account.DisplayName))
-				return ErrDatabase
+				return err
 			}
 			account.DisplayName = req.Account.DisplayName
 		}
@@ -269,10 +264,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 			if sqlite.IsUniqueConstraintError(err) {
 				return ErrUsernameExists
 			} else if err != nil {
-				s.logger.Error("failed to update account username", zap.Error(err),
-					zap.String("id", req.Account.Id),
-					zap.String("username", req.Account.Username))
-				return ErrDatabase
+				return err
 			}
 			account.Username = sql.NullString{Valid: true, String: req.Account.Username}
 		}
@@ -280,7 +272,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "UpdateAccount"), zap.String("id", req.Account.Id))
 	}
 
 	return accountToProto(account), nil
@@ -302,8 +294,7 @@ func (s *Server) DeleteAccount(ctx context.Context, req *gen.DeleteAccountReques
 		return nil
 	})
 	if err != nil {
-		s.logger.Error("failed to delete account", zap.Error(err), zap.String("id", req.Id))
-		return nil, ErrDatabase
+		return nil, s.processError(err, zap.String("rpc", "DeleteAccount"), zap.String("id", req.Id))
 	}
 	if !deleted && !req.AllowMissing {
 		return nil, ErrAccountNotFound
@@ -326,8 +317,7 @@ func (s *Server) GetServiceCredential(ctx context.Context, req *gen.GetServiceCr
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrServiceCredentialNotFound
 	} else if err != nil {
-		s.logger.Error("failed to get service credential", zap.Error(err), zap.String("id", req.Id))
-		return nil, ErrDatabase
+		return nil, s.processError(err, zap.String("rpc", "GetServiceCredential"), zap.String("id", req.Id))
 	}
 
 	return serviceCredentialToProto(cred, ""), nil
@@ -342,7 +332,9 @@ func (s *Server) ListServiceCredentials(ctx context.Context, req *gen.ListServic
 	res := &gen.ListServiceCredentialsResponse{}
 	err := s.store.Read(ctx, func(tx *Tx) error {
 		account, err := tx.GetAccount(ctx, accountID)
-		if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrAccountNotFound
+		} else if err != nil {
 			return err
 		}
 		if account.Type != gen.Account_SERVICE_ACCOUNT.String() {
@@ -359,11 +351,8 @@ func (s *Server) ListServiceCredentials(ctx context.Context, req *gen.ListServic
 		}
 		return nil
 	})
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, ErrAccountNotFound
-	} else if err != nil {
-		s.logger.Error("failed to list service credentials", zap.Error(err), zap.String("accountId", req.AccountId))
-		return nil, ErrDatabase
+	if err != nil {
+		return nil, s.processError(err, zap.String("rpc", "ListServiceCredentials"), zap.String("accountId", req.AccountId))
 	}
 
 	return res, nil
@@ -394,7 +383,7 @@ func (s *Server) CreateServiceCredential(ctx context.Context, req *gen.CreateSer
 		return err
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "CreateServiceCredential"), zap.String("accountId", req.ServiceCredential.AccountId))
 	}
 
 	return serviceCredentialToProto(generated.ServiceCredential, generated.Secret), nil
@@ -462,7 +451,7 @@ func (s *Server) UpdateAccountPassword(ctx context.Context, req *gen.UpdateAccou
 		return tx.UpdateAccountPassword(ctx, id, req.NewPassword)
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "UpdateAccountPassword"), zap.String("id", req.Id))
 	}
 
 	return &gen.UpdateAccountPasswordResponse{}, nil
@@ -490,7 +479,7 @@ func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.Rol
 		return err
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "GetRole"), zap.String("id", req.Id))
 	}
 
 	return roleToProto(role, permissions), nil
@@ -528,7 +517,7 @@ func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "ListRoles"), zap.String("pageToken", req.PageToken))
 	}
 
 	return res, nil
@@ -536,7 +525,7 @@ func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen
 
 func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*gen.Role, error) {
 	if req.Role == nil {
-		return nil, status.Error(codes.InvalidArgument, "role is required")
+		return nil, ErrResourceMissing
 	}
 
 	if !validateDisplayName(req.Role.DisplayName) {
@@ -579,7 +568,7 @@ func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*g
 		return err
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "CreateRole"))
 	}
 
 	return roleToProto(role, permissions), nil
@@ -612,7 +601,9 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 	err = s.store.Write(ctx, func(tx *Tx) error {
 		var err error
 		role, err = tx.GetRole(ctx, id)
-		if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrRoleNotFound
+		} else if err != nil {
 			return err
 		}
 		permissions, err = tx.ListRolePermissions(ctx, id)
@@ -703,7 +694,7 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "UpdateRole"), zap.String("id", req.Role.Id))
 	}
 
 	return roleToProto(role, permissions), nil
@@ -728,7 +719,7 @@ func (s *Server) DeleteRole(ctx context.Context, req *gen.DeleteRoleRequest) (*g
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "DeleteRole"), zap.String("id", req.Id))
 	}
 	if !deleted && !req.AllowMissing {
 		return nil, ErrRoleNotFound
@@ -753,7 +744,7 @@ func (s *Server) GetRoleAssignment(ctx context.Context, req *gen.GetRoleAssignme
 		return err
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "GetRoleAssignment"), zap.String("id", req.Id))
 	}
 
 	return roleAssignmentToProto(assignment), nil
@@ -816,13 +807,17 @@ func (s *Server) ListRoleAssignments(ctx context.Context, req *gen.ListRoleAssig
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err, zap.String("rpc", "ListRoleAssignments"), zap.String("filter", req.Filter))
 	}
 
 	return res, nil
 }
 
 func (s *Server) CreateRoleAssignment(ctx context.Context, req *gen.CreateRoleAssignmentRequest) (*gen.RoleAssignment, error) {
+	if req.RoleAssignment == nil {
+		return nil, ErrResourceMissing
+	}
+
 	accountID, ok := parseID(req.RoleAssignment.AccountId)
 	if !ok {
 		return nil, ErrAccountNotFound
@@ -835,9 +830,16 @@ func (s *Server) CreateRoleAssignment(ctx context.Context, req *gen.CreateRoleAs
 	var (
 		scopeType, scopeResource sql.NullString
 	)
-	if req.RoleAssignment.Scope != nil {
-		scopeType = sql.NullString{Valid: true, String: req.RoleAssignment.Scope.ResourceType.String()}
-		scopeResource = sql.NullString{Valid: true, String: req.RoleAssignment.Scope.Resource}
+	if scope := req.RoleAssignment.Scope; scope != nil {
+		if !validateResourceType(scope.ResourceType) {
+			return nil, ErrInvalidResourceType
+		}
+		if !validateResource(scope.Resource) {
+			return nil, ErrInvalidResource
+		}
+
+		scopeType = sql.NullString{Valid: true, String: scope.ResourceType.String()}
+		scopeResource = sql.NullString{Valid: true, String: scope.Resource}
 	}
 
 	var assignment queries.RoleAssignment
@@ -849,10 +851,29 @@ func (s *Server) CreateRoleAssignment(ctx context.Context, req *gen.CreateRoleAs
 			ScopeKind:     scopeType,
 			ScopeResource: scopeResource,
 		})
+		if sqlite.IsUniqueConstraintError(err) {
+			return ErrRoleAssignmentExists
+		} else if sqlite.IsForeignKeyError(err) {
+			// figure out which one is missing
+			_, accountErr := tx.GetAccount(ctx, accountID)
+			_, roleErr := tx.GetRole(ctx, roleID)
+			if errors.Is(accountErr, sql.ErrNoRows) {
+				return ErrAccountNotFound
+			} else if errors.Is(roleErr, sql.ErrNoRows) {
+				return ErrRoleNotFound
+			} else {
+				// unexpected database error
+				return errors.Join(err, accountErr, roleErr)
+			}
+		}
 		return err
 	})
 	if err != nil {
-		return nil, err
+		return nil, s.processError(err,
+			zap.String("rpc", "CreateRoleAssignment"),
+			zap.String("accountId", req.RoleAssignment.AccountId),
+			zap.String("roleId", req.RoleAssignment.RoleId),
+		)
 	}
 
 	return roleAssignmentToProto(assignment), nil
@@ -874,8 +895,7 @@ func (s *Server) DeleteRoleAssignment(ctx context.Context, req *gen.DeleteRoleAs
 		return nil
 	})
 	if err != nil {
-		s.logger.Error("failed to delete role assignment", zap.Error(err), zap.String("id", req.Id))
-		return nil, ErrDatabase
+		return nil, s.processError(err, zap.String("rpc", "DeleteRoleAssignment"), zap.String("id", req.Id))
 	}
 	if !deleted && !req.AllowMissing {
 		return nil, ErrRoleAssignmentNotFound
@@ -914,6 +934,20 @@ func (s *Server) GetAccountLimits(ctx context.Context, req *gen.GetAccountLimits
 		},
 		MaxServiceCredentialsPerAccount: maxServiceCredentialsPerAccount,
 	}, nil
+}
+
+func (s *Server) processError(err error, fields ...zap.Field) error {
+	logger := s.logger.With(fields...)
+	switch {
+	case errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded):
+		logger.Debug("request cancelled or timed out", zap.Error(err))
+		return err
+	case status.Code(err) != codes.Unknown:
+		return err
+	default:
+		s.logger.Error("unexpected account service internal error", zap.Error(err))
+		return ErrDatabase
+	}
 }
 
 func resolvePageSize(pageSize int32) int64 {
