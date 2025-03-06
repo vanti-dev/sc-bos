@@ -2,7 +2,7 @@
   <v-card class="px-6 py-4">
     <v-toolbar class="chart-header" color="transparent">
       <slot name="title">
-        <v-toolbar-title class="pa-0 mr-auto">{{ props.title }}</v-toolbar-title>
+        <v-toolbar-title class="text-h4 pa-0 mr-auto">{{ props.title }}</v-toolbar-title>
       </slot>
       <v-btn
           icon="mdi-dots-vertical"
