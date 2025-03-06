@@ -1,4 +1,4 @@
-package config
+package bacnet
 
 import (
 	"encoding/json"
@@ -16,19 +16,19 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	historyconfig "github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
+	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 )
 
-// BacnetConfigForFloor is basically just a wrapper around the root config with support for automations and traits
-type BacnetConfigForFloor struct {
-	Root
-	Devices      []Device
+// ConfigForFloor is basically just a wrapper around the root config with support for automations and traits
+type ConfigForFloor struct {
+	config.Root
+	Devices      []config.Device
 	Automations  []map[string]any // map looks like config that embeds auto.Config
 	Traits       []map[string]any // map looks like config that embeds config.Trait
 	AddHistories []trait.Name
 }
 
-func (bc *BacnetConfigForFloor) addHistoryForTraits(traits []map[string]any) []map[string]any {
+func (bc *ConfigForFloor) addHistoryForTraits(traits []map[string]any) []map[string]any {
 	var allConfigs []map[string]any
 	for _, t := range traits {
 		if kind, ok := t["kind"]; ok {
@@ -59,7 +59,7 @@ func (bc *BacnetConfigForFloor) addHistoryForTraits(traits []map[string]any) []m
 // there must be a directory value defined for each floor. This allows you to put 2 floor configs in the same directory.
 // configRoot is the root directory for the config, defaults to "config" if empty
 // scPrefix is the prefix for the driver's Name. The bacnet driver name will become <sc-prefix>/floor-xx/drivers/bms
-func WriteBacnetConfig(configPerFloor map[string]*BacnetConfigForFloor, dirForFloor map[string]string, configRoot string,
+func WriteBacnetConfig(configPerFloor map[string]*ConfigForFloor, dirForFloor map[string]string, configRoot string,
 	scPrefix string) error {
 	if configRoot == "" {
 		configRoot = "config"
@@ -89,16 +89,16 @@ func WriteBacnetConfig(configPerFloor map[string]*BacnetConfigForFloor, dirForFl
 	return nil
 }
 
-func writeToDir(dir string, floor string, scPrefix string, bacnetCfg *BacnetConfigForFloor) error {
+func writeToDir(dir string, floor string, scPrefix string, bacnetCfg *ConfigForFloor) error {
 	var errs error
 	outFile := filepath.Join(dir, fmt.Sprintf("%s.bms.part.json", floor))
 	cfg := appconf.Config{}
-	driverCfg := Defaults()
+	driverCfg := config.Defaults()
 	// copy over any customisations we have made
 	driverCfg = bacnetCfg.Root
 	driverCfg.BaseConfig = driver.BaseConfig{
 		Name: path.Join(scPrefix, fmt.Sprintf("floor-%s", floor), "drivers", "bms"),
-		Type: bacnet.DriverName,
+		Type: DriverName,
 	}
 	driverCfg.Devices = bacnetCfg.Devices
 
@@ -141,16 +141,16 @@ func writeToDir(dir string, floor string, scPrefix string, bacnetCfg *BacnetConf
 	return enc.Encode(cfg)
 }
 
-func marshalTrait(data map[string]any) (RawTrait, error) {
-	t := Trait{
+func marshalTrait(data map[string]any) (config.RawTrait, error) {
+	t := config.Trait{
 		Name: data["name"].(string),
 		Kind: data["kind"].(trait.Name),
 	}
 	raw, err := json.Marshal(data)
 	if err != nil {
-		return RawTrait{}, err
+		return config.RawTrait{}, err
 	}
-	return RawTrait{
+	return config.RawTrait{
 		Trait: t,
 		Raw:   raw,
 	}, nil
@@ -171,7 +171,7 @@ func marshalAuto(data map[string]any) (auto.RawConfig, error) {
 	}, nil
 }
 
-func marshalDriver(data Root) (driver.RawConfig, error) {
+func marshalDriver(data config.Root) (driver.RawConfig, error) {
 	d := data.BaseConfig
 	raw, err := json.Marshal(data)
 	if err != nil {
@@ -183,7 +183,7 @@ func marshalDriver(data Root) (driver.RawConfig, error) {
 	}, nil
 }
 
-func sortDevices(devices []Device) {
+func sortDevices(devices []config.Device) {
 	for _, device := range devices {
 		sort.Slice(device.Objects, func(i, j int) bool {
 			ida := device.Objects[i].ID
