@@ -120,8 +120,25 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 	w.Header().Set("Content-Disposition", "attachment; filename=devices.csv")
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 
+	// change the spelling of the headers if the user has asked us to
+	renderedHeaders := headers
+	if cols := token.GetRequest().GetTable().GetIncludeCols(); len(cols) > 0 {
+		renderedHeaders = make([]string, 0, len(headers))
+		titles := make(map[string]string, len(cols))
+		for _, col := range cols {
+			titles[col.Name] = col.Title
+		}
+		for _, h := range headers {
+			if title, ok := titles[h]; ok {
+				renderedHeaders = append(renderedHeaders, title)
+				continue
+			}
+			renderedHeaders = append(renderedHeaders, h)
+		}
+	}
+
 	csvOut := csv.NewWriter(w)
-	if err := csvOut.Write(headers); err != nil {
+	if err := csvOut.Write(renderedHeaders); err != nil {
 		return
 	}
 	out := newCSVWriter(csvOut, headerIndex)
@@ -136,6 +153,8 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 
 type writer interface {
 	Write(row map[string]string)
+	// HasAny returns true if any of the headers will be written by Write.
+	HasAny(headers ...string) bool
 }
 
 func newCSVWriter(out *csv.Writer, headerIndex map[string]int) *csvWriter {
@@ -160,6 +179,15 @@ func (c *csvWriter) Write(row map[string]string) {
 	clear(c.rowBuf)
 }
 
+func (c *csvWriter) HasAny(headers ...string) bool {
+	for _, h := range headers {
+		if _, ok := c.headerIndex[h]; ok {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Server) writeLiveData(ctx context.Context, out writer, devices []*traits.Metadata, traitInfo map[string]traitInfo) {
 	for _, d := range devices {
 		row := make(map[string]string)
@@ -168,6 +196,9 @@ func (s *Server) writeLiveData(ctx context.Context, out writer, devices []*trait
 			info, ok := traitInfo[t.Name]
 			if !ok {
 				continue
+			}
+			if !out.HasAny(info.headers...) {
+				continue // skip get if the values won't be written
 			}
 			pageCtx, cleanup := context.WithTimeout(ctx, s.downloadPageTimeout)
 			values, err := info.get(pageCtx, d.Name)
@@ -205,6 +236,9 @@ func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []
 			info, ok := traitInfo[t.Name]
 			if !ok || info.history == nil {
 				continue
+			}
+			if !out.HasAny(info.headers...) {
+				continue // skip this source if none of the values will be written to the output
 			}
 			cursor := info.history(d.Name, period, pageSize)
 			if cursor == nil {
@@ -390,6 +424,17 @@ func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[strin
 		}),
 	)
 
+	tab := token.GetRequest().GetTable()
+
+	// if the request specifies the included cols, use those instead of computing them from traits or metadata
+	if len(tab.GetIncludeCols()) > 0 {
+		headers := make([]string, 0, len(tab.GetIncludeCols()))
+		for _, col := range tab.GetIncludeCols() {
+			headers = append(headers, col.Name)
+		}
+		return devices, headers, nil
+	}
+
 	headerSet := make(map[string]struct{})
 	if err := collectMetadataHeaders(headerSet, devices); err != nil {
 		return nil, nil, err
@@ -406,6 +451,11 @@ func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[strin
 				}
 			}
 		}
+	}
+
+	// delete any excluded headers
+	for _, col := range tab.GetExcludeCols() {
+		delete(headerSet, col.Name)
 	}
 
 	headers = sortHeaders(maps.Keys(headerSet))
