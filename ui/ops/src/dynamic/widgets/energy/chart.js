@@ -8,6 +8,8 @@ const toChartDataset = (title, consumption) => {
   }
 }
 
+export const datasetSourceName = Symbol('datasetSourceName');
+
 /**
  * Creates a Chart.js dataset for each subValue and a remaining dataset for the total.
  *
@@ -32,6 +34,7 @@ export function computeDatasets(key, totals, subNames, subValues, invert = false
     const subValue = subValues[name];
     if (!subValue) continue;
     const dataset = toChartDataset(toValue(subValue.title), subValue.consumption);
+    dataset[datasetSourceName] = name;
     let hasAny = false;
     for (let i = 0; i < dataset.data.length; i++) {
       if (dataset.data[i] !== null) {

@@ -24,10 +24,11 @@
                   </v-list-item-action>
                 </template>
               </v-list-item>
-            </v-list>
-            <v-list>
               <v-list-subheader title="Data"/>
               <period-chooser-rows v-model:start="_start" v-model:end="_end" v-model:offset="_offset"/>
+              <v-list-item title="Export CSV..."
+                           @click="onDownloadClick" :disabled="downloadBtnDisabled"
+                           v-tooltip:bottom="'Download a CSV of the chart data'"/>
             </v-list>
           </v-card>
         </v-menu>
@@ -35,7 +36,7 @@
     </v-toolbar>
     <v-card-text>
       <div class="chart__container">
-        <bar :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
+        <bar ref="chartRef" :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
       </div>
     </v-card-text>
     <energy-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="unit"/>
@@ -43,8 +44,10 @@
 </template>
 
 <script setup>
+import {triggerDownload} from '@/components/download/download.js';
 import {
   computeDatasets,
+  datasetSourceName,
   useExternalTooltip,
   useThemeColorPlugin,
   useVueLegendPlugin
@@ -62,6 +65,7 @@ import 'chartjs-adapter-date-fns';
 import {useMeterConsumption, useMetersConsumption} from './consumption.js';
 
 ChartJS.register(Title, Tooltip, BarElement, LinearScale, TimeScale, Legend);
+const chartRef = ref(null);
 
 const props = defineProps({
   title: {
@@ -129,7 +133,7 @@ const _start = useLocalProp(toRef(props, 'start'));
 const _end = useLocalProp(toRef(props, 'end'));
 const _offset = useLocalProp(toRef(props, 'offset'));
 
-const {edges, pastEdges, tickUnit} = useDateScale(_start, _end, _offset);
+const {edges, pastEdges, tickUnit, startDate, endDate} = useDateScale(_start, _end, _offset);
 
 const totalConsumption = useMeterConsumption(toRef(props, 'totalConsumptionName'), pastEdges);
 const totalProduction = useMeterConsumption(toRef(props, 'totalProductionName'), pastEdges);
@@ -229,6 +233,52 @@ const chartData = computed(() => {
     ]
   };
 });
+
+// download CSV...
+const visibleNames = () => {
+  const names = [];
+  const namesByTitle = {
+    'Other Consumption': props.totalConsumptionName,
+    'Total Consumption': props.totalConsumptionName,
+    'Other Production': props.totalProductionName,
+    'Total Production': props.totalProductionName,
+  };
+  const chart = /** @type {import('chart.js').Chart} */ chartRef.value?.chart;
+  if (!chart) return [];
+
+  for (const legendItem of chart.legend.legendItems) {
+    if (legendItem.hidden) continue;
+    const dataset = chart.data.datasets[legendItem.datasetIndex];
+    if (!dataset) continue;
+    const name = dataset[datasetSourceName];
+    if (name) {
+      names.push(name);
+    } else {
+      const title = legendItem.text;
+      const name = namesByTitle[title];
+      if (name) names.push(name);
+    }
+  }
+
+  return names;
+};
+const downloadBtnDisabled = computed(() => {
+  return legendItems.value.every((item) => item.hidden);
+})
+const onDownloadClick = async () => {
+  const names = visibleNames();
+  if (names.length === 0) return;
+  await triggerDownload(
+      props.title?.toLowerCase()?.replace(' ', '-') ?? 'energy-usage',
+      {conditionsList: [{field: 'name', stringIn: {stringsList: names}}]},
+      {startTime: startDate.value, endTime: endDate.value},
+      {includeColsList: [
+          {name: 'timestamp', title: 'Reading Time'},
+          {name: 'md.name', title: 'Device Name'},
+          {name: 'meter.usage', title: (props.title || 'Energy Usage') + (unit.value ? ` (${unit.value})` : '')},
+        ]}
+  )
+}
 </script>
 
 <style scoped lang="scss">
