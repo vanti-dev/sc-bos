@@ -39,6 +39,68 @@ func (q *Queries) ClearRolePermissions(ctx context.Context, roleID int64) (int64
 	return result.RowsAffected()
 }
 
+const countAccounts = `-- name: CountAccounts :one
+SELECT COUNT(*) AS count
+FROM accounts
+`
+
+func (q *Queries) CountAccounts(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAccounts)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countRoleAssignments = `-- name: CountRoleAssignments :one
+SELECT COUNT(*)
+FROM role_assignments
+`
+
+func (q *Queries) CountRoleAssignments(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countRoleAssignments)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countRoleAssignmentsForAccount = `-- name: CountRoleAssignmentsForAccount :one
+SELECT COUNT(*) AS count
+FROM role_assignments
+WHERE account_id = ?1
+`
+
+func (q *Queries) CountRoleAssignmentsForAccount(ctx context.Context, accountID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countRoleAssignmentsForAccount, accountID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countRoleAssignmentsForRole = `-- name: CountRoleAssignmentsForRole :one
+SELECT COUNT(*) AS count
+FROM role_assignments
+WHERE role_id = ?1
+`
+
+func (q *Queries) CountRoleAssignmentsForRole(ctx context.Context, roleID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countRoleAssignmentsForRole, roleID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countRoles = `-- name: CountRoles :one
+SELECT COUNT(*) AS count
+FROM roles
+`
+
+func (q *Queries) CountRoles(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countRoles)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countServiceCredentialsForAccount = `-- name: CountServiceCredentialsForAccount :one
 SELECT COUNT(*) AS count
 FROM service_credentials

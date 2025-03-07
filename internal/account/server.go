@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"math"
 	"regexp"
 
 	"go.uber.org/zap"
@@ -83,12 +84,20 @@ func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*g
 func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest) (*gen.ListAccountsResponse, error) {
 	pageSize := resolvePageSize(req.PageSize)
 
-	afterID, ok := parsePageToken(req.PageToken)
-	if !ok {
-		return nil, ErrInvalidPageToken
+	res := &gen.ListAccountsResponse{
+		TotalSize: -1, // sentinel, indicates we need to calculate this
+	}
+	var afterID int64 = 0
+	if req.PageToken != "" {
+		// this RPC does not support filtering
+		pageToken, err := parsePageToken(req.PageToken, "")
+		if err != nil {
+			return nil, ErrInvalidPageToken
+		}
+		afterID = pageToken.LastId
+		res.TotalSize = pageToken.TotalSize
 	}
 
-	res := &gen.ListAccountsResponse{}
 	err := s.store.Read(ctx, func(tx *Tx) error {
 		page, err := tx.ListAccounts(ctx, queries.ListAccountsParams{
 			AfterID: afterID,
@@ -98,9 +107,24 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 			return err
 		}
 
+		if res.TotalSize < 0 {
+			count, err := tx.CountAccounts(ctx)
+			if err != nil {
+				return err
+			}
+			if count > math.MaxInt32 {
+				res.TotalSize = 0
+			} else {
+				res.TotalSize = int32(count)
+			}
+		}
+
 		if int64(len(page)) > pageSize {
 			last := page[pageSize-1] // last element that we are going to send
-			res.NextPageToken = formatPageToken(last.ID)
+			res.NextPageToken = encodePageToken(&PageToken{
+				LastId:    last.ID,
+				TotalSize: res.TotalSize,
+			})
 			page = page[:pageSize]
 		}
 		for _, dbAccount := range page {
@@ -539,12 +563,19 @@ func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.Rol
 func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen.ListRolesResponse, error) {
 	pageSize := resolvePageSize(req.PageSize)
 
-	afterID, ok := parsePageToken(req.PageToken)
-	if !ok {
-		return nil, ErrInvalidPageToken
+	res := &gen.ListRolesResponse{
+		TotalSize: -1, // sentinel, indicates we need to calculate this
+	}
+	var afterID int64
+	if req.PageToken != "" {
+		token, err := parsePageToken(req.PageToken, "")
+		if err != nil {
+			return nil, ErrInvalidPageToken
+		}
+		afterID = token.LastId
+		res.TotalSize = token.TotalSize
 	}
 
-	res := &gen.ListRolesResponse{}
 	err := s.store.Read(ctx, func(tx *Tx) error {
 		page, err := tx.ListRolesAndPermissions(ctx, queries.ListRolesAndPermissionsParams{
 			AfterID: afterID,
@@ -554,9 +585,24 @@ func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen
 			return err
 		}
 
+		if res.TotalSize < 0 {
+			count, err := tx.CountRoles(ctx)
+			if err != nil {
+				return err
+			}
+			if count > math.MaxInt32 {
+				res.TotalSize = 0
+			} else {
+				res.TotalSize = int32(count)
+			}
+		}
+
 		if int64(len(page)) > pageSize {
 			last := page[pageSize-1] // last element that we are going to send
-			res.NextPageToken = formatPageToken(last.Role.ID)
+			res.NextPageToken = encodePageToken(&PageToken{
+				LastId:    last.Role.ID,
+				TotalSize: res.TotalSize,
+			})
 			page = page[:pageSize]
 		}
 
@@ -804,14 +850,18 @@ func (s *Server) GetRoleAssignment(ctx context.Context, req *gen.GetRoleAssignme
 func (s *Server) ListRoleAssignments(ctx context.Context, req *gen.ListRoleAssignmentsRequest) (*gen.ListRoleAssignmentsResponse, error) {
 	pageSize := resolvePageSize(req.PageSize)
 
-	afterID, ok := parsePageToken(req.PageToken)
-	if !ok {
-		return nil, ErrInvalidPageToken
-	}
-
 	filterField, filterID, ok := parseRoleAssignmentFilter(req.Filter)
 	if !ok {
 		return nil, ErrInvalidFilter
+	}
+
+	var token *PageToken
+	if req.PageToken != "" {
+		var err error
+		token, err = parsePageToken(req.PageToken, req.Filter)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var (
@@ -819,40 +869,20 @@ func (s *Server) ListRoleAssignments(ctx context.Context, req *gen.ListRoleAssig
 		err error
 	)
 	err = s.store.Read(ctx, func(tx *Tx) error {
-		var page []queries.RoleAssignment
-		switch filterField {
-		case roleAssignmentAccountID:
-			page, err = tx.ListRoleAssignmentsForAccount(ctx, queries.ListRoleAssignmentsForAccountParams{
-				AfterID:   afterID,
-				Limit:     pageSize + 1, // fetch one extra to determine if there are more
-				AccountID: filterID,
-			})
-		case roleAssignmentRoleID:
-			page, err = tx.ListRoleAssignmentsForRole(ctx, queries.ListRoleAssignmentsForRoleParams{
-				AfterID: afterID,
-				Limit:   pageSize + 1,
-				RoleID:  filterID,
-			})
-		case roleAssignmentUnfiltered:
-			page, err = tx.ListRoleAssignments(ctx, queries.ListRoleAssignmentsParams{
-				AfterID: afterID,
-				Limit:   pageSize + 1,
-			})
-		default:
-			// unreachable because parseRoleAssignmentFilter only allows account_id and role_id
-			panic("unreachable")
-		}
+		page, err := tx.ListRoleAssignmentsFiltered(ctx, filterField, filterID, token, pageSize)
 		if err != nil {
 			return err
 		}
-
-		if int64(len(page)) > pageSize {
-			last := page[pageSize-1] // last element that we are going to send
-			res.NextPageToken = formatPageToken(last.ID)
-			page = page[:pageSize]
+		res.TotalSize = page.TotalSize
+		if page.More {
+			res.NextPageToken = encodePageToken(&PageToken{
+				LastId:    page.LastID,
+				TotalSize: page.TotalSize,
+				Filter:    req.Filter,
+			})
 		}
 
-		for _, assignment := range page {
+		for _, assignment := range page.RoleAssignments {
 			res.RoleAssignments = append(res.RoleAssignments, roleAssignmentToProto(assignment))
 		}
 		return nil

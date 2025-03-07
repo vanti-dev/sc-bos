@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package smartcore.bos.account;
+
+option go_package = "github.com/vanti-dev/sc-bos/internal/account";
+
+message PageToken {
+  // The ID of the last item in the previous page.
+  int64 last_id = 1;
+  // The total number of items matching the query, determined when the first page is requested.
+  int32 total_size = 2;
+  // For RPCs that support filtering, the filter string used to generate the first page.
+  // All subsequent pages must match this filter exactly.
+  string filter = 3;
+}

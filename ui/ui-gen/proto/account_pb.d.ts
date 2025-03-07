@@ -89,6 +89,9 @@ export class ListAccountsResponse extends jspb.Message {
   getNextPageToken(): string;
   setNextPageToken(value: string): ListAccountsResponse;
 
+  getTotalSize(): number;
+  setTotalSize(value: number): ListAccountsResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListAccountsResponse.AsObject;
   static toObject(includeInstance: boolean, msg: ListAccountsResponse): ListAccountsResponse.AsObject;
@@ -101,6 +104,7 @@ export namespace ListAccountsResponse {
   export type AsObject = {
     accountsList: Array<Account.AsObject>,
     nextPageToken: string,
+    totalSize: number,
   }
 }
 
@@ -403,6 +407,9 @@ export class ListRolesResponse extends jspb.Message {
   getNextPageToken(): string;
   setNextPageToken(value: string): ListRolesResponse;
 
+  getTotalSize(): number;
+  setTotalSize(value: number): ListRolesResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListRolesResponse.AsObject;
   static toObject(includeInstance: boolean, msg: ListRolesResponse): ListRolesResponse.AsObject;
@@ -415,6 +422,7 @@ export namespace ListRolesResponse {
   export type AsObject = {
     rolesList: Array<Role.AsObject>,
     nextPageToken: string,
+    totalSize: number,
   }
 }
 
@@ -573,6 +581,9 @@ export class ListRoleAssignmentsResponse extends jspb.Message {
   getNextPageToken(): string;
   setNextPageToken(value: string): ListRoleAssignmentsResponse;
 
+  getTotalSize(): number;
+  setTotalSize(value: number): ListRoleAssignmentsResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListRoleAssignmentsResponse.AsObject;
   static toObject(includeInstance: boolean, msg: ListRoleAssignmentsResponse): ListRoleAssignmentsResponse.AsObject;
@@ -585,6 +596,7 @@ export namespace ListRoleAssignmentsResponse {
   export type AsObject = {
     roleAssignmentsList: Array<RoleAssignment.AsObject>,
     nextPageToken: string,
+    totalSize: number,
   }
 }
 
@@ -709,6 +721,9 @@ export class ListPermissionsResponse extends jspb.Message {
   getNextPageToken(): string;
   setNextPageToken(value: string): ListPermissionsResponse;
 
+  getTotalSize(): number;
+  setTotalSize(value: number): ListPermissionsResponse;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListPermissionsResponse.AsObject;
   static toObject(includeInstance: boolean, msg: ListPermissionsResponse): ListPermissionsResponse.AsObject;
@@ -721,6 +736,7 @@ export namespace ListPermissionsResponse {
   export type AsObject = {
     permissionsList: Array<Permission.AsObject>,
     nextPageToken: string,
+    totalSize: number,
   }
 }
 

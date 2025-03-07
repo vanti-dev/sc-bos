@@ -22,20 +22,6 @@ func formatID(id int64) string {
 	return strconv.FormatInt(id, 10)
 }
 
-func formatPageToken(nextID int64) string {
-	if nextID == 0 {
-		return ""
-	}
-	return formatID(nextID)
-}
-
-func parsePageToken(token string) (int64, bool) {
-	if token == "" {
-		return 0, true
-	}
-	return parseID(token)
-}
-
 func accountToProto(account queries.Account) *gen.Account {
 	converted := &gen.Account{
 		Id:          formatID(account.ID),

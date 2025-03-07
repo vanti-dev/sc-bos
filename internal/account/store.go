@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"math"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -167,6 +168,89 @@ func (tx *Tx) GenerateServiceCredential(ctx context.Context, create queries.Serv
 type GeneratedServiceCredential struct {
 	queries.ServiceCredential
 	Secret string
+}
+
+// ListRoleAssignmentsFiltered returns a page of role assignments filtered by the given field and ID.
+// If page is nil, the first page is returned, and the total size is calculated.
+// Otherwise, the next page is returned and the total size is obtained from the page token.
+func (tx *Tx) ListRoleAssignmentsFiltered(ctx context.Context, field roleAssignmentField, filterID int64, page *PageToken, limit int64) (RoleAssignmentsPage, error) {
+	var (
+		afterID         int64
+		totalSize       int64
+		roleAssignments []queries.RoleAssignment
+		err             error
+		calculateSize   = true
+	)
+	if page != nil {
+		totalSize = int64(page.TotalSize)
+		afterID = page.LastId
+		calculateSize = false
+	}
+
+	switch field {
+	case roleAssignmentAccountID:
+		roleAssignments, err = tx.ListRoleAssignmentsForAccount(ctx, queries.ListRoleAssignmentsForAccountParams{
+			AfterID:   afterID,
+			Limit:     limit + 1, // fetch one extra to determine if there are more
+			AccountID: filterID,
+		})
+	case roleAssignmentRoleID:
+		roleAssignments, err = tx.ListRoleAssignmentsForRole(ctx, queries.ListRoleAssignmentsForRoleParams{
+			AfterID: afterID,
+			Limit:   limit + 1,
+			RoleID:  filterID,
+		})
+	case roleAssignmentUnfiltered:
+		roleAssignments, err = tx.ListRoleAssignments(ctx, queries.ListRoleAssignmentsParams{
+			AfterID: afterID,
+			Limit:   limit + 1,
+		})
+	default:
+		return RoleAssignmentsPage{}, ErrInvalidFilter
+	}
+	if err != nil {
+		return RoleAssignmentsPage{}, err
+	}
+
+	if calculateSize {
+		switch field {
+		case roleAssignmentAccountID:
+			totalSize, err = tx.CountRoleAssignmentsForAccount(ctx, filterID)
+		case roleAssignmentRoleID:
+			totalSize, err = tx.CountRoleAssignmentsForRole(ctx, filterID)
+		case roleAssignmentUnfiltered:
+			totalSize, err = tx.CountRoleAssignments(ctx)
+		default:
+			return RoleAssignmentsPage{}, ErrInvalidFilter
+		}
+		if err != nil {
+			return RoleAssignmentsPage{}, err
+		}
+	}
+
+	more := int64(len(roleAssignments)) > limit
+	var lastID int64
+	if more {
+		lastID = roleAssignments[limit-1].ID
+		roleAssignments = roleAssignments[:limit]
+	}
+	if totalSize > math.MaxInt32 {
+		// cannot represent, so omit
+		totalSize = 0
+	}
+	return RoleAssignmentsPage{
+		RoleAssignments: roleAssignments,
+		More:            more,
+		LastID:          lastID,
+		TotalSize:       int32(totalSize),
+	}, nil
+}
+
+type RoleAssignmentsPage struct {
+	RoleAssignments []queries.RoleAssignment
+	More            bool
+	LastID          int64 // if More is true, contains the last ID in the page
+	TotalSize       int32
 }
 
 func genSecret() (string, error) {

@@ -1509,7 +1509,8 @@ proto.smartcore.bos.ListAccountsResponse.toObject = function(includeInstance, ms
   var f, obj = {
 accountsList: jspb.Message.toObjectList(msg.getAccountsList(),
     proto.smartcore.bos.Account.toObject, includeInstance),
-nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -1555,6 +1556,10 @@ proto.smartcore.bos.ListAccountsResponse.deserializeBinaryFromReader = function(
       var value = /** @type {string} */ (reader.readString());
       msg.setNextPageToken(value);
       break;
+    case 3:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setTotalSize(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1596,6 +1601,13 @@ proto.smartcore.bos.ListAccountsResponse.serializeBinaryToWriter = function(mess
   if (f.length > 0) {
     writer.writeString(
       2,
+      f
+    );
+  }
+  f = message.getTotalSize();
+  if (f !== 0) {
+    writer.writeInt32(
+      3,
       f
     );
   }
@@ -1655,6 +1667,24 @@ proto.smartcore.bos.ListAccountsResponse.prototype.getNextPageToken = function()
  */
 proto.smartcore.bos.ListAccountsResponse.prototype.setNextPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional int32 total_size = 3;
+ * @return {number}
+ */
+proto.smartcore.bos.ListAccountsResponse.prototype.getTotalSize = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.ListAccountsResponse} returns this
+ */
+proto.smartcore.bos.ListAccountsResponse.prototype.setTotalSize = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
 };
 
 
@@ -3845,7 +3875,8 @@ proto.smartcore.bos.ListRolesResponse.toObject = function(includeInstance, msg) 
   var f, obj = {
 rolesList: jspb.Message.toObjectList(msg.getRolesList(),
     proto.smartcore.bos.Role.toObject, includeInstance),
-nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -3891,6 +3922,10 @@ proto.smartcore.bos.ListRolesResponse.deserializeBinaryFromReader = function(msg
       var value = /** @type {string} */ (reader.readString());
       msg.setNextPageToken(value);
       break;
+    case 3:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setTotalSize(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3932,6 +3967,13 @@ proto.smartcore.bos.ListRolesResponse.serializeBinaryToWriter = function(message
   if (f.length > 0) {
     writer.writeString(
       2,
+      f
+    );
+  }
+  f = message.getTotalSize();
+  if (f !== 0) {
+    writer.writeInt32(
+      3,
       f
     );
   }
@@ -3991,6 +4033,24 @@ proto.smartcore.bos.ListRolesResponse.prototype.getNextPageToken = function() {
  */
 proto.smartcore.bos.ListRolesResponse.prototype.setNextPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional int32 total_size = 3;
+ * @return {number}
+ */
+proto.smartcore.bos.ListRolesResponse.prototype.getTotalSize = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.ListRolesResponse} returns this
+ */
+proto.smartcore.bos.ListRolesResponse.prototype.setTotalSize = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
 };
 
 
@@ -5119,7 +5179,8 @@ proto.smartcore.bos.ListRoleAssignmentsResponse.toObject = function(includeInsta
   var f, obj = {
 roleAssignmentsList: jspb.Message.toObjectList(msg.getRoleAssignmentsList(),
     proto.smartcore.bos.RoleAssignment.toObject, includeInstance),
-nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -5165,6 +5226,10 @@ proto.smartcore.bos.ListRoleAssignmentsResponse.deserializeBinaryFromReader = fu
       var value = /** @type {string} */ (reader.readString());
       msg.setNextPageToken(value);
       break;
+    case 3:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setTotalSize(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -5206,6 +5271,13 @@ proto.smartcore.bos.ListRoleAssignmentsResponse.serializeBinaryToWriter = functi
   if (f.length > 0) {
     writer.writeString(
       2,
+      f
+    );
+  }
+  f = message.getTotalSize();
+  if (f !== 0) {
+    writer.writeInt32(
+      3,
       f
     );
   }
@@ -5265,6 +5337,24 @@ proto.smartcore.bos.ListRoleAssignmentsResponse.prototype.getNextPageToken = fun
  */
 proto.smartcore.bos.ListRoleAssignmentsResponse.prototype.setNextPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional int32 total_size = 3;
+ * @return {number}
+ */
+proto.smartcore.bos.ListRoleAssignmentsResponse.prototype.getTotalSize = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.ListRoleAssignmentsResponse} returns this
+ */
+proto.smartcore.bos.ListRoleAssignmentsResponse.prototype.setTotalSize = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
 };
 
 
@@ -6131,7 +6221,8 @@ proto.smartcore.bos.ListPermissionsResponse.toObject = function(includeInstance,
   var f, obj = {
 permissionsList: jspb.Message.toObjectList(msg.getPermissionsList(),
     proto.smartcore.bos.Permission.toObject, includeInstance),
-nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, "")
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -6177,6 +6268,10 @@ proto.smartcore.bos.ListPermissionsResponse.deserializeBinaryFromReader = functi
       var value = /** @type {string} */ (reader.readString());
       msg.setNextPageToken(value);
       break;
+    case 3:
+      var value = /** @type {number} */ (reader.readInt32());
+      msg.setTotalSize(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -6218,6 +6313,13 @@ proto.smartcore.bos.ListPermissionsResponse.serializeBinaryToWriter = function(m
   if (f.length > 0) {
     writer.writeString(
       2,
+      f
+    );
+  }
+  f = message.getTotalSize();
+  if (f !== 0) {
+    writer.writeInt32(
+      3,
       f
     );
   }
@@ -6277,6 +6379,24 @@ proto.smartcore.bos.ListPermissionsResponse.prototype.getNextPageToken = functio
  */
 proto.smartcore.bos.ListPermissionsResponse.prototype.setNextPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional int32 total_size = 3;
+ * @return {number}
+ */
+proto.smartcore.bos.ListPermissionsResponse.prototype.getTotalSize = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.ListPermissionsResponse} returns this
+ */
+proto.smartcore.bos.ListPermissionsResponse.prototype.setTotalSize = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
 };
 
 

@@ -373,6 +373,10 @@ func TestServer_ListAccounts(t *testing.T) {
 			t.Fatalf("failed to list accounts: %v", err)
 		}
 
+		if res.TotalSize != numAccounts {
+			t.Errorf("expected total size %d, got %d", numAccounts, res.TotalSize)
+		}
+
 		size := len(res.Accounts)
 		if size < pageSize && res.NextPageToken != "" {
 			t.Errorf("fewer results (%d) returned than expected (%d), but got a page token", size, pageSize)
@@ -1560,6 +1564,9 @@ func TestServer_Role(t *testing.T) {
 				t.Fatalf("failed to list roles: %v", err)
 			}
 			t.Logf("fetched page with token %q, returned %d results", nextPageToken, len(res.Roles))
+			if res.TotalSize != numRoles {
+				t.Errorf("expected total size %d, got %d", numRoles, res.TotalSize)
+			}
 
 			if res.NextPageToken != "" && len(res.Roles) < pageSize {
 				t.Errorf("fewer results (%d) returned than expected (%d), but got a page token", len(res.Roles), pageSize)
@@ -2173,6 +2180,10 @@ func TestServer_RoleAssignments(t *testing.T) {
 					t.Errorf("failed to list role assignments with filter %q: %v", f.filter, err)
 				}
 				t.Logf("fetched page with token %q, returned %d results", nextPageToken, len(res.RoleAssignments))
+
+				if int(res.TotalSize) != len(f.expect) {
+					t.Errorf("expected total size %d, got %d", len(f.expect), res.TotalSize)
+				}
 
 				if res.NextPageToken != "" && len(res.RoleAssignments) < pageSize {
 					t.Errorf("fewer results (%d) returned than expected (%d), but got a page token", len(res.RoleAssignments), pageSize)

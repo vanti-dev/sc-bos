@@ -80,6 +80,9 @@ message ListAccountsResponse {
   // Opaque value which can be provided to ListAccounts to get the next page of results.
   // Absent if there are no more results.
   string next_page_token = 2;
+  // The total number of accounts available matching the request.
+  // May be inaccurate if the number of matching accounts changes between the first and last pages being fetched.
+  int32 total_size = 3;
 }
 
 message UpdateAccountRequest {
@@ -198,6 +201,9 @@ message ListRolesResponse {
   // Opaque value which can be provided to ListRoles to get the next page of results.
   // Absent if there are no more results.
   string next_page_token = 2;
+  // The total number of roles available matching the request.
+  // May be inaccurate if the number of matching roles changes between the first and last pages being fetched.
+  int32 total_size = 3;
 }
 
 message CreateRoleRequest {
@@ -268,6 +274,9 @@ message ListRoleAssignmentsResponse {
   // Opaque value which can be provided to ListRoleAssignments to get the next page of results.
   // Absent if there are no more results.
   string next_page_token = 2;
+  // The total number of role assignments available matching the request.
+  // May be inaccurate if the number of matching role assignments changes between the first and last pages being fetched.
+  int32 total_size = 3;
 }
 
 message CreateRoleAssignmentRequest {
@@ -318,6 +327,8 @@ message ListPermissionsResponse {
   // Opaque value which can be provided to ListPermissions to get the next page of results.
   // Absent if there are no more results.
   string next_page_token = 2;
+  // The total number of permissions available matching the request.
+  int32 total_size = 3;
 }
 
 message GetAccountLimitsRequest {

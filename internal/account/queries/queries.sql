@@ -10,6 +10,10 @@ WHERE id > :after_id
 ORDER BY id
 LIMIT :limit;
 
+-- name: CountAccounts :one
+SELECT COUNT(*) AS count
+FROM accounts;
+
 -- name: GetAccountByUsername :one
 SELECT *
 FROM accounts
@@ -92,6 +96,10 @@ WHERE id > :after_id
 ORDER BY id
 LIMIT :limit;
 
+-- name: CountRoles :one
+SELECT COUNT(*) AS count
+FROM roles;
+
 -- name: ListRolesAndPermissions :many
 SELECT sqlc.embed(roles), group_concat(role_permissions.permission, ',') AS permissions
 FROM roles
@@ -151,6 +159,10 @@ WHERE id > :after_id
 ORDER BY id
 LIMIT :limit;
 
+-- name: CountRoleAssignments :one
+SELECT COUNT(*)
+FROM role_assignments;
+
 -- name: ListRoleAssignmentsForAccount :many
 SELECT *
 FROM role_assignments
@@ -159,6 +171,11 @@ WHERE account_id = :account_id
 ORDER BY id
 LIMIT :limit;
 
+-- name: CountRoleAssignmentsForAccount :one
+SELECT COUNT(*) AS count
+FROM role_assignments
+WHERE account_id = :account_id;
+
 -- name: ListRoleAssignmentsForRole :many
 SELECT *
 FROM role_assignments
@@ -166,6 +183,11 @@ WHERE role_id = :role_id
   AND id > :after_id
 ORDER BY id
 LIMIT :limit;
+
+-- name: CountRoleAssignmentsForRole :one
+SELECT COUNT(*) AS count
+FROM role_assignments
+WHERE role_id = :role_id;
 
 -- name: CreateRoleAssignment :one
 INSERT INTO role_assignments (account_id, role_id, scope_type, scope_resource)
