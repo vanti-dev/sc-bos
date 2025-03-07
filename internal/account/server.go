@@ -24,7 +24,7 @@ var (
 	ErrRoleAssignmentNotFound    = status.Error(codes.NotFound, "role assignment not found")
 	ErrServiceCredentialNotFound = status.Error(codes.NotFound, "service credential not found")
 	ErrPermissionNotFound        = status.Error(codes.NotFound, "permission not found")
-	ErrInvalidAccountKind        = status.Error(codes.InvalidArgument, "invalid account kind")
+	ErrInvalidAccountType        = status.Error(codes.InvalidArgument, "invalid account type")
 	ErrMissingUsername           = status.Error(codes.InvalidArgument, "user account requires username")
 	ErrMissingDisplayName        = status.Error(codes.InvalidArgument, "account requires display name")
 	ErrUnexpectedUsernameCreate  = status.Error(codes.InvalidArgument, "service account cannot have username")
@@ -172,7 +172,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 			return nil, ErrUnexpectedPasswordCreate
 		}
 	default:
-		return nil, ErrInvalidAccountKind
+		return nil, ErrInvalidAccountType
 	}
 
 	var created queries.Account
@@ -196,7 +196,7 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 				Description: description,
 			})
 		default:
-			return ErrInvalidAccountKind
+			return ErrInvalidAccountType
 		}
 		if sqlite.IsUniqueConstraintError(err) {
 			return ErrUsernameExists
