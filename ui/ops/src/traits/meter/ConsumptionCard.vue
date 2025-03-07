@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import {useStartOf} from '@/composables/time.js';
+import {usePeriod} from '@/composables/time.js';
 import {usePullMetadata} from '@/traits/metadata/metadata.js';
 import {
   useDescribeMeterReading,
@@ -28,8 +28,7 @@ import {
   usePullMeterReading
 } from '@/traits/meter/meter.js';
 import {isNullOrUndef} from '@/util/types.js';
-import {add} from 'date-fns';
-import {computed, effectScope, onScopeDispose, reactive, watch} from 'vue';
+import {computed, effectScope, reactive, toRef, watch} from 'vue';
 
 const props = defineProps({
   name: {
@@ -53,60 +52,29 @@ const props = defineProps({
     default: null // default to metadata.appearance.title
   }
 });
-const _offset = computed(() => Math.abs(parseInt(props.offset)));
-const applyOffset = (d) => {
-  if (_offset.value === 0) {
-    return d;
-  }
-  return add(d, {[`${props.period}s`]: -_offset.value});
-}
+const _offset = computed(() => -Math.abs(parseInt(props.offset)));
+const {start, end} = usePeriod(toRef(props, 'period'), toRef(props, 'period'), _offset)
 
 const {response: meterReadingInfo} = useDescribeMeterReading(() => props.name);
 
-// calculate the start date, and the reading at that date.
-const start = reactive({value: /** @type {Date|null} */ null});
-let startCalcScope = null;
-onScopeDispose(() => {
-  if (startCalcScope) {
-    startCalcScope();
-  }
-})
-watch(() => props.period, period => {
-  if (startCalcScope) {
-    startCalcScope();
-  }
-  if (Object.hasOwn(useStartOf, period)) {
-    const scope = effectScope();
-    scope.run(() => {
-      const d = useStartOf[period]();
-      start.value = computed(() => applyOffset(d.value));
-    });
-    startCalcScope = () => scope.stop();
-  }
-  // todo: decide on a better fallback behaviour
-}, {immediate: true});
-const readingAtStart = useMeterReadingAt(() => props.name, () => start.value);
+// calculate the reading at the start date, which we assume is in the past.
+const readingAtStart = useMeterReadingAt(() => props.name, start);
 
 // calculate the reading at the end.
 // If offset is 0 then the reading is the live reading and we can use pullMeterReading.
 // If not then we have to fetch the reading from the history.
 // We assume that the offset is old enough that history includes the values we need without rechecking.
-const end = computed(() => {
-  if (_offset.value === 0) {
-    return null;
-  }
-  return add(start.value, {[`${props.period}s`]: _offset.value});
-});
+const endIsLive = computed(() => _offset.value === 0);
 let endCalcScope = null;
 const readingAtEnd = reactive({value: null});
-watch(end, end => {
+watch(endIsLive, (endIsLive) => {
   if (endCalcScope) {
     endCalcScope();
   }
   const scope = effectScope();
   endCalcScope = () => scope.stop();
   scope.run(() => {
-    if (isNullOrUndef(end)) {
+    if (endIsLive) {
       const {value: meterReading} = usePullMeterReading(() => props.name);
       readingAtEnd.value = meterReading;
     } else {
@@ -129,7 +97,6 @@ const isMeterReset = computed(() => readingDiff.value?.usage < 0);
 const {usageStr: startUsageStr} = useMeterReading(readingAtStart, meterReadingInfo);
 const {usageStr: endUsageStr} = useMeterReading(() => readingAtEnd.value, meterReadingInfo);
 const startStr = computed(() => {
-  console.debug('startStr start.value=', start.value);
   if (!start.value) return 'loading';
   switch (props.period) {
     case 'minute':
@@ -186,7 +153,7 @@ const timePeriodStr = computed(() => {
     }
     return 'So far';
   } else {
-    return relativeTimeFormat.format(-_offset.value, props.period);
+    return relativeTimeFormat.format(_offset.value, props.period);
   }
 });
 </script>
