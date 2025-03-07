@@ -11,7 +11,7 @@
     </with-air-temperature>
     <with-air-quality v-if="traits['smartcore.traits.AirQualitySensor']" :name="deviceId" v-slot="{resource}">
       <v-divider class="mt-4 mb-1"/>
-      <air-quality-card v-bind="resource"/>
+      <air-quality-card v-bind="resource" :name="deviceId"/>
     </with-air-quality>
     <v-divider v-if="traits['smartcore.traits.Light']" class="mt-4 mb-1"/>
 
@@ -19,7 +19,7 @@
 
     <v-divider v-if="traits['smartcore.traits.OccupancySensor']" class="mt-4 mb-1"/>
     <with-occupancy v-if="traits['smartcore.traits.OccupancySensor']" :name="deviceId" v-slot="{resource}">
-      <occupancy-card v-bind="resource"/>
+      <occupancy-card v-bind="resource" :name="deviceId"/>
     </with-occupancy>
     <with-electric-demand v-if="traits['smartcore.traits.Electric']" :name="deviceId" v-slot="{resource}">
       <v-divider class="mt-4 mb-1"/>
@@ -27,7 +27,7 @@
     </with-electric-demand>
     <with-meter v-if="traits['smartcore.bos.Meter']" :name="deviceId" v-slot="{resource, info}">
       <v-divider class="mt-4 mb-1"/>
-      <meter-card v-bind="resource" :info="info?.response"/>
+      <meter-card v-bind="resource" :info="info?.response" :name="deviceId"/>
     </with-meter>
     <with-transport v-if="traits['smartcore.bos.Transport']" :name="deviceId" v-slot="{resource, info}">
       <v-divider class="mt-4 mb-1"/>

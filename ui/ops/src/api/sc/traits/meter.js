@@ -1,4 +1,4 @@
-import {fieldMaskFromObject, setProperties} from '@/api/convpb';
+import {fieldMaskFromObject, setProperties, timestampToDate} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb';
 import {pullResource, setValue, trackAction} from '@/api/resource.js';
 import {periodFromObject} from '@/api/sc/types/period';
@@ -51,6 +51,16 @@ export function listMeterReadingHistory(request, tracker = {}) {
   });
 }
 
+/**
+ * @param {MeterReadingRecord | MeterReadingRecord.AsObject} obj
+ * @return {MeterReadingRecord.AsObject & {recordTime: Date|undefined}}
+ */
+export function meterReadingRecordToObject(obj) {
+  if (!obj) return undefined;
+  if (typeof obj.toObject === 'function') obj = obj.toObject();
+  if (obj.recordTime) obj.recordTime = timestampToDate(obj.recordTime);
+  return obj;
+}
 
 /**
  *

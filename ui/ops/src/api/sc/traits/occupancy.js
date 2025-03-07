@@ -1,4 +1,4 @@
-import {fieldMaskFromObject, setProperties} from '@/api/convpb';
+import {fieldMaskFromObject, setProperties, timestampToDate} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb.js';
 import {trackAction} from '@/api/resource';
 import {pullResource, setValue} from '@/api/resource.js';
@@ -38,6 +38,17 @@ export function listOccupancySensorHistory(request, tracker) {
     const api = historyClient(endpoint);
     return api.listOccupancyHistory(listOccupancySensorHistoryRequestFromObject(request));
   });
+}
+
+/**
+ * @param {OccupancyRecord | OccupancyRecord.AsObject} obj
+ * @return {OccupancyRecord.AsObject & {recordTime: Date|undefined}}
+ */
+export function occupancyRecordToObject(obj) {
+  if (!obj) return undefined;
+  if (typeof obj.toObject === 'function') obj = obj.toObject();
+  if (obj.recordTime) obj.recordTime = timestampToDate(obj.recordTime);
+  return obj;
 }
 
 /**
