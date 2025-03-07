@@ -61,7 +61,7 @@ function listWasteRecordsRequestFromObject(obj) {
 function pullWasteRecordsRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new PullWasteRecordsRequest();
-  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  setProperties(dst, obj, 'name', 'updatesOnly');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   return dst;
 }

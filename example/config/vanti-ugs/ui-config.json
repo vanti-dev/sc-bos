@@ -22,8 +22,6 @@
         "clientId": "scos-opsui"
       }
     },
-    "wasteRecordsSource" : "van/uk/brum/ugs/devices/waste",
-    "wasteRecordUnit" : "kg",
     "ops": {
       "pages": [
         {
@@ -598,7 +596,11 @@
             }
           ]
         }
-      ]
+      ],
+      "waste" : {
+        "source" : "van/uk/brum/ugs/devices/waste",
+        "unit" : "kg"
+      }
     },
     "proxy": true,
     "siteFloorPlans": [

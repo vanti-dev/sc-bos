@@ -16,7 +16,7 @@
           {{ timestampToDate(item.wasteCreateTime).toLocaleString() }}
         </template>
         <template #item.weight="{ item }">
-          {{ item.weight.toFixed(2) }} {{ uiConfig.config.wasteRecordUnit ?? "kg" }}
+          {{ item.weight.toFixed(2) }} {{ uiConfig.config.ops.waste.unit ?? "kg" }}
         </template>
         <template #item.disposalMethod="{ item }">
           {{ getDisposalMethod(item.disposalMethod) }}
@@ -37,7 +37,7 @@ import {computed, ref} from 'vue';
 
 const uiConfig = useUiConfigStore();
 const cohort = useCohortStore();
-const name = computed(() => uiConfig.config.wasteRecordsSource ?? cohort.hubNode?.name ?? '');
+const name = computed(() => uiConfig.config.ops.waste.source ?? cohort.hubNode?.name ?? '');
 
 const wasteRecordsRequest = computed(() => ({
   name: name.value
