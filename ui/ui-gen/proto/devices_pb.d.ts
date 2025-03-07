@@ -474,6 +474,11 @@ export class GetDownloadDevicesUrlRequest extends jspb.Message {
   hasHistory(): boolean;
   clearHistory(): GetDownloadDevicesUrlRequest;
 
+  getTable(): GetDownloadDevicesUrlRequest.Table | undefined;
+  setTable(value?: GetDownloadDevicesUrlRequest.Table): GetDownloadDevicesUrlRequest;
+  hasTable(): boolean;
+  clearTable(): GetDownloadDevicesUrlRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetDownloadDevicesUrlRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetDownloadDevicesUrlRequest): GetDownloadDevicesUrlRequest.AsObject;
@@ -487,7 +492,58 @@ export namespace GetDownloadDevicesUrlRequest {
     query?: Device.Query.AsObject,
     mediaType: string,
     history?: types_time_period_pb.Period.AsObject,
+    table?: GetDownloadDevicesUrlRequest.Table.AsObject,
   }
+
+  export class Table extends jspb.Message {
+    getIncludeColsList(): Array<GetDownloadDevicesUrlRequest.Table.Column>;
+    setIncludeColsList(value: Array<GetDownloadDevicesUrlRequest.Table.Column>): Table;
+    clearIncludeColsList(): Table;
+    addIncludeCols(value?: GetDownloadDevicesUrlRequest.Table.Column, index?: number): GetDownloadDevicesUrlRequest.Table.Column;
+
+    getExcludeColsList(): Array<GetDownloadDevicesUrlRequest.Table.Column>;
+    setExcludeColsList(value: Array<GetDownloadDevicesUrlRequest.Table.Column>): Table;
+    clearExcludeColsList(): Table;
+    addExcludeCols(value?: GetDownloadDevicesUrlRequest.Table.Column, index?: number): GetDownloadDevicesUrlRequest.Table.Column;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Table.AsObject;
+    static toObject(includeInstance: boolean, msg: Table): Table.AsObject;
+    static serializeBinaryToWriter(message: Table, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Table;
+    static deserializeBinaryFromReader(message: Table, reader: jspb.BinaryReader): Table;
+  }
+
+  export namespace Table {
+    export type AsObject = {
+      includeColsList: Array<GetDownloadDevicesUrlRequest.Table.Column.AsObject>,
+      excludeColsList: Array<GetDownloadDevicesUrlRequest.Table.Column.AsObject>,
+    }
+
+    export class Column extends jspb.Message {
+      getName(): string;
+      setName(value: string): Column;
+
+      getTitle(): string;
+      setTitle(value: string): Column;
+
+      serializeBinary(): Uint8Array;
+      toObject(includeInstance?: boolean): Column.AsObject;
+      static toObject(includeInstance: boolean, msg: Column): Column.AsObject;
+      static serializeBinaryToWriter(message: Column, writer: jspb.BinaryWriter): void;
+      static deserializeBinary(bytes: Uint8Array): Column;
+      static deserializeBinaryFromReader(message: Column, reader: jspb.BinaryReader): Column;
+    }
+
+    export namespace Column {
+      export type AsObject = {
+        name: string,
+        title: string,
+      }
+    }
+
+  }
+
 }
 
 export class DownloadDevicesUrl extends jspb.Message {
