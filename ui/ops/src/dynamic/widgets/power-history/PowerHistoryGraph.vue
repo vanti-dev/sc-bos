@@ -9,18 +9,19 @@
       <power-history-graph-options-menu
           v-model:duration-option="durationOption"
           v-model:show-conversion="showConversion"
-          @export-csv="demandExportData('Meter Readings')"/>
+          @export-csv="onDownloadClick"/>
     </template>
   </line-chart>
 </template>
 
 <script setup>
 import LineChart from '@/components/charts/LineChart.vue';
+import {triggerDownload} from '@/components/download/download.js';
 import {HOUR, MINUTE, useNow} from '@/components/now.js';
 import useTimePeriod from '@/composables/useTimePeriod.js';
-import {useCarbonIntensity} from '@/stores/carbonIntensity.js';
 import PowerHistoryGraphOptionsMenu from '@/dynamic/widgets/power-history/PowerHistoryGraphOptionsMenu.vue';
 import useMeterHistory from '@/dynamic/widgets/power-history/useMeterHistory.js';
+import {useCarbonIntensity} from '@/stores/carbonIntensity.js';
 import {computed, ref} from 'vue';
 import {useTheme} from 'vuetify';
 
@@ -116,10 +117,31 @@ const getIntensityValue = (range) => range.intensity.actual ?? range.intensity.f
 const yAxisUnit = computed(() => showConversion.value ? 'Grams of CO₂ / hour' : 'kW');
 
 // Fetch the demand and generated data based on the periodStart and periodEnd values and the durationOption's span
-const {seriesData: demandSeriesData, exportData: demandExportData} =
+const {seriesData: demandSeriesData} =
     useMeterHistory(() => props.demand, periodStart, periodEnd, () => durationOption.value.span);
 const {seriesData: generatedSeriesData} =
     useMeterHistory(() => props.generated, periodStart, periodEnd, () => durationOption.value.span);
+
+// download CSV functionality
+const onDownloadClick = async () => {
+  const names = [];
+  if (props.demand) names.push(props.demand);
+  if (props.generated) names.push(props.generated);
+  if (names.length === 0) return null;
+
+  await triggerDownload(
+      props.chartTitle.toLowerCase().replace(' ', '-'),
+      {conditionsList: [{stringIn: {stringsList: names}}]},
+      {startTime: periodStart.value, endTime: periodEnd.value},
+      {
+        includeColsList: [
+          {name: 'timestamp', title: 'Timestamp'},
+          {name: 'md.name', title: 'Device Name'},
+          {name: 'meter.usage', title: 'Meter Reading (kWh)'},
+        ]
+      }
+  )
+}
 
 // Helper function to compute the CO2 series data based on the seriesData value and the kwhToGramsOfCO2 function
 const computeCO2SeriesData = seriesData => seriesData.value.map(({x, y}) => ({x, y: y * kwhToGramsOfCO2(x)}));
