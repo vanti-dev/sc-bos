@@ -59,3 +59,78 @@ export function useDownloadLink(query, history = null) {
     downloadBtnProps
   };
 }
+
+/**
+ * Converts a time period into a string suitable for use in a filename.
+ *
+ * @example
+ * datePeriodString({startTime: new Date(2021, 0, 1), endTime: new Date(2021, 0, 2)}) // '2021-01-01-to-2021-01-02'
+ * datePeriodString({startTime: new Date(2021, 0, 1), endTime: new Date(2021, 1, 1)}) // '2021-01-to-2021-02'
+ * datePeriodString({startTime: new Date(2021, 0, 1), endTime: new Date(2022, 0, 1)}) // '2021-to-2022'
+ *
+ * @param {Period.AsObject | {startTime: Date, endTime: Date} | null | undefined} period
+ * @return {string}
+ */
+function datePeriodString(period) {
+  const toStr = (n) => n.toString().padStart(2, '0');
+  if (period) {
+    const start = timestampToDate(period.startTime);
+    const end = timestampToDate(period.endTime);
+    let s = '';
+    if (start.getFullYear() === end.getFullYear()) {
+      s += `${start.getFullYear()}-`;
+    } else if (start.getMonth() === end.getMonth()) {
+      return `${start.getFullYear()}-to-${end.getFullYear()}`;
+    } else {
+      return `${start.getFullYear()}-${toStr(start.getMonth() + 1)}-to-${end.getFullYear()}-${toStr(end.getMonth() + 1)}`;
+    }
+    if (start.getMonth() === end.getMonth()) {
+      s += `${toStr(start.getMonth() + 1)}-`;
+    } else if (start.getDate() === end.getDate()) {
+      return `${s}${toStr(start.getMonth() + 1)}-to-${toStr(end.getMonth() + 1)}`;
+    } else {
+      return `${s}${toStr(start.getMonth() + 1)}-${toStr(start.getDate())}-to-${toStr(end.getMonth() + 1)}-${toStr(end.getDate())}`;
+    }
+    if (start.getDate() === end.getDate()) {
+      s += `${toStr(start.getDate())}`;
+    } else {
+      return `${s}${toStr(start.getDate())}-to-${toStr(end.getDate())}`;
+    }
+    return s;
+  }
+  const date = new Date();
+  return `${date.getFullYear()}-${toStr(date.getMonth() + 1)}-${toStr(date.getDate())}`;
+}
+
+/**
+ * Call as part of a user interaction (i.e. click) to trigger the browser to download the devices associated with the given query.
+ *
+ * @param {import('vue').MaybeRefOrGetter<string>} [qual] - filename qualifier
+ * @param {import('vue').MaybeRefOrGetter<Device.Query.AsObject>} query - query for devices
+ * @param {import('vue').MaybeRefOrGetter<null | Period.AsObject>} [history] - a period to fetch historical records for
+ * @param {import('vue').MaybeRefOrGetter<null | GetDownloadDevicesUrlRequest.Table.AsObject>} [table] - options for the table
+ * @return {Promise<void>}
+ */
+export async function triggerDownload(qual = 'devices', query, history = null, table = null) {
+  const _history = toValue(history);
+
+  const dateString = datePeriodString(_history);
+  const filename = `${toValue(qual)}-${dateString}.csv`;
+
+  const urlRes = await getDownloadDevicesUrl({
+    filename,
+    query: toValue(query),
+    history,
+    table: toValue(table),
+  });
+
+  const a = document.createElement('a');
+  a.style.position = 'absolute';
+  a.style.top = '0';
+  a.style.visibility = 'hidden';
+  a.href = urlRes.url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
