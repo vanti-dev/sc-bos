@@ -207,6 +207,11 @@ message GetDownloadDevicesUrlRequest {
   }
   // For tabular media types, configure how the table should be formatted.
   Table table = 4;
+
+  // A filename to suggest for the downloaded file.
+  // Typically placed into the Content-Disposition header.
+  // A long filename may be result in an error response from the server.
+  string filename = 5;
 }
 
 message DownloadDevicesUrl {

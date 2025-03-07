@@ -199,7 +199,7 @@ function pullDevicesMetadataRequestFromObject(obj) {
 function getDownloadDevicesUrlRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new GetDownloadDevicesUrlRequest();
-  setProperties(dst, obj, 'mediaType');
+  setProperties(dst, obj, 'mediaType', 'filename');
   dst.setQuery(deviceQueryFromObject(obj.query));
   dst.setHistory(periodFromObject(obj.history));
   dst.setTable(getDownloadDevicesUrlRequestTableFromObject(obj.table));

@@ -479,6 +479,9 @@ export class GetDownloadDevicesUrlRequest extends jspb.Message {
   hasTable(): boolean;
   clearTable(): GetDownloadDevicesUrlRequest;
 
+  getFilename(): string;
+  setFilename(value: string): GetDownloadDevicesUrlRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetDownloadDevicesUrlRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetDownloadDevicesUrlRequest): GetDownloadDevicesUrlRequest.AsObject;
@@ -493,6 +496,7 @@ export namespace GetDownloadDevicesUrlRequest {
     mediaType: string,
     history?: types_time_period_pb.Period.AsObject,
     table?: GetDownloadDevicesUrlRequest.Table.AsObject,
+    filename: string,
   }
 
   export class Table extends jspb.Message {
