@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"net/url"
 	"os"
 	"time"
@@ -30,6 +31,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
 	"github.com/vanti-dev/sc-bos/pkg/app/files"
 	http2 "github.com/vanti-dev/sc-bos/pkg/app/http"
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/app/sysconf"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
@@ -96,6 +98,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		logger.Warn("failed to open local database file - some system components may fail", zap.Error(err),
 			zap.String("path", dbPath))
 	}
+
+	// configurable shared storage for more permanent data
+	store := stores.New(config.Stores)
 
 	certConfig := config.CertConfig
 	// Create a private key if it doesn't exist.
@@ -279,6 +284,16 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	mux.Handle("/__/log/level", httpAuth(config.Logger.Level))
 	// Get version information about this binary
 	mux.Handle("/__/version", httpAuth(Version))
+	if !config.DisablePprof {
+		// pprof endpoints, see net/http/pprof init() for more details
+		pprofMux := http.NewServeMux()
+		pprofMux.HandleFunc("GET /debug/pprof/", pprof.Index)
+		pprofMux.HandleFunc("GET /debug/pprof/cmdline", pprof.Cmdline)
+		pprofMux.HandleFunc("GET /debug/pprof/profile", pprof.Profile)
+		pprofMux.HandleFunc("GET /debug/pprof/symbol", pprof.Symbol)
+		pprofMux.HandleFunc("GET /debug/pprof/trace", pprof.Trace)
+		mux.Handle("GET /__/debug/pprof/", httpAuth(http.StripPrefix("/__", pprofMux)))
+	}
 
 	// configure CORS setup
 	co := cors.New(cors.Options{
@@ -310,6 +325,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Node:             rootNode,
 		Tasks:            &task.Group{},
 		Database:         db,
+		Stores:           store,
 		TokenValidators:  tokenValidator,
 		GRPCCerts:        systemSource,
 		ReflectionServer: reflectionServer,
@@ -321,6 +337,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		ManagerConn:      manager,
 	}
 	c.Defer(manager.Close)
+	c.Defer(store.Close)
 	return c, nil
 }
 
@@ -382,6 +399,7 @@ type Controller struct {
 	Database        *bolthold.Store
 	TokenValidators *token.ValidatorSet
 	GRPCCerts       *pki.SourceSet
+	Stores          *stores.Stores
 
 	ReflectionServer *reflectionapi.Server
 

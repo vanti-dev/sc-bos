@@ -86,7 +86,7 @@ export function useUpdateAirTemperature(name) {
         updateMask: {pathsList: ['temperature_set_point']}
       };
     }
-    if (!req.hasOwnProperty('state')) {
+    if (!Object.hasOwn(req, 'state')) {
       req = {state: /** @type {AirTemperature.AsObject} */ req};
     }
     return setRequestName(req, name);

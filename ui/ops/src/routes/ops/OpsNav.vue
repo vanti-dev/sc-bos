@@ -3,8 +3,6 @@
     <ops-nav-list-items
         :items="overviewChildren"
         :mini-variant="miniVariant"/>
-
-    <v-divider v-if="overviewChildren.length > 1" class="mb-3 mt-n1"/>
     <!-- Main List -->
     <v-list-item
         v-for="(item, key) in enabledMenuItems"
@@ -132,6 +130,12 @@ const menuItems = computed(() => [
     title: 'Security',
     icon: 'mdi-shield-key',
     link: {path: '/ops/security'},
+    badgeType: null
+  },
+  {
+    title: 'Security Events',
+    icon: 'mdi-shield-alert',
+    link: {path: '/ops/security-events'},
     badgeType: null
   }
 ]);

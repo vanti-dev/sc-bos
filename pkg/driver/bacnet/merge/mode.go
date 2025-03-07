@@ -12,13 +12,12 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	modepb "github.com/smart-core-os/sc-golang/pkg/trait/mode"
+	"github.com/smart-core-os/sc-golang/pkg/trait/modepb"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	status2 "github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
-	genmodepb "github.com/vanti-dev/sc-bos/pkg/gentrait/modepb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
@@ -65,7 +64,7 @@ type mode struct {
 
 	model *modepb.Model
 	*modepb.ModelServer
-	infoServer *genmodepb.InfoServer
+	infoServer *modepb.InfoServer
 	config     modeConfig
 	pollTask   *task.Intermittent
 }
@@ -156,7 +155,7 @@ func (t *mode) UpdateModeValues(ctx context.Context, request *traits.UpdateModeV
 		return nil, status.Errorf(codes.Internal, "failed to write mode values: %v", multierr.Combine(errs...))
 	}
 
-	return pollUntil(ctx, 5, t.pollPeer, func(values *traits.ModeValues) bool {
+	return pollUntil(ctx, t.config.DefaultRWConsistencyTimeoutDuration(), t.pollPeer, func(values *traits.ModeValues) bool {
 		for _, e := range allExpected {
 			if values.Values[e.name] != e.value {
 				return false
@@ -222,7 +221,7 @@ responses:
 	return t.model.UpdateModeValues(dst)
 }
 
-func newModeInfoServer(cfg modeConfig) *genmodepb.InfoServer {
+func newModeInfoServer(cfg modeConfig) *modepb.InfoServer {
 	modes := &traits.Modes{}
 	for name, point := range cfg.Modes {
 		mm := &traits.Modes_Mode{
@@ -235,7 +234,7 @@ func newModeInfoServer(cfg modeConfig) *genmodepb.InfoServer {
 		}
 		modes.Modes = append(modes.Modes, mm)
 	}
-	return &genmodepb.InfoServer{
+	return &modepb.InfoServer{
 		Modes: &traits.ModesSupport{
 			AvailableModes: modes,
 		},

@@ -88,7 +88,7 @@ export function useSiteMap(config) {
   const enabledPaths = computed(() => {
     let features = [];
     const _config = toValue(config);
-    if (_config.hasOwnProperty('features')) {
+    if (Object.hasOwn(_config, 'features')) {
       // generate paths list, then convert each one to regex
       features = _generatePaths('', _config.features).map(path => {
         return new RegExp(`^${path.replace(/\*/g, '.*')}$`);

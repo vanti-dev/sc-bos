@@ -1,0 +1,36 @@
+{
+  "features": {
+    "*": true
+  },
+  "config": {
+    "home": "/home",
+    "auth": {
+      "disabled": true,
+      "keycloak": {
+        "realm": "Smart_Core",
+        "url": "http://localhost:8888/",
+        "clientId": "scos-opsui"
+      },
+      "providers": ["localAuth", "deviceFlow", "keyCloakAuth"],
+      "deviceFlow": true
+    },
+    "theme": {
+      "appBranding": {
+        "brandName": "Smart Core",
+        "brandLogo": {
+          "altText": "Smart Core logo - representing nodes and connections",
+          "src": ""
+        }
+      }
+    },
+    "pages": {
+      "home": {
+        "widgets": [
+          {"name": "air-quality"},
+          {"name": "lighting"},
+          {"name": "temperature"}
+        ]
+      }
+    }
+  }
+}

@@ -16,9 +16,9 @@
             :inspect-hub-node-value="inspectHubNodeValue"
             :list-items="props.listItems"
             :node-query="_nodeQuery"
-            @inspectHubNodeAction="inspectHubNodeAction"
-            @resetInspectHubNodeValue="resetInspectHubNodeValue"
-            @forgetHubNodeAction="forgetHubNodeAction"
+            @inspect-hub-node-action="inspectHubNodeAction"
+            @reset-inspect-hub-node-value="resetInspectHubNodeValue"
+            @forget-hub-node-action="forgetHubNodeAction"
             style="min-width: 450px;"/>
 
         <!-- Node details -->
@@ -29,8 +29,8 @@
               v-model:address="address"
               :node-query="_nodeQuery"
               :read-certificates="readCertificates"
-              @enrollHubNodeAction="enrollHubNodeAction"
-              @resetCertificates="resetCertificates"/>
+              @enroll-hub-node-action="enrollHubNodeAction"
+              @reset-certificates="resetCertificates"/>
         </div>
       </div>
     </content-card>

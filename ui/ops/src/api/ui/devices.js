@@ -2,6 +2,7 @@ import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, setValue} from '@/api/resource';
 import {trackAction} from '@/api/resource.js';
+import {periodFromObject} from '@/api/sc/types/period.js';
 import {DevicesApiPromiseClient} from '@vanti-dev/sc-bos-ui-gen/proto/devices_grpc_web_pb';
 import {
   Device,
@@ -127,12 +128,27 @@ function deviceQueryFromObject(obj) {
   if (!obj) return undefined;
   const dst = new Device.Query();
   for (const item of (obj.conditionsList ?? [])) {
-    const dstItem = new Device.Query.Condition();
-    setProperties(dstItem, item, 'field',
-        'stringEqual', 'stringEqualFold',
-        'stringContains', 'stringContainsFold'
-    );
-    dst.addConditions(dstItem);
+    dst.addConditions(deviceQueryConditionFromObject(item));
+  }
+  return dst;
+}
+
+/**
+ * @param {Partial<Device.Query.Condition.AsObject>} obj
+ * @return {undefined|Device.Query.Condition}
+ */
+function deviceQueryConditionFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new Device.Query.Condition();
+  setProperties(dst, obj, 'field',
+      'stringEqual', 'stringEqualFold',
+      'stringContains', 'stringContainsFold'
+  );
+  if (obj.stringIn) {
+    dst.setStringIn(new Device.Query.StringList().setStringsList(obj.stringIn.stringsList));
+  }
+  if (obj.stringInFold) {
+    dst.setStringInFold(new Device.Query.StringList().setStringsList(obj.stringInFold.stringsList));
   }
   return dst;
 }
@@ -185,5 +201,6 @@ function getDownloadDevicesUrlRequestFromObject(obj) {
   const dst = new GetDownloadDevicesUrlRequest();
   setProperties(dst, obj, 'mediaType');
   dst.setQuery(deviceQueryFromObject(obj.query));
+  dst.setHistory(periodFromObject(obj.history));
   return dst;
 }

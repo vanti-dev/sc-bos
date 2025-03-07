@@ -1,5 +1,7 @@
 # Authorization and Access Control
 
+*TODO*: This document has not been updated to reflect the new authentication model.
+
 Authorization (authz) is process of taking some confirmed identity and determining what that identity is allowed to do.
 Access control is the process of enforcing those permissions.
 

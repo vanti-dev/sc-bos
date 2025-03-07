@@ -11,7 +11,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensor"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -26,7 +26,11 @@ type airQualityConfig struct {
 	config.Trait
 	AirPressure *config.ValueSource `json:"airPressure,omitempty"`
 	Co2         *config.ValueSource `json:"co2,omitempty"`
-	VOC         *config.ValueSource `json:"voc,omitempty"`
+	// A measure of particles in the air measuring 10 microns or less in size, in micrograms per cubic meter.
+	Pm10 *config.ValueSource `json:"pm10,omitempty"`
+	// A measure of particles in the air measuring 2.5 microns or less in size, in micrograms per cubic meter.
+	Pm25 *config.ValueSource `json:"pm25,omitempty"`
+	VOC  *config.ValueSource `json:"voc,omitempty"`
 }
 
 func readAirQualitySensorConfig(raw []byte) (cfg airQualityConfig, err error) {
@@ -40,8 +44,8 @@ type airQualitySensor struct {
 	statuses *statuspb.Map
 	logger   *zap.Logger
 
-	model *airqualitysensor.Model
-	*airqualitysensor.ModelServer
+	model *airqualitysensorpb.Model
+	*airqualitysensorpb.ModelServer
 	config   airQualityConfig
 	pollTask *task.Intermittent
 }
@@ -51,7 +55,7 @@ func newAirQualitySensor(client *gobacnet.Client, devices known.Context, statuse
 	if err != nil {
 		return nil, err
 	}
-	model := airqualitysensor.NewModel(resource.WithMessageEquivalence(cmp.Equal(
+	model := airqualitysensorpb.NewModel(resource.WithMessageEquivalence(cmp.Equal(
 		cmp.FloatValueApprox(0, 10), // report co2 changes of 10ppm or more
 	)))
 	t := &airQualitySensor{
@@ -60,7 +64,7 @@ func newAirQualitySensor(client *gobacnet.Client, devices known.Context, statuse
 		statuses:    statuses,
 		logger:      logger,
 		model:       model,
-		ModelServer: airqualitysensor.NewModelServer(model),
+		ModelServer: airqualitysensorpb.NewModelServer(model),
 		config:      cfg,
 	}
 	t.pollTask = task.NewIntermittent(t.startPoll)
@@ -76,7 +80,7 @@ func (aq *airQualitySensor) startPoll(init context.Context) (stop task.StopFn, e
 }
 
 func (aq *airQualitySensor) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(aq.config.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensor.WrapApi(aq))))
+	return a.Announce(aq.config.Name, node.HasTrait(trait.AirQualitySensor, node.WithClients(airqualitysensorpb.WrapApi(aq))))
 }
 
 func (aq *airQualitySensor) GetAirQuality(ctx context.Context, request *traits.GetAirQualityRequest) (*traits.AirQuality, error) {
@@ -120,6 +124,30 @@ func (aq *airQualitySensor) pollPeer(ctx context.Context) (*traits.AirQuality, e
 				return comm.ErrReadProperty{Prop: "co2", Cause: err}
 			}
 			data.CarbonDioxideLevel = &co2
+			return nil
+		})
+	}
+	if aq.config.Pm10 != nil {
+		readValues = append(readValues, *aq.config.Pm10)
+		requestNames = append(requestNames, "Pm10")
+		resProcessors = append(resProcessors, func(response any) error {
+			pm10, err := comm.Float32Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "pm10", Cause: err}
+			}
+			data.ParticulateMatter_10 = &pm10
+			return nil
+		})
+	}
+	if aq.config.Pm25 != nil {
+		readValues = append(readValues, *aq.config.Pm25)
+		requestNames = append(requestNames, "Pm25")
+		resProcessors = append(resProcessors, func(response any) error {
+			pm25, err := comm.Float32Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "pm25", Cause: err}
+			}
+			data.ParticulateMatter_25 = &pm25
 			return nil
 		})
 	}

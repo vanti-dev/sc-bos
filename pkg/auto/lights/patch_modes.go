@@ -11,7 +11,7 @@ import (
 
 // ModePatches contributes patches for changing the state based on mode changes.
 type ModePatches struct {
-	name   string
+	name   deviceName
 	client traits.ModeApiClient
 	logger *zap.Logger
 }
@@ -67,7 +67,7 @@ func (o *pullModeValuesTransition) Patch(s *ReadState) {
 }
 
 type getModeValuesPatcher struct {
-	name string
+	name deviceName
 	res  *traits.ModeValues
 }
 

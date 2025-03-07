@@ -499,20 +499,20 @@ proto.smartcore.bos.Service.prototype.toObject = function(opt_includeInstance) {
  */
 proto.smartcore.bos.Service.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    type: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    active: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
-    lastInactiveTime: (f = msg.getLastInactiveTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    lastActiveTime: (f = msg.getLastActiveTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    loading: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
-    lastLoadingStartTime: (f = msg.getLastLoadingStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    lastLoadingEndTime: (f = msg.getLastLoadingEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    error: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    lastErrorTime: (f = msg.getLastErrorTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    configRaw: jspb.Message.getFieldWithDefault(msg, 11, ""),
-    lastConfigTime: (f = msg.getLastConfigTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    failedAttempts: jspb.Message.getFieldWithDefault(msg, 13, 0),
-    nextAttemptTime: (f = msg.getNextAttemptTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+type: jspb.Message.getFieldWithDefault(msg, 2, ""),
+active: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
+lastInactiveTime: (f = msg.getLastInactiveTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+lastActiveTime: (f = msg.getLastActiveTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+loading: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
+lastLoadingStartTime: (f = msg.getLastLoadingStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+lastLoadingEndTime: (f = msg.getLastLoadingEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+error: jspb.Message.getFieldWithDefault(msg, 9, ""),
+lastErrorTime: (f = msg.getLastErrorTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+configRaw: jspb.Message.getFieldWithDefault(msg, 11, ""),
+lastConfigTime: (f = msg.getLastConfigTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+failedAttempts: jspb.Message.getFieldWithDefault(msg, 13, 0),
+nextAttemptTime: (f = msg.getNextAttemptTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1166,10 +1166,10 @@ proto.smartcore.bos.ServiceMetadata.prototype.toObject = function(opt_includeIns
  */
 proto.smartcore.bos.ServiceMetadata.toObject = function(includeInstance, msg) {
   var f, obj = {
-    totalCount: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    typeCountsMap: (f = msg.getTypeCountsMap()) ? f.toObject(includeInstance, undefined) : [],
-    totalActiveCount: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    totalErrorCount: jspb.Message.getFieldWithDefault(msg, 4, 0)
+totalCount: jspb.Message.getFieldWithDefault(msg, 1, 0),
+typeCountsMap: (f = msg.getTypeCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+totalActiveCount: jspb.Message.getFieldWithDefault(msg, 3, 0),
+totalErrorCount: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -1390,9 +1390,9 @@ proto.smartcore.bos.GetServiceRequest.prototype.toObject = function(opt_includeI
  */
 proto.smartcore.bos.GetServiceRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1601,10 +1601,10 @@ proto.smartcore.bos.PullServiceRequest.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.PullServiceRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1849,7 +1849,7 @@ proto.smartcore.bos.PullServiceResponse.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.PullServiceResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullServiceResponse.Change.toObject, includeInstance)
   };
 
@@ -1964,9 +1964,9 @@ proto.smartcore.bos.PullServiceResponse.Change.prototype.toObject = function(opt
  */
 proto.smartcore.bos.PullServiceResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    service: (f = msg.getService()) && proto.smartcore.bos.Service.toObject(includeInstance, f),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+service: (f = msg.getService()) && proto.smartcore.bos.Service.toObject(includeInstance, f),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2234,8 +2234,8 @@ proto.smartcore.bos.CreateServiceRequest.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.CreateServiceRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    service: (f = msg.getService()) && proto.smartcore.bos.Service.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+service: (f = msg.getService()) && proto.smartcore.bos.Service.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2415,9 +2415,9 @@ proto.smartcore.bos.DeleteServiceRequest.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.DeleteServiceRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -2605,10 +2605,10 @@ proto.smartcore.bos.ListServicesRequest.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.ListServicesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 4, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
+pageToken: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -2853,10 +2853,10 @@ proto.smartcore.bos.ListServicesResponse.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.ListServicesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    servicesList: jspb.Message.toObjectList(msg.getServicesList(),
+servicesList: jspb.Message.toObjectList(msg.getServicesList(),
     proto.smartcore.bos.Service.toObject, includeInstance),
-    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -3066,9 +3066,9 @@ proto.smartcore.bos.PullServicesRequest.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.PullServicesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -3284,7 +3284,7 @@ proto.smartcore.bos.PullServicesResponse.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.PullServicesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullServicesResponse.Change.toObject, includeInstance)
   };
 
@@ -3399,11 +3399,11 @@ proto.smartcore.bos.PullServicesResponse.Change.prototype.toObject = function(op
  */
 proto.smartcore.bos.PullServicesResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    type: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    newValue: (f = msg.getNewValue()) && proto.smartcore.bos.Service.toObject(includeInstance, f),
-    oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.Service.toObject(includeInstance, f),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+type: jspb.Message.getFieldWithDefault(msg, 2, 0),
+newValue: (f = msg.getNewValue()) && proto.smartcore.bos.Service.toObject(includeInstance, f),
+oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.Service.toObject(includeInstance, f),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3750,9 +3750,9 @@ proto.smartcore.bos.StartServiceRequest.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.StartServiceRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    allowActive: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+allowActive: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -3940,9 +3940,9 @@ proto.smartcore.bos.ConfigureServiceRequest.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.ConfigureServiceRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    configRaw: jspb.Message.getFieldWithDefault(msg, 3, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+configRaw: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -4130,9 +4130,9 @@ proto.smartcore.bos.StopServiceRequest.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.StopServiceRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    allowInactive: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+allowInactive: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -4320,8 +4320,8 @@ proto.smartcore.bos.GetServiceMetadataRequest.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.GetServiceMetadataRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4501,9 +4501,9 @@ proto.smartcore.bos.PullServiceMetadataRequest.prototype.toObject = function(opt
  */
 proto.smartcore.bos.PullServiceMetadataRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4719,7 +4719,7 @@ proto.smartcore.bos.PullServiceMetadataResponse.prototype.toObject = function(op
  */
 proto.smartcore.bos.PullServiceMetadataResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullServiceMetadataResponse.Change.toObject, includeInstance)
   };
 
@@ -4834,9 +4834,9 @@ proto.smartcore.bos.PullServiceMetadataResponse.Change.prototype.toObject = func
  */
 proto.smartcore.bos.PullServiceMetadataResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    metadata: (f = msg.getMetadata()) && proto.smartcore.bos.ServiceMetadata.toObject(includeInstance, f),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+metadata: (f = msg.getMetadata()) && proto.smartcore.bos.ServiceMetadata.toObject(includeInstance, f),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {

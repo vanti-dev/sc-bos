@@ -6,12 +6,13 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/history"
 )
 
+//go:generate protomod protoc -- -I . -I ../../../proto --go_out=paths=source_relative:. system_history_page.proto
+
 func normPageSize(pageSize int32) int32 {
-	if pageSize < 0 {
+	if pageSize <= 0 {
 		return 50
 	}
 	if pageSize > 1000 {
@@ -22,26 +23,29 @@ func normPageSize(pageSize int32) int32 {
 
 var errPageTokenEmpty = errors.New("page token empty")
 
-func unmarshalPageToken(pageToken string) (history.Record, error) {
+func unmarshalPageToken(pageToken string) (history.Record, int, error) {
+	fail := func(err error) (history.Record, int, error) {
+		return history.Record{}, 0, err
+	}
 	if pageToken == "" {
-		return history.Record{}, errPageTokenEmpty
+		return fail(errPageTokenEmpty)
 	}
 	bs, err := base64.RawStdEncoding.DecodeString(pageToken)
 	if err != nil {
-		return history.Record{}, err
+		return fail(err)
 	}
-	pbRecord := &gen.HistoryRecord{}
+	pbRecord := &PageToken{}
 	err = proto.Unmarshal(bs, pbRecord)
 	if err != nil {
-		return history.Record{}, err
+		return fail(err)
 	}
-	_, hRecord := protoRecordToStoreRecord(pbRecord)
-	return hRecord, nil
+	_, hRecord := protoRecordToStoreRecord(pbRecord.Record)
+	return hRecord, int(pbRecord.TotalSize), nil
 }
 
-func marshalPageToken(record history.Record) (string, error) {
+func marshalPageToken(record history.Record, totalSize int) (string, error) {
 	record.Payload = nil
 	pbRecord := storeRecordToProtoRecord("", record)
-	bs, err := proto.Marshal(pbRecord)
+	bs, err := proto.Marshal(&PageToken{Record: pbRecord, TotalSize: int32(totalSize)})
 	return base64.RawStdEncoding.EncodeToString(bs), err
 }

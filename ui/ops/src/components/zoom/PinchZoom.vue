@@ -95,6 +95,7 @@ export default {
     },
     center: Boolean
   },
+  emits: ['update:scale', 'update:transform', 'update:transition'],
   data() {
     return {
       panZoomInstance: null,

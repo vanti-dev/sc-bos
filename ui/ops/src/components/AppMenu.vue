@@ -39,24 +39,23 @@ const showMenu = ref(false);
 
 const menuItems = [
   {
-    title: 'Auth',
-    subtitle: 'Edit user accounts, and create API tokens',
-    icon: 'mdi-key',
-    link: {name: 'auth'}
-  },
-  {
-    title: 'Devices',
-    subtitle:
-        'Add/update/delete devices from the system, view device\'s status and configuration, ' +
-        'and control device settings',
-    icon: 'mdi-devices',
-    link: {name: 'devices'}
-  },
-  {
     title: 'Operations',
     subtitle: 'View status dashboards, check notifications and events',
     icon: 'mdi-bell-ring',
     link: {name: 'ops'}
+  },
+  {
+    title: 'Devices',
+    subtitle:
+        'View all devices, check status, and control settings',
+    icon: 'mdi-devices',
+    link: {name: 'devices'}
+  },
+  {
+    title: 'Access Management',
+    subtitle: 'Manage user accounts, and create API tokens',
+    icon: 'mdi-key',
+    link: {name: 'auth'}
   },
   {
     title: 'Workflows & Automations',

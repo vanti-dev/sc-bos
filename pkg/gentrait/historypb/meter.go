@@ -41,7 +41,7 @@ var meterReadingPager = newPageReader(func(r history.Record) (*gen.MeterReadingR
 })
 
 func (m *MeterServer) ListMeterReadingHistory(ctx context.Context, request *gen.ListMeterReadingHistoryRequest) (*gen.ListMeterReadingHistoryResponse, error) {
-	page, size, nextToken, err := meterReadingPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken)
+	page, size, nextToken, err := meterReadingPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}

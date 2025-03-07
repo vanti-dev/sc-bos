@@ -3,19 +3,21 @@
   "listenHTTPS": ":8443",
   "cors": {
     "debugMode": true,
-    "corsOrigins": ["https://localhost:8443", "http://localhost:5173", "http://localhost:4173"]
+    "corsOrigins": ["*"]
   },
   "staticHosting": [
     {"path": "/__/vanti-ugs/", "filePath": "./example/config/vanti-ugs"}
   ],
+  "stores": {
+    "postgres": {
+      "uri": "postgres://postgres@localhost:5432/smart_core",
+      "passwordFile": "./.data/secrets/postgres-password"
+    }
+  },
   "systems": {
     "alerts": {
       "disabled": false,
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@localhost:5432/smart_core",
-        "passwordFile": "./.data/secrets/postgres-password"
-      }
+      "storage": {"type": "postgres"}
     },
     "authn": {
       "user": {
@@ -31,27 +33,15 @@
     },
     "hub": {
       "disabled": true,
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@localhost:5432/smart_core",
-        "passwordFile": "./.data/secrets/postgres-password"
-      }
+      "storage": {"type": "postgres"}
     },
     "publications": {
       "disabled": true,
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@localhost:5432/smart_core",
-        "passwordFile": "./.data/secrets/postgres-password"
-      }
+      "storage": {"type": "postgres"}
     },
     "tenants": {
       "disabled": false,
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@localhost:5432/smart_core",
-        "passwordFile": "./.data/secrets/postgres-password"
-      }
+      "storage": {"type": "postgres"}
     }
   }
 }

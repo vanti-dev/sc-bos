@@ -42,7 +42,7 @@ var airQualityPager = newPageReader(func(r history.Record) (*gen.AirQualityRecor
 })
 
 func (m *AirQualitySensorServer) ListAirQualityHistory(ctx context.Context, request *gen.ListAirQualityHistoryRequest) (*gen.ListAirQualityHistoryResponse, error) {
-	page, size, nextToken, err := airQualityPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken)
+	page, size, nextToken, err := airQualityPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,16 @@
+@use 'vuetify/settings' with (
+// despite its name, this controls how indented list group items are relative to their parent
+$list-item-prepend-size: 4px,
+
+$icon-size: 35px,
+
+// form inputs
+$input-font-size: 36px,
+//$input-max-height: 50px,
+//$input-icon-height: 40px,
+//$input-icon-width: 40px,
+//$input-slot-margin-bottom: 24px,
+
+$card-border-radius: 20px,
+$card-background: rgba(#e0dfde, 0.3),
+);

@@ -33,7 +33,7 @@ func PirsTurnLightsOn(clients node.Clienter, logger *zap.Logger) *BrightnessAuto
 	return &BrightnessAutomation{
 		logger:      logger,
 		clients:     clients,
-		makeActions: newActions,
+		makeActions: newClientActions,
 		newTimer: func(duration time.Duration) (<-chan time.Time, func() bool) {
 			t := time.NewTimer(duration)
 			return t.C, t.Stop
@@ -155,24 +155,47 @@ func (b *BrightnessAutomation) Stop() error {
 // This function backs off to processState which has the actual logic for what to do, given a certain state,
 // this function handles the channel management, retry logic, TTL on decisions, and all that type of thing.
 func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStates <-chan *ReadState, actions actions) error {
-	// the below are the innards of time.Timer, but expanded so we can stop/select on them even if
-	// we don't have a timer active right now
-
+	// retries can happen for a few reasons:
+	// - because we periodically wake up to ensure things are still good
+	// - because something went wrong, and we want to retry after a delay
+	// - because the logic asked us to retry after some ttl
 	retryCounter := 0
-
-	var ttlExpired <-chan time.Time
-	cancelTtlTimer := func() bool { return true }
-
-	var retryFailedProcessing <-chan time.Time
-	cancelRetryTimer := func() bool { return true }
+	var retry <-chan time.Time                 // like time.Timer.C
+	cancelRetry := func() bool { return true } // like time.Timer.Stop
 
 	// writeState is only accessed from this go routine.
 	writeState := NewWriteState(time.Now())
 
-	processStateFn := func(readState *ReadState) error {
-		cancelRetryTimer()
+	var lastProcessedState *ReadState
+	var retryReason string
+	processStateFn := func(readState *ReadState, reasons ...string) error {
+		cancelRetry()
+		retryReason = ""
 
-		ttl, err := processState(ctx, readState, writeState, actions, b.logger.Named("Process State"))
+		if readState.Config.LogTriggers {
+			logProcessStart(b.logger, lastProcessedState, readState, reasons...)
+			lastProcessedState = readState
+		}
+
+		actions := actions
+		if readState.Config.DryRun {
+			actions = nilActions{}
+		}
+		if readState.Config.LogWrites {
+			actions = newLogActions(actions, b.logger)
+		}
+		actions, actionCounts := newCountActions(actions)
+		actions = newCachedActions(actions, readState.Config.WriteCacheExpiry.Or(config.DefaultWriteCacheExpiry))
+
+		t0 := readState.Now()
+		writeState.Before()
+		for _, reason := range reasons {
+			writeState.AddReason(reason) // record why we're running in the completion log
+		}
+		ttl, err := processState(ctx, readState, writeState, actions)
+		writeState.After()
+		duration := readState.Now().Sub(t0)
+
 		if err != nil {
 			// if the context has been cancelled, stop
 			if ctx.Err() != nil {
@@ -183,38 +206,49 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			retryCounter++
 			after := backoffutils.JitterUp(time.Duration(retryCounter)*readState.Config.OnProcessError.BackOffMultiplier.Duration, 0.2)
 
-			b.logger.Error("processState failed; scheduling retry",
-				zap.Error(err),
-				zap.Duration("retryAfter", after),
-			)
-
 			if retryCounter > readState.Config.OnProcessError.MaxRetries {
+				b.logger.Error("processState failed; too many failures, aborting retires",
+					zap.Error(err),
+					zap.Int("retryCounter", retryCounter),
+				)
 				// reset retries to prevent too many repeated attempts
 				retryCounter = 0
-				if !cancelTtlTimer() {
-					<-ttlExpired
+				if !cancelRetry() {
+					<-retry
 				}
 			} else {
+				b.logger.Error("processState failed; scheduling retry",
+					zap.Error(err),
+					zap.Duration("retryAfter", after),
+				)
+				retryReason = "error retry"
 				ttl = after
 			}
 		}
 
 		// ensure it's not too long before we wake up, so the lights are refreshed regularly
 		// so external changes don't stick around forever
-		if ttl <= 0 {
+		switch {
+		case ttl <= 0:
+			retryReason = "refresh"
+			writeState.AddReason("refreshEvery:0")
 			ttl = readState.Config.RefreshEvery.Duration
-		}
-		if ttl > readState.Config.RefreshEvery.Duration {
-			// b.logger.Debug("waking up sooner to ensure lights aren't stale",
-			// 	zap.Duration("after", refreshEvery))
+		case ttl > readState.Config.RefreshEvery.Duration:
+			retryReason = fmt.Sprintf("early refresh:%v->%v", formatDuration(ttl), formatDuration(readState.Config.RefreshEvery.Duration))
+			writeState.AddReasonf("refreshEvery:%v->%v", formatDuration(ttl), formatDuration(readState.Config.RefreshEvery.Duration))
 			ttl = readState.Config.RefreshEvery.Duration
+		case ttl > 0 && retryReason == "":
+			retryReason = "ttl"
 		}
 
 		b.bus.Emit("process-complete", ttl, err, readState, writeState) // used only for testing, notify that processing has completed
 
 		// Setup ttl for the transformed model.
 		// After this time it should be recalculated.
-		ttlExpired, cancelTtlTimer = b.newTimer(ttl)
+		retry, cancelRetry = b.newTimer(ttl)
+
+		// log side effects and why they were made
+		logProcessComplete(b.logger, readState, writeState, actionCounts, duration, ttl, err)
 
 		return nil
 	}
@@ -227,8 +261,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			return ctx.Err()
 		case readState := <-readStates:
 			// reset retries as new valid state received
-			if !cancelTtlTimer() {
-				<-ttlExpired
+			if !cancelRetry() {
+				<-retry
 			}
 			retryCounter = 0
 
@@ -237,13 +271,8 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			if err != nil {
 				return err
 			}
-		case <-ttlExpired:
-			err := processStateFn(lastReadState)
-			if err != nil {
-				return err
-			}
-		case <-retryFailedProcessing:
-			err := processStateFn(lastReadState)
+		case <-retry:
+			err := processStateFn(lastReadState, retryReason)
 			if err != nil {
 				return err
 			}

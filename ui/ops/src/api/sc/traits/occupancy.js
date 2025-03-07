@@ -34,7 +34,7 @@ export function pullOccupancy(request, resource) {
  * @return {Promise<ListOccupancyHistoryResponse.AsObject>}
  */
 export function listOccupancySensorHistory(request, tracker) {
-  return trackAction('OccupancySensorHistory.listOccupancySensorHistory', tracker, (endpoint) => {
+  return trackAction('OccupancySensorHistory.listOccupancySensorHistory', tracker ?? {}, (endpoint) => {
     const api = historyClient(endpoint);
     return api.listOccupancyHistory(listOccupancySensorHistoryRequestFromObject(request));
   });
@@ -87,7 +87,7 @@ function pullOccupancyRequestFromObject(obj) {
 function listOccupancySensorHistoryRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new ListOccupancyHistoryRequest();
-  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize', 'orderBy');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setPeriod(periodFromObject(obj.period));
   return dst;

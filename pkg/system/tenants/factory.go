@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
@@ -28,6 +30,7 @@ func NewSystem(services system.Services) *System {
 	s := &System{
 		node:    services.Node,
 		hubNode: services.CohortManager,
+		stores:  services.Stores,
 		logger:  services.Logger.Named("tenants"),
 	}
 	s.Service = service.New(
@@ -44,6 +47,7 @@ type System struct {
 	undos   []node.Undo
 	node    *node.Node
 	hubNode node.Remote
+	stores  *stores.Stores
 	logger  *zap.Logger
 }
 
@@ -72,7 +76,13 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			return fmt.Errorf("can't create proxied TenantApi service: %w", err)
 		}
 	case config.StorageTypePostgres:
-		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		var pool *pgxpool.Pool
+		var err error
+		if cfg.Storage.ConnectConfig.IsZero() {
+			_, _, pool, err = s.stores.Postgres()
+		} else {
+			pool, err = pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		}
 		if err != nil {
 			return fmt.Errorf("connect: %w", err)
 		}

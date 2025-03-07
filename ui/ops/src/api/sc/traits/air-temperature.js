@@ -51,7 +51,7 @@ export function updateAirTemperature(request, tracker) {
  * @return {Promise<ListAirTemperatureHistoryResponse.AsObject>}
  */
 export function listAirTemperatureHistory(request, tracker) {
-  return trackAction('AirTemperatureHistory.listAirTemperatureHistory', tracker, endpoint => {
+  return trackAction('AirTemperatureHistory.listAirTemperatureHistory', tracker ?? {}, endpoint => {
     const api = historyClient(endpoint);
     return api.listAirTemperatureHistory(listAirTemperatureHistoryRequestFromObject(request));
   });
@@ -166,7 +166,7 @@ export function airTemperatureModeToString(mode) {
  * @return {string}
  */
 export function temperatureToString(value) {
-  if (value.hasOwnProperty('valueCelsius')) {
+  if (Object.hasOwn(value, 'valueCelsius')) {
     return value.valueCelsius.toFixed(1) + '°C';
   }
   return '-';
@@ -179,7 +179,7 @@ export function temperatureToString(value) {
 function listAirTemperatureHistoryRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new ListAirTemperatureHistoryRequest();
-  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize', 'orderBy');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setPeriod(periodFromObject(obj.period));
   return dst;

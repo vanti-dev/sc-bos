@@ -12,15 +12,23 @@ import (
 )
 
 const (
-	DefaultRefreshEvery      = time.Minute
+	DefaultRefreshEvery      = 15 * time.Minute
 	DefaultMaxRetries        = 2
 	DefaultBackOffMultiplier = time.Millisecond * 500
+	DefaultWriteCacheExpiry  = 10 * time.Minute
 )
 
 // Root represent the configuration parameters available for the lighting automation.
 // This should be convertable to/from json.
 type Root struct {
 	auto.Config
+
+	// Debug and troubleshooting
+	DryRun          bool `json:"dryRun,omitempty"`          // Don't actually write to devices
+	LogWrites       bool `json:"logWrites,omitempty"`       // Log each write to a device as they happen
+	LogEmptyChanges bool `json:"logEmptyChanges,omitempty"` // Log even when no change has been made
+	LogTTLDelays    bool `json:"logTTLDelays,omitempty"`    // Log the TTL when no writes were performed, less chatty than LogEmptyChanges
+	LogTriggers     bool `json:"logTriggers,omitempty"`     // Log what triggered the auto (refresh, ttl, etc), can be chatty and expensive
 
 	OccupancySensors  []string `json:"occupancySensors,omitempty"`
 	Lights            []string `json:"lights,omitempty"`
@@ -40,6 +48,9 @@ type Root struct {
 
 	// RefreshEvery guarantees the last read state will eventually be processed if no event happens for this long
 	RefreshEvery jsontypes.Duration `json:"refreshEvery,omitempty"`
+	// WriteCacheExpiry controls how old a past write must be before it stops affecting future writes.
+	// A value of 0 means no expiry, a value <0 means no caching, see DefaultWriteCacheExpiry.
+	WriteCacheExpiry *jsontypes.Duration `json:"writeCacheExpiry,omitempty"`
 
 	// OnProcessError provides parameters for when updating the brightness fails
 	// based on occupancy sensor outcomes

@@ -105,6 +105,7 @@ Zones are a feature that was invented for sc-bos, sc-api and the rest of Smart C
 We've implemented zones as a collection of features, a feature is like 'lighting' or 'occupancy'. Zones can have many
 features based on their config. Here are all the supported features:
 
+- Access
 - Air Quality
 - Electric
 - Enter Leave
@@ -113,6 +114,7 @@ features based on their config. Here are all the supported features:
 - Meter
 - Mode
 - Occupancy - including converting an Enter Leave trait into occupancy
+- Open Close
 - Status
 
 Adding new features is MODERATE, to add a new feature we have to design how grouping works for that trait type. For
@@ -133,8 +135,8 @@ the permissions step in this UI. You can deselect this to show all device names 
 Zones are configured via a JSON file stored on the SC BOS machine, the config describes the name and features of the
 zone, listing, for example, the list of light names or thermostat names.
 
-Adjusting the devices in a zone or adding new zones are EASY changes for a dev to make, it currently requires system
-access and skills to edit JSON files. There is an outstanding task to enable user editable config that removes these
+Adjusting the devices in a zone or adding new zones are EASY changes for a dev to make, it currently requires knowledge
+of the zone config JSON structure. There is an outstanding task to enable user editable config that removes this
 restrictions, but it is still in the design phase. Fixing this is HARD.
 
 ### Automations
@@ -880,11 +882,10 @@ overview dashboards.
 Also called the overview pages, these collect a number of different metrics about the building or zones and show them
 via dedicated widgets. From energy charts, to temperature gauges.
 
-Each widget is custom made by the developers, each page layout is custom designed by the developers. We have programmed
-some simple toggles for showing/hiding widgets.
-
-The dashboards also support _sub pages_ where you can define a hierarchy for different dashboard pages. This hierarchy
-is purely in the ui config and can be any level deep.
+Widgets on the dashboards are made by developers and configured to be used on the dashboard. Dashboard pages and
+sub-pages are flexible in layout and widget combinations. They are set up via the UI Config JSON file which is written
+by a developer and deployed to each node. There are plans to add user customisable dashboards, but this is HARD and
+needs design.
 
 #### Notifications
 
@@ -923,6 +924,8 @@ You can filter the devices by subsystem, floor or zone. You can search for speci
 
 Clicking a device shows more details about the traits the device implements and allows interaction with that device if
 possible, for example change the set point or adjust the mode.
+
+You can download a CSV of the current or historical data for the filtered devices on the device table.
 
 ### Admin
 

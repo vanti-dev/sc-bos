@@ -7,7 +7,7 @@
     </with-status>
     <with-air-temperature v-if="traits['smartcore.traits.AirTemperature']" :name="deviceId" v-slot="{resource, update}">
       <v-divider class="mt-4 mb-1"/>
-      <air-temperature-card v-bind="resource" @updateAirTemperature="update"/>
+      <air-temperature-card v-bind="resource" @update-air-temperature="update"/>
     </with-air-temperature>
     <with-air-quality v-if="traits['smartcore.traits.AirQualitySensor']" :name="deviceId" v-slot="{resource}">
       <v-divider class="mt-4 mb-1"/>
@@ -29,6 +29,10 @@
       <v-divider class="mt-4 mb-1"/>
       <meter-card v-bind="resource" :info="info?.response" :name="deviceId"/>
     </with-meter>
+    <with-transport v-if="traits['smartcore.bos.Transport']" :name="deviceId" v-slot="{resource, info}">
+      <v-divider class="mt-4 mb-1"/>
+      <transport-card v-bind="resource" :info="info?.response"/>
+    </with-transport>
     <v-divider v-if="traits['smartcore.bsp.EmergencyLight']" class="mt-4 mb-1"/>
     <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
     <v-divider v-if="traits['smartcore.traits.Mode']" class="mt-4 mb-1"/>
@@ -55,6 +59,8 @@ import OccupancyCard from '@/traits/occupancy/OccupancyCard.vue';
 import WithOccupancy from '@/traits/occupancy/WithOccupancy.vue';
 import StatusLogCard from '@/traits/status/StatusLogCard.vue';
 import WithStatus from '@/traits/status/WithStatus.vue';
+import TransportCard from '@/traits/transport/TransportCard.vue';
+import WithTransport from '@/traits/transport/WithTransport.vue';
 import UdmiCard from '@/traits/udmi/UdmiCard.vue';
 
 defineProps({

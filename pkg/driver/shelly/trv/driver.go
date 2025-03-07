@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/shelly/trv/config"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -47,7 +47,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		d.devices = append(d.devices, trv)
 
-		announcer.Announce(device.Name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(trv.airTemperatureServer))))
+		announcer.Announce(device.Name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperaturepb.WrapApi(trv.airTemperatureServer))))
 	}
 
 	return nil

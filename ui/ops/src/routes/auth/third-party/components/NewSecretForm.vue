@@ -103,7 +103,7 @@ import {DAY, useNow} from '@/components/now.js';
 import RelativeDate from '@/components/RelativeDate.vue';
 import {useErrorStore} from '@/components/ui-error/error';
 import {add} from 'date-fns';
-import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 import {useDate} from 'vuetify';
 
 const emit = defineEmits(['finished']);
@@ -148,7 +148,6 @@ const expiresAtString = computed({
   }
 });
 const customExpiryMenuVisible = ref(false);
-watch(() => newSecret.expiresAt, (n, o) => console.debug('expiresAt', n, typeof n, o, typeof o));
 
 const {now} = useNow(DAY);
 const computedExpiresAt = computed(() => {

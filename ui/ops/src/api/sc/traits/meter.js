@@ -44,7 +44,7 @@ export function describeMeterReading(request, tracker) {
  * @param {ActionTracker<ListMeterReadingHistoryResponse.AsObject>} [tracker]
  * @return {Promise<ListMeterReadingHistoryResponse.AsObject>}
  */
-export function listMeterReadingHistory(request, tracker) {
+export function listMeterReadingHistory(request, tracker = {}) {
   return trackAction('MeterReadingHistory.listMeterReadingHistory', tracker, endpoint => {
     const api = historyClient(endpoint);
     return api.listMeterReadingHistory(listMeterReadingHistoryRequestFromObject(request));
@@ -118,7 +118,7 @@ function describeMeterReadingRequestFromObject(obj) {
 function listMeterReadingHistoryRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new ListMeterReadingHistoryRequest();
-  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize', 'orderBy');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setPeriod(periodFromObject(obj.period));
   return dst;

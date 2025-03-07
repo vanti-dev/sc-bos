@@ -17,4 +17,4 @@ export default function(now, span = 15 * MINUTE, size = 24 * HOUR) {
     periodStart,
     periodEnd
   };
-};
+}

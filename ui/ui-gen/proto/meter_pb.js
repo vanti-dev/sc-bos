@@ -213,9 +213,9 @@ proto.smartcore.bos.MeterReading.prototype.toObject = function(opt_includeInstan
  */
 proto.smartcore.bos.MeterReading.toObject = function(includeInstance, msg) {
   var f, obj = {
-    usage: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
-    startTime: (f = msg.getStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+usage: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
+startTime: (f = msg.getStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -445,8 +445,8 @@ proto.smartcore.bos.MeterReadingSupport.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.MeterReadingSupport.toObject = function(includeInstance, msg) {
   var f, obj = {
-    resourceSupport: (f = msg.getResourceSupport()) && types_info_pb.ResourceSupport.toObject(includeInstance, f),
-    unit: jspb.Message.getFieldWithDefault(msg, 2, "")
+resourceSupport: (f = msg.getResourceSupport()) && types_info_pb.ResourceSupport.toObject(includeInstance, f),
+unit: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -626,8 +626,8 @@ proto.smartcore.bos.GetMeterReadingRequest.prototype.toObject = function(opt_inc
  */
 proto.smartcore.bos.GetMeterReadingRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -807,9 +807,9 @@ proto.smartcore.bos.PullMeterReadingsRequest.prototype.toObject = function(opt_i
  */
 proto.smartcore.bos.PullMeterReadingsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -1025,7 +1025,7 @@ proto.smartcore.bos.PullMeterReadingsResponse.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.PullMeterReadingsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullMeterReadingsResponse.Change.toObject, includeInstance)
   };
 
@@ -1140,9 +1140,9 @@ proto.smartcore.bos.PullMeterReadingsResponse.Change.prototype.toObject = functi
  */
 proto.smartcore.bos.PullMeterReadingsResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    meterReading: (f = msg.getMeterReading()) && proto.smartcore.bos.MeterReading.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+meterReading: (f = msg.getMeterReading()) && proto.smartcore.bos.MeterReading.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1410,7 +1410,7 @@ proto.smartcore.bos.DescribeMeterReadingRequest.prototype.toObject = function(op
  */
 proto.smartcore.bos.DescribeMeterReadingRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {

@@ -12,7 +12,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperature"
+	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
@@ -43,8 +43,8 @@ type airTemperature struct {
 	statuses *statuspb.Map
 	logger   *zap.Logger
 
-	model *airtemperature.Model
-	*airtemperature.ModelServer
+	model *airtemperaturepb.Model
+	*airtemperaturepb.ModelServer
 	config   airTemperatureConfig
 	pollTask *task.Intermittent
 }
@@ -54,7 +54,7 @@ func newAirTemperature(client *gobacnet.Client, devices known.Context, statuses 
 	if err != nil {
 		return nil, err
 	}
-	model := airtemperature.NewModel(resource.WithMessageEquivalence(cmp.Equal(
+	model := airtemperaturepb.NewModel(resource.WithMessageEquivalence(cmp.Equal(
 		cmp.FloatValueApprox(0, 0.1), // report temperature changes of 0.1C or more
 	)))
 	t := &airTemperature{
@@ -63,7 +63,7 @@ func newAirTemperature(client *gobacnet.Client, devices known.Context, statuses 
 		statuses:    statuses,
 		logger:      logger,
 		model:       model,
-		ModelServer: airtemperature.NewModelServer(model),
+		ModelServer: airtemperaturepb.NewModelServer(model),
 		config:      cfg,
 	}
 	t.pollTask = task.NewIntermittent(t.startPoll)
@@ -79,7 +79,7 @@ func (t *airTemperature) startPoll(init context.Context) (stop task.StopFn, err 
 }
 
 func (t *airTemperature) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(t.config.Name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperature.WrapApi(t))))
+	return a.Announce(t.config.Name, node.HasTrait(trait.AirTemperature, node.WithClients(airtemperaturepb.WrapApi(t))))
 }
 
 func (t *airTemperature) GetAirTemperature(ctx context.Context, request *traits.GetAirTemperatureRequest) (*traits.AirTemperature, error) {
@@ -116,9 +116,8 @@ func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *trai
 	if err != nil {
 		return nil, err
 	}
-
 	// todo: not strictly correct as we're not paying attention to the require customisation properties that ModelServer would give us
-	return pollUntil(ctx, 5, t.pollPeer, func(temperature *traits.AirTemperature) bool {
+	return pollUntil(ctx, t.config.DefaultRWConsistencyTimeoutDuration(), t.pollPeer, func(temperature *traits.AirTemperature) bool {
 		return temperature.GetTemperatureSetPoint().ValueCelsius == float64(newSetPoint)
 	})
 }

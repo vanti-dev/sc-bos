@@ -100,6 +100,7 @@ export function useDevicesMetadataField(value, field) {
 
 const NO_FLOOR = '< no floor >';
 const NO_ZONE = '< no zone >';
+const NO_SUBSYSTEM = '< no subsystem >';
 
 /**
  * @typedef {Object} UseDevicesOptions
@@ -111,7 +112,7 @@ const NO_ZONE = '< no zone >';
  * @property {string} search
  *   - if present adds a condition for each word {stringContainsFold: word}
  * @property {Device.Query.Condition.AsObject[]} conditions
- * @property {(value: Device.AsObject, index: number, array: Device.AsObject[]) => boolean} filter
+ * @property {(value: Device.AsObject, index?: number, array?: Device.AsObject[]) => boolean} filter
  */
 
 /**
@@ -187,7 +188,9 @@ export function useDeviceFloorList() {
   const {value: md} = usePullDevicesMetadata('metadata.location.floor');
   const {keys: listOfFloors} = useDevicesMetadataField(md, 'metadata.location.floor');
   const floorList = computed(() => {
-    return ['All', ...listOfFloors.value.map(v => v === '' ? NO_FLOOR : v)];
+    return ['All', ...listOfFloors.value
+        .sort((a, b) => a.localeCompare(b, undefined, {numeric: true}))
+        .map(v => v === '' ? NO_FLOOR : v)];
   });
   return {floorList};
 }
@@ -204,21 +207,25 @@ export function useDeviceFloorList() {
 export function useDeviceFilters(forcedFilters) {
   const {value: md} = usePullDevicesMetadata([
     'metadata.location.floor',
-    'metadata.location.zone'
+    'metadata.location.zone',
+    'metadata.membership.subsystem'
   ]);
   const {keys: floorKeys} = useDevicesMetadataField(md, 'metadata.location.floor');
   const {keys: zoneKeys} = useDevicesMetadataField(md, 'metadata.location.zone');
+  const {keys: subsystemKeys} = useDevicesMetadataField(md, 'metadata.membership.subsystem');
   const filterOpts = computed(() => {
     const filters = [];
     const defaults = [];
 
     const forced = toValue(forcedFilters) ?? {};
 
-    if (!Object.hasOwn(forced, 'floor')) {
-      const floors = floorKeys.value.map(f => f === '' ? NO_FLOOR : f);
+    if (!Object.hasOwn(forced, 'metadata.location.floor')) {
+      const floors = [...floorKeys.value]
+          .sort((a, b) => a.localeCompare(b, undefined, {numeric: true}))
+          .map(f => f === '' ? NO_FLOOR : f);
       if (floors.length > 1) {
         filters.push({
-          key: 'floor',
+          key: 'metadata.location.floor',
           icon: 'mdi-layers-triple-outline',
           title: 'Floor',
           type: 'list',
@@ -227,15 +234,28 @@ export function useDeviceFilters(forcedFilters) {
       }
     }
 
-    if (!Object.hasOwn(forced, 'zone')) {
+    if (!Object.hasOwn(forced, 'metadata.location.zone')) {
       const zones = zoneKeys.value.map(z => z === '' ? NO_ZONE : z);
       if (zones.length > 1) {
         filters.push({
-          key: 'zone',
+          key: 'metadata.location.zone',
           icon: 'mdi-select-all',
           title: 'Zone',
           type: 'list',
           items: zones
+        });
+      }
+    }
+
+    if (!Object.hasOwn(forced, 'metadata.membership.subsystem')) {
+      const subsystems = subsystemKeys.value.map(s => s === '' ? NO_SUBSYSTEM : s);
+      if (subsystems.length > 1) {
+        filters.push({
+          key: 'metadata.membership.subsystem',
+          icon: 'mdi-cube-outline',
+          title: 'Subsystem',
+          type: 'list',
+          items: subsystems
         });
       }
     }
@@ -249,18 +269,22 @@ export function useDeviceFilters(forcedFilters) {
     if (value === undefined || value === null) return null;
     switch (field) {
       case 'floor':
+      case 'metadata.location.floor':
         return {field: 'metadata.location.floor', stringEqualFold: value === NO_FLOOR ? '' : value};
       case 'zone':
+      case 'metadata.location.zone':
         return {field: 'metadata.location.zone', stringEqualFold: value === NO_ZONE ? '' : value};
       case 'subsystem':
-        return {field: 'metadata.membership.subsystem', stringEqualFold: value};
+      case 'metadata.membership.subsystem':
+        return {field: 'metadata.membership.subsystem', stringEqualFold: value === NO_SUBSYSTEM ? '' : value};
+      default:
+        return {field: field, stringEqualFold: value};
     }
-    return null;
   };
 
   const forcedConditions = computed(() => {
     const res = [];
-    for (const [k, v] of Object.entries(forcedFilters.value)) {
+    for (const [k, v] of Object.entries(toValue(forcedFilters) ?? {})) {
       const cond = toCondition(k, v);
       if (cond) res.push(cond);
     }

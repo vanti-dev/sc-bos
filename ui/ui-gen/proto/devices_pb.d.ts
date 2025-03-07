@@ -4,6 +4,7 @@ import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 import * as traits_metadata_pb from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb'; // proto import: "traits/metadata.proto"
 import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb'; // proto import: "types/change.proto"
+import * as types_time_period_pb from '@smart-core-os/sc-api-grpc-web/types/time/period_pb'; // proto import: "types/time/period.proto"
 
 
 export class Device extends jspb.Message {
@@ -64,6 +65,16 @@ export namespace Device {
       getStringContainsFold(): string;
       setStringContainsFold(value: string): Condition;
 
+      getStringIn(): Device.Query.StringList | undefined;
+      setStringIn(value?: Device.Query.StringList): Condition;
+      hasStringIn(): boolean;
+      clearStringIn(): Condition;
+
+      getStringInFold(): Device.Query.StringList | undefined;
+      setStringInFold(value?: Device.Query.StringList): Condition;
+      hasStringInFold(): boolean;
+      clearStringInFold(): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -81,6 +92,8 @@ export namespace Device {
         stringEqualFold: string,
         stringContains: string,
         stringContainsFold: string,
+        stringIn?: Device.Query.StringList.AsObject,
+        stringInFold?: Device.Query.StringList.AsObject,
       }
 
       export enum ValueCase { 
@@ -89,6 +102,29 @@ export namespace Device {
         STRING_EQUAL_FOLD = 3,
         STRING_CONTAINS = 4,
         STRING_CONTAINS_FOLD = 5,
+        STRING_IN = 6,
+        STRING_IN_FOLD = 7,
+      }
+    }
+
+
+    export class StringList extends jspb.Message {
+      getStringsList(): Array<string>;
+      setStringsList(value: Array<string>): StringList;
+      clearStringsList(): StringList;
+      addStrings(value: string, index?: number): StringList;
+
+      serializeBinary(): Uint8Array;
+      toObject(includeInstance?: boolean): StringList.AsObject;
+      static toObject(includeInstance: boolean, msg: StringList): StringList.AsObject;
+      static serializeBinaryToWriter(message: StringList, writer: jspb.BinaryWriter): void;
+      static deserializeBinary(bytes: Uint8Array): StringList;
+      static deserializeBinaryFromReader(message: StringList, reader: jspb.BinaryReader): StringList;
+    }
+
+    export namespace StringList {
+      export type AsObject = {
+        stringsList: Array<string>,
       }
     }
 
@@ -433,6 +469,11 @@ export class GetDownloadDevicesUrlRequest extends jspb.Message {
   getMediaType(): string;
   setMediaType(value: string): GetDownloadDevicesUrlRequest;
 
+  getHistory(): types_time_period_pb.Period | undefined;
+  setHistory(value?: types_time_period_pb.Period): GetDownloadDevicesUrlRequest;
+  hasHistory(): boolean;
+  clearHistory(): GetDownloadDevicesUrlRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetDownloadDevicesUrlRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetDownloadDevicesUrlRequest): GetDownloadDevicesUrlRequest.AsObject;
@@ -445,6 +486,7 @@ export namespace GetDownloadDevicesUrlRequest {
   export type AsObject = {
     query?: Device.Query.AsObject,
     mediaType: string,
+    history?: types_time_period_pb.Period.AsObject,
   }
 }
 

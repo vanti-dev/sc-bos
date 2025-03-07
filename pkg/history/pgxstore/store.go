@@ -152,15 +152,28 @@ func (s slice) Slice(from, to history.Record) history.Slice {
 }
 
 func (s slice) Read(ctx context.Context, into []history.Record) (int, error) {
+	return s.read(ctx, into, false)
+}
+
+func (s slice) ReadDesc(ctx context.Context, into []history.Record) (int, error) {
+	return s.read(ctx, into, true)
+}
+
+func (s slice) read(ctx context.Context, into []history.Record, desc bool) (int, error) {
 	var where []string
 	var args []any
 	where, args = s.sourceClause(where, args)
-	where, args, err := s.rangeClause(where, args)
+	where, args, err := s.readRangeClause(where, args)
 	if err != nil {
 		return 0, err
 	}
 
-	sql := fmt.Sprintf("SELECT id, create_time, payload FROM history WHERE %s ORDER BY id ASC LIMIT %v", strings.Join(where, " AND "), len(into))
+	orderBy := "id ASC"
+	if desc {
+		orderBy = "id DESC"
+	}
+
+	sql := fmt.Sprintf("SELECT id, create_time, payload FROM history WHERE %s ORDER BY %s LIMIT %v", strings.Join(where, " AND "), orderBy, len(into))
 	rows, err := s.pool.Query(ctx, sql, args...)
 	if err != nil {
 		return 0, err
@@ -184,7 +197,7 @@ func (s slice) Len(ctx context.Context) (int, error) {
 	var where []string
 	var args []any
 	where, args = s.sourceClause(where, args)
-	where, args, err := s.rangeClause(where, args)
+	where, args, err := s.lenRangeClause(where, args)
 	if err != nil {
 		return 0, err
 	}
@@ -196,11 +209,12 @@ func (s slice) Len(ctx context.Context) (int, error) {
 	return count, err
 }
 
-func (s *slice) sourceClause(clauses []string, args []any) ([]string, []any) {
+func (s slice) sourceClause(clauses []string, args []any) ([]string, []any) {
 	return append(clauses, fmt.Sprintf("source = $%d", len(args)+1)), append(args, s.source)
 }
 
-func (s *slice) rangeClause(clauses []string, args []any) ([]string, []any, error) {
+// lenRangeClause returns the where clauses and arguments for the Len operation.
+func (s slice) lenRangeClause(clauses []string, args []any) ([]string, []any, error) {
 	switch {
 	case s.from.ID != "":
 		id, err := idToSql(s.from.ID)
@@ -224,6 +238,49 @@ func (s *slice) rangeClause(clauses []string, args []any) ([]string, []any, erro
 	case !s.to.CreateTime.IsZero():
 		clauses = append(clauses, fmt.Sprintf("create_time < $%d", len(args)+1))
 		args = append(args, s.to.CreateTime)
+	}
+	return clauses, args, nil
+}
+
+// readRangeClause returns the where clause and arguments for the Read operations.
+func (s slice) readRangeClause(clauses []string, args []any) ([]string, []any, error) {
+	switch {
+	case s.from.ID != "":
+		id, err := idToSql(s.from.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		clauses = append(clauses, fmt.Sprintf("id >= $%d", len(args)+1))
+		args = append(args, id)
+	case !s.from.CreateTime.IsZero():
+		sourceIdx := len(args) + 1
+		args = append(args, s.source)
+		timeIdx := len(args) + 1
+		args = append(args, s.from.CreateTime)
+		clauses = append(clauses, fmt.Sprintf(`id >= (
+	select min(id) from history where source = $%[1]d and create_time = (
+		select min(create_time) from history where source = $%[1]d and create_time >= $%[2]d
+	)
+)`, sourceIdx, timeIdx))
+	}
+	switch {
+	case s.to.ID != "":
+		id, err := idToSql(s.to.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		clauses = append(clauses, fmt.Sprintf("id < $%d", len(args)+1))
+		args = append(args, id)
+	case !s.to.CreateTime.IsZero():
+		sourceIdx := len(args) + 1
+		args = append(args, s.source)
+		timeIdx := len(args) + 1
+		args = append(args, s.to.CreateTime)
+		clauses = append(clauses, fmt.Sprintf(`id <= (
+	select max(id) from history where source = $%[1]d and create_time = (
+		select max(create_time) from history where source = $%[1]d and create_time < $%[2]d
+	)
+)`, sourceIdx, timeIdx))
 	}
 	return clauses, args, nil
 }

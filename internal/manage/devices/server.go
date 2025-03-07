@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -37,6 +39,7 @@ type Server struct {
 	downloadKey          func() ([]byte, error)
 	downloadExpiry       time.Duration // defaults to 1 hour
 	downloadExpiryLeeway time.Duration // defaults to 1 minute
+	downloadPageTimeout  time.Duration // defaults to 10 seconds, applies to get and history cursor calls
 }
 
 func NewServer(n *node.Node, opts ...Option) *Server {
@@ -48,6 +51,7 @@ func NewServer(n *node.Node, opts ...Option) *Server {
 		downloadExpiry:       time.Hour,
 		downloadExpiryLeeway: time.Minute,
 		downloadKey:          newHMACKeyGen(64), // todo: replace with something that works between nodes
+		downloadPageTimeout:  10 * time.Second,
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -60,6 +64,10 @@ func (s *Server) Register(server *grpc.Server) {
 }
 
 func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest) (*gen.ListDevicesResponse, error) {
+	if err := validateQuery(request.GetQuery()); err != nil {
+		return nil, err
+	}
+
 	var pageToken PageToken
 	if request.PageToken != "" {
 		var err error
@@ -132,6 +140,10 @@ func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest)
 }
 
 func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.DevicesApi_PullDevicesServer) error {
+	if err := validateQuery(request.GetQuery()); err != nil {
+		return err
+	}
+
 	changes := s.node.PullAllMetadata(server.Context(),
 		resource.WithUpdatesOnly(request.UpdatesOnly),
 		resource.WithReadMask(subMask(request.ReadMask, "metadata")),
@@ -253,6 +265,25 @@ func subMask(mask *fieldmaskpb.FieldMask, prefix string) *fieldmaskpb.FieldMask 
 			}
 		}
 		return newMask
+	}
+	return nil
+}
+
+func validateQuery(q *gen.Device_Query) error {
+	if q == nil {
+		return nil
+	}
+	for _, c := range q.Conditions {
+		if in := c.GetStringIn(); in != nil {
+			if len(in.Strings) > 100 {
+				return status.Errorf(codes.InvalidArgument, "condition string_in len > 100")
+			}
+		}
+		if in := c.GetStringInFold(); in != nil {
+			if len(in.Strings) > 100 {
+				return status.Errorf(codes.InvalidArgument, "condition string_in_fold len > 100")
+			}
+		}
 	}
 	return nil
 }

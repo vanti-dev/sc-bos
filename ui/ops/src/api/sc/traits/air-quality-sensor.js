@@ -32,7 +32,7 @@ export function pullAirQualitySensor(request, resource) {
  * @return {Promise<ListAirQualityHistoryResponse.AsObject>}
  */
 export function listAirQualitySensorHistory(request, tracker) {
-  return trackAction('AirQualitySensorHistory.listAirQualitySensorHistory', tracker, (endpoint) => {
+  return trackAction('AirQualitySensorHistory.listAirQualitySensorHistory', tracker ?? {}, (endpoint) => {
     const api = historyClient(endpoint);
     return api.listAirQualityHistory(listAirQualitySensorHistoryRequestFromObject(request));
   });
@@ -85,7 +85,7 @@ function pullAirQualityRequestFromObject(obj) {
 function listAirQualitySensorHistoryRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new ListAirQualityHistoryRequest();
-  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize', 'orderBy');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setPeriod(periodFromObject(obj.period));
   return dst;

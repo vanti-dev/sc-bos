@@ -97,7 +97,7 @@ proto.smartcore.bos.PullMessagesRequest.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.PullMessagesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -227,9 +227,9 @@ proto.smartcore.bos.PullMessagesResponse.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.PullMessagesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    topic: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    payload: jspb.Message.getFieldWithDefault(msg, 3, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+topic: jspb.Message.getFieldWithDefault(msg, 2, ""),
+payload: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {

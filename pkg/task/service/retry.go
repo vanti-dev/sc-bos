@@ -27,6 +27,7 @@ func (a abortRetry) Unwrap() error {
 type retryOptions struct {
 	InitialDelay time.Duration // time between the first and second attempt
 	MaxDelay     time.Duration // maximum time between attempts
+	MinDelay     time.Duration // minimum time between attempts
 	Factor       float64       // factor by which to increase the delay between attempts
 	MaxAttempts  int           // maximum number of attempts, 0 means unlimited
 
@@ -59,6 +60,7 @@ type RetryOption func(*retryOptions)
 var defaultRetryOptions = retryOptions{
 	InitialDelay: 500 * time.Millisecond,
 	MaxDelay:     30 * time.Second,
+	MinDelay:     500 * time.Millisecond,
 	Factor:       1.5,
 	MaxAttempts:  0,
 	Logger:       func(logContext RetryContext) {},
@@ -85,6 +87,12 @@ func RetryWithFactor(f float64) RetryOption {
 func RetryWithMaxAttempts(n int) RetryOption {
 	return func(o *retryOptions) {
 		o.MaxAttempts = n
+	}
+}
+
+func RetryWithMinDelay(d time.Duration) RetryOption {
+	return func(o *retryOptions) {
+		o.MinDelay = d
 	}
 }
 

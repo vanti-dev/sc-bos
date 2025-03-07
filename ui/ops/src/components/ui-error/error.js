@@ -21,7 +21,6 @@ export const useErrorStore = defineStore('error', () => {
    */
   function addError(resource, error) {
     const e = /** @type {UiError} */{name: error.name, source: error.error, timestamp: Date.now(), id: _id++};
-    // eslint-disable-next-line max-len
     console.error(`[${(new Date(e.timestamp)).toLocaleTimeString()}] ${e.name} | ${statusCodeToString(e.source.code)}: ${e.source.message}`, e.source);
 
     _errorMap.value[e.id] = e;
@@ -51,7 +50,7 @@ export const useErrorStore = defineStore('error', () => {
    * @return {WatchStopHandle}
    */
   function registerTracker(actionTracker) {
-    if (actionTracker.hasOwnProperty('error')) {
+    if (Object.hasOwn(actionTracker, 'error')) {
       return watch(() => actionTracker.error, (error) => {
         if (error && error.code !== StatusCode.OK) {
           addError(actionTracker, error);
@@ -86,7 +85,7 @@ export const useErrorStore = defineStore('error', () => {
    * @return {WatchStopHandle}
    */
   function registerCollection(collection) {
-    if (collection.hasOwnProperty('streamError')) {
+    if (Object.hasOwn(collection, 'streamError')) {
       return watch(() => collection.streamError, (error) => {
         if (error && error.code !== StatusCode.OK) {
           addError(collection, error);

@@ -98,6 +98,12 @@
                   "props": {
                     "forceQuery": {"floor": "Basement"}
                   }
+                },
+                {
+                  "component": "builtin:devices/DeviceTable",
+                  "props": {
+                    "forceQuery": {"metadata.location.floor": "Basement"}
+                  }
                 }
               ],
               "after": [
@@ -127,6 +133,15 @@
                         "forceQuery": {
                           "floor": "Basement",
                           "zone": "Copper Room"
+                        }
+                      }
+                    },
+                    {
+                      "component": "builtin:devices/DeviceTable",
+                      "props": {
+                        "forceQuery": {
+                          "metadata.location.floor": "Basement",
+                          "metadata.location.zone": "Copper Room"
                         }
                       }
                     }
@@ -160,6 +175,15 @@
                           "zone": "Cotswold Room"
                         }
                       }
+                    },
+                    {
+                      "component": "builtin:devices/DeviceTable",
+                      "props": {
+                        "forceQuery": {
+                          "metadata.location.floor": "Basement",
+                          "metadata.location.zone": "Cotswold Room"
+                        }
+                      }
                     }
                   ],
                   "after": [
@@ -189,6 +213,15 @@
                         "forceQuery": {
                           "floor": "Basement",
                           "zone": "Kaolin Room"
+                        }
+                      }
+                    },
+                    {
+                      "component": "builtin:devices/DeviceTable",
+                      "props": {
+                        "forceQuery": {
+                          "metadata.location.floor": "Basement",
+                          "metadata.location.zone": "Kaolin Room"
                         }
                       }
                     }
@@ -258,6 +291,14 @@
                   "props": {
                     "forceQuery": {"floor": "Ground Floor"}
                   }
+                },
+                {
+                  "component": "builtin:devices/DeviceTable",
+                  "props": {
+                    "forceQuery": {
+                      "metadata.location.floor": "Ground Floor"
+                    }
+                  }
                 }
               ],
               "after": [
@@ -289,6 +330,15 @@
                           "zone": "Reception"
                         }
                       }
+                    },
+                    {
+                      "component": "builtin:devices/DeviceTable",
+                      "props": {
+                        "forceQuery": {
+                          "metadata.location.floor": "Ground Floor",
+                          "metadata.location.zone": "Reception"
+                        }
+                      }
                     }
                   ],
                   "after": [
@@ -318,6 +368,15 @@
                         "forceQuery": {
                           "floor": "Ground Floor",
                           "zone": "Teal Room"
+                        }
+                      }
+                    },
+                    {
+                      "component": "builtin:devices/DeviceTable",
+                      "props": {
+                        "forceQuery": {
+                          "metadata.location.floor": "Ground Floor",
+                          "metadata.location.zone": "Teal Room"
                         }
                       }
                     }
@@ -364,6 +423,15 @@
                           "zone": "Green Room"
                         }
                       }
+                    },
+                    {
+                      "component": "builtin:devices/DeviceTable",
+                      "props": {
+                        "forceQuery": {
+                          "metadata.location.floor": "Ground Floor",
+                          "metadata.location.zone": "Green Room"
+                        }
+                      }
                     }
                   ],
                   "after": [
@@ -393,6 +461,15 @@
                         "forceQuery": {
                           "floor": "Ground Floor",
                           "zone": "Yellow Room"
+                        }
+                      }
+                    },
+                    {
+                      "component": "builtin:devices/DeviceTable",
+                      "props": {
+                        "forceQuery": {
+                          "metadata.location.floor": "Ground Floor",
+                          "metadata.location.zone": "Yellow Room"
                         }
                       }
                     }
@@ -450,6 +527,14 @@
                   "props": {
                     "forceQuery": {"floor": "First Floor"}
                   }
+                },
+                {
+                  "component": "builtin:devices/DeviceTable",
+                  "props": {
+                    "forceQuery": {
+                      "metadata.location.floor": "First Floor"
+                    }
+                  }
                 }
               ],
               "after": [
@@ -481,6 +566,15 @@
                           "zone": "The Bank"
                         }
                       }
+                    },
+                    {
+                      "component": "builtin:devices/DeviceTable",
+                      "props": {
+                        "forceQuery": {
+                          "metadata.location.floor": "First Floor",
+                          "metadata.location.zone": "The Bank"
+                        }
+                      }
                     }
                   ],
                   "after": [
@@ -499,6 +593,115 @@
                   ]
                 }
               ]
+            }
+          ]
+        },
+        {
+          "title": "Energy",
+          "icon": "mdi-flash",
+          "layout": "builtin:LayoutMainSide",
+          "path": "energy",
+          "mainWidgetMinHeight": 0,
+          "sideWidth": 420,
+          "main": [
+            {
+              "component": "builtin:energy/EnergyHistoryCard",
+              "props": {
+                "title": "Electricity Usage",
+                "totalConsumptionName": "van/uk/brum/ugs/zones/building",
+                "totalProductionName": "van/uk/brum/ugs/zones/building/generated",
+                "subConsumptionNames": [
+                  "van/uk/brum/ugs/zones/floors/ground",
+                  "van/uk/brum/ugs/zones/floors/basement"
+                ]
+              }
+            },
+            {
+              "component": "builtin:power-history/PowerHistoryCard",
+              "props": {
+                "demand": "van/uk/brum/ugs/zones/building",
+                "generated": "van/uk/brum/ugs/zones/building/generated",
+                "occupancy": "van/uk/brum/ugs/zones/building"
+              }
+            }
+          ],
+          "after": [
+            {
+              "component": "builtin:container/FlexRow",
+              "props": {
+                "itemMinWidth": "14em",
+                "title": "Total Today",
+                "items": [
+                  {
+                    "component": "builtin:meter/ConsumptionCard",
+                    "props": {
+                      "name": "van/uk/brum/ugs/zones/building",
+                      "period": "day",
+                      "title": "Consumed"
+                    }
+                  },
+                  {
+                    "component": "builtin:meter/ConsumptionCard",
+                    "props": {
+                      "name": "van/uk/brum/ugs/zones/building/generated",
+                      "period": "day",
+                      "title": "Produced"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "component": "builtin:container/FlexRow",
+              "props": {
+                "itemMinWidth": "14em",
+                "title": "Total Month",
+                "items": [
+                  {
+                    "component": "builtin:meter/ConsumptionCard",
+                    "props": {
+                      "name": "van/uk/brum/ugs/zones/building",
+                      "period": "month",
+                      "title": "Consumed"
+                    }
+                  },
+                  {
+                    "component": "builtin:meter/ConsumptionCard",
+                    "props": {
+                      "name": "van/uk/brum/ugs/zones/building/generated",
+                      "period": "month",
+                      "title": "Produced"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "component": "builtin:container/FlexRow",
+              "props": {
+                "itemMinWidth": "14em",
+                "title": "Last Month",
+                "items": [
+                  {
+                    "component": "builtin:meter/ConsumptionCard",
+                    "props": {
+                      "name": "van/uk/brum/ugs/zones/building",
+                      "period": "month",
+                      "offset": 1,
+                      "title": "Consumed"
+                    }
+                  },
+                  {
+                    "component": "builtin:meter/ConsumptionCard",
+                    "props": {
+                      "name": "van/uk/brum/ugs/zones/building/generated",
+                      "period": "month",
+                      "offset": 1,
+                      "title": "Produced"
+                    }
+                  }
+                ]
+              }
             }
           ]
         }

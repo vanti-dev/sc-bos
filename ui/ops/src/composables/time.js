@@ -1,4 +1,21 @@
-import {computed, onMounted, onUnmounted, ref, toValue} from 'vue';
+import {isNullOrUndef} from '@/util/types.js';
+import {
+  add,
+  addDays,
+  addHours,
+  addMinutes,
+  addMonths,
+  addWeeks,
+  addYears,
+  startOfDay,
+  startOfHour,
+  startOfMinute,
+  startOfMonth,
+  startOfWeek,
+  startOfYear
+} from 'date-fns';
+import {computed, effectScope, onMounted, onScopeDispose, onUnmounted, reactive, ref, toValue, watch} from 'vue';
+import {setTimeout, clearTimeout} from 'safe-timers'
 
 /**
  * Returns values that can show time since a given time.
@@ -62,4 +79,203 @@ export function useTimeSince(date) {
     showTimeSince,
     timeSinceStr
   };
+}
+
+/**
+ * Returns a ref to a date that is updated to represent the start of a period.
+ * The startOf function converts a date to the start of a period.
+ * The nextOf function converts a date to an equivalent date in the next period.
+ *
+ * @example
+ * const t = useStartOfPeriod(startOfDay, addDays);
+ * // t will always be the start of the current day
+ *
+ * @param {function(Date):Date} startOf - return a new date that is at the start of the period enclosing the passed Date
+ * @param {function(Date, number):Date} nextOf - return a new date that is some number of periods after the passed Date
+ * @return {import('vue').Ref<Date>}
+ */
+export function useStartOfPeriod(startOf, nextOf) {
+  const tRef = ref(startOf(new Date()));
+  let startTimeHandle = 0;
+  const updateStartTime = () => {
+    const n = new Date();
+    const t = startOf(n);
+    tRef.value = t;
+    const startOfNext = startOf(nextOf(t, 1));
+    startTimeHandle = setTimeout(updateStartTime, startOfNext.getTime() - n.getTime());
+  }
+
+  updateStartTime();
+  onScopeDispose(() => {
+    clearTimeout(startTimeHandle);
+  });
+
+  return tRef;
+}
+
+export const useStartOf = {
+  minute: () => useStartOfPeriod(startOfMinute, addMinutes),
+  hour: () => useStartOfPeriod(startOfHour, addHours),
+  day: () => useStartOfPeriod(startOfDay, addDays),
+  week: () => useStartOfPeriod(startOfWeek, addWeeks),
+  month: () => useStartOfPeriod(startOfMonth, addMonths),
+  year: () => useStartOfPeriod(startOfYear, addYears)
+}
+
+/**
+ * @typedef {keyof useStartOf} NamedPeriod
+ */
+
+/**
+ * Returns whether the given period is a known named period.
+ * Named periods can be used with functions like usePeriod and exist in useStartOf.
+ *
+ * @param {any} period
+ * @return {boolean}
+ */
+export function isNamedPeriod(period) {
+  return typeof period === 'string' && Object.hasOwn(useStartOf, period);
+}
+
+/**
+ * @type {Record<keyof useStartOf, keyof useStartOf>}
+ */
+export const previousNamedPeriod = {
+  hour: 'minute',
+  day: 'hour',
+  week: 'day',
+  month: 'day',
+  year: 'month'
+}
+
+/**
+ * Tracks a period of time.
+ * The start and end dates can be named periods like 'day' or 'week', in which case the period will represent the current period.
+ * When using named dates, offset can be used to adjust the period in use.
+ * For example an offset of -1 with a period of 'day' will represent the previous day.
+ *
+ * @param {import('vue').MaybeRefOrGetter<keyof useStartOf | string | number | Date>} start
+ * @param {import('vue').MaybeRefOrGetter<keyof useStartOf | string | number | Date>} end
+ * @param {import('vue').MaybeRefOrGetter<null | undefined | number | string>} [offset]
+ * @return {{
+ *   start: import('vue').Ref<Date | null>,
+ *   end: import('vue').Ref<Date | null>
+ * }}
+ */
+export function usePeriod(start, end, offset) {
+  const _offset = computed(() => {
+    const o = toValue(offset);
+    if (!o) return 0;
+    return parseInt(o);
+  });
+  /**
+   * @param {string} period
+   * @param {import('vue').MaybeRefOrGetter<Date>} t
+   * @param {number} [plus]
+   * @return {ComputedRef<Date>}
+   */
+  const useOffset = (period, t, plus = 0) => {
+    return computed(() => {
+      const o = _offset.value + plus;
+      if (o === 0) return toValue(t);
+      return add(toValue(t), {[`${period}s`]: o});
+    });
+  }
+
+  /**
+   * A helper composable that returns a ref to a date at the start of t + plus.
+   *
+   * @param {import('vue').MaybeRefOrGetter<NamedPeriod | Date | number | string>} t
+   * @param {number} [plus]
+   * @return {import('vue').ComputedRef<null | Date>}
+   */
+  const usePeriodBound = (t, plus = 0) => {
+    const res = reactive({value: /** @type {Date | null} */ null});
+
+    let closeScope = () => {};
+    onScopeDispose(() => closeScope());
+
+    watch(() => toValue(t), (t, oldT) => {
+      if (oldT === t) return;
+      closeScope();
+      if (isNullOrUndef(t)) {
+        res.value = null;
+        return;
+      }
+      if (isNamedPeriod(t)) {
+        const scope = effectScope();
+        closeScope = () => scope.stop();
+        scope.run(() => {
+          const d = useStartOf[t]();
+          res.value = useOffset(t, d, plus);
+        });
+        return;
+      }
+
+      // There's a quirk of Vue that we have to work around here.
+      // If res.value had ever been a ref, i.e. t used to be a named period,
+      // then when we reassign res.value here Vue will check that whether that
+      // assignment should be written to the current ref value.
+      // As our named period branch assigns it to a computed prop, Vue will
+      // fail at that step because computed props are read-only.
+      //
+      // To get around this we assign a ref to res.value which causes Vue to
+      // replace res.value with the new ref instead of trying to write to the old ref.
+      res.value = computed(() => {
+        if (typeof t === 'number') return new Date(t);
+        if (typeof t === 'string') return new Date(t);
+        if (t instanceof Date) return t;
+        return null;
+      });
+    }, {immediate: true});
+
+    return computed(() => res.value);
+  }
+
+  return {
+    start: usePeriodBound(start),
+    end: usePeriodBound(end, 1)
+  }
+}
+
+/**
+ * Returns a ref containing the leading segment of dates that are in the past.
+ *
+ * @example
+ * // if now is 14:10
+ * const dates = usePastDates([13:00, 14:00, 15:00, 16:00]);
+ * // dates.value will be [13:00, 14:00]
+ *
+ * @param {import('vue').MaybeRefOrGetter<Date[]>} dates
+ * @return {import('vue').ComputedRef<Date[]>}
+ */
+export function usePastDates(dates) {
+  const now = ref(new Date()); // the current time, but in a resolution suitable for working out the tense of dates
+  let nowHandle = 0;
+  onScopeDispose(() => clearTimeout(nowHandle));
+
+  watch(() => toValue(dates), (dates) => {
+    const updateNow = () => {
+      clearTimeout(nowHandle);
+      const t = new Date();
+      now.value = t;
+      const nextDate = dates.find((b) => b.getTime() > t.getTime());
+      if (!nextDate) return;
+      const delay = nextDate.getTime() - t.getTime();
+      nowHandle = setTimeout(() => updateNow(), delay);
+    }
+    updateNow();
+  }, {immediate: true});
+
+  return computed(() => {
+    const t = now.value.getTime();
+    const _dates = toValue(dates);
+    if (_dates[_dates.length - 1].getTime() < t) return _dates;
+    const res = [];
+    for (let i = 0; i < _dates.length; i++) {
+      if (_dates[i].getTime() > t) break;
+      res.push(_dates[i]);
+    }
+    return res;
+  });
 }

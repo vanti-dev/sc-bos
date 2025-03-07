@@ -2,12 +2,14 @@ package router
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/dynamicpb"
 )
 
 // Loopback implements grpc.ClientConnInterface using a MethodResolver to find the real connection for each request.
@@ -196,6 +198,34 @@ func (c copyRecver) RecvMsg(m any) error {
 	if !ok {
 		return ErrNonProtoMessage
 	}
-	proto.Merge(mProto, c.from)
+	safeProtoMerge(mProto, c.from)
 	return nil
+}
+
+// safeProtoMerge is like proto.Merge but doesn't panic when using dynamicpb messages.
+//
+// proto.Merge will panic if the descriptors of src and dest aren't equal according to ==.
+// This has problems for us because we're mixing dynamic and explicit messages, which have subtly different descriptors in ways that are implementation dependent.
+// To fix this we fall back to marshalling and unmarshalling the messages, which is what proto.Merge is intended to imitate.
+func safeProtoMerge(dst, src proto.Message) {
+	_, srcDynamic := src.(*dynamicpb.Message)
+	_, dstDynamic := dst.(*dynamicpb.Message)
+	if !srcDynamic && !dstDynamic {
+		proto.Merge(dst, src)
+		return
+	}
+
+	// fall back to marshalling and unmarshalling,
+	// we assume that the descriptors are the same if their names are the same
+	if want, got := dst.ProtoReflect().Descriptor().FullName(), src.ProtoReflect().Descriptor().FullName(); want != got {
+		panic(fmt.Sprintf("descriptor mismatch: %v != %v", got, want))
+	}
+	data, err := proto.MarshalOptions{AllowPartial: true}.Marshal(src)
+	if err != nil {
+		panic(fmt.Sprintf("src marshal: %v", err))
+	}
+	err = proto.UnmarshalOptions{AllowPartial: true, Merge: true}.Unmarshal(data, dst)
+	if err != nil {
+		panic(fmt.Sprintf("dst unmarshal: %v", err))
+	}
 }

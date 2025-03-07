@@ -42,7 +42,6 @@ export function usePoll(fn, period = 30 * SECOND) {
         await fn();
       } catch (e) {
         // errors aren't important, the tracker will capture them
-        // eslint-disable-next-line no-console
         console.debug('polling error:', e.message ?? e);
       } finally {
         lastPoll.value = new Date();

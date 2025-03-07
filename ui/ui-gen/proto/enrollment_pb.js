@@ -207,12 +207,12 @@ proto.smartcore.bos.Enrollment.prototype.toObject = function(opt_includeInstance
  */
 proto.smartcore.bos.Enrollment.toObject = function(includeInstance, msg) {
   var f, obj = {
-    targetName: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    targetAddress: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    managerName: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    managerAddress: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    certificate: msg.getCertificate_asB64(),
-    rootCas: msg.getRootCas_asB64()
+targetName: jspb.Message.getFieldWithDefault(msg, 1, ""),
+targetAddress: jspb.Message.getFieldWithDefault(msg, 2, ""),
+managerName: jspb.Message.getFieldWithDefault(msg, 3, ""),
+managerAddress: jspb.Message.getFieldWithDefault(msg, 4, ""),
+certificate: msg.getCertificate_asB64(),
+rootCas: msg.getRootCas_asB64()
   };
 
   if (includeInstance) {
@@ -636,7 +636,7 @@ proto.smartcore.bos.CreateEnrollmentRequest.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.CreateEnrollmentRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    enrollment: (f = msg.getEnrollment()) && proto.smartcore.bos.Enrollment.toObject(includeInstance, f)
+enrollment: (f = msg.getEnrollment()) && proto.smartcore.bos.Enrollment.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -787,7 +787,7 @@ proto.smartcore.bos.UpdateEnrollmentRequest.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.UpdateEnrollmentRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    enrollment: (f = msg.getEnrollment()) && proto.smartcore.bos.Enrollment.toObject(includeInstance, f)
+enrollment: (f = msg.getEnrollment()) && proto.smartcore.bos.Enrollment.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1140,8 +1140,8 @@ proto.smartcore.bos.TestEnrollmentResponse.prototype.toObject = function(opt_inc
  */
 proto.smartcore.bos.TestEnrollmentResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    error: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    code: jspb.Message.getFieldWithDefault(msg, 2, 0)
+error: jspb.Message.getFieldWithDefault(msg, 1, ""),
+code: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {

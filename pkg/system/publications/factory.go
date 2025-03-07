@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/publication"
+	"github.com/smart-core-os/sc-golang/pkg/trait/publicationpb"
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/publications/config"
@@ -30,6 +32,7 @@ func NewSystem(services system.Services) *System {
 		logger:    services.Logger.Named("publications"),
 		name:      services.Node.Name(),
 		announcer: node.NewReplaceAnnouncer(services.Node),
+		stores:    services.Stores,
 	}
 	s.Service = service.New(
 		service.MonoApply(s.applyConfig),
@@ -46,6 +49,8 @@ type System struct {
 
 	name      string
 	announcer *node.ReplaceAnnouncer
+
+	stores *stores.Stores
 }
 
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
@@ -54,7 +59,13 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 	switch cfg.Storage.Type {
 	case config.StorageTypePostgres:
-		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		var pool *pgxpool.Pool
+		var err error
+		if cfg.Storage.ConnectConfig.IsZero() {
+			_, _, pool, err = s.stores.Postgres()
+		} else {
+			pool, err = pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		}
 		if err != nil {
 			return fmt.Errorf("connect: %w", err)
 		}
@@ -66,7 +77,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		// Note, ctx in cancelled each time config is updated (and on stop) because we use MonoApply in NewSystem
 		announcer := s.announcer.Replace(ctx)
-		announcer.Announce(s.name, node.HasTrait(trait.Publication, node.WithClients(publication.WrapApi(server))))
+		announcer.Announce(s.name, node.HasTrait(trait.Publication, node.WithClients(publicationpb.WrapApi(server))))
 	default:
 		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)
 	}

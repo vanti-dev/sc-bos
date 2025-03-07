@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -21,6 +22,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/internal/util/pki/expire"
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
@@ -49,6 +51,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 		certs:           services.GRPCCerts,
 		logger:          services.Logger.Named("hub"),
 		boltDb:          services.Database,
+		stores:          services.Stores,
 	}
 	s.Service = service.New(
 		service.MonoApply(s.applyConfig),
@@ -72,6 +75,7 @@ type System struct {
 	clientTLSConfig *tls.Config
 	logger          *zap.Logger
 	boltDb          *bolthold.Store
+	stores          *stores.Stores
 
 	certs   *pki.SourceSet
 	sources []pki.Source
@@ -96,14 +100,22 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		hubConn = conn
 	case config.StorageTypePostgres:
-		pool, err := pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+		var pool *pgxpool.Pool
+		var err error
+		if cfg.Storage.ConnectConfig.IsZero() {
+			_, _, pool, err = s.stores.Postgres()
+		} else {
+			pool, err = pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
+			if err != nil {
+				go func() {
+					<-ctx.Done()
+					pool.Close()
+				}()
+			}
+		}
 		if err != nil {
 			return fmt.Errorf("connect: %w", err)
 		}
-		go func() {
-			<-ctx.Done()
-			pool.Close()
-		}()
 
 		server, err := pgxhub.NewServerFromPool(ctx, pool, pgxhub.WithLogger(s.logger))
 		if err != nil {

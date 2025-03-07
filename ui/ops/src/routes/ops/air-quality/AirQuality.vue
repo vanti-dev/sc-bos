@@ -277,11 +277,11 @@ const chartOptions = computed(() => {
             const value = context.parsed.y;
 
             // Find the matching acronym.label
-            const acronymLabel = Object.entries(acronyms).find(([key, value]) => {
+            const acronymLabel = Object.entries(acronyms).find(([, value]) => {
               return value.label === label;
             })?.[1]?.label;
 
-            const acronymUnit = Object.entries(acronyms).find(([key, value]) => {
+            const acronymUnit = Object.entries(acronyms).find(([, value]) => {
               return value.label === label;
             })?.[1]?.unit;
 

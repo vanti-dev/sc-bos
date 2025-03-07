@@ -27,11 +27,11 @@ export default function usePageCtx(filterCtx, page) {
     const p = toValue(page);
     if (p === null || p === undefined) return null;
     if (typeof p === 'string') {
-      if (!filterCtx.filtersByKey.value.hasOwnProperty(p)) throw new Error(`No filter with key ${p}`);
+      if (!Object.hasOwn(filterCtx.filtersByKey.value, p)) throw new Error(`No filter with key ${p}`);
       return filterCtx.filtersByKey.value[p];
     }
     if (typeof p === 'object') {
-      if (!p.hasOwnProperty('key')) throw new Error('Filter object must have a key');
+      if (!Object.hasOwn(p, 'key')) throw new Error('Filter object must have a key');
       return p;
     }
 

@@ -500,17 +500,17 @@ proto.smartcore.bos.Alert.prototype.toObject = function(opt_includeInstance) {
  */
 proto.smartcore.bos.Alert.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    description: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    resolveTime: (f = msg.getResolveTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    acknowledgement: (f = msg.getAcknowledgement()) && proto.smartcore.bos.Alert.Acknowledgement.toObject(includeInstance, f),
-    severity: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    floor: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    zone: jspb.Message.getFieldWithDefault(msg, 8, ""),
-    source: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    federation: jspb.Message.getFieldWithDefault(msg, 10, ""),
-    subsystem: jspb.Message.getFieldWithDefault(msg, 11, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+description: jspb.Message.getFieldWithDefault(msg, 2, ""),
+createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+resolveTime: (f = msg.getResolveTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+acknowledgement: (f = msg.getAcknowledgement()) && proto.smartcore.bos.Alert.Acknowledgement.toObject(includeInstance, f),
+severity: jspb.Message.getFieldWithDefault(msg, 6, 0),
+floor: jspb.Message.getFieldWithDefault(msg, 7, ""),
+zone: jspb.Message.getFieldWithDefault(msg, 8, ""),
+source: jspb.Message.getFieldWithDefault(msg, 9, ""),
+federation: jspb.Message.getFieldWithDefault(msg, 10, ""),
+subsystem: jspb.Message.getFieldWithDefault(msg, 11, "")
   };
 
   if (includeInstance) {
@@ -749,8 +749,8 @@ proto.smartcore.bos.Alert.Acknowledgement.prototype.toObject = function(opt_incl
  */
 proto.smartcore.bos.Alert.Acknowledgement.toObject = function(includeInstance, msg) {
   var f, obj = {
-    acknowledgeTime: (f = msg.getAcknowledgeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    author: (f = msg.getAuthor()) && proto.smartcore.bos.Alert.Acknowledgement.Author.toObject(includeInstance, f)
+acknowledgeTime: (f = msg.getAcknowledgeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+author: (f = msg.getAuthor()) && proto.smartcore.bos.Alert.Acknowledgement.Author.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -877,9 +877,9 @@ proto.smartcore.bos.Alert.Acknowledgement.Author.prototype.toObject = function(o
  */
 proto.smartcore.bos.Alert.Acknowledgement.Author.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    displayName: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    email: jspb.Message.getFieldWithDefault(msg, 3, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+displayName: jspb.Message.getFieldWithDefault(msg, 2, ""),
+email: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -1141,19 +1141,19 @@ proto.smartcore.bos.Alert.Query.prototype.toObject = function(opt_includeInstanc
  */
 proto.smartcore.bos.Alert.Query.toObject = function(includeInstance, msg) {
   var f, obj = {
-    createdNotBefore: (f = msg.getCreatedNotBefore()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    createdNotAfter: (f = msg.getCreatedNotAfter()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    severityNotBelow: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    severityNotAbove: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    floor: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    zone: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    source: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    federation: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    subsystem: jspb.Message.getFieldWithDefault(msg, 13, ""),
-    acknowledged: jspb.Message.getBooleanFieldWithDefault(msg, 8, false),
-    resolved: jspb.Message.getBooleanFieldWithDefault(msg, 10, false),
-    resolvedNotBefore: (f = msg.getResolvedNotBefore()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    resolvedNotAfter: (f = msg.getResolvedNotAfter()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+createdNotBefore: (f = msg.getCreatedNotBefore()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+createdNotAfter: (f = msg.getCreatedNotAfter()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+severityNotBelow: jspb.Message.getFieldWithDefault(msg, 3, 0),
+severityNotAbove: jspb.Message.getFieldWithDefault(msg, 4, 0),
+floor: jspb.Message.getFieldWithDefault(msg, 5, ""),
+zone: jspb.Message.getFieldWithDefault(msg, 6, ""),
+source: jspb.Message.getFieldWithDefault(msg, 7, ""),
+federation: jspb.Message.getFieldWithDefault(msg, 9, ""),
+subsystem: jspb.Message.getFieldWithDefault(msg, 13, ""),
+acknowledged: (f = jspb.Message.getBooleanField(msg, 8)) == null ? undefined : f,
+resolved: (f = jspb.Message.getBooleanField(msg, 10)) == null ? undefined : f,
+resolvedNotBefore: (f = msg.getResolvedNotBefore()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+resolvedNotAfter: (f = msg.getResolvedNotAfter()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2006,14 +2006,14 @@ proto.smartcore.bos.AlertMetadata.prototype.toObject = function(opt_includeInsta
  */
 proto.smartcore.bos.AlertMetadata.toObject = function(includeInstance, msg) {
   var f, obj = {
-    totalCount: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    floorCountsMap: (f = msg.getFloorCountsMap()) ? f.toObject(includeInstance, undefined) : [],
-    zoneCountsMap: (f = msg.getZoneCountsMap()) ? f.toObject(includeInstance, undefined) : [],
-    acknowledgedCountsMap: (f = msg.getAcknowledgedCountsMap()) ? f.toObject(includeInstance, undefined) : [],
-    severityCountsMap: (f = msg.getSeverityCountsMap()) ? f.toObject(includeInstance, undefined) : [],
-    resolvedCountsMap: (f = msg.getResolvedCountsMap()) ? f.toObject(includeInstance, undefined) : [],
-    needsAttentionCountsMap: (f = msg.getNeedsAttentionCountsMap()) ? f.toObject(includeInstance, undefined) : [],
-    subsystemCountsMap: (f = msg.getSubsystemCountsMap()) ? f.toObject(includeInstance, undefined) : []
+totalCount: jspb.Message.getFieldWithDefault(msg, 1, 0),
+floorCountsMap: (f = msg.getFloorCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+zoneCountsMap: (f = msg.getZoneCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+acknowledgedCountsMap: (f = msg.getAcknowledgedCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+severityCountsMap: (f = msg.getSeverityCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+resolvedCountsMap: (f = msg.getResolvedCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+needsAttentionCountsMap: (f = msg.getNeedsAttentionCountsMap()) ? f.toObject(includeInstance, undefined) : [],
+subsystemCountsMap: (f = msg.getSubsystemCountsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -2374,11 +2374,11 @@ proto.smartcore.bos.ListAlertsRequest.prototype.toObject = function(opt_includeI
  */
 proto.smartcore.bos.ListAlertsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    query: (f = msg.getQuery()) && proto.smartcore.bos.Alert.Query.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
+pageToken: jspb.Message.getFieldWithDefault(msg, 4, ""),
+query: (f = msg.getQuery()) && proto.smartcore.bos.Alert.Query.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2673,10 +2673,10 @@ proto.smartcore.bos.ListAlertsResponse.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.ListAlertsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    alertsList: jspb.Message.toObjectList(msg.getAlertsList(),
+alertsList: jspb.Message.toObjectList(msg.getAlertsList(),
     proto.smartcore.bos.Alert.toObject, includeInstance),
-    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -2886,9 +2886,9 @@ proto.smartcore.bos.PullAlertsRequest.prototype.toObject = function(opt_includeI
  */
 proto.smartcore.bos.PullAlertsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    query: (f = msg.getQuery()) && proto.smartcore.bos.Alert.Query.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+query: (f = msg.getQuery()) && proto.smartcore.bos.Alert.Query.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3125,7 +3125,7 @@ proto.smartcore.bos.PullAlertsResponse.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.PullAlertsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullAlertsResponse.Change.toObject, includeInstance)
   };
 
@@ -3240,11 +3240,11 @@ proto.smartcore.bos.PullAlertsResponse.Change.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.PullAlertsResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    type: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    newValue: (f = msg.getNewValue()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
-    oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+type: jspb.Message.getFieldWithDefault(msg, 2, 0),
+newValue: (f = msg.getNewValue()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
+oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3591,11 +3591,11 @@ proto.smartcore.bos.AcknowledgeAlertRequest.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.AcknowledgeAlertRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    author: (f = msg.getAuthor()) && proto.smartcore.bos.Alert.Acknowledgement.Author.toObject(includeInstance, f),
-    allowAcknowledged: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
-    allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+author: (f = msg.getAuthor()) && proto.smartcore.bos.Alert.Acknowledgement.Author.toObject(includeInstance, f),
+allowAcknowledged: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
+allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
   };
 
   if (includeInstance) {
@@ -3862,8 +3862,8 @@ proto.smartcore.bos.GetAlertMetadataRequest.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.GetAlertMetadataRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4043,9 +4043,9 @@ proto.smartcore.bos.PullAlertMetadataRequest.prototype.toObject = function(opt_i
  */
 proto.smartcore.bos.PullAlertMetadataRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4261,7 +4261,7 @@ proto.smartcore.bos.PullAlertMetadataResponse.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.PullAlertMetadataResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullAlertMetadataResponse.Change.toObject, includeInstance)
   };
 
@@ -4376,9 +4376,9 @@ proto.smartcore.bos.PullAlertMetadataResponse.Change.prototype.toObject = functi
  */
 proto.smartcore.bos.PullAlertMetadataResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    metadata: (f = msg.getMetadata()) && proto.smartcore.bos.AlertMetadata.toObject(includeInstance, f),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+metadata: (f = msg.getMetadata()) && proto.smartcore.bos.AlertMetadata.toObject(includeInstance, f),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4646,9 +4646,9 @@ proto.smartcore.bos.CreateAlertRequest.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.CreateAlertRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    alert: (f = msg.getAlert()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
-    mergeSource: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+alert: (f = msg.getAlert()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
+mergeSource: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -4857,9 +4857,9 @@ proto.smartcore.bos.UpdateAlertRequest.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.UpdateAlertRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    alert: (f = msg.getAlert()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
-    updateMask: (f = msg.getUpdateMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+alert: (f = msg.getAlert()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
+updateMask: (f = msg.getUpdateMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -5089,9 +5089,9 @@ proto.smartcore.bos.ResolveAlertRequest.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.ResolveAlertRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    alert: (f = msg.getAlert()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
-    allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+alert: (f = msg.getAlert()) && proto.smartcore.bos.Alert.toObject(includeInstance, f),
+allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -5300,9 +5300,9 @@ proto.smartcore.bos.DeleteAlertRequest.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.DeleteAlertRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+id: jspb.Message.getFieldWithDefault(msg, 2, ""),
+allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
   };
 
   if (includeInstance) {

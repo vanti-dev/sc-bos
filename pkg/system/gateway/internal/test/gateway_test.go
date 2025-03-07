@@ -368,11 +368,9 @@ func testReflection(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 		{Name: "smartcore.bos.HubApi"},
 		{Name: "smartcore.bos.ServicesApi"},
 		{Name: "smartcore.traits.MetadataApi"},
-		{Name: "smartcore.traits.MetadataInfo"},
 		{Name: "smartcore.traits.OnOffApi"},
 		{Name: "smartcore.traits.OnOffInfo"},
 		{Name: "smartcore.traits.ParentApi"},
-		{Name: "smartcore.traits.ParentInfo"},
 	}
 	if diff := cmp.Diff(wantServices, services, protocmp.Transform()); diff != "" {
 		t.Fatalf("services: (-want +got):\n%s", diff)

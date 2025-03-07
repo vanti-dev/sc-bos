@@ -35,6 +35,7 @@ func NewPoller(client *Client, pollInterval time.Duration, logger *zap.Logger, s
 func (p *Poller) startPoll(ctx context.Context) {
 	ticker := time.NewTicker(p.pollInterval)
 	defer ticker.Stop()
+	p.process()
 
 	for {
 		select {

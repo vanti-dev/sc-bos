@@ -3,13 +3,14 @@ package merge
 import (
 	"context"
 	"encoding/json"
+	"math"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/emergency"
+	"github.com/smart-core-os/sc-golang/pkg/trait/emergencypb"
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/gobacnet/enum/lifesafetystate"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
@@ -22,11 +23,14 @@ import (
 )
 
 // AlarmConfig allows configuring a specific bacnet point to raise an Emergency if the
-// value read from that point is anything other than OkValue
+// value of the point read is outside the defined upper and lower bounds.
 type AlarmConfig struct {
 	config.ValueSource
-	OkValue     int    `json:"okValue"`     // what we expect to read from the point when it is ok, any other value is an emergency
-	AlarmReason string `json:"alarmReason"` // the reason of the alarm
+	// If lower or upper bound is not defined, is defaults to -inf and +inf respectively.
+	// You want to set at least 1 of these values, else an emergency will never get raised.
+	OkLowerBound *float64 `json:"okLowerBound,omitempty"` // if the point is equal to or greater than this value, it is ok.
+	OkUpperBound *float64 `json:"okUpperBound,omitempty"` // if the point is equal to or less than this value, it is ok.
+	AlarmReason  string   `json:"alarmReason"`            // the reason of the alarm
 }
 
 type emergencyConfig struct {
@@ -37,6 +41,20 @@ type emergencyConfig struct {
 
 func readEmergencyConfig(raw []byte) (cfg emergencyConfig, err error) {
 	err = json.Unmarshal(raw, &cfg)
+	if err != nil {
+		return
+	}
+
+	if cfg.AlarmConfig != nil {
+		if cfg.AlarmConfig.OkLowerBound == nil {
+			lowerInf := math.Inf(-1)
+			cfg.AlarmConfig.OkLowerBound = &lowerInf
+		}
+		if cfg.AlarmConfig.OkUpperBound == nil {
+			upperInf := math.Inf(1)
+			cfg.AlarmConfig.OkUpperBound = &upperInf
+		}
+	}
 	return
 }
 
@@ -46,7 +64,7 @@ type emergencyImpl struct {
 	statuses *statuspb.Map
 	logger   *zap.Logger
 
-	model *emergency.MemoryDevice
+	model *emergencypb.MemoryDevice
 	traits.EmergencyApiServer
 	config   emergencyConfig
 	pollTask *task.Intermittent
@@ -57,7 +75,7 @@ func newEmergency(client *gobacnet.Client, devices known.Context, statuses *stat
 	if err != nil {
 		return nil, err
 	}
-	model := emergency.NewMemoryDevice()
+	model := emergencypb.NewMemoryDevice()
 	t := &emergencyImpl{
 		client:             client,
 		known:              devices,
@@ -80,7 +98,7 @@ func (t *emergencyImpl) startPoll(init context.Context) (stop task.StopFn, err e
 }
 
 func (t *emergencyImpl) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(t.config.Name, node.HasTrait(trait.Emergency, node.WithClients(emergency.WrapApi(t))))
+	return a.Announce(t.config.Name, node.HasTrait(trait.Emergency, node.WithClients(emergencypb.WrapApi(t))))
 }
 
 func (t *emergencyImpl) GetEmergency(ctx context.Context, request *traits.GetEmergencyRequest) (*traits.Emergency, error) {
@@ -98,6 +116,25 @@ func (t *emergencyImpl) UpdateEmergency(ctx context.Context, request *traits.Upd
 func (t *emergencyImpl) PullEmergency(request *traits.PullEmergencyRequest, server traits.EmergencyApi_PullEmergencyServer) error {
 	_ = t.pollTask.Attach(server.Context())
 	return t.EmergencyApiServer.PullEmergency(request, server)
+}
+
+func (t *emergencyImpl) checkValueForEmergency(response any) (*traits.Emergency, error) {
+	data := &traits.Emergency{}
+
+	value, err := comm.Float64Value(response)
+	if err != nil {
+		return nil, comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
+	}
+
+	if value < *t.config.AlarmConfig.OkLowerBound ||
+		value > *t.config.AlarmConfig.OkUpperBound {
+		data.Reason = t.config.AlarmConfig.AlarmReason
+		data.Level = traits.Emergency_EMERGENCY
+		return data, nil
+	} else {
+		data.Level = traits.Emergency_OK
+	}
+	return data, nil
 }
 
 // pollPeer fetches data from the peer device and saves the data locally.
@@ -141,18 +178,9 @@ func (t *emergencyImpl) pollPeer(ctx context.Context) (*traits.Emergency, error)
 		requestNames = append(requestNames, "alarmConfig")
 		readValues = append(readValues, t.config.AlarmConfig.ValueSource)
 		resProcessors = append(resProcessors, func(response any) error {
-			value, err := comm.IntValue(response)
-			if err != nil {
-				return comm.ErrReadProperty{Prop: "alarmConfig", Cause: err}
+			if e, err := t.checkValueForEmergency(response); err == nil {
+				data = e
 			}
-
-			if int64(t.config.AlarmConfig.OkValue) != value {
-				data.Reason = t.config.AlarmConfig.AlarmReason
-				data.Level = traits.Emergency_EMERGENCY
-			} else {
-				data.Level = traits.Emergency_OK
-			}
-
 			return nil
 		})
 	}

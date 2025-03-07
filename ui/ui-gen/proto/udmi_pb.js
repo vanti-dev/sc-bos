@@ -229,7 +229,7 @@ proto.smartcore.bos.PullControlTopicsRequest.prototype.toObject = function(opt_i
  */
 proto.smartcore.bos.PullControlTopicsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -366,8 +366,8 @@ proto.smartcore.bos.PullControlTopicsResponse.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.PullControlTopicsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    topicsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+topicsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -545,8 +545,8 @@ proto.smartcore.bos.OnMessageRequest.prototype.toObject = function(opt_includeIn
  */
 proto.smartcore.bos.OnMessageRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    message: (f = msg.getMessage()) && proto.smartcore.bos.MqttMessage.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+message: (f = msg.getMessage()) && proto.smartcore.bos.MqttMessage.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -726,7 +726,7 @@ proto.smartcore.bos.OnMessageResponse.prototype.toObject = function(opt_includeI
  */
 proto.smartcore.bos.OnMessageResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -856,8 +856,8 @@ proto.smartcore.bos.PullExportMessagesRequest.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.PullExportMessagesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    includeLast: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+includeLast: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
   };
 
   if (includeInstance) {
@@ -1016,8 +1016,8 @@ proto.smartcore.bos.PullExportMessagesResponse.prototype.toObject = function(opt
  */
 proto.smartcore.bos.PullExportMessagesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    message: (f = msg.getMessage()) && proto.smartcore.bos.MqttMessage.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+message: (f = msg.getMessage()) && proto.smartcore.bos.MqttMessage.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1197,7 +1197,7 @@ proto.smartcore.bos.GetExportMessageRequest.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.GetExportMessageRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -1327,8 +1327,8 @@ proto.smartcore.bos.MqttMessage.prototype.toObject = function(opt_includeInstanc
  */
 proto.smartcore.bos.MqttMessage.toObject = function(includeInstance, msg) {
   var f, obj = {
-    topic: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    payload: jspb.Message.getFieldWithDefault(msg, 2, "")
+topic: jspb.Message.getFieldWithDefault(msg, 1, ""),
+payload: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {

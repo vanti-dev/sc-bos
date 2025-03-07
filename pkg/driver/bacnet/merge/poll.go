@@ -3,7 +3,6 @@ package merge
 import (
 	"context"
 	"fmt"
-	"math"
 	"time"
 
 	"go.uber.org/zap"
@@ -38,18 +37,19 @@ func startPoll(init context.Context, name string, pollDelay, pollTimeout time.Du
 // Returns early with error if
 //
 //  1. ctx is done
-//  2. the number of polls is tries
-//  3. pollPeer returns an error
+//  2. pollPeer returns an error
+//  3. timeout has passed if the ctx doesn't have a non-zero ctx.Deadline assigned
+//     or time.Now() + timeout is earlier than the deadline assigned to ctx
 //
 // An backoff delay will be added between each call to pollPeer
-func pollUntil[T any](ctx context.Context, tries int, poll func(context.Context) (T, error), test func(T) bool) (T, error) {
+func pollUntil[T any](ctx context.Context, timeout time.Duration, poll func(context.Context) (T, error), test func(T) bool) (T, error) {
 	fail := func(err error) (T, error) {
 		var zero T
 		return zero, err
 	}
-	if tries == 0 {
-		tries = math.MaxInt
-	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	var delay time.Duration
 	delayMulti := 1.2
@@ -72,15 +72,10 @@ func pollUntil[T any](ctx context.Context, tries int, poll func(context.Context)
 			delay = time.Duration(float64(delay) * delayMulti)
 		}
 
-		if attempt >= tries {
-			break
-		}
-
 		select {
 		case <-ctx.Done():
-			return fail(ctx.Err())
+			return fail(fmt.Errorf("attempt %d: %w", attempt, ctx.Err()))
 		case <-time.After(delay):
 		}
 	}
-	return fail(fmt.Errorf("ran out of tries: %d", tries))
 }

@@ -7,11 +7,11 @@ import (
 	"golang.org/x/exp/rand"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/electric"
+	"github.com/smart-core-os/sc-golang/pkg/trait/electricpb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-func Electric(model *electric.Model) service.Lifecycle {
+func Electric(model *electricpb.Model) service.Lifecycle {
 	s := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		go func() {
 			timer := time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)

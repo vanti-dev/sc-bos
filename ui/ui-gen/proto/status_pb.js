@@ -265,10 +265,10 @@ proto.smartcore.bos.StatusLog.prototype.toObject = function(opt_includeInstance)
  */
 proto.smartcore.bos.StatusLog.toObject = function(includeInstance, msg) {
   var f, obj = {
-    level: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    description: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    recordTime: (f = msg.getRecordTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    problemsList: jspb.Message.toObjectList(msg.getProblemsList(),
+level: jspb.Message.getFieldWithDefault(msg, 1, 0),
+description: jspb.Message.getFieldWithDefault(msg, 2, ""),
+recordTime: (f = msg.getRecordTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+problemsList: jspb.Message.toObjectList(msg.getProblemsList(),
     proto.smartcore.bos.StatusLog.Problem.toObject, includeInstance)
   };
 
@@ -430,10 +430,10 @@ proto.smartcore.bos.StatusLog.Problem.prototype.toObject = function(opt_includeI
  */
 proto.smartcore.bos.StatusLog.Problem.toObject = function(includeInstance, msg) {
   var f, obj = {
-    level: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    description: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    recordTime: (f = msg.getRecordTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    name: jspb.Message.getFieldWithDefault(msg, 4, "")
+level: jspb.Message.getFieldWithDefault(msg, 1, 0),
+description: jspb.Message.getFieldWithDefault(msg, 2, ""),
+recordTime: (f = msg.getRecordTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+name: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -782,8 +782,8 @@ proto.smartcore.bos.GetCurrentStatusRequest.prototype.toObject = function(opt_in
  */
 proto.smartcore.bos.GetCurrentStatusRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -963,9 +963,9 @@ proto.smartcore.bos.PullCurrentStatusRequest.prototype.toObject = function(opt_i
  */
 proto.smartcore.bos.PullCurrentStatusRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -1181,7 +1181,7 @@ proto.smartcore.bos.PullCurrentStatusResponse.prototype.toObject = function(opt_
  */
 proto.smartcore.bos.PullCurrentStatusResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullCurrentStatusResponse.Change.toObject, includeInstance)
   };
 
@@ -1296,9 +1296,9 @@ proto.smartcore.bos.PullCurrentStatusResponse.Change.prototype.toObject = functi
  */
 proto.smartcore.bos.PullCurrentStatusResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-    currentStatus: (f = msg.getCurrentStatus()) && proto.smartcore.bos.StatusLog.toObject(includeInstance, f)
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+currentStatus: (f = msg.getCurrentStatus()) && proto.smartcore.bos.StatusLog.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1566,8 +1566,8 @@ proto.smartcore.bos.StatusLogRecord.prototype.toObject = function(opt_includeIns
  */
 proto.smartcore.bos.StatusLogRecord.toObject = function(includeInstance, msg) {
   var f, obj = {
-    currentStatus: (f = msg.getCurrentStatus()) && proto.smartcore.bos.StatusLog.toObject(includeInstance, f),
-    recordTime: (f = msg.getRecordTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+currentStatus: (f = msg.getCurrentStatus()) && proto.smartcore.bos.StatusLog.toObject(includeInstance, f),
+recordTime: (f = msg.getRecordTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -1768,11 +1768,12 @@ proto.smartcore.bos.ListCurrentStatusHistoryRequest.prototype.toObject = functio
  */
 proto.smartcore.bos.ListCurrentStatusHistoryRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    period: (f = msg.getPeriod()) && types_time_period_pb.Period.toObject(includeInstance, f),
-    readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-    pageSize: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    pageToken: jspb.Message.getFieldWithDefault(msg, 5, "")
+name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+period: (f = msg.getPeriod()) && types_time_period_pb.Period.toObject(includeInstance, f),
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+pageSize: jspb.Message.getFieldWithDefault(msg, 4, 0),
+pageToken: jspb.Message.getFieldWithDefault(msg, 5, ""),
+orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -1830,6 +1831,10 @@ proto.smartcore.bos.ListCurrentStatusHistoryRequest.deserializeBinaryFromReader 
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrderBy(value);
       break;
     default:
       reader.skipField();
@@ -1894,6 +1899,13 @@ proto.smartcore.bos.ListCurrentStatusHistoryRequest.serializeBinaryToWriter = fu
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getOrderBy();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -2028,6 +2040,24 @@ proto.smartcore.bos.ListCurrentStatusHistoryRequest.prototype.setPageToken = fun
 };
 
 
+/**
+ * optional string order_by = 6;
+ * @return {string}
+ */
+proto.smartcore.bos.ListCurrentStatusHistoryRequest.prototype.getOrderBy = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListCurrentStatusHistoryRequest} returns this
+ */
+proto.smartcore.bos.ListCurrentStatusHistoryRequest.prototype.setOrderBy = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
+};
+
+
 
 /**
  * List of repeated fields within this message type.
@@ -2067,10 +2097,10 @@ proto.smartcore.bos.ListCurrentStatusHistoryResponse.prototype.toObject = functi
  */
 proto.smartcore.bos.ListCurrentStatusHistoryResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    currentStatusRecordsList: jspb.Message.toObjectList(msg.getCurrentStatusRecordsList(),
+currentStatusRecordsList: jspb.Message.toObjectList(msg.getCurrentStatusRecordsList(),
     proto.smartcore.bos.StatusLogRecord.toObject, includeInstance),
-    nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
+nextPageToken: jspb.Message.getFieldWithDefault(msg, 2, ""),
+totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {

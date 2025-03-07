@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/onoff"
+	"github.com/smart-core-os/sc-golang/pkg/trait/onoffpb"
 )
 
 func main() {
@@ -20,8 +20,8 @@ func main() {
 		log.Fatalln(err)
 	}
 	realServer := grpc.NewServer()
-	model := onoff.NewModel(onoff.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_ON}))
-	apiImpl := onoff.NewModelServer(model)
+	model := onoffpb.NewModel(onoffpb.WithInitialOnOff(&traits.OnOff{State: traits.OnOff_ON}))
+	apiImpl := onoffpb.NewModelServer(model)
 	traits.RegisterOnOffApiServer(realServer, apiImpl)
 	go realServer.Serve(realLis)
 	defer realServer.Stop()

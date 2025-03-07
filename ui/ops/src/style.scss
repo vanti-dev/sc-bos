@@ -12,6 +12,10 @@ p {
   margin-bottom: 16px;
 }
 
+.no-pointer-events {
+  pointer-events: none !important;
+}
+
 .v-text-field--outlined {
   background: var(--v-neutral-lighten1);
   border-color: var(--v-neutral-lighten2);
@@ -91,4 +95,15 @@ Also center the text when it's small
 // rounding when hovering or selecting the last row on a page
 .v-table--has-bottom .v-table__wrapper {
   border-radius: initial;
+}
+
+// Expansion panels that use check boxes for their expansion icon need some love
+.v-expansion-panel-title__icon > .v-checkbox {
+  &.v-input--density-default {
+    margin: -8px -2px;
+
+    .v-selection-control--density-default {
+      margin: -8px;
+    }
+  }
 }

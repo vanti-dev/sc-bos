@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/app/http"
+	"github.com/vanti-dev/sc-bos/pkg/app/stores"
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/block"
@@ -63,9 +64,13 @@ type Config struct {
 	AppConfig []string `json:"appConfig,omitempty"` // defaults to [".conf/app.conf.json"]
 	DataDir   string   `json:"dataDir,omitempty"`   // defaults to .data/
 
+	Stores *stores.Config `json:"stores,omitempty"`
+
 	StaticHosting []http.StaticHostingConfig `json:"staticHosting"`
 	CertConfig    *Certs                     `json:"certs,omitempty"`
 	Cors          http.CorsConfig            `json:"cors,omitempty"`
+
+	DisablePprof bool `json:"disablePprof"` // don't register net/http/pprof handlers
 
 	Systems map[string]system.RawConfig `json:"systems,omitempty"`
 

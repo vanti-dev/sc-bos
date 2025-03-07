@@ -389,9 +389,9 @@ proto.smartcore.bos.HubNode.prototype.toObject = function(opt_includeInstance) {
  */
 proto.smartcore.bos.HubNode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    name: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    description: jspb.Message.getFieldWithDefault(msg, 4, "")
+address: jspb.Message.getFieldWithDefault(msg, 1, ""),
+name: jspb.Message.getFieldWithDefault(msg, 2, ""),
+description: jspb.Message.getFieldWithDefault(msg, 4, "")
   };
 
   if (includeInstance) {
@@ -586,8 +586,8 @@ proto.smartcore.bos.HubNodeInspection.prototype.toObject = function(opt_includeI
  */
 proto.smartcore.bos.HubNodeInspection.toObject = function(includeInstance, msg) {
   var f, obj = {
-    metadata: (f = msg.getMetadata()) && traits_metadata_pb.Metadata.toObject(includeInstance, f),
-    publicCertsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
+metadata: (f = msg.getMetadata()) && traits_metadata_pb.Metadata.toObject(includeInstance, f),
+publicCertsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -786,7 +786,7 @@ proto.smartcore.bos.GetHubNodeRequest.prototype.toObject = function(opt_includeI
  */
 proto.smartcore.bos.GetHubNodeRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, "")
+address: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -923,8 +923,8 @@ proto.smartcore.bos.EnrollHubNodeRequest.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.EnrollHubNodeRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    node: (f = msg.getNode()) && proto.smartcore.bos.HubNode.toObject(includeInstance, f),
-    publicCertsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
+node: (f = msg.getNode()) && proto.smartcore.bos.HubNode.toObject(includeInstance, f),
+publicCertsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -1123,7 +1123,7 @@ proto.smartcore.bos.RenewHubNodeRequest.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.RenewHubNodeRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, "")
+address: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -1361,7 +1361,7 @@ proto.smartcore.bos.ListHubNodesResponse.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.ListHubNodesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    nodesList: jspb.Message.toObjectList(msg.getNodesList(),
+nodesList: jspb.Message.toObjectList(msg.getNodesList(),
     proto.smartcore.bos.HubNode.toObject, includeInstance)
   };
 
@@ -1514,7 +1514,7 @@ proto.smartcore.bos.PullHubNodesRequest.prototype.toObject = function(opt_includ
  */
 proto.smartcore.bos.PullHubNodesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -1651,7 +1651,7 @@ proto.smartcore.bos.PullHubNodesResponse.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.PullHubNodesResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    changesList: jspb.Message.toObjectList(msg.getChangesList(),
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
     proto.smartcore.bos.PullHubNodesResponse.Change.toObject, includeInstance)
   };
 
@@ -1766,10 +1766,10 @@ proto.smartcore.bos.PullHubNodesResponse.Change.prototype.toObject = function(op
  */
 proto.smartcore.bos.PullHubNodesResponse.Change.toObject = function(includeInstance, msg) {
   var f, obj = {
-    type: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    newValue: (f = msg.getNewValue()) && proto.smartcore.bos.HubNode.toObject(includeInstance, f),
-    oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.HubNode.toObject(includeInstance, f),
-    changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+type: jspb.Message.getFieldWithDefault(msg, 2, 0),
+newValue: (f = msg.getNewValue()) && proto.smartcore.bos.HubNode.toObject(includeInstance, f),
+oldValue: (f = msg.getOldValue()) && proto.smartcore.bos.HubNode.toObject(includeInstance, f),
+changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2087,7 +2087,7 @@ proto.smartcore.bos.InspectHubNodeRequest.prototype.toObject = function(opt_incl
  */
 proto.smartcore.bos.InspectHubNodeRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    node: (f = msg.getNode()) && proto.smartcore.bos.HubNode.toObject(includeInstance, f)
+node: (f = msg.getNode()) && proto.smartcore.bos.HubNode.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2238,7 +2238,7 @@ proto.smartcore.bos.TestHubNodeRequest.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.TestHubNodeRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, "")
+address: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -2469,8 +2469,8 @@ proto.smartcore.bos.ForgetHubNodeRequest.prototype.toObject = function(opt_inclu
  */
 proto.smartcore.bos.ForgetHubNodeRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
+address: jspb.Message.getFieldWithDefault(msg, 1, ""),
+allowMissing: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
   };
 
   if (includeInstance) {
