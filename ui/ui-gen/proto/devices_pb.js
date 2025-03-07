@@ -3981,7 +3981,8 @@ proto.smartcore.bos.GetDownloadDevicesUrlRequest.toObject = function(includeInst
 query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f),
 mediaType: jspb.Message.getFieldWithDefault(msg, 2, ""),
 history: (f = msg.getHistory()) && types_time_period_pb.Period.toObject(includeInstance, f),
-table: (f = msg.getTable()) && proto.smartcore.bos.GetDownloadDevicesUrlRequest.Table.toObject(includeInstance, f)
+table: (f = msg.getTable()) && proto.smartcore.bos.GetDownloadDevicesUrlRequest.Table.toObject(includeInstance, f),
+filename: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -4036,6 +4037,10 @@ proto.smartcore.bos.GetDownloadDevicesUrlRequest.deserializeBinaryFromReader = f
       var value = new proto.smartcore.bos.GetDownloadDevicesUrlRequest.Table;
       reader.readMessage(value,proto.smartcore.bos.GetDownloadDevicesUrlRequest.Table.deserializeBinaryFromReader);
       msg.setTable(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setFilename(value);
       break;
     default:
       reader.skipField();
@@ -4095,6 +4100,13 @@ proto.smartcore.bos.GetDownloadDevicesUrlRequest.serializeBinaryToWriter = funct
       4,
       f,
       proto.smartcore.bos.GetDownloadDevicesUrlRequest.Table.serializeBinaryToWriter
+    );
+  }
+  f = message.getFilename();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
+      f
     );
   }
 };
@@ -4599,6 +4611,24 @@ proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.clearTable = function
  */
 proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.hasTable = function() {
   return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional string filename = 5;
+ * @return {string}
+ */
+proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.getFilename = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.GetDownloadDevicesUrlRequest} returns this
+ */
+proto.smartcore.bos.GetDownloadDevicesUrlRequest.prototype.setFilename = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 

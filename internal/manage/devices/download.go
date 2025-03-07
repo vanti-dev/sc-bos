@@ -51,6 +51,9 @@ func (s *Server) GetDownloadDevicesUrl(_ context.Context, request *gen.GetDownlo
 	if err := validateQuery(request.Query); err != nil {
 		return nil, err
 	}
+	if len(request.Filename) > 255 {
+		return nil, status.Errorf(codes.InvalidArgument, "filename longer than 255")
+	}
 
 	expireAfter := s.now().Add(s.downloadExpiry)
 	tokenStr, err := s.signAndSerializeDownloadToken(&DownloadToken{Request: request}, expireAfter)
@@ -63,6 +66,7 @@ func (s *Server) GetDownloadDevicesUrl(_ context.Context, request *gen.GetDownlo
 		return nil, err
 	}
 	return &gen.DownloadDevicesUrl{
+		Filename:        request.Filename,
 		Url:             u.String(),
 		MediaType:       request.MediaType,
 		ExpireAfterTime: timestamppb.New(expireAfter),
@@ -115,9 +119,14 @@ func (s *Server) DownloadDevicesHTTPHandler(w http.ResponseWriter, r *http.Reque
 		headerIndex[h] = i
 	}
 
+	filename := token.Request.Filename
+	if filename == "" {
+		filename = "devices.csv"
+	}
+
 	// 3. start collecting the data and streaming it to the client
 	// note: we only set the headers here (rather than earlier) to allow bad status codes to be returned if needed
-	w.Header().Set("Content-Disposition", "attachment; filename=devices.csv")
+	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 
 	// change the spelling of the headers if the user has asked us to
