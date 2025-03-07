@@ -137,6 +137,12 @@ const menuItems = computed(() => [
     icon: 'mdi-shield-alert',
     link: {path: '/ops/security-events'},
     badgeType: null
+  },
+  {
+    title: 'Waste Records',
+    icon: 'mdi-recycle',
+    link: {path: '/ops/waste'},
+    badgeType: null
   }
 ]);
 
