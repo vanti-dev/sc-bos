@@ -35,7 +35,7 @@ proto.smartcore.bos = require('./account_pb.js');
  * @struct
  * @final
  */
-proto.smartcore.bos.AccountApiServiceClient =
+proto.smartcore.bos.AccountApiClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -61,7 +61,7 @@ proto.smartcore.bos.AccountApiServiceClient =
  * @struct
  * @final
  */
-proto.smartcore.bos.AccountApiServicePromiseClient =
+proto.smartcore.bos.AccountApiPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -85,8 +85,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient =
  *   !proto.smartcore.bos.GetAccountRequest,
  *   !proto.smartcore.bos.Account>}
  */
-const methodDescriptor_AccountApiService_GetAccount = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/GetAccount',
+const methodDescriptor_AccountApi_GetAccount = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/GetAccount',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.GetAccountRequest,
   proto.smartcore.bos.Account,
@@ -111,13 +111,13 @@ const methodDescriptor_AccountApiService_GetAccount = new grpc.web.MethodDescrip
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Account>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.getAccount =
+proto.smartcore.bos.AccountApiClient.prototype.getAccount =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/GetAccount',
+      '/smartcore.bos.AccountApi/GetAccount',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_GetAccount,
+      methodDescriptor_AccountApi_GetAccount,
       callback);
 };
 
@@ -130,13 +130,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.getAccount =
  * @return {!Promise<!proto.smartcore.bos.Account>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.getAccount =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.getAccount =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/GetAccount',
+      '/smartcore.bos.AccountApi/GetAccount',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_GetAccount);
+      methodDescriptor_AccountApi_GetAccount);
 };
 
 
@@ -146,8 +146,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.getAccount =
  *   !proto.smartcore.bos.ListAccountsRequest,
  *   !proto.smartcore.bos.ListAccountsResponse>}
  */
-const methodDescriptor_AccountApiService_ListAccounts = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/ListAccounts',
+const methodDescriptor_AccountApi_ListAccounts = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/ListAccounts',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.ListAccountsRequest,
   proto.smartcore.bos.ListAccountsResponse,
@@ -172,13 +172,13 @@ const methodDescriptor_AccountApiService_ListAccounts = new grpc.web.MethodDescr
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListAccountsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.listAccounts =
+proto.smartcore.bos.AccountApiClient.prototype.listAccounts =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListAccounts',
+      '/smartcore.bos.AccountApi/ListAccounts',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListAccounts,
+      methodDescriptor_AccountApi_ListAccounts,
       callback);
 };
 
@@ -191,13 +191,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.listAccounts =
  * @return {!Promise<!proto.smartcore.bos.ListAccountsResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listAccounts =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.listAccounts =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListAccounts',
+      '/smartcore.bos.AccountApi/ListAccounts',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListAccounts);
+      methodDescriptor_AccountApi_ListAccounts);
 };
 
 
@@ -207,8 +207,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listAccounts =
  *   !proto.smartcore.bos.CreateAccountRequest,
  *   !proto.smartcore.bos.Account>}
  */
-const methodDescriptor_AccountApiService_CreateAccount = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/CreateAccount',
+const methodDescriptor_AccountApi_CreateAccount = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/CreateAccount',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.CreateAccountRequest,
   proto.smartcore.bos.Account,
@@ -233,13 +233,13 @@ const methodDescriptor_AccountApiService_CreateAccount = new grpc.web.MethodDesc
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Account>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.createAccount =
+proto.smartcore.bos.AccountApiClient.prototype.createAccount =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/CreateAccount',
+      '/smartcore.bos.AccountApi/CreateAccount',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_CreateAccount,
+      methodDescriptor_AccountApi_CreateAccount,
       callback);
 };
 
@@ -252,13 +252,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.createAccount =
  * @return {!Promise<!proto.smartcore.bos.Account>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.createAccount =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.createAccount =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/CreateAccount',
+      '/smartcore.bos.AccountApi/CreateAccount',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_CreateAccount);
+      methodDescriptor_AccountApi_CreateAccount);
 };
 
 
@@ -268,8 +268,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.createAccount =
  *   !proto.smartcore.bos.UpdateAccountRequest,
  *   !proto.smartcore.bos.Account>}
  */
-const methodDescriptor_AccountApiService_UpdateAccount = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/UpdateAccount',
+const methodDescriptor_AccountApi_UpdateAccount = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/UpdateAccount',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.UpdateAccountRequest,
   proto.smartcore.bos.Account,
@@ -294,13 +294,13 @@ const methodDescriptor_AccountApiService_UpdateAccount = new grpc.web.MethodDesc
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Account>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.updateAccount =
+proto.smartcore.bos.AccountApiClient.prototype.updateAccount =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/UpdateAccount',
+      '/smartcore.bos.AccountApi/UpdateAccount',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_UpdateAccount,
+      methodDescriptor_AccountApi_UpdateAccount,
       callback);
 };
 
@@ -313,13 +313,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.updateAccount =
  * @return {!Promise<!proto.smartcore.bos.Account>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.updateAccount =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.updateAccount =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/UpdateAccount',
+      '/smartcore.bos.AccountApi/UpdateAccount',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_UpdateAccount);
+      methodDescriptor_AccountApi_UpdateAccount);
 };
 
 
@@ -329,8 +329,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.updateAccount =
  *   !proto.smartcore.bos.UpdateAccountPasswordRequest,
  *   !proto.smartcore.bos.UpdateAccountPasswordResponse>}
  */
-const methodDescriptor_AccountApiService_UpdateAccountPassword = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/UpdateAccountPassword',
+const methodDescriptor_AccountApi_UpdateAccountPassword = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/UpdateAccountPassword',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.UpdateAccountPasswordRequest,
   proto.smartcore.bos.UpdateAccountPasswordResponse,
@@ -355,13 +355,13 @@ const methodDescriptor_AccountApiService_UpdateAccountPassword = new grpc.web.Me
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.UpdateAccountPasswordResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.updateAccountPassword =
+proto.smartcore.bos.AccountApiClient.prototype.updateAccountPassword =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/UpdateAccountPassword',
+      '/smartcore.bos.AccountApi/UpdateAccountPassword',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_UpdateAccountPassword,
+      methodDescriptor_AccountApi_UpdateAccountPassword,
       callback);
 };
 
@@ -374,13 +374,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.updateAccountPassword =
  * @return {!Promise<!proto.smartcore.bos.UpdateAccountPasswordResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.updateAccountPassword =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.updateAccountPassword =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/UpdateAccountPassword',
+      '/smartcore.bos.AccountApi/UpdateAccountPassword',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_UpdateAccountPassword);
+      methodDescriptor_AccountApi_UpdateAccountPassword);
 };
 
 
@@ -390,8 +390,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.updateAccountPasswo
  *   !proto.smartcore.bos.DeleteAccountRequest,
  *   !proto.smartcore.bos.DeleteAccountResponse>}
  */
-const methodDescriptor_AccountApiService_DeleteAccount = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/DeleteAccount',
+const methodDescriptor_AccountApi_DeleteAccount = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/DeleteAccount',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.DeleteAccountRequest,
   proto.smartcore.bos.DeleteAccountResponse,
@@ -416,13 +416,13 @@ const methodDescriptor_AccountApiService_DeleteAccount = new grpc.web.MethodDesc
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.DeleteAccountResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.deleteAccount =
+proto.smartcore.bos.AccountApiClient.prototype.deleteAccount =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/DeleteAccount',
+      '/smartcore.bos.AccountApi/DeleteAccount',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_DeleteAccount,
+      methodDescriptor_AccountApi_DeleteAccount,
       callback);
 };
 
@@ -435,13 +435,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.deleteAccount =
  * @return {!Promise<!proto.smartcore.bos.DeleteAccountResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.deleteAccount =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.deleteAccount =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/DeleteAccount',
+      '/smartcore.bos.AccountApi/DeleteAccount',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_DeleteAccount);
+      methodDescriptor_AccountApi_DeleteAccount);
 };
 
 
@@ -451,8 +451,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.deleteAccount =
  *   !proto.smartcore.bos.GetServiceCredentialRequest,
  *   !proto.smartcore.bos.ServiceCredential>}
  */
-const methodDescriptor_AccountApiService_GetServiceCredential = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/GetServiceCredential',
+const methodDescriptor_AccountApi_GetServiceCredential = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/GetServiceCredential',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.GetServiceCredentialRequest,
   proto.smartcore.bos.ServiceCredential,
@@ -477,13 +477,13 @@ const methodDescriptor_AccountApiService_GetServiceCredential = new grpc.web.Met
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ServiceCredential>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.getServiceCredential =
+proto.smartcore.bos.AccountApiClient.prototype.getServiceCredential =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/GetServiceCredential',
+      '/smartcore.bos.AccountApi/GetServiceCredential',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_GetServiceCredential,
+      methodDescriptor_AccountApi_GetServiceCredential,
       callback);
 };
 
@@ -496,13 +496,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.getServiceCredential =
  * @return {!Promise<!proto.smartcore.bos.ServiceCredential>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.getServiceCredential =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.getServiceCredential =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/GetServiceCredential',
+      '/smartcore.bos.AccountApi/GetServiceCredential',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_GetServiceCredential);
+      methodDescriptor_AccountApi_GetServiceCredential);
 };
 
 
@@ -512,8 +512,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.getServiceCredentia
  *   !proto.smartcore.bos.ListServiceCredentialsRequest,
  *   !proto.smartcore.bos.ListServiceCredentialsResponse>}
  */
-const methodDescriptor_AccountApiService_ListServiceCredentials = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/ListServiceCredentials',
+const methodDescriptor_AccountApi_ListServiceCredentials = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/ListServiceCredentials',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.ListServiceCredentialsRequest,
   proto.smartcore.bos.ListServiceCredentialsResponse,
@@ -538,13 +538,13 @@ const methodDescriptor_AccountApiService_ListServiceCredentials = new grpc.web.M
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListServiceCredentialsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.listServiceCredentials =
+proto.smartcore.bos.AccountApiClient.prototype.listServiceCredentials =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListServiceCredentials',
+      '/smartcore.bos.AccountApi/ListServiceCredentials',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListServiceCredentials,
+      methodDescriptor_AccountApi_ListServiceCredentials,
       callback);
 };
 
@@ -557,13 +557,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.listServiceCredentials =
  * @return {!Promise<!proto.smartcore.bos.ListServiceCredentialsResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listServiceCredentials =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.listServiceCredentials =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListServiceCredentials',
+      '/smartcore.bos.AccountApi/ListServiceCredentials',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListServiceCredentials);
+      methodDescriptor_AccountApi_ListServiceCredentials);
 };
 
 
@@ -573,8 +573,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listServiceCredenti
  *   !proto.smartcore.bos.CreateServiceCredentialRequest,
  *   !proto.smartcore.bos.ServiceCredential>}
  */
-const methodDescriptor_AccountApiService_CreateServiceCredential = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/CreateServiceCredential',
+const methodDescriptor_AccountApi_CreateServiceCredential = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/CreateServiceCredential',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.CreateServiceCredentialRequest,
   proto.smartcore.bos.ServiceCredential,
@@ -599,13 +599,13 @@ const methodDescriptor_AccountApiService_CreateServiceCredential = new grpc.web.
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ServiceCredential>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.createServiceCredential =
+proto.smartcore.bos.AccountApiClient.prototype.createServiceCredential =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/CreateServiceCredential',
+      '/smartcore.bos.AccountApi/CreateServiceCredential',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_CreateServiceCredential,
+      methodDescriptor_AccountApi_CreateServiceCredential,
       callback);
 };
 
@@ -618,13 +618,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.createServiceCredential =
  * @return {!Promise<!proto.smartcore.bos.ServiceCredential>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.createServiceCredential =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.createServiceCredential =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/CreateServiceCredential',
+      '/smartcore.bos.AccountApi/CreateServiceCredential',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_CreateServiceCredential);
+      methodDescriptor_AccountApi_CreateServiceCredential);
 };
 
 
@@ -634,8 +634,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.createServiceCreden
  *   !proto.smartcore.bos.DeleteServiceCredentialRequest,
  *   !proto.smartcore.bos.DeleteServiceCredentialResponse>}
  */
-const methodDescriptor_AccountApiService_DeleteServiceCredential = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/DeleteServiceCredential',
+const methodDescriptor_AccountApi_DeleteServiceCredential = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/DeleteServiceCredential',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.DeleteServiceCredentialRequest,
   proto.smartcore.bos.DeleteServiceCredentialResponse,
@@ -660,13 +660,13 @@ const methodDescriptor_AccountApiService_DeleteServiceCredential = new grpc.web.
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.DeleteServiceCredentialResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.deleteServiceCredential =
+proto.smartcore.bos.AccountApiClient.prototype.deleteServiceCredential =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/DeleteServiceCredential',
+      '/smartcore.bos.AccountApi/DeleteServiceCredential',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_DeleteServiceCredential,
+      methodDescriptor_AccountApi_DeleteServiceCredential,
       callback);
 };
 
@@ -679,13 +679,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.deleteServiceCredential =
  * @return {!Promise<!proto.smartcore.bos.DeleteServiceCredentialResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.deleteServiceCredential =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.deleteServiceCredential =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/DeleteServiceCredential',
+      '/smartcore.bos.AccountApi/DeleteServiceCredential',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_DeleteServiceCredential);
+      methodDescriptor_AccountApi_DeleteServiceCredential);
 };
 
 
@@ -695,8 +695,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.deleteServiceCreden
  *   !proto.smartcore.bos.GetRoleRequest,
  *   !proto.smartcore.bos.Role>}
  */
-const methodDescriptor_AccountApiService_GetRole = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/GetRole',
+const methodDescriptor_AccountApi_GetRole = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/GetRole',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.GetRoleRequest,
   proto.smartcore.bos.Role,
@@ -721,13 +721,13 @@ const methodDescriptor_AccountApiService_GetRole = new grpc.web.MethodDescriptor
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Role>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.getRole =
+proto.smartcore.bos.AccountApiClient.prototype.getRole =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/GetRole',
+      '/smartcore.bos.AccountApi/GetRole',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_GetRole,
+      methodDescriptor_AccountApi_GetRole,
       callback);
 };
 
@@ -740,13 +740,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.getRole =
  * @return {!Promise<!proto.smartcore.bos.Role>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.getRole =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.getRole =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/GetRole',
+      '/smartcore.bos.AccountApi/GetRole',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_GetRole);
+      methodDescriptor_AccountApi_GetRole);
 };
 
 
@@ -756,8 +756,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.getRole =
  *   !proto.smartcore.bos.ListRolesRequest,
  *   !proto.smartcore.bos.ListRolesResponse>}
  */
-const methodDescriptor_AccountApiService_ListRoles = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/ListRoles',
+const methodDescriptor_AccountApi_ListRoles = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/ListRoles',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.ListRolesRequest,
   proto.smartcore.bos.ListRolesResponse,
@@ -782,13 +782,13 @@ const methodDescriptor_AccountApiService_ListRoles = new grpc.web.MethodDescript
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListRolesResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.listRoles =
+proto.smartcore.bos.AccountApiClient.prototype.listRoles =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListRoles',
+      '/smartcore.bos.AccountApi/ListRoles',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListRoles,
+      methodDescriptor_AccountApi_ListRoles,
       callback);
 };
 
@@ -801,13 +801,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.listRoles =
  * @return {!Promise<!proto.smartcore.bos.ListRolesResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listRoles =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.listRoles =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListRoles',
+      '/smartcore.bos.AccountApi/ListRoles',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListRoles);
+      methodDescriptor_AccountApi_ListRoles);
 };
 
 
@@ -817,8 +817,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listRoles =
  *   !proto.smartcore.bos.CreateRoleRequest,
  *   !proto.smartcore.bos.Role>}
  */
-const methodDescriptor_AccountApiService_CreateRole = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/CreateRole',
+const methodDescriptor_AccountApi_CreateRole = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/CreateRole',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.CreateRoleRequest,
   proto.smartcore.bos.Role,
@@ -843,13 +843,13 @@ const methodDescriptor_AccountApiService_CreateRole = new grpc.web.MethodDescrip
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Role>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.createRole =
+proto.smartcore.bos.AccountApiClient.prototype.createRole =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/CreateRole',
+      '/smartcore.bos.AccountApi/CreateRole',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_CreateRole,
+      methodDescriptor_AccountApi_CreateRole,
       callback);
 };
 
@@ -862,13 +862,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.createRole =
  * @return {!Promise<!proto.smartcore.bos.Role>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.createRole =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.createRole =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/CreateRole',
+      '/smartcore.bos.AccountApi/CreateRole',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_CreateRole);
+      methodDescriptor_AccountApi_CreateRole);
 };
 
 
@@ -878,8 +878,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.createRole =
  *   !proto.smartcore.bos.UpdateRoleRequest,
  *   !proto.smartcore.bos.Role>}
  */
-const methodDescriptor_AccountApiService_UpdateRole = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/UpdateRole',
+const methodDescriptor_AccountApi_UpdateRole = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/UpdateRole',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.UpdateRoleRequest,
   proto.smartcore.bos.Role,
@@ -904,13 +904,13 @@ const methodDescriptor_AccountApiService_UpdateRole = new grpc.web.MethodDescrip
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Role>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.updateRole =
+proto.smartcore.bos.AccountApiClient.prototype.updateRole =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/UpdateRole',
+      '/smartcore.bos.AccountApi/UpdateRole',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_UpdateRole,
+      methodDescriptor_AccountApi_UpdateRole,
       callback);
 };
 
@@ -923,13 +923,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.updateRole =
  * @return {!Promise<!proto.smartcore.bos.Role>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.updateRole =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.updateRole =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/UpdateRole',
+      '/smartcore.bos.AccountApi/UpdateRole',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_UpdateRole);
+      methodDescriptor_AccountApi_UpdateRole);
 };
 
 
@@ -939,8 +939,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.updateRole =
  *   !proto.smartcore.bos.DeleteRoleRequest,
  *   !proto.smartcore.bos.DeleteRoleResponse>}
  */
-const methodDescriptor_AccountApiService_DeleteRole = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/DeleteRole',
+const methodDescriptor_AccountApi_DeleteRole = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/DeleteRole',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.DeleteRoleRequest,
   proto.smartcore.bos.DeleteRoleResponse,
@@ -965,13 +965,13 @@ const methodDescriptor_AccountApiService_DeleteRole = new grpc.web.MethodDescrip
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.DeleteRoleResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.deleteRole =
+proto.smartcore.bos.AccountApiClient.prototype.deleteRole =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/DeleteRole',
+      '/smartcore.bos.AccountApi/DeleteRole',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_DeleteRole,
+      methodDescriptor_AccountApi_DeleteRole,
       callback);
 };
 
@@ -984,13 +984,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.deleteRole =
  * @return {!Promise<!proto.smartcore.bos.DeleteRoleResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.deleteRole =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.deleteRole =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/DeleteRole',
+      '/smartcore.bos.AccountApi/DeleteRole',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_DeleteRole);
+      methodDescriptor_AccountApi_DeleteRole);
 };
 
 
@@ -1000,8 +1000,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.deleteRole =
  *   !proto.smartcore.bos.GetRoleAssignmentRequest,
  *   !proto.smartcore.bos.RoleAssignment>}
  */
-const methodDescriptor_AccountApiService_GetRoleAssignment = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/GetRoleAssignment',
+const methodDescriptor_AccountApi_GetRoleAssignment = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/GetRoleAssignment',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.GetRoleAssignmentRequest,
   proto.smartcore.bos.RoleAssignment,
@@ -1026,13 +1026,13 @@ const methodDescriptor_AccountApiService_GetRoleAssignment = new grpc.web.Method
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.RoleAssignment>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.getRoleAssignment =
+proto.smartcore.bos.AccountApiClient.prototype.getRoleAssignment =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/GetRoleAssignment',
+      '/smartcore.bos.AccountApi/GetRoleAssignment',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_GetRoleAssignment,
+      methodDescriptor_AccountApi_GetRoleAssignment,
       callback);
 };
 
@@ -1045,13 +1045,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.getRoleAssignment =
  * @return {!Promise<!proto.smartcore.bos.RoleAssignment>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.getRoleAssignment =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.getRoleAssignment =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/GetRoleAssignment',
+      '/smartcore.bos.AccountApi/GetRoleAssignment',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_GetRoleAssignment);
+      methodDescriptor_AccountApi_GetRoleAssignment);
 };
 
 
@@ -1061,8 +1061,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.getRoleAssignment =
  *   !proto.smartcore.bos.ListRoleAssignmentsRequest,
  *   !proto.smartcore.bos.ListRoleAssignmentsResponse>}
  */
-const methodDescriptor_AccountApiService_ListRoleAssignments = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/ListRoleAssignments',
+const methodDescriptor_AccountApi_ListRoleAssignments = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/ListRoleAssignments',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.ListRoleAssignmentsRequest,
   proto.smartcore.bos.ListRoleAssignmentsResponse,
@@ -1087,13 +1087,13 @@ const methodDescriptor_AccountApiService_ListRoleAssignments = new grpc.web.Meth
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListRoleAssignmentsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.listRoleAssignments =
+proto.smartcore.bos.AccountApiClient.prototype.listRoleAssignments =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListRoleAssignments',
+      '/smartcore.bos.AccountApi/ListRoleAssignments',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListRoleAssignments,
+      methodDescriptor_AccountApi_ListRoleAssignments,
       callback);
 };
 
@@ -1106,13 +1106,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.listRoleAssignments =
  * @return {!Promise<!proto.smartcore.bos.ListRoleAssignmentsResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listRoleAssignments =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.listRoleAssignments =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/ListRoleAssignments',
+      '/smartcore.bos.AccountApi/ListRoleAssignments',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_ListRoleAssignments);
+      methodDescriptor_AccountApi_ListRoleAssignments);
 };
 
 
@@ -1122,8 +1122,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.listRoleAssignments
  *   !proto.smartcore.bos.CreateRoleAssignmentRequest,
  *   !proto.smartcore.bos.RoleAssignment>}
  */
-const methodDescriptor_AccountApiService_CreateRoleAssignment = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/CreateRoleAssignment',
+const methodDescriptor_AccountApi_CreateRoleAssignment = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/CreateRoleAssignment',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.CreateRoleAssignmentRequest,
   proto.smartcore.bos.RoleAssignment,
@@ -1148,13 +1148,13 @@ const methodDescriptor_AccountApiService_CreateRoleAssignment = new grpc.web.Met
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.RoleAssignment>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.createRoleAssignment =
+proto.smartcore.bos.AccountApiClient.prototype.createRoleAssignment =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/CreateRoleAssignment',
+      '/smartcore.bos.AccountApi/CreateRoleAssignment',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_CreateRoleAssignment,
+      methodDescriptor_AccountApi_CreateRoleAssignment,
       callback);
 };
 
@@ -1167,13 +1167,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.createRoleAssignment =
  * @return {!Promise<!proto.smartcore.bos.RoleAssignment>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.createRoleAssignment =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.createRoleAssignment =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/CreateRoleAssignment',
+      '/smartcore.bos.AccountApi/CreateRoleAssignment',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_CreateRoleAssignment);
+      methodDescriptor_AccountApi_CreateRoleAssignment);
 };
 
 
@@ -1183,8 +1183,8 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.createRoleAssignmen
  *   !proto.smartcore.bos.DeleteRoleAssignmentRequest,
  *   !proto.smartcore.bos.DeleteRoleAssignmentResponse>}
  */
-const methodDescriptor_AccountApiService_DeleteRoleAssignment = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApiService/DeleteRoleAssignment',
+const methodDescriptor_AccountApi_DeleteRoleAssignment = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/DeleteRoleAssignment',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.DeleteRoleAssignmentRequest,
   proto.smartcore.bos.DeleteRoleAssignmentResponse,
@@ -1209,13 +1209,13 @@ const methodDescriptor_AccountApiService_DeleteRoleAssignment = new grpc.web.Met
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.DeleteRoleAssignmentResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountApiServiceClient.prototype.deleteRoleAssignment =
+proto.smartcore.bos.AccountApiClient.prototype.deleteRoleAssignment =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/DeleteRoleAssignment',
+      '/smartcore.bos.AccountApi/DeleteRoleAssignment',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_DeleteRoleAssignment,
+      methodDescriptor_AccountApi_DeleteRoleAssignment,
       callback);
 };
 
@@ -1228,13 +1228,13 @@ proto.smartcore.bos.AccountApiServiceClient.prototype.deleteRoleAssignment =
  * @return {!Promise<!proto.smartcore.bos.DeleteRoleAssignmentResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountApiServicePromiseClient.prototype.deleteRoleAssignment =
+proto.smartcore.bos.AccountApiPromiseClient.prototype.deleteRoleAssignment =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApiService/DeleteRoleAssignment',
+      '/smartcore.bos.AccountApi/DeleteRoleAssignment',
       request,
       metadata || {},
-      methodDescriptor_AccountApiService_DeleteRoleAssignment);
+      methodDescriptor_AccountApi_DeleteRoleAssignment);
 };
 
 
@@ -1246,7 +1246,7 @@ proto.smartcore.bos.AccountApiServicePromiseClient.prototype.deleteRoleAssignmen
  * @struct
  * @final
  */
-proto.smartcore.bos.AccountInfoServiceClient =
+proto.smartcore.bos.AccountInfoClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -1272,7 +1272,7 @@ proto.smartcore.bos.AccountInfoServiceClient =
  * @struct
  * @final
  */
-proto.smartcore.bos.AccountInfoServicePromiseClient =
+proto.smartcore.bos.AccountInfoPromiseClient =
     function(hostname, credentials, options) {
   if (!options) options = {};
   options.format = 'text';
@@ -1296,8 +1296,8 @@ proto.smartcore.bos.AccountInfoServicePromiseClient =
  *   !proto.smartcore.bos.GetPermissionRequest,
  *   !proto.smartcore.bos.Permission>}
  */
-const methodDescriptor_AccountInfoService_GetPermission = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountInfoService/GetPermission',
+const methodDescriptor_AccountInfo_GetPermission = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountInfo/GetPermission',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.GetPermissionRequest,
   proto.smartcore.bos.Permission,
@@ -1322,13 +1322,13 @@ const methodDescriptor_AccountInfoService_GetPermission = new grpc.web.MethodDes
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Permission>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountInfoServiceClient.prototype.getPermission =
+proto.smartcore.bos.AccountInfoClient.prototype.getPermission =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountInfoService/GetPermission',
+      '/smartcore.bos.AccountInfo/GetPermission',
       request,
       metadata || {},
-      methodDescriptor_AccountInfoService_GetPermission,
+      methodDescriptor_AccountInfo_GetPermission,
       callback);
 };
 
@@ -1341,13 +1341,13 @@ proto.smartcore.bos.AccountInfoServiceClient.prototype.getPermission =
  * @return {!Promise<!proto.smartcore.bos.Permission>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountInfoServicePromiseClient.prototype.getPermission =
+proto.smartcore.bos.AccountInfoPromiseClient.prototype.getPermission =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountInfoService/GetPermission',
+      '/smartcore.bos.AccountInfo/GetPermission',
       request,
       metadata || {},
-      methodDescriptor_AccountInfoService_GetPermission);
+      methodDescriptor_AccountInfo_GetPermission);
 };
 
 
@@ -1357,8 +1357,8 @@ proto.smartcore.bos.AccountInfoServicePromiseClient.prototype.getPermission =
  *   !proto.smartcore.bos.ListPermissionsRequest,
  *   !proto.smartcore.bos.ListPermissionsResponse>}
  */
-const methodDescriptor_AccountInfoService_ListPermissions = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountInfoService/ListPermissions',
+const methodDescriptor_AccountInfo_ListPermissions = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountInfo/ListPermissions',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.ListPermissionsRequest,
   proto.smartcore.bos.ListPermissionsResponse,
@@ -1383,13 +1383,13 @@ const methodDescriptor_AccountInfoService_ListPermissions = new grpc.web.MethodD
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListPermissionsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountInfoServiceClient.prototype.listPermissions =
+proto.smartcore.bos.AccountInfoClient.prototype.listPermissions =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountInfoService/ListPermissions',
+      '/smartcore.bos.AccountInfo/ListPermissions',
       request,
       metadata || {},
-      methodDescriptor_AccountInfoService_ListPermissions,
+      methodDescriptor_AccountInfo_ListPermissions,
       callback);
 };
 
@@ -1402,13 +1402,13 @@ proto.smartcore.bos.AccountInfoServiceClient.prototype.listPermissions =
  * @return {!Promise<!proto.smartcore.bos.ListPermissionsResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountInfoServicePromiseClient.prototype.listPermissions =
+proto.smartcore.bos.AccountInfoPromiseClient.prototype.listPermissions =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountInfoService/ListPermissions',
+      '/smartcore.bos.AccountInfo/ListPermissions',
       request,
       metadata || {},
-      methodDescriptor_AccountInfoService_ListPermissions);
+      methodDescriptor_AccountInfo_ListPermissions);
 };
 
 
@@ -1418,8 +1418,8 @@ proto.smartcore.bos.AccountInfoServicePromiseClient.prototype.listPermissions =
  *   !proto.smartcore.bos.GetAccountLimitsRequest,
  *   !proto.smartcore.bos.AccountLimits>}
  */
-const methodDescriptor_AccountInfoService_GetAccountLimits = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountInfoService/GetAccountLimits',
+const methodDescriptor_AccountInfo_GetAccountLimits = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountInfo/GetAccountLimits',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.GetAccountLimitsRequest,
   proto.smartcore.bos.AccountLimits,
@@ -1444,13 +1444,13 @@ const methodDescriptor_AccountInfoService_GetAccountLimits = new grpc.web.Method
  * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.AccountLimits>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AccountInfoServiceClient.prototype.getAccountLimits =
+proto.smartcore.bos.AccountInfoClient.prototype.getAccountLimits =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountInfoService/GetAccountLimits',
+      '/smartcore.bos.AccountInfo/GetAccountLimits',
       request,
       metadata || {},
-      methodDescriptor_AccountInfoService_GetAccountLimits,
+      methodDescriptor_AccountInfo_GetAccountLimits,
       callback);
 };
 
@@ -1463,13 +1463,13 @@ proto.smartcore.bos.AccountInfoServiceClient.prototype.getAccountLimits =
  * @return {!Promise<!proto.smartcore.bos.AccountLimits>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AccountInfoServicePromiseClient.prototype.getAccountLimits =
+proto.smartcore.bos.AccountInfoPromiseClient.prototype.getAccountLimits =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountInfoService/GetAccountLimits',
+      '/smartcore.bos.AccountInfo/GetAccountLimits',
       request,
       metadata || {},
-      methodDescriptor_AccountInfoService_GetAccountLimits);
+      methodDescriptor_AccountInfo_GetAccountLimits);
 };
 
 

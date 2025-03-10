@@ -7,7 +7,7 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/field_mask.proto";
 
-service AccountApiService {
+service AccountApi {
   rpc GetAccount(GetAccountRequest) returns (Account);
   rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
   rpc CreateAccount(CreateAccountRequest) returns (Account);
@@ -35,7 +35,7 @@ service AccountApiService {
   rpc DeleteRoleAssignment(DeleteRoleAssignmentRequest) returns (DeleteRoleAssignmentResponse);
 }
 
-service AccountInfoService {
+service AccountInfo {
   rpc GetPermission(GetPermissionRequest) returns (Permission);
   rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse);
   rpc GetAccountLimits(GetAccountLimitsRequest) returns (AccountLimits);

@@ -99,7 +99,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 			return nil, fmt.Errorf("load accounts: %w", err)
 		}
 		rootNode.Announce(rootNode.Name(),
-			node.HasServer[gen.AccountApiServiceServer](gen.RegisterAccountApiServiceServer, account.NewServer(accountStore, accountLogger.Named("server"))),
+			node.HasServer[gen.AccountApiServer](gen.RegisterAccountApiServer, account.NewServer(accountStore, accountLogger.Named("server"))),
 		)
 	}
 

@@ -49,8 +49,8 @@ var (
 )
 
 type Server struct {
-	gen.UnimplementedAccountApiServiceServer
-	gen.UnimplementedAccountInfoServiceServer
+	gen.UnimplementedAccountApiServer
+	gen.UnimplementedAccountInfoServer
 	store  *Store
 	logger *zap.Logger
 }

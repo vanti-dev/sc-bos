@@ -3,7 +3,7 @@ import * as grpcWeb from 'grpc-web';
 import * as account_pb from './account_pb'; // proto import: "account.proto"
 
 
-export class AccountApiServiceClient {
+export class AccountApiClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
@@ -143,7 +143,7 @@ export class AccountApiServiceClient {
 
 }
 
-export class AccountInfoServiceClient {
+export class AccountInfoClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
@@ -171,7 +171,7 @@ export class AccountInfoServiceClient {
 
 }
 
-export class AccountApiServicePromiseClient {
+export class AccountApiPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
@@ -273,7 +273,7 @@ export class AccountApiServicePromiseClient {
 
 }
 
-export class AccountInfoServicePromiseClient {
+export class AccountInfoPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
