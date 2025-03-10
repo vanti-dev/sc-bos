@@ -1,0 +1,268 @@
+package account
+
+import (
+	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/base64"
+	"errors"
+	"io"
+	"math"
+
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/vanti-dev/sc-bos/internal/account/queries"
+	"github.com/vanti-dev/sc-bos/internal/sqlite"
+	"github.com/vanti-dev/sc-bos/internal/util/pass"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+)
+
+const appID = 0x5C0501
+
+const maxServiceCredentialsPerAccount = 2
+
+type Store struct {
+	db *sqlite.Database
+}
+
+func OpenStore(ctx context.Context, path string, logger *zap.Logger) (*Store, error) {
+	db, err := sqlite.Open(ctx, path,
+		sqlite.WithLogger(logger),
+		sqlite.WithApplicationID(appID),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Migrate(ctx, schema)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Store{
+		db: db,
+	}, nil
+}
+
+func NewMemoryStore(logger *zap.Logger) *Store {
+	db := sqlite.OpenMemory(
+		sqlite.WithLogger(logger),
+		sqlite.WithApplicationID(appID),
+	)
+
+	err := db.Migrate(context.Background(), schema)
+	if err != nil {
+		// this can only happen if the migrations are broken
+		panic(err)
+	}
+
+	return &Store{db: db}
+}
+
+func (s *Store) Close() error {
+	return s.db.Close()
+}
+
+func (s *Store) Read(ctx context.Context, f func(tx *Tx) error) error {
+	return s.db.ReadTx(ctx, func(tx *sql.Tx) error {
+		storeTx := &Tx{Queries: queries.New(tx)}
+		return f(storeTx)
+	})
+}
+
+func (s *Store) Write(ctx context.Context, f func(tx *Tx) error) error {
+	return s.db.WriteTx(ctx, func(tx *sql.Tx) error {
+		storeTx := &Tx{Queries: queries.New(tx)}
+		return f(storeTx)
+	})
+}
+
+type Tx struct {
+	*queries.Queries
+}
+
+func (tx *Tx) UpdateAccountPassword(ctx context.Context, accountID int64, password string) error {
+	password = normalisePassword(password)
+	if !permitPassword(password) {
+		return ErrInvalidPassword
+	}
+
+	hash, err := pass.Hash([]byte(password))
+	if err != nil {
+		return err
+	}
+
+	account, err := tx.GetAccount(ctx, accountID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrAccountNotFound
+	} else if err != nil {
+		return err
+	}
+	if account.Type != gen.Account_USER_ACCOUNT.String() {
+		return ErrUnexpectedPasswordUpdate
+	}
+
+	return tx.UpdateAccountPasswordHash(ctx, queries.UpdateAccountPasswordHashParams{
+		AccountID:    accountID,
+		PasswordHash: hash,
+	})
+}
+
+func (tx *Tx) CheckAccountPassword(ctx context.Context, accountID int64, password string) error {
+	password = normalisePassword(password)
+
+	hash, err := tx.GetAccountPasswordHash(ctx, accountID)
+	if err != nil {
+		return err
+	}
+
+	err = pass.Compare(hash, []byte(password))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (tx *Tx) GenerateServiceCredential(ctx context.Context, create queries.ServiceCredential) (GeneratedServiceCredential, error) {
+	if !validateDisplayName(create.DisplayName) {
+		return GeneratedServiceCredential{}, status.Error(codes.InvalidArgument, "invalid display_name")
+	}
+
+	count, err := tx.CountServiceCredentialsForAccount(ctx, create.AccountID)
+	if err != nil {
+		return GeneratedServiceCredential{}, err
+	}
+	// refuse to generate a new credential if the limit is reached
+	if count >= maxServiceCredentialsPerAccount {
+		return GeneratedServiceCredential{}, ErrServiceCredentialLimit
+	}
+
+	secret, err := genSecret()
+	if err != nil {
+		return GeneratedServiceCredential{}, err
+	}
+
+	hash := sha256.Sum256([]byte(secret))
+
+	cred, err := tx.CreateServiceCredential(ctx, queries.CreateServiceCredentialParams{
+		AccountID:   create.AccountID,
+		DisplayName: create.DisplayName,
+		Description: create.Description,
+		ExpireTime:  create.ExpireTime,
+		SecretHash:  hash[:],
+	})
+	if err != nil {
+		return GeneratedServiceCredential{}, err
+	}
+
+	return GeneratedServiceCredential{
+		ServiceCredential: cred,
+		Secret:            secret,
+	}, nil
+}
+
+type GeneratedServiceCredential struct {
+	queries.ServiceCredential
+	Secret string
+}
+
+// ListRoleAssignmentsFiltered returns a page of role assignments filtered by the given field and ID.
+// If page is nil, the first page is returned, and the total size is calculated.
+// Otherwise, the next page is returned and the total size is obtained from the page token.
+func (tx *Tx) ListRoleAssignmentsFiltered(ctx context.Context, field roleAssignmentField, filterID int64, page *PageToken, limit int64) (RoleAssignmentsPage, error) {
+	var (
+		afterID         int64
+		totalSize       int64
+		roleAssignments []queries.RoleAssignment
+		err             error
+		calculateSize   = true
+	)
+	if page != nil {
+		totalSize = int64(page.TotalSize)
+		afterID = page.LastId
+		calculateSize = false
+	}
+
+	switch field {
+	case roleAssignmentAccountID:
+		roleAssignments, err = tx.ListRoleAssignmentsForAccount(ctx, queries.ListRoleAssignmentsForAccountParams{
+			AfterID:   afterID,
+			Limit:     limit + 1, // fetch one extra to determine if there are more
+			AccountID: filterID,
+		})
+	case roleAssignmentRoleID:
+		roleAssignments, err = tx.ListRoleAssignmentsForRole(ctx, queries.ListRoleAssignmentsForRoleParams{
+			AfterID: afterID,
+			Limit:   limit + 1,
+			RoleID:  filterID,
+		})
+	case roleAssignmentUnfiltered:
+		roleAssignments, err = tx.ListRoleAssignments(ctx, queries.ListRoleAssignmentsParams{
+			AfterID: afterID,
+			Limit:   limit + 1,
+		})
+	default:
+		return RoleAssignmentsPage{}, ErrInvalidFilter
+	}
+	if err != nil {
+		return RoleAssignmentsPage{}, err
+	}
+
+	if calculateSize {
+		switch field {
+		case roleAssignmentAccountID:
+			totalSize, err = tx.CountRoleAssignmentsForAccount(ctx, filterID)
+		case roleAssignmentRoleID:
+			totalSize, err = tx.CountRoleAssignmentsForRole(ctx, filterID)
+		case roleAssignmentUnfiltered:
+			totalSize, err = tx.CountRoleAssignments(ctx)
+		default:
+			return RoleAssignmentsPage{}, ErrInvalidFilter
+		}
+		if err != nil {
+			return RoleAssignmentsPage{}, err
+		}
+	}
+
+	more := int64(len(roleAssignments)) > limit
+	var lastID int64
+	if more {
+		lastID = roleAssignments[limit-1].ID
+		roleAssignments = roleAssignments[:limit]
+	}
+	if totalSize > math.MaxInt32 {
+		// cannot represent, so omit
+		totalSize = 0
+	}
+	return RoleAssignmentsPage{
+		RoleAssignments: roleAssignments,
+		More:            more,
+		LastID:          lastID,
+		TotalSize:       int32(totalSize),
+	}, nil
+}
+
+type RoleAssignmentsPage struct {
+	RoleAssignments []queries.RoleAssignment
+	More            bool
+	LastID          int64 // if More is true, contains the last ID in the page
+	TotalSize       int32
+}
+
+func genSecret() (string, error) {
+	secretBytes := make([]byte, 32)
+	_, err := io.ReadFull(rand.Reader, secretBytes)
+	if err != nil {
+		return "", err
+	}
+
+	encoding := base64.URLEncoding
+	encoded := make([]byte, encoding.EncodedLen(len(secretBytes)))
+	encoding.Encode(encoded, secretBytes)
+
+	return string(encoded), nil
+}

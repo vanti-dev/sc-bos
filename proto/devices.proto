@@ -188,6 +188,30 @@ message GetDownloadDevicesUrlRequest {
   // A query for historical records for matched devices.
   // When present, GETting the url will return rows for each historical record for each device matched by query.
   smartcore.types.time.Period history = 3;
+
+  // Table configures how tabular file formats are generated.
+  message Table {
+    message Column {
+      // The qualified name of the column, the column heading you get by default.
+      // For example: "md.name" or "iaq.co2".
+      string name = 1;
+      string title = 2;
+    }
+
+    // Columns that should be included.
+    // If columns have a title then this will replace the qualified header.
+    repeated Column include_cols = 1;
+    // Columns that should be excluded.
+    // Titles are ignored.
+    repeated Column exclude_cols = 2;
+  }
+  // For tabular media types, configure how the table should be formatted.
+  Table table = 4;
+
+  // A filename to suggest for the downloaded file.
+  // Typically placed into the Content-Disposition header.
+  // A long filename may be result in an error response from the server.
+  string filename = 5;
 }
 
 message DownloadDevicesUrl {

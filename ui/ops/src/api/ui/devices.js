@@ -199,8 +199,40 @@ function pullDevicesMetadataRequestFromObject(obj) {
 function getDownloadDevicesUrlRequestFromObject(obj) {
   if (!obj) return undefined;
   const dst = new GetDownloadDevicesUrlRequest();
-  setProperties(dst, obj, 'mediaType');
+  setProperties(dst, obj, 'mediaType', 'filename');
   dst.setQuery(deviceQueryFromObject(obj.query));
   dst.setHistory(periodFromObject(obj.history));
+  dst.setTable(getDownloadDevicesUrlRequestTableFromObject(obj.table));
+  return dst;
+}
+
+/**
+ * @param {Partial<GetDownloadDevicesUrlRequest.Table.AsObject>} obj
+ * @return {GetDownloadDevicesUrlRequest.Table|undefined}
+ */
+function getDownloadDevicesUrlRequestTableFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new GetDownloadDevicesUrlRequest.Table();
+  if (obj.excludeColsList) {
+    for (const col of obj.excludeColsList) {
+      dst.addExcludeCols(getDownloadDevicesUrlRequestTableColumnFromObject(col));
+    }
+  }
+  if (obj.includeColsList) {
+    for (const col of obj.includeColsList) {
+      dst.addIncludeCols(getDownloadDevicesUrlRequestTableColumnFromObject(col));
+    }
+  }
+  return dst;
+}
+
+/**
+ * @param {Partial<GetDownloadDevicesUrlRequest.Table.Column.AsObject>} obj
+ * @return {GetDownloadDevicesUrlRequest.Table.Column|undefined}
+ */
+function getDownloadDevicesUrlRequestTableColumnFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new GetDownloadDevicesUrlRequest.Table.Column();
+  setProperties(dst, obj, 'name', 'title');
   return dst;
 }

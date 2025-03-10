@@ -1,0 +1,476 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
+
+service AccountApi {
+  rpc GetAccount(GetAccountRequest) returns (Account);
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+  rpc CreateAccount(CreateAccountRequest) returns (Account);
+  rpc UpdateAccount(UpdateAccountRequest) returns (Account);
+  // Updates the password for a user account.
+  // If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
+  // If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
+  rpc UpdateAccountPassword(UpdateAccountPasswordRequest) returns (UpdateAccountPasswordResponse);
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
+
+  rpc GetServiceCredential(GetServiceCredentialRequest) returns (ServiceCredential);
+  rpc ListServiceCredentials(ListServiceCredentialsRequest) returns (ListServiceCredentialsResponse);
+  rpc CreateServiceCredential(CreateServiceCredentialRequest) returns (ServiceCredential);
+  rpc DeleteServiceCredential(DeleteServiceCredentialRequest) returns (DeleteServiceCredentialResponse);
+
+  rpc GetRole(GetRoleRequest) returns (Role);
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
+  rpc CreateRole(CreateRoleRequest) returns (Role);
+  rpc UpdateRole(UpdateRoleRequest) returns (Role);
+  rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse);
+
+  rpc GetRoleAssignment(GetRoleAssignmentRequest) returns (RoleAssignment);
+  rpc ListRoleAssignments(ListRoleAssignmentsRequest) returns (ListRoleAssignmentsResponse);
+  rpc CreateRoleAssignment(CreateRoleAssignmentRequest) returns (RoleAssignment);
+  rpc DeleteRoleAssignment(DeleteRoleAssignmentRequest) returns (DeleteRoleAssignmentResponse);
+}
+
+service AccountInfo {
+  rpc GetPermission(GetPermissionRequest) returns (Permission);
+  rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse);
+  rpc GetAccountLimits(GetAccountLimitsRequest) returns (AccountLimits);
+}
+
+message GetAccountRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  string id = 2;
+}
+
+message CreateAccountRequest {
+  // The name of the node to create the account on.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The account to create.
+  Account account = 2;
+  // For user accounts, the initial password to set.
+  // If absent, the account will be created without a password. The password must then be set with UpdateAccountPassword
+  // before the account can be used.
+  // Follows the same rules as UpdateAccountPassword.new_password.
+  string password = 3;
+}
+
+message ListAccountsRequest {
+  // The name of the node to list accounts for.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The maximum number of accounts to return in a single response.
+  // If there are more results available, the response will contain a next_page_token to get them.
+  int32 page_size = 2;
+  // Token from previous ListAccounts response, to get the next page of results.
+  string page_token = 3;
+}
+
+message ListAccountsResponse {
+  repeated Account accounts = 1;
+  // Opaque value which can be provided to ListAccounts to get the next page of results.
+  // Absent if there are no more results.
+  string next_page_token = 2;
+  // The total number of accounts available matching the request.
+  // May be inaccurate if the number of matching accounts changes between the first and last pages being fetched.
+  int32 total_size = 3;
+}
+
+message UpdateAccountRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The updated account data.
+  // The account to update is identified by account.id, which must be present.
+  Account account = 2;
+
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdateAccountPasswordRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the account to update the password for.
+  string id = 2;
+
+  // The new password to set.
+  // The password must be between 10 and 72 characters long.
+  // Leading and trailing whitespace is stripped.
+  string new_password = 3;
+  // The old password to verify. Required unless you have 'account:admin' permission.
+  string old_password = 4;
+}
+
+message UpdateAccountPasswordResponse {
+
+}
+
+message DeleteAccountRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the account to delete.
+  string id = 2;
+
+  // If true, no error will be returned if the account does not exist.
+  bool allow_missing = 3;
+}
+
+message DeleteAccountResponse {}
+
+message GetServiceCredentialRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the service credential to get.
+  string id = 2;
+}
+
+message ListServiceCredentialsRequest {
+  // The name of the node to list service credentials for.
+  string name = 1;
+
+  // The ID of the Account to list service credentials for.
+  string account_id = 2;
+}
+
+message ListServiceCredentialsResponse {
+  repeated ServiceCredential service_credentials = 1;
+}
+
+message CreateServiceCredentialRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  ServiceCredential service_credential = 2;
+}
+
+message DeleteServiceCredentialRequest {
+  // The name of the node where the account is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the service credential to delete.
+  string id = 2;
+
+  // If true, no error will be returned if the service credential does not exist.
+  bool allow_missing = 3;
+}
+
+message DeleteServiceCredentialResponse {
+
+}
+
+message GetRoleRequest {
+  // The name of the node where the role is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the role to get.
+  string id = 2;
+}
+
+message ListRolesRequest {
+  // The name of the node to list roles for.
+  string name = 1;
+
+  // The maximum number of roles to return in a single response.
+  // If there are more results available, the response will contain a next_page_token to get them.
+  int32 page_size = 2;
+  // Token from previous ListRoles response, to get the next page of results.
+  string page_token = 3;
+}
+
+message ListRolesResponse {
+  repeated Role roles = 1;
+  // Opaque value which can be provided to ListRoles to get the next page of results.
+  // Absent if there are no more results.
+  string next_page_token = 2;
+  // The total number of roles available matching the request.
+  // May be inaccurate if the number of matching roles changes between the first and last pages being fetched.
+  int32 total_size = 3;
+}
+
+message CreateRoleRequest {
+  // The name of the node where the role is located.
+  string name = 1;
+
+  // The role to create.
+  Role role = 2;
+}
+
+message UpdateRoleRequest {
+  // The name of the node where the role is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The updated role data.
+  // The role to update is identified by role.id, which must be present.
+  Role role = 2;
+
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message DeleteRoleRequest {
+  // The name of the node where the role is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the role to delete.
+  string id = 2;
+
+  // If true, no error will be returned if the role does not exist.
+  bool allow_missing = 3;
+}
+
+message DeleteRoleResponse {}
+
+message GetRoleAssignmentRequest {
+  // The name of the node where the role assignment is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the role assignment to get.
+  string id = 2;
+}
+
+message ListRoleAssignmentsRequest {
+  // The name of the node to list role assignments for.
+  string name = 1;
+
+  // The maximum number of role assignments to return in a single response.
+  // If there are more results available, the response will contain a next_page_token to get them.
+  int32 page_size = 2;
+  // Token from previous ListRoleAssignments response, to get the next page of results.
+  string page_token = 3;
+
+  // Expression to limit the RoleAssignments returned.
+  // If absent, all RoleAssignments are returned.
+  // Supported syntax:
+  //   'account_id = <id>' - return only RoleAssignments for the specified account
+  //   'role_id = <id>' - return only RoleAssignments for the specified role
+  //
+  // If a page_token is supplied, the filter must be the same as the filter used to get the page_token.
+  string filter = 4;
+}
+
+message ListRoleAssignmentsResponse {
+  repeated RoleAssignment role_assignments = 1;
+  // Opaque value which can be provided to ListRoleAssignments to get the next page of results.
+  // Absent if there are no more results.
+  string next_page_token = 2;
+  // The total number of role assignments available matching the request.
+  // May be inaccurate if the number of matching role assignments changes between the first and last pages being fetched.
+  int32 total_size = 3;
+}
+
+message CreateRoleAssignmentRequest {
+  // The name of the node where the role assignment is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The role assignment to create.
+  RoleAssignment role_assignment = 2;
+}
+
+message DeleteRoleAssignmentRequest {
+  // The name of the node where the role assignment is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the role assignment to delete.
+  string id = 2;
+
+  // If true, no error will be returned if the role assignment does not exist.
+  bool allow_missing = 3;
+}
+
+message DeleteRoleAssignmentResponse {}
+
+message GetPermissionRequest {
+  // The name of the node where the permission is located.
+  // Optional - if absent, the node you are connected to is assumed.
+  string name = 1;
+
+  // The id of the permission to get.
+  string id = 2;
+}
+
+message ListPermissionsRequest {
+  // The name of the node to list permissions for.
+  string name = 1;
+
+  // The maximum number of permissions to return in a single response.
+  // If there are more results available, the response will contain a next_page_token to get them.
+  int32 page_size = 2;
+  // Token from previous ListPermissions response, to get the next page of results.
+  string page_token = 3;
+}
+
+message ListPermissionsResponse {
+  repeated Permission permissions = 1;
+  // Opaque value which can be provided to ListPermissions to get the next page of results.
+  // Absent if there are no more results.
+  string next_page_token = 2;
+  // The total number of permissions available matching the request.
+  int32 total_size = 3;
+}
+
+message GetAccountLimitsRequest {
+  // The name of the node. Defaults to the node you are connected to.
+  string name = 1;
+}
+
+message Account {
+  // Unique identifier for this account. Consistent for the life of the account.
+  // Generated automatically on account creation.
+  // For service accounts, this is the OAuth2 Client ID for authenticating.
+  string id = 1;
+  // The time this account was created. Output only.
+  google.protobuf.Timestamp create_time = 2;
+  // Describes which type of account this is, which changes how authentication is handled.
+  // Required for account creation.
+  // Immutable.
+  Type type = 3;
+
+  // A human-readable name for this account, for display purposes. Required.
+  string display_name = 4;
+  // A longer human-readable description of this account. Optional.
+  string description = 5;
+
+  // For user accounts, the username to use for authentication.
+  // A valid username is between 3 and 100 characters.
+  // ASCII alphanumerics, and the following special characters are allowed: .-_@
+  string username = 6;
+
+  enum Type {
+    ACCOUNT_TYPE_UNSPECIFIED = 0;
+    USER_ACCOUNT = 1;
+    SERVICE_ACCOUNT = 2;
+  }
+}
+
+// A Role is a named collection of permissions.
+//
+// Roles are assigned to accounts using RoleAssignments.
+message Role {
+  // Unique identifier for this role assigned by the system.
+  string id = 1;
+  // Short human-readable name for this role, for display purposes. Required. Must be unique.
+  string display_name = 2;
+  // Longer human-readable description of this role, for display purposes. Optional.
+  string description = 3;
+  // The permissions granted by this role.
+  repeated string permission_ids = 4;
+}
+
+// A RoleAssignment is an assignment of a Role to an Account.
+// It is a sub-resource of the Account.
+message RoleAssignment {
+  // Unique identifier for this role assignment assigned by the system.
+  string id = 1;
+  // The account this role assignment is associated with.
+  string account_id = 2;
+  // The role this assignment grants.
+  string role_id = 3;
+  // The scope of the role assignment.
+  // If present, the permissions in the role are only granted for the resources in the scope.
+  // Otherwise, the permissions in the role apply to all resources.
+  Scope scope = 4;
+
+  message Scope {
+    ResourceType resource_type = 1;
+    string resource = 2;
+  }
+
+  enum ResourceType {
+    RESOURCE_TYPE_UNSPECIFIED = 0;
+    // Matches a single resource with the specified Smart Core name.
+    NAMED_RESOURCE = 1;
+    // Matches resources whose Smart Core name starts with the specified prefix, separated from an optional suffix
+    // by a '/'.
+    // Example:
+    //
+    //    Scope {
+    //      resource_type: NAMED_RESOURCE_PATH_PREFIX
+    //      resource: "foo/bar"
+    //    }
+    //
+    //    Matches resources with Smart Core names:
+    //      - foo/bar
+    //      - foo/bar/baz
+    //    Does not match:
+    //      - foo/barbaz
+    NAMED_RESOURCE_PATH_PREFIX = 2;
+    // Matches resources advertised by the Smart Core node with the given name.
+    NODE = 3;
+    // Matches resources whose advertised metadata subsystem property matches the specified value.
+    SUBSYSTEM = 4;
+    // Matches resources whose advertised metadata zone property matches the specified value.
+    ZONE = 5;
+  }
+}
+
+// ServiceCredential is a credential that can be used to authenticate as a service account.
+// Unlike a username/password, the secret is generated by the system and is not human readable.
+message ServiceCredential {
+  // Auto-generated unique identifier for this service credential.
+  string id = 1;
+  // The account this service credential is associated with.
+  // At creation, must be set to the ID of a service account.
+  string account_id = 2;
+  // Must be present on creation.
+  // A human-readable short name of the service credential, so that users can identify it.
+  string display_name = 3;
+  // A long-form human-readable description of the service credential, such as its purpose.
+  // Optional.
+  string description = 4;
+  // Output only. Only returned on creation.
+  string secret = 5;
+  // Output only. Set automatically on creation.
+  google.protobuf.Timestamp create_time = 6;
+  // As an input to CreateServiceCredential, this is the time the credential will expire.
+  // Optional - if absent, the credential will not expire.
+  // Must be in the future at the time of creation.
+  google.protobuf.Timestamp expire_time = 7;
+}
+
+// A permission is a named action that can be granted to a role.
+// The set of valid permissions is determined statically by the system, and cannot be modified at runtime.
+message Permission {
+  // Unique identifier for this permission.
+  // Will remain stable for the lifetime of the system.
+  string id = 1;
+
+  string display_name = 2;
+  string description = 3;
+}
+
+message AccountLimits {
+  message Field {
+    int32 min_length = 1;
+    int32 max_length = 2;
+  }
+
+  Field username = 1;
+  Field password = 2;
+  Field display_name = 3;
+  Field description = 4;
+
+  int32 max_service_credentials_per_account = 5;
+}

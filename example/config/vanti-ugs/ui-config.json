@@ -705,7 +705,11 @@
             }
           ]
         }
-      ]
+      ],
+      "waste" : {
+        "source" : "van/uk/brum/ugs/devices/waste",
+        "unit" : "kg"
+      }
     },
     "proxy": true,
     "siteFloorPlans": [
