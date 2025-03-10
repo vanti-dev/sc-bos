@@ -2,6 +2,7 @@ import SidebarPage from '@/components/pages/SidebarPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
 import securityEvents from '@/routes/ops/security-events/route.js';
 import overview from '@/routes/ops/overview/route.js';
+import waste from '@/routes/ops/waste/route.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 
 import {route} from '@/util/router.js';
@@ -23,6 +24,8 @@ export default {
       return '/ops/security';
     } else if (uiConfig.pathEnabled('/ops/security-events')) {
       return '/ops/security-events';
+    } else if (uiConfig.pathEnabled('/ops/waste')) {
+      return '/ops/waste';
     }
     return '/ops/loading';
   },
@@ -64,7 +67,8 @@ export default {
       }
     },
     ...route(notifications),
-    ...route(securityEvents)
+    ...route(securityEvents),
+    ...route(waste),
   ],
   meta: {
     authentication: {
@@ -88,6 +92,8 @@ export default {
         next('/ops/security');
       } else if (appConfig.pathEnabled('/ops/security-events')) {
         return '/ops/security-events';
+      } else if (appConfig.pathEnabled('/ops/waste')) {
+        next('/ops/waste');
       }
     } else {
       next();
