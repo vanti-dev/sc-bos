@@ -64,7 +64,7 @@ func NewClient(ctx context.Context, handler Handle) *Client {
 	}
 }
 
-func (c *Client) Connect(pdu config.PDUAddress, resourceType string, address, quantity uint16) error {
+func (c *Client) Connect(pdu config.PDUAddress, resourceType string, address, quantity uint16, interval time.Duration) error {
 	err := c.handler.Connect()
 
 	if err != nil {
@@ -86,7 +86,7 @@ func (c *Client) Connect(pdu config.PDUAddress, resourceType string, address, qu
 	// TODO: but we don't have much information about how the modbus registers correspond to trait values
 	// TODO: so this is approximated (or hardcoded) for now
 	c.group.Go(func() error {
-		throttle := time.NewTicker(time.Second)
+		throttle := time.NewTicker(interval)
 
 		for {
 			select {

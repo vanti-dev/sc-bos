@@ -69,6 +69,8 @@ type DeviceTrait struct {
 	Address uint16 `json:"address"`
 	// quantity of the device trait
 	Quantity uint16 `json:"quantity"`
+	// interval to poll the device trait
+	PollInterval *jsontypes.Duration `json:"pollInterval"`
 }
 
 type PDUAddress int

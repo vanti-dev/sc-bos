@@ -23,7 +23,8 @@ import (
 const (
 	DriverName = "modbus"
 
-	defaultTimeout = 5 * time.Second
+	defaultTimeout      = 5 * time.Second
+	defaultPollInterval = 30 * time.Second
 )
 
 type factory struct{}
@@ -98,7 +99,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				)
 
 				// connect the client
-				if err := client.Connect(*deviceTrait.PDU, fuel, deviceTrait.Address, deviceTrait.Quantity); err != nil {
+				if err := client.Connect(*deviceTrait.PDU, fuel, deviceTrait.Address, deviceTrait.Quantity, deviceTrait.PollInterval.Or(defaultPollInterval)); err != nil {
 					d.logger.Error("connecting client", zap.String("device", device.Name), zap.Error(err))
 				}
 				continue
@@ -115,7 +116,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				)
 
 				// connect the client
-				if err := client.Connect(*deviceTrait.PDU, faults, deviceTrait.Address, deviceTrait.Quantity); err != nil {
+				if err := client.Connect(*deviceTrait.PDU, faults, deviceTrait.Address, deviceTrait.Quantity, deviceTrait.PollInterval.Or(defaultPollInterval)); err != nil {
 					d.logger.Error("connecting client", zap.String("device", device.Name), zap.Error(err))
 				}
 				continue
@@ -132,7 +133,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				)
 
 				// connect the client
-				if err := client.Connect(*deviceTrait.PDU, monitor, deviceTrait.Address, deviceTrait.Quantity); err != nil {
+				if err := client.Connect(*deviceTrait.PDU, monitor, deviceTrait.Address, deviceTrait.Quantity, deviceTrait.PollInterval.Or(defaultPollInterval)); err != nil {
 					d.logger.Error("connecting client", zap.String("device", device.Name), zap.Error(err))
 				}
 				continue
