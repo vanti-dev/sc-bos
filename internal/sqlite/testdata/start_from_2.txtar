@@ -1,0 +1,7 @@
+Migrations that don't start from 1.
+
+-- 0002_test_migration.sql --
+-- dummy sql
+
+-- 0003_test_migration.sql --
+-- dummy sql

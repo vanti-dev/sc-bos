@@ -1,0 +1,4 @@
+A directory without any migrations.
+
+-- not-a-migration.txt --
+-- also-not-a-migration.sql --

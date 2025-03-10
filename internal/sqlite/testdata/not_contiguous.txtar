@@ -1,0 +1,7 @@
+Migrations that have a gap in the middle.
+
+-- 0001.sql --
+-- dummy sql
+
+-- 0003.sql --
+-- dummy sql
