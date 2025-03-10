@@ -15,7 +15,7 @@
               :error-messages="downloadError"/>
           <div v-tooltip="downloadBtnDisabled || 'Download CSV...'">
             <v-btn
-                @click="downloadHistory(name)"
+                @click="onDownloadClick()"
                 icon="mdi-file-download" elevation="0" class="ml-2 mr-n2 mt-1"
                 :loading="fetchingHistory" :disabled="!!downloadBtnDisabled"/>
           </div>
@@ -26,8 +26,7 @@
 </template>
 
 <script setup>
-import {listOccupancySensorHistory, occupancyRecordToObject} from '@/api/sc/traits/occupancy.js';
-import {downloadCSVRows} from '@/util/downloadCSV.js';
+import {getDownloadDevicesUrl} from '@/api/ui/devices.js';
 import {addDays, startOfDay} from 'date-fns';
 import {computed, ref} from 'vue';
 import {VDateInput} from 'vuetify/labs/components';
@@ -58,58 +57,33 @@ function resetMenu() {
   dateRange.value = [];
   downloadError.value = '';
 }
-const dateTimeProp = (obj) => {
-  return `${obj.toLocaleDateString()} ${obj.toLocaleTimeString()}`;
-};
 
-const historyHeaders = [
-  {title: 'Record Time', val: (a) => dateTimeProp(a.recordTime)},
-  {title: 'People Count', val: (a) => a.occupancy.peopleCount}
-];
-
-/**
- * Downloads the history of the occupancy sensor and saves it as a CSV file.
- *
- * @param {string} n
- * @return {Promise<void>}
- */
-async function downloadHistory(n) {
-  fetchingHistory.value = true;
-  const baseRequest = /** @type {ListOccupancyHistoryRequest.AsObject} */ {
-    name: n,
-    period: {
-      startTime: startOfDay(startDate.value),
-      endTime: startOfDay(addDays(endDate.value, 1))
-    },
-    pageSize: 1000
-  };
-
-  const csvRows =
-      /** @type {string[][]} */
-      [historyHeaders.map(h => h.title)];
-  while (true) {
-    try {
-      const response = await listOccupancySensorHistory(baseRequest, {});
-      for (let record of response.occupancyRecordsList) {
-        record = occupancyRecordToObject(record);
-        csvRows.push(historyHeaders.map(h => h.val(record)));
-      }
-      if (!response.nextPageToken) {
-        break;
-      }
-      baseRequest.pageToken = response.nextPageToken;
-    } catch (error) {
-      downloadError.value = error.message;
-      break;
-    }
-  }
-  if (csvRows.length > 1) {
-    const filename = `${n}_occupancy_history.csv`;
-    downloadCSVRows(filename, csvRows);
-  } else {
-    downloadError.value = 'No historical records found for these dates';
-  }
-  fetchingHistory.value = false;
+const onDownloadClick = async () => {
+  const url = await getDownloadDevicesUrl({
+    query: downloadQuery.value,
+    history: downloadHistory.value,
+    table: downloadTable.value,
+  });
+  const date = new Date();
+  const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  const aEl = document.createElement('a');
+  aEl.setAttribute('href', url.url);
+  aEl.setAttribute('download', url.filename || `meter-readings-${dateString}.csv`);
+  aEl.click();
 }
-
+const downloadQuery = computed(() => {
+  const names = [name];
+  return /** @type {Device.Query.AsObject} */ {conditionsList: [{stringIn: {stringsList: names}}]};
+});
+const downloadHistory = computed(() => {
+  return {startTime: startOfDay(startDate.value), endTime: startOfDay(addDays(endDate.value, 1))};
+});
+const downloadTable = computed(() => {
+  return {
+    includeColsList: [
+      {name: 'recordTime', title: 'Record Time'},
+      {name: 'occupancySensor.peopleCount', title: 'People'}
+    ]
+  }
+});
 </script>
