@@ -77,6 +77,8 @@ type Config struct {
 	Policy     policy.Policy `json:"-"` // Override the policy used for RPC calls. Defaults to policy.Default
 	PolicyMode PolicyMode    `json:"-"` // How to apply the policy. Unsafe and can disable security checks. Defaults to PolicyOn.
 
+	Experimental *Experimental `json:"experimental,omitempty"`
+
 	DriverFactories map[string]driver.Factory `json:"-"` // keyed by driver name
 	AutoFactories   map[string]auto.Factory   `json:"-"` // keyed by automation type
 	SystemFactories map[string]system.Factory `json:"-"` // keyed by system type
@@ -170,6 +172,13 @@ func Default() Config {
 	config.Logger.DisableStacktrace = true // because it's annoying
 
 	return config
+}
+
+// Experimental configures feature flags for experimental features.
+// These features are not considered stable and may be changed. They are not recommended for production use, so
+// are disabled by default.
+type Experimental struct {
+	Accounts bool `json:"accounts,omitempty"` // enable account management features
 }
 
 // Normalize adjusts c to apply defaults that are based on the values of other fields.
