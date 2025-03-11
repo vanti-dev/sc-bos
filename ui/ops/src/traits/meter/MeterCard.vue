@@ -1,7 +1,11 @@
 <template>
   <v-card elevation="0" tile>
+    <v-card-title class="d-flex text-title-caps-large text-neutral-lighten-3">
+      <span>Meter</span>
+      <v-spacer/>
+      <meter-history-card end :name="name"/>
+    </v-card-title>
     <v-list tile class="ma-0 pa-0">
-      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Meter</v-list-subheader>
       <v-list-item v-for="item of table" :key="item.label" class="py-1">
         <v-list-item-title class="text-body-small text-capitalize">
           {{ item.label }}
@@ -21,6 +25,7 @@
 
 <script setup>
 import {useMeterReading} from '@/traits/meter/meter.js';
+import MeterHistoryCard from '@/traits/meter/MeterHistoryCard.vue';
 
 
 const props = defineProps({
@@ -36,6 +41,10 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  name: {
+    type: String,
+    required: true
   }
 });
 
