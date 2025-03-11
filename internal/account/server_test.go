@@ -20,6 +20,7 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/vanti-dev/sc-bos/internal/auth/permission"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -2459,6 +2460,46 @@ func TestServer_CreateRoleAssignment(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestServer_ListPermissions(t *testing.T) {
+	ctx := context.Background()
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
+
+	var expect []*gen.Permission
+	for _, perm := range permission.All() {
+		expect = append(expect, permissionToProto(perm))
+	}
+
+	const pageSize = 5
+	var pages [][]*gen.Permission
+	var nextPageToken string
+	for {
+		res, err := server.ListPermissions(ctx, &gen.ListPermissionsRequest{
+			PageSize:  pageSize,
+			PageToken: nextPageToken,
+		})
+		if err != nil {
+			t.Fatalf("failed to list permissions: %v", err)
+		}
+		t.Logf("fetched page with token %q, returned %d results", nextPageToken, len(res.Permissions))
+		pages = append(pages, res.Permissions)
+		if int(res.TotalSize) != len(expect) {
+			t.Errorf("expected total size %d, got %d", len(expect), res.TotalSize)
+		}
+		if res.NextPageToken != "" {
+			nextPageToken = res.NextPageToken
+			if len(res.Permissions) < pageSize {
+				t.Errorf("fewer results (%d) returned than expected (%d), but got a page token", len(res.Permissions), pageSize)
+			}
+		} else {
+			break
+		}
+	}
+	comparePages(t, pageSize, expect, pages)
+
 }
 
 type messageWithID interface {

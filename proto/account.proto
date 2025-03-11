@@ -433,6 +433,9 @@ message Permission {
 
   string display_name = 2;
   string description = 3;
+  // The IDs of the permissions that this permission inherits from.
+  // If a role is granted this permission, it is also implicitly granted the permissions that this permission inherits from.
+  repeated string inherits_from_ids = 4;
 }
 
 message AccountLimits {

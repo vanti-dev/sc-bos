@@ -894,6 +894,11 @@ export class Permission extends jspb.Message {
   getDescription(): string;
   setDescription(value: string): Permission;
 
+  getInheritsFromIdsList(): Array<string>;
+  setInheritsFromIdsList(value: Array<string>): Permission;
+  clearInheritsFromIdsList(): Permission;
+  addInheritsFromIds(value: string, index?: number): Permission;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Permission.AsObject;
   static toObject(includeInstance: boolean, msg: Permission): Permission.AsObject;
@@ -907,6 +912,7 @@ export namespace Permission {
     id: string,
     displayName: string,
     description: string,
+    inheritsFromIdsList: Array<string>,
   }
 }
 

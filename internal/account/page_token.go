@@ -33,3 +33,29 @@ func parsePageToken(token string, filter string) (*PageToken, error) {
 	}
 	return parsed, nil
 }
+
+// like parsePageToken, but additionally validates that an integer last ID is present
+func parseIntPageToken(token string, filter string) (*PageToken, error) {
+	res, err := parsePageToken(token, filter)
+	if err != nil {
+		return nil, err
+	}
+	_, ok := res.GetLastId().(*PageToken_LastIdIntPk)
+	if !ok {
+		return nil, ErrInvalidPageToken
+	}
+	return res, nil
+}
+
+// like parsePageToken, but additionally validates that a string last ID is present
+func parseStringPageToken(token string, filter string) (*PageToken, error) {
+	res, err := parsePageToken(token, filter)
+	if err != nil {
+		return nil, err
+	}
+	_, ok := res.GetLastId().(*PageToken_LastNaturalId)
+	if !ok {
+		return nil, ErrInvalidPageToken
+	}
+	return res, nil
+}

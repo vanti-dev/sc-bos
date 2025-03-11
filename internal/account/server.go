@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/account/queries"
+	"github.com/vanti-dev/sc-bos/internal/auth/permission"
 	"github.com/vanti-dev/sc-bos/internal/sqlite"
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -92,11 +93,11 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 	var afterID int64 = 0
 	if req.PageToken != "" {
 		// this RPC does not support filtering
-		pageToken, err := parsePageToken(req.PageToken, "")
+		pageToken, err := parseIntPageToken(req.PageToken, "")
 		if err != nil {
 			return nil, ErrInvalidPageToken
 		}
-		afterID = pageToken.LastId
+		afterID = pageToken.GetLastIdIntPk()
 		res.TotalSize = pageToken.TotalSize
 	}
 
@@ -124,7 +125,7 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 		if int64(len(page)) > pageSize {
 			last := page[pageSize-1] // last element that we are going to send
 			res.NextPageToken = encodePageToken(&PageToken{
-				LastId:    last.ID,
+				LastId:    &PageToken_LastIdIntPk{LastIdIntPk: last.ID},
 				TotalSize: res.TotalSize,
 			})
 			page = page[:pageSize]
@@ -529,11 +530,11 @@ func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen
 	}
 	var afterID int64
 	if req.PageToken != "" {
-		token, err := parsePageToken(req.PageToken, "")
+		token, err := parseIntPageToken(req.PageToken, "")
 		if err != nil {
 			return nil, ErrInvalidPageToken
 		}
-		afterID = token.LastId
+		afterID = token.GetLastIdIntPk()
 		res.TotalSize = token.TotalSize
 	}
 
@@ -561,7 +562,7 @@ func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen
 		if int64(len(page)) > pageSize {
 			last := page[pageSize-1] // last element that we are going to send
 			res.NextPageToken = encodePageToken(&PageToken{
-				LastId:    last.Role.ID,
+				LastId:    &PageToken_LastIdIntPk{last.Role.ID},
 				TotalSize: res.TotalSize,
 			})
 			page = page[:pageSize]
@@ -822,7 +823,7 @@ func (s *Server) ListRoleAssignments(ctx context.Context, req *gen.ListRoleAssig
 	var token *PageToken
 	if req.PageToken != "" {
 		var err error
-		token, err = parsePageToken(req.PageToken, req.Filter)
+		token, err = parseIntPageToken(req.PageToken, req.Filter)
 		if err != nil {
 			return nil, err
 		}
@@ -840,7 +841,7 @@ func (s *Server) ListRoleAssignments(ctx context.Context, req *gen.ListRoleAssig
 		res.TotalSize = page.TotalSize
 		if page.More {
 			res.NextPageToken = encodePageToken(&PageToken{
-				LastId:    page.LastID,
+				LastId:    &PageToken_LastIdIntPk{LastIdIntPk: page.LastID},
 				TotalSize: page.TotalSize,
 				Filter:    req.Filter,
 			})
@@ -950,13 +951,42 @@ func (s *Server) DeleteRoleAssignment(ctx context.Context, req *gen.DeleteRoleAs
 }
 
 func (s *Server) GetPermission(ctx context.Context, req *gen.GetPermissionRequest) (*gen.Permission, error) {
-	// TODO: add list of valid permissions and support fetching them
-	return nil, ErrPermissionNotFound
+	perm, ok := permission.ByID(permission.ID(req.Id))
+	if !ok {
+		return nil, ErrPermissionNotFound
+	}
+
+	return permissionToProto(perm), nil
 }
 
-func (s *Server) ListPermissions(ctx context.Context, req *gen.ListPermissionsRequest) (*gen.ListPermissionsResponse, error) {
-	// TODO: add list of valid permissions and support fetching them
-	return &gen.ListPermissionsResponse{}, nil
+func (s *Server) ListPermissions(_ context.Context, req *gen.ListPermissionsRequest) (*gen.ListPermissionsResponse, error) {
+	pageSize := resolvePageSize(req.PageSize)
+	var token *PageToken
+	if req.PageToken != "" {
+		var err error
+		token, err = parseStringPageToken(req.PageToken, "")
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var after permission.ID
+	if token != nil {
+		after = permission.ID(token.GetLastNaturalId())
+	}
+	page, more := permission.Range(after, int(pageSize))
+	res := &gen.ListPermissionsResponse{TotalSize: int32(permission.Count())}
+	if more {
+		last := page[len(page)-1]
+		res.NextPageToken = encodePageToken(&PageToken{
+			LastId:    &PageToken_LastNaturalId{LastNaturalId: string(last.ID)},
+			TotalSize: res.TotalSize,
+		})
+	}
+	for _, perm := range page {
+		res.Permissions = append(res.Permissions, permissionToProto(perm))
+	}
+	return res, nil
 }
 
 func (s *Server) GetAccountLimits(ctx context.Context, req *gen.GetAccountLimitsRequest) (*gen.AccountLimits, error) {

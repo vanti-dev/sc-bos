@@ -790,7 +790,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.smartcore.bos.Permission = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.Permission.repeatedFields_, null);
 };
 goog.inherits(proto.smartcore.bos.Permission, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -7293,6 +7293,13 @@ proto.smartcore.bos.RoleAssignment.prototype.hasScope = function() {
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.smartcore.bos.Permission.repeatedFields_ = [4];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -7326,7 +7333,8 @@ proto.smartcore.bos.Permission.toObject = function(includeInstance, msg) {
   var f, obj = {
 id: jspb.Message.getFieldWithDefault(msg, 1, ""),
 displayName: jspb.Message.getFieldWithDefault(msg, 2, ""),
-description: jspb.Message.getFieldWithDefault(msg, 3, "")
+description: jspb.Message.getFieldWithDefault(msg, 3, ""),
+inheritsFromIdsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -7375,6 +7383,10 @@ proto.smartcore.bos.Permission.deserializeBinaryFromReader = function(msg, reade
       var value = /** @type {string} */ (reader.readString());
       msg.setDescription(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addInheritsFromIds(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -7422,6 +7434,13 @@ proto.smartcore.bos.Permission.serializeBinaryToWriter = function(message, write
   if (f.length > 0) {
     writer.writeString(
       3,
+      f
+    );
+  }
+  f = message.getInheritsFromIdsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      4,
       f
     );
   }
@@ -7479,6 +7498,43 @@ proto.smartcore.bos.Permission.prototype.getDescription = function() {
  */
 proto.smartcore.bos.Permission.prototype.setDescription = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * repeated string inherits_from_ids = 4;
+ * @return {!Array<string>}
+ */
+proto.smartcore.bos.Permission.prototype.getInheritsFromIdsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.smartcore.bos.Permission} returns this
+ */
+proto.smartcore.bos.Permission.prototype.setInheritsFromIdsList = function(value) {
+  return jspb.Message.setField(this, 4, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.smartcore.bos.Permission} returns this
+ */
+proto.smartcore.bos.Permission.prototype.addInheritsFromIds = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.smartcore.bos.Permission} returns this
+ */
+proto.smartcore.bos.Permission.prototype.clearInheritsFromIdsList = function() {
+  return this.setInheritsFromIdsList([]);
 };
 
 
