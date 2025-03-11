@@ -63,16 +63,19 @@ const onDownloadClick = async () => {
     downloadError.value = 'No device name provided';
     return;
   }
-  fetchingHistory.value = true;
-  const names = [p.name];
-  await triggerDownload(
-      'air-quality',
-      {conditionsList: [{stringIn: {stringsList: names}}]},
-      {startTime: startOfDay(startDate.value), endTime: startOfDay(addDays(endDate.value, 1))},
-      {
+  try {
+    fetchingHistory.value = true;
+    const names = [p.name];
+    await triggerDownload(
+        'air-quality',
+        {conditionsList: [{stringIn: {stringsList: names}}]},
+        {startTime: startOfDay(startDate.value), endTime: startOfDay(addDays(endDate.value, 1))},
+        {
 
-      }
-  )
-  fetchingHistory.value = false;
+        }
+    )
+  } finally {
+    fetchingHistory.value = false;
+  }
 }
 </script>
