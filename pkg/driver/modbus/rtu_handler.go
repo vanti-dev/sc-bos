@@ -1,4 +1,4 @@
-package modbusip
+package modbus
 
 import (
 	"time"
@@ -33,24 +33,40 @@ func (r *RtuHandler) Close() error {
 
 func WithRTUBaudRate(baudRate int) RTUOption {
 	return func(handler *modbus.RTUClientHandler) {
+		if baudRate == 0 {
+			handler.BaudRate = 19_200
+			return
+		}
 		handler.BaudRate = baudRate
 	}
 }
 
 func WithRTUDataBits(dataBits int) RTUOption {
 	return func(handler *modbus.RTUClientHandler) {
+		if dataBits == 0 {
+			handler.DataBits = 8
+			return
+		}
 		handler.DataBits = dataBits
 	}
 }
 
 func WithRTUStopBits(stopBits int) RTUOption {
 	return func(handler *modbus.RTUClientHandler) {
+		if stopBits == 0 {
+			handler.StopBits = 1
+			return
+		}
 		handler.StopBits = stopBits
 	}
 }
 
 func WithRTUParity(parity string) RTUOption {
 	return func(handler *modbus.RTUClientHandler) {
+		if parity == "" {
+			handler.Parity = "E"
+			return
+		}
 		handler.Parity = parity
 	}
 }

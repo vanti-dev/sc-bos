@@ -30,7 +30,7 @@ type TCPHandler struct {
 }
 
 type RTUHandler struct {
-	// IP or hostname address of the modbus over IP device
+	// bus address of the modbus device
 	Address string `json:"address"`
 	// timeout for the client to wait for
 	Timeout *jsontypes.Duration `json:"timeout"`
@@ -43,7 +43,7 @@ type RTUHandler struct {
 	// Parity: N - None, E - Even, O - Odd (default E)
 	// (The use of no parity requires 2 stop bits.)
 	Parity string `json:"parity"`
-	// slave id of the modbus over IP device
+	// slave id of the modbus device
 	SlaveId byte `json:"slaveId"`
 }
 
@@ -71,6 +71,8 @@ type DeviceTrait struct {
 	Quantity uint16 `json:"quantity"`
 	// interval to poll the device trait
 	PollInterval *jsontypes.Duration `json:"pollInterval"`
+	// scale factor to apply to the number held at address
+	ScaleFactor float32 `json:"scaleFactor"`
 }
 
 type PDUAddress int
@@ -103,7 +105,7 @@ func (p *PDUAddress) MarshalJSON() ([]byte, error) {
 		return json.Marshal(str)
 	}
 
-	return nil, fmt.Errorf("%d pdu address is not valid", p)
+	return nil, fmt.Errorf("%d pdu address is not valid", *p)
 }
 
 func (p *PDUAddress) UnmarshalJSON(data []byte) error {

@@ -1,4 +1,4 @@
-package modbusip
+package modbus
 
 import (
 	"time"

@@ -1,4 +1,4 @@
-package modbusip
+package modbus
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/emergencypb"
 	"github.com/smart-core-os/sc-golang/pkg/trait/energystoragepb"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
-	"github.com/vanti-dev/sc-bos/pkg/driver/modbusip/config"
+	"github.com/vanti-dev/sc-bos/pkg/driver/modbus/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -32,7 +32,10 @@ type factory struct{}
 var Factory driver.Factory = factory{}
 
 func (f factory) New(services driver.Services) service.Lifecycle {
-	d := &Driver{logger: services.Logger.Named(DriverName)}
+	d := &Driver{
+		logger: services.Logger.Named(DriverName),
+		node:   services.Node,
+	}
 
 	d.Service = service.New(
 		service.MonoApply(d.applyConfig),
@@ -41,7 +44,6 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 		})),
 		service.WithOnStop[config.Root](d.Clean),
 	)
-	d.node = services.Node
 
 	return d
 }
@@ -87,6 +89,13 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			continue
 		}
 
+		if err := client.Connect(); err != nil {
+			d.logger.Error("failed to connect modbus client", zap.Error(err), zap.String("device", device.Name))
+			return err
+		}
+
+		d.clients.Store(device.Name, client)
+
 		for _, deviceTrait := range device.Traits {
 			if deviceTrait.Name == trait.EnergyStorage {
 				fuelName, err := url.JoinPath(cfg.ScNamePrefix, device.Name, fuel)
@@ -98,11 +107,11 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 					node.HasMetadata(device.Metadata),
 				)
 
-				// connect the client
-				if err := client.Connect(*deviceTrait.PDU, fuel, deviceTrait.Address, deviceTrait.Quantity, deviceTrait.PollInterval.Or(defaultPollInterval)); err != nil {
+				// poll the client
+				if err := client.Poll(*deviceTrait.PDU, fuel, deviceTrait.Address, deviceTrait.Quantity, deviceTrait.ScaleFactor, deviceTrait.PollInterval.Or(defaultPollInterval)); err != nil {
 					d.logger.Error("connecting client", zap.String("device", device.Name), zap.Error(err))
+					return err
 				}
-				continue
 			}
 
 			if deviceTrait.Name == trait.Emergency {
@@ -115,11 +124,11 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 					node.HasMetadata(device.Metadata),
 				)
 
-				// connect the client
-				if err := client.Connect(*deviceTrait.PDU, faults, deviceTrait.Address, deviceTrait.Quantity, deviceTrait.PollInterval.Or(defaultPollInterval)); err != nil {
+				// poll the client
+				if err := client.Poll(*deviceTrait.PDU, faults, deviceTrait.Address, deviceTrait.Quantity, deviceTrait.ScaleFactor, deviceTrait.PollInterval.Or(defaultPollInterval)); err != nil {
 					d.logger.Error("connecting client", zap.String("device", device.Name), zap.Error(err))
+					return err
 				}
-				continue
 			}
 
 			if deviceTrait.Name == statuspb.TraitName {
@@ -132,16 +141,13 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 					node.HasMetadata(device.Metadata),
 				)
 
-				// connect the client
-				if err := client.Connect(*deviceTrait.PDU, monitor, deviceTrait.Address, deviceTrait.Quantity, deviceTrait.PollInterval.Or(defaultPollInterval)); err != nil {
+				// poll the client
+				if err := client.Poll(*deviceTrait.PDU, monitor, deviceTrait.Address, deviceTrait.Quantity, deviceTrait.ScaleFactor, deviceTrait.PollInterval.Or(defaultPollInterval)); err != nil {
 					d.logger.Error("connecting client", zap.String("device", device.Name), zap.Error(err))
+					return err
 				}
-				continue
 			}
 		}
-
-		d.clients.Store(device.Name, client)
-
 	}
 
 	return nil
