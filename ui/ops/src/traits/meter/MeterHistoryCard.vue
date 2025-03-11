@@ -26,12 +26,12 @@
 </template>
 
 <script setup>
-import {getDownloadDevicesUrl} from '@/api/ui/devices.js';
+import {triggerDownload} from '@/components/download/download.js';
 import {addDays, startOfDay} from 'date-fns';
 import {computed, ref} from 'vue';
 import {VDateInput} from 'vuetify/labs/components';
 
-defineProps({
+const p = defineProps({
   name: {
     type: String,
     required: true
@@ -59,31 +59,18 @@ function resetMenu() {
 }
 
 const onDownloadClick = async () => {
-  const url = await getDownloadDevicesUrl({
-    query: downloadQuery.value,
-    history: downloadHistory.value,
-    table: downloadTable.value,
-  });
-  const date = new Date();
-  const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-  const aEl = document.createElement('a');
-  aEl.setAttribute('href', url.url);
-  aEl.setAttribute('download', url.filename || `meter-readings-${dateString}.csv`);
-  aEl.click();
-}
-const downloadQuery = computed(() => {
-  const names = [name];
-  return /** @type {Device.Query.AsObject} */ {conditionsList: [{stringIn: {stringsList: names}}]};
-});
-const downloadHistory = computed(() => {
-  return {startTime: startOfDay(startDate.value), endTime: startOfDay(addDays(endDate.value, 1))};
-});
-const downloadTable = computed(() => {
-  return {
-    includeColsList: [
-      {name: 'recordTime', title: 'Record Time'},
-      {name: 'meterReading.usage', title: 'Usage'},
-    ]
+  if (!p.name || p.name === '') {
+    downloadError.value = 'No device name provided';
+    return;
   }
-});
+  const names = [p.name];
+  await triggerDownload(
+      'meter-readings',
+      {conditionsList: [{stringIn: {stringsList: names}}]},
+      {startTime: startOfDay(startDate.value), endTime: startOfDay(addDays(endDate.value, 1))},
+      {
+
+      }
+  )
+}
 </script>
