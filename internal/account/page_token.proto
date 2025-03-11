@@ -5,11 +5,15 @@ package smartcore.bos.account;
 option go_package = "github.com/vanti-dev/sc-bos/internal/account";
 
 message PageToken {
-  // The ID of the last item in the previous page.
-  int64 last_id = 1;
+  oneof last_id {
+    // The database-assigned integer ID of the last item in the previous page (for most resources).
+    int64 last_id_int_pk = 1;
+    // The string natural key of the last item in the previous page (for permissions).
+    string last_natural_id = 2;
+  }
   // The total number of items matching the query, determined when the first page is requested.
-  int32 total_size = 2;
+  int32 total_size = 3;
   // For RPCs that support filtering, the filter string used to generate the first page.
   // All subsequent pages must match this filter exactly.
-  string filter = 3;
+  string filter = 4;
 }

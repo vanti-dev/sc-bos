@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/internal/account/queries"
+	"github.com/vanti-dev/sc-bos/internal/auth/permission"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -80,6 +81,19 @@ func roleAssignmentToProto(assignment queries.RoleAssignment) *gen.RoleAssignmen
 		}
 	}
 	return ra
+}
+
+func permissionToProto(perm permission.Permission) *gen.Permission {
+	inherits := make([]string, len(perm.InheritsFrom))
+	for i, p := range perm.InheritsFrom {
+		inherits[i] = string(p)
+	}
+	return &gen.Permission{
+		Id:              string(perm.ID),
+		DisplayName:     perm.DisplayName,
+		Description:     perm.Description,
+		InheritsFromIds: inherits,
+	}
 }
 
 // in SQL queries that return a list of permissions per row, they are joined comma-separated

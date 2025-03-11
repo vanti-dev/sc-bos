@@ -193,6 +193,7 @@ type GeneratedServiceCredential struct {
 
 // ListRoleAssignmentsFiltered returns a page of role assignments filtered by the given field and ID.
 // If page is nil, the first page is returned, and the total size is calculated.
+// If page is non-nil, it must have an integer last ID.
 // Otherwise, the next page is returned and the total size is obtained from the page token.
 func (tx *Tx) ListRoleAssignmentsFiltered(ctx context.Context, field roleAssignmentField, filterID int64, page *PageToken, limit int64) (RoleAssignmentsPage, error) {
 	var (
@@ -204,7 +205,7 @@ func (tx *Tx) ListRoleAssignmentsFiltered(ctx context.Context, field roleAssignm
 	)
 	if page != nil {
 		totalSize = int64(page.TotalSize)
-		afterID = page.LastId
+		afterID = page.GetLastIdIntPk()
 		calculateSize = false
 	}
 
