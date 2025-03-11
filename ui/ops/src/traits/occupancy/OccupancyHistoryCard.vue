@@ -63,6 +63,7 @@ const onDownloadClick = async () => {
     downloadError.value = 'No device name provided';
     return;
   }
+  fetchingHistory.value = true;
   const names = [p.name];
   await triggerDownload(
       'occupancy',
@@ -72,5 +73,6 @@ const onDownloadClick = async () => {
 
       }
   )
+  fetchingHistory.value = false;
 }
 </script>
