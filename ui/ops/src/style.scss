@@ -16,6 +16,12 @@ p {
   pointer-events: none !important;
 }
 
+.text-overflow-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .v-text-field--outlined {
   background: var(--v-neutral-lighten1);
   border-color: var(--v-neutral-lighten2);
