@@ -19,6 +19,9 @@ export class MeterReading extends jspb.Message {
   hasEndTime(): boolean;
   clearEndTime(): MeterReading;
 
+  getProduced(): number;
+  setProduced(value: number): MeterReading;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MeterReading.AsObject;
   static toObject(includeInstance: boolean, msg: MeterReading): MeterReading.AsObject;
@@ -32,6 +35,7 @@ export namespace MeterReading {
     usage: number,
     startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    produced: number,
   }
 }
 

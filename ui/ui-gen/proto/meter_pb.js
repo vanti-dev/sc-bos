@@ -215,7 +215,8 @@ proto.smartcore.bos.MeterReading.toObject = function(includeInstance, msg) {
   var f, obj = {
 usage: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
 startTime: (f = msg.getStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+produced: jspb.Message.getFloatingPointFieldWithDefault(msg, 4, 0.0)
   };
 
   if (includeInstance) {
@@ -265,6 +266,10 @@ proto.smartcore.bos.MeterReading.deserializeBinaryFromReader = function(msg, rea
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setEndTime(value);
+      break;
+    case 4:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setProduced(value);
       break;
     default:
       reader.skipField();
@@ -316,6 +321,13 @@ proto.smartcore.bos.MeterReading.serializeBinaryToWriter = function(message, wri
       3,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getProduced();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      4,
+      f
     );
   }
 };
@@ -410,6 +422,24 @@ proto.smartcore.bos.MeterReading.prototype.clearEndTime = function() {
  */
 proto.smartcore.bos.MeterReading.prototype.hasEndTime = function() {
   return jspb.Message.getField(this, 3) != null;
+};
+
+
+/**
+ * optional float produced = 4;
+ * @return {number}
+ */
+proto.smartcore.bos.MeterReading.prototype.getProduced = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 4, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.MeterReading} returns this
+ */
+proto.smartcore.bos.MeterReading.prototype.setProduced = function(value) {
+  return jspb.Message.setProto3FloatField(this, 4, value);
 };
 
 
