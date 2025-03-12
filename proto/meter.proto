@@ -42,7 +42,9 @@ message MeterReadingSupport {
   // How a named device supports read/write/pull apis
   smartcore.types.ResourceSupport resource_support = 1;
   // The unit associated with the usage value
-  string unit = 2;
+  string usage_unit = 2;
+  // The unit associated with the produced value
+  string produced_unit = 3;
 }
 
 message GetMeterReadingRequest {
