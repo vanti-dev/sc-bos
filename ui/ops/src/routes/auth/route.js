@@ -1,4 +1,5 @@
 import SidebarPage from '@/components/pages/SidebarPage.vue';
+import accounts from '@/routes/auth/accounts/route.js';
 import thirdParty from '@/routes/auth/third-party/route.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {route} from '@/util/router.js';
@@ -22,13 +23,14 @@ export default [
           title: 'Users'
         }
       },
-      ...route(thirdParty)
+      ...route(thirdParty),
+      ...route(accounts),
     ],
     meta: {
       authentication: {
         rolesRequired: ['superAdmin', 'admin', 'operator', 'viewer']
       },
-      title: 'Auth'
+      title: 'Access Management'
     },
     beforeEnter: async (to, from, next) => {
       const uiConfig = useUiConfigStore();
