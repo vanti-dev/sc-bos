@@ -703,7 +703,7 @@ func (q *Queries) ListRoles(ctx context.Context, arg ListRolesParams) ([]Role, e
 }
 
 const listRolesAndPermissions = `-- name: ListRolesAndPermissions :many
-SELECT roles.id, roles.display_name, roles.description, group_concat(role_permissions.permission, ',') AS permissions
+SELECT roles.id, roles.display_name, roles.description, group_concat(coalesce(role_permissions.permission, ''), ',') AS permissions
 FROM roles
 LEFT OUTER JOIN role_permissions ON roles.id = role_permissions.role_id
 WHERE roles.id > ?1

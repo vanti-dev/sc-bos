@@ -1525,6 +1525,7 @@ func TestServer_Role(t *testing.T) {
 	t.Log("CreateRole:")
 	for i := range numRoles {
 		displayName := fmt.Sprintf("Role %d", i)
+		numPermissions := i % numPermissions // test roles with different numbers of permissions
 		role, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
 			Role: &gen.Role{
 				DisplayName: displayName,

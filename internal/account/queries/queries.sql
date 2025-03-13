@@ -101,7 +101,7 @@ SELECT COUNT(*) AS count
 FROM roles;
 
 -- name: ListRolesAndPermissions :many
-SELECT sqlc.embed(roles), group_concat(role_permissions.permission, ',') AS permissions
+SELECT sqlc.embed(roles), group_concat(coalesce(role_permissions.permission, ''), ',') AS permissions
 FROM roles
 LEFT OUTER JOIN role_permissions ON roles.id = role_permissions.role_id
 WHERE roles.id > :after_id

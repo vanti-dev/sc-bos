@@ -165,6 +165,27 @@ func (tx *Tx) GenerateServiceCredential(ctx context.Context, create queries.Serv
 	}, nil
 }
 
+func (tx *Tx) ListRolesAndPermissions(ctx context.Context, params queries.ListRolesAndPermissionsParams) ([]RoleAndPermissions, error) {
+	data, err := tx.Queries.ListRolesAndPermissions(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	roleAndPermissions := make([]RoleAndPermissions, len(data))
+	for i, d := range data {
+		roleAndPermissions[i] = RoleAndPermissions{
+			Role:          d.Role,
+			PermissionIDs: splitPermissions(d.Permissions),
+		}
+	}
+	return roleAndPermissions, nil
+}
+
+type RoleAndPermissions struct {
+	Role          queries.Role
+	PermissionIDs []string
+}
+
 type GeneratedServiceCredential struct {
 	queries.ServiceCredential
 	Secret string
