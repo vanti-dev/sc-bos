@@ -23,6 +23,13 @@
           disable-sort
           return-object
           v-model="selectedAccounts">
+        <template #top>
+          <v-expand-transition>
+            <div v-if="tableErrorStr">
+              <v-alert type="error" :text="tableErrorStr"/>
+            </div>
+          </v-expand-transition>
+        </template>
         <template #item.type="{item, internalItem, isSelected, toggleSelect}">
           <div class="select--container" :class="{selected: isSelected(internalItem)}">
             <v-checkbox-btn :model-value="isSelected(internalItem)"
@@ -84,6 +91,12 @@ const tableHeaders = computed(() => {
     {title: 'Username / Client ID', key: 'username', maxWidth: '10em', cellProps: {class: 'text-overflow-ellipsis'}},
     {title: 'Created', key: 'createTime', label: 'Created'},
   ]
+});
+
+const tableErrorStr = computed(() => {
+  const errors = accountsCollection.errors.value;
+  if (errors.length === 0) return null;
+  return 'Error fetching accounts: ' + errors.map((e) => (e.error ?? e).message ?? e).join(', ');
 });
 
 const latestAccount = ref(null);
