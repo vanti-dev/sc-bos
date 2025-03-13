@@ -51,6 +51,7 @@
         <v-btn text="Create"
                color="primary"
                type="submit"
+               variant="flat"
                :disabled="!formValid"
                :loading="saveLoading"/>
         <v-btn text="Cancel" @click="onCancel"/>

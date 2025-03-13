@@ -1,6 +1,6 @@
 import {listAccounts} from '@/api/ui/account.js';
 import useCollection from '@/composables/collection.js';
-import {ChangeType} from '@smart-core-os/sc-api-grpc-web/types/change_pb.js';
+import {ChangeType} from '@smart-core-os/sc-api-grpc-web/types/change_pb';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
 import {computed, toValue} from 'vue';
 
@@ -50,11 +50,35 @@ export function useAccountsCollection(request, options) {
  * @param {Account.AsObject} account
  * @return {Object}
  */
-export function accountToChangeList(account) {
+export function accountToAddChange(account) {
   const changes = {
     changesList: [{
       type: ChangeType.ADD,
       newValue: account,
+    }]
+  };
+  return {
+    toObject() {
+      return changes;
+    },
+    getChangesList() {
+      return changes.changesList.map(change => ({toObject() { return change; } }));
+    }
+  }
+}
+
+/**
+ * Returns an object that looks like a Pull Change that deletes the given account.
+ * Needed because Accounts doesn't support pull and we'd like to reuse our utilities that do.
+ *
+ * @param {Account.AsObject} account
+ * @return {Object}
+ */
+export function accountToRemoveChange(account) {
+  const changes = {
+    changesList: [{
+      type: ChangeType.REMOVE,
+      oldValue: account,
     }]
   };
   return {
