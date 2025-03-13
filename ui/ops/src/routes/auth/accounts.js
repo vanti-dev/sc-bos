@@ -1,4 +1,4 @@
-import {listAccounts} from '@/api/ui/account.js';
+import {listAccounts, listRoles} from '@/api/ui/account.js';
 import useCollection from '@/composables/collection.js';
 import {ChangeType} from '@smart-core-os/sc-api-grpc-web/types/change_pb';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
@@ -28,6 +28,38 @@ export function useAccountsCollection(request, options) {
       const res = await listAccounts(req, tracker);
       return {
         items: res.accountsList,
+        nextPageToken: res.nextPageToken,
+        totalSize: res.totalSize
+      };
+    },
+    pullFn(req, resource) {
+      const opts = toValue(normOpts);
+      if (opts.pullFn) {
+        opts.pullFn(req, resource);
+      }
+    }
+  };
+
+  return useCollection(request, client, normOpts);
+}
+
+/**
+ * @param {import('vue').MaybeRefOrGetter<Partial<ListRolesRequest.AsObject>>} request
+ * @param {import('vue').MaybeRefOrGetter<Partial<ListOnlyCollectionOptions<ListRolesRequest.AsObject, Role.AsObject>>>?} options
+ * @return {UseCollectionResponse<Role.AsObject>}
+ */
+export function useRolesCollection(request, options) {
+  const normOpts = computed(() => {
+    return {
+      cmp: (a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}),
+      ...toValue(options)
+    };
+  });
+  const client = {
+    async listFn(req, tracker) {
+      const res = await listRoles(req, tracker);
+      return {
+        items: res.rolesList,
         nextPageToken: res.nextPageToken,
         totalSize: res.totalSize
       };
