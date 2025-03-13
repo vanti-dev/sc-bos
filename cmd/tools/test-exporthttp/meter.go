@@ -16,7 +16,7 @@ func announceMeter(root node.Announcer, name, unit string, events []float32) err
 
 	modelInfoServer := &meter.InfoServer{
 		UnimplementedMeterInfoServer: gen.UnimplementedMeterInfoServer{},
-		MeterReading:                 &gen.MeterReadingSupport{Unit: unit},
+		MeterReading:                 &gen.MeterReadingSupport{UsageUnit: unit},
 	}
 
 	client := node.WithClients(gen.WrapMeterApi(meter.NewModelServer(model)), gen.WrapMeterInfo(modelInfoServer))
