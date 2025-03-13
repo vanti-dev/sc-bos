@@ -8,12 +8,7 @@
             variant="outlined"
             :accounts="selectedAccounts"
             @delete="onDelete"/>
-        <v-btn variant="flat" color="primary">
-          New Account...
-          <v-menu v-model="newAccountMenu" activator="parent" :close-on-content-click="false">
-            <new-account-card @save="onNewAccountSave" @cancel="onNewAccountCancel"/>
-          </v-menu>
-        </v-btn>
+        <new-account-btn variant="flat" color="primary" @save="onNewAccountSave"/>
       </template>
     </v-toolbar>
     <v-expand-transition>
@@ -30,7 +25,9 @@
           v-model="selectedAccounts">
         <template #item.type="{item, internalItem, isSelected, toggleSelect}">
           <div class="select--container" :class="{selected: isSelected(internalItem)}">
-            <v-checkbox-btn :model-value="isSelected(internalItem)" @click="toggleSelect(internalItem)" color="primary"/>
+            <v-checkbox-btn :model-value="isSelected(internalItem)"
+                            @click="toggleSelect(internalItem)"
+                            color="primary"/>
             <v-icon :icon="accountTypeIcon(item.type)" v-tooltip:bottom="accountTypeStr(item.type)"/>
           </div>
         </template>
@@ -53,17 +50,17 @@
 import {timestampToDate} from '@/api/convpb.js';
 import {useDataTableCollection} from '@/composables/table.js';
 import {
-  accountToAddChange,
-  accountToRemoveChange,
+  toAddChange,
+  toRemoveChange,
   accountTypeIcon,
   accountTypeStr,
   useAccountsCollection
-} from '@/routes/auth/accounts/accounts.js';
+} from '@/routes/auth/accounts.js';
 import CopySecretAlert from '@/routes/auth/accounts/CopySecretAlert.vue';
 import DeleteAccountsBtn from '@/routes/auth/accounts/DeleteAccountsBtn.vue';
-import NewAccountCard from '@/routes/auth/accounts/NewAccountCard.vue';
+import NewAccountBtn from '@/routes/auth/accounts/NewAccountBtn.vue';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
-import {computed, ref, watch} from 'vue';
+import {computed, ref} from 'vue';
 
 // used to fake PullAccounts when creating a new account.
 // the var isn't reactive, but the value will be whenever it's set
@@ -92,30 +89,13 @@ const tableHeaders = computed(() => {
 const latestAccount = ref(null);
 const latestServiceCredential = ref(null);
 
-const newAccountMenu = ref(false);
-
 const onNewAccountSave = ({account, serviceCredential}) => {
   if (pullAccountsResource) {
-    pullAccountsResource.lastResponse = accountToAddChange(account);
+    pullAccountsResource.lastResponse = toAddChange(account);
   }
   latestAccount.value = account;
   latestServiceCredential.value = serviceCredential;
-  newAccountMenu.value = false;
 };
-const onNewAccountCancel = () => {
-  newAccountMenu.value = false;
-}
-// reset the new account form once the menu is hidden
-const newAccountCardRef = ref(null);
-watch(newAccountMenu, (value) => {
-  if (value) {
-    setTimeout(() => {
-      const form = newAccountCardRef.value;
-      if (!form) return;
-      form.reset();
-    }, 250);
-  }
-});
 
 const onSecretClose = () => {
   latestServiceCredential.value = null;
@@ -127,12 +107,12 @@ const showDeleteAccountsBtn = computed(() => selectedAccounts.value.length > 0);
 const onDelete = () => {
   if (pullAccountsResource) {
     for (const account of selectedAccounts.value) {
-      pullAccountsResource.lastResponse = accountToRemoveChange(account);
+      pullAccountsResource.lastResponse = toRemoveChange(account);
     }
   }
   const _latest = latestAccount.value;
   for (const account of selectedAccounts.value) {
-    if (account.id === _latest.id) {
+    if (_latest && account.id === _latest.id) {
       latestAccount.value = null;
       latestServiceCredential.value = null;
     }
