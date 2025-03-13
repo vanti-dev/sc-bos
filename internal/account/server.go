@@ -607,8 +607,7 @@ func (s *Server) ListRoles(ctx context.Context, req *gen.ListRolesRequest) (*gen
 		}
 
 		for _, role := range page {
-			permissions := splitPermissions(role.Permissions)
-			res.Roles = append(res.Roles, roleToProto(role.Role, permissions))
+			res.Roles = append(res.Roles, roleToProto(role.Role, role.PermissionIDs))
 		}
 
 		return nil

@@ -84,5 +84,8 @@ func roleAssignmentToProto(assignment queries.RoleAssignment) *gen.RoleAssignmen
 
 // in SQL queries that return a list of permissions per row, they are joined comma-separated
 func splitPermissions(permissions string) []string {
+	if permissions == "" {
+		return nil
+	}
 	return strings.Split(permissions, ",")
 }
