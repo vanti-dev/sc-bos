@@ -274,7 +274,7 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 				Writable:   true,
 				Observable: true,
 			},
-			Unit: unit,
+			UsageUnit: unit,
 		}}
 		return []wrap.ServiceUnwrapper{gen.WrapMeterApi(meter.NewModelServer(model)), gen.WrapMeterInfo(info)}, auto.MeterAuto(model)
 	case securityevent.TraitName:

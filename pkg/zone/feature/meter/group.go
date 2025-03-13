@@ -47,8 +47,8 @@ func (g *Group) DescribeMeterReading(ctx context.Context, _ *gen.DescribeMeterRe
 			var s *gen.MeterReadingSupport
 			s, err = g.infoClient.DescribeMeterReading(ctx, &gen.DescribeMeterReadingRequest{Name: name})
 			cleanup()
-			if err == nil && s.Unit != "" {
-				g.unit = s.Unit
+			if err == nil && s.UsageUnit != "" {
+				g.unit = s.UsageUnit
 				return nil
 			}
 		}
@@ -64,7 +64,7 @@ func (g *Group) DescribeMeterReading(ctx context.Context, _ *gen.DescribeMeterRe
 			Writable:   !g.readOnly,
 			Observable: true,
 		},
-		Unit: g.unit,
+		UsageUnit: g.unit,
 	}, nil
 }
 

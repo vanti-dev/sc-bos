@@ -215,7 +215,8 @@ proto.smartcore.bos.MeterReading.toObject = function(includeInstance, msg) {
   var f, obj = {
 usage: jspb.Message.getFloatingPointFieldWithDefault(msg, 1, 0.0),
 startTime: (f = msg.getStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+produced: jspb.Message.getFloatingPointFieldWithDefault(msg, 4, 0.0)
   };
 
   if (includeInstance) {
@@ -265,6 +266,10 @@ proto.smartcore.bos.MeterReading.deserializeBinaryFromReader = function(msg, rea
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setEndTime(value);
+      break;
+    case 4:
+      var value = /** @type {number} */ (reader.readFloat());
+      msg.setProduced(value);
       break;
     default:
       reader.skipField();
@@ -316,6 +321,13 @@ proto.smartcore.bos.MeterReading.serializeBinaryToWriter = function(message, wri
       3,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getProduced();
+  if (f !== 0.0) {
+    writer.writeFloat(
+      4,
+      f
     );
   }
 };
@@ -413,6 +425,24 @@ proto.smartcore.bos.MeterReading.prototype.hasEndTime = function() {
 };
 
 
+/**
+ * optional float produced = 4;
+ * @return {number}
+ */
+proto.smartcore.bos.MeterReading.prototype.getProduced = function() {
+  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 4, 0.0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.smartcore.bos.MeterReading} returns this
+ */
+proto.smartcore.bos.MeterReading.prototype.setProduced = function(value) {
+  return jspb.Message.setProto3FloatField(this, 4, value);
+};
+
+
 
 
 
@@ -446,7 +476,8 @@ proto.smartcore.bos.MeterReadingSupport.prototype.toObject = function(opt_includ
 proto.smartcore.bos.MeterReadingSupport.toObject = function(includeInstance, msg) {
   var f, obj = {
 resourceSupport: (f = msg.getResourceSupport()) && types_info_pb.ResourceSupport.toObject(includeInstance, f),
-unit: jspb.Message.getFieldWithDefault(msg, 2, "")
+usageUnit: jspb.Message.getFieldWithDefault(msg, 2, ""),
+producedUnit: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -490,7 +521,11 @@ proto.smartcore.bos.MeterReadingSupport.deserializeBinaryFromReader = function(m
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setUnit(value);
+      msg.setUsageUnit(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setProducedUnit(value);
       break;
     default:
       reader.skipField();
@@ -529,10 +564,17 @@ proto.smartcore.bos.MeterReadingSupport.serializeBinaryToWriter = function(messa
       types_info_pb.ResourceSupport.serializeBinaryToWriter
     );
   }
-  f = message.getUnit();
+  f = message.getUsageUnit();
   if (f.length > 0) {
     writer.writeString(
       2,
+      f
+    );
+  }
+  f = message.getProducedUnit();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
       f
     );
   }
@@ -577,10 +619,10 @@ proto.smartcore.bos.MeterReadingSupport.prototype.hasResourceSupport = function(
 
 
 /**
- * optional string unit = 2;
+ * optional string usage_unit = 2;
  * @return {string}
  */
-proto.smartcore.bos.MeterReadingSupport.prototype.getUnit = function() {
+proto.smartcore.bos.MeterReadingSupport.prototype.getUsageUnit = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -589,8 +631,26 @@ proto.smartcore.bos.MeterReadingSupport.prototype.getUnit = function() {
  * @param {string} value
  * @return {!proto.smartcore.bos.MeterReadingSupport} returns this
  */
-proto.smartcore.bos.MeterReadingSupport.prototype.setUnit = function(value) {
+proto.smartcore.bos.MeterReadingSupport.prototype.setUsageUnit = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string produced_unit = 3;
+ * @return {string}
+ */
+proto.smartcore.bos.MeterReadingSupport.prototype.getProducedUnit = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.MeterReadingSupport} returns this
+ */
+proto.smartcore.bos.MeterReadingSupport.prototype.setProducedUnit = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 

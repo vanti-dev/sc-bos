@@ -50,6 +50,7 @@ func run() error {
 			return err
 		}
 		log.Printf("got usage %v for %s", res.Usage, name)
+		log.Printf("got production %v for %s", res.Produced, name)
 		return nil
 	}
 

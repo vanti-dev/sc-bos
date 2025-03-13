@@ -19,6 +19,9 @@ export class MeterReading extends jspb.Message {
   hasEndTime(): boolean;
   clearEndTime(): MeterReading;
 
+  getProduced(): number;
+  setProduced(value: number): MeterReading;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MeterReading.AsObject;
   static toObject(includeInstance: boolean, msg: MeterReading): MeterReading.AsObject;
@@ -32,6 +35,7 @@ export namespace MeterReading {
     usage: number,
     startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    produced: number,
   }
 }
 
@@ -41,8 +45,11 @@ export class MeterReadingSupport extends jspb.Message {
   hasResourceSupport(): boolean;
   clearResourceSupport(): MeterReadingSupport;
 
-  getUnit(): string;
-  setUnit(value: string): MeterReadingSupport;
+  getUsageUnit(): string;
+  setUsageUnit(value: string): MeterReadingSupport;
+
+  getProducedUnit(): string;
+  setProducedUnit(value: string): MeterReadingSupport;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MeterReadingSupport.AsObject;
@@ -55,7 +62,8 @@ export class MeterReadingSupport extends jspb.Message {
 export namespace MeterReadingSupport {
   export type AsObject = {
     resourceSupport?: types_info_pb.ResourceSupport.AsObject,
-    unit: string,
+    usageUnit: string,
+    producedUnit: string,
   }
 }
 

@@ -37,7 +37,7 @@ func TestServer_DownloadDevicesHTTPHandler(t *testing.T) {
 			node.WithClients(
 				gen.WrapMeterApi(meter.NewModelServer(meterDevice)),
 				gen.WrapMeterInfo(&meter.InfoServer{MeterReading: &gen.MeterReadingSupport{
-					Unit: "tests per second",
+					UsageUnit: "tests per second",
 				}}),
 			),
 		),

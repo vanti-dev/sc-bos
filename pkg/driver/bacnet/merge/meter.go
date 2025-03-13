@@ -71,7 +71,7 @@ func (t *meterTrait) AnnounceSelf(a node.Announcer) node.Undo {
 	return a.Announce(t.config.Name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(t), gen.WrapMeterInfo(&meter.InfoServer{
 		MeterReading: &gen.MeterReadingSupport{
 			ResourceSupport: &types.ResourceSupport{Readable: true, Observable: true},
-			Unit:            t.config.Unit,
+			UsageUnit:       t.config.Unit,
 		},
 	}))))
 }

@@ -86,7 +86,7 @@ func (w *WaterJob) getUnitMultiplier(ctx context.Context, meter string) (float32
 	// convert reading to litres
 	var multiplier float32
 
-	switch infoResp.GetUnit() {
+	switch infoResp.GetUsageUnit() {
 	case "cm3": // TODO: these strings may need correcting I tried guessing them
 		multiplier = 1 / 1_000_000
 	case "m3":
