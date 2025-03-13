@@ -47,7 +47,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 				var unit string
 				ci := gen.NewMeterInfoClient(s.node.ClientConn())
 				if info, err := ci.DescribeMeterReading(ctx, &gen.DescribeMeterReadingRequest{Name: name}); err == nil {
-					unit = info.Unit
+					unit = info.GetUsageUnit()
 				}
 				return meterReadingToRow(data, unit), nil
 			},
@@ -60,7 +60,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 						if token == "" {
 							// fetch info the first time
 							if info, err := ci.DescribeMeterReading(ctx, &gen.DescribeMeterReadingRequest{Name: name}); err == nil {
-								unit = info.Unit
+								unit = info.GetUsageUnit()
 							}
 						}
 
