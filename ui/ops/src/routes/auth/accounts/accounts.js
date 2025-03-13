@@ -44,17 +44,18 @@ export function useAccountsCollection(request, options) {
 }
 
 /**
- * Returns an object that looks like a Pull Change that adds the given account.
- * Needed because Accounts doesn't support pull and we'd like to reuse our utilities that do.
+ * Returns an object that looks like a Pull Change that adds the given val.
+ * Useful when an API doesn't support Pull but you want to reuse utilities that do.
  *
- * @param {Account.AsObject} account
+ * @param {T} val
  * @return {Object}
+ * @template T
  */
-export function accountToAddChange(account) {
+export function toAddChange(val) {
   const changes = {
     changesList: [{
       type: ChangeType.ADD,
-      newValue: account,
+      newValue: val,
     }]
   };
   return {
@@ -68,17 +69,18 @@ export function accountToAddChange(account) {
 }
 
 /**
- * Returns an object that looks like a Pull Change that deletes the given account.
- * Needed because Accounts doesn't support pull and we'd like to reuse our utilities that do.
+ * Returns an object that looks like a Pull Change that deletes the given val.
+ * Useful when an API doesn't support Pull but you want to reuse
  *
- * @param {Account.AsObject} account
+ * @param {T} val
  * @return {Object}
+ * @template T
  */
-export function accountToRemoveChange(account) {
+export function toRemoveChange(val) {
   const changes = {
     changesList: [{
       type: ChangeType.REMOVE,
-      oldValue: account,
+      oldValue: val,
     }]
   };
   return {

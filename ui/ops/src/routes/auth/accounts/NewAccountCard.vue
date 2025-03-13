@@ -56,6 +56,11 @@
                :loading="saveLoading"/>
         <v-btn text="Cancel" @click="onCancel"/>
       </v-card-actions>
+      <v-expand-transition>
+        <div v-if="errorStr">
+          <v-alert type="error" :text="errorStr" tile class="mt-4"/>
+        </div>
+      </v-expand-transition>
     </v-form>
   </v-card>
 </template>
@@ -117,6 +122,12 @@ const accountNameRules = computed(() => {
 });
 const description = ref('');
 
+const saveError = ref(null);
+const errorStr = computed(() => {
+  if (!saveError.value) return null;
+  return saveError.value.message;
+});
+
 const formDisabled = ref(false);
 const saveLoading = ref(false);
 const reset = () => {
@@ -124,7 +135,9 @@ const reset = () => {
   if (!form) return;
   form.reset();
   accountType.value = Account.Type.USER_ACCOUNT;
+  saveError.value = null;
 }
+
 const onSave = async () => {
   saveLoading.value = true;
   formDisabled.value = true;
@@ -166,8 +179,9 @@ const onSave = async () => {
         break;
       }
     }
+    saveError.value = null;
   } catch (e) {
-    console.warn(e);
+    saveError.value = e;
   } finally {
     saveLoading.value = false;
     formDisabled.value = false;

@@ -24,7 +24,7 @@ const props = defineProps({
   },
   accounts: {
     type: Array,
-    default: () => [],
+    default: () => [], // of Account.AsObject
   }
 });
 const emit = defineEmits(['cancel', 'delete']);
