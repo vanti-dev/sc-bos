@@ -31,6 +31,11 @@ const menuItems = [
     link: {path: '/auth/accounts'}
   },
   {
+    title: 'Roles',
+    icon: 'mdi-account-details',
+    link: {path: '/auth/roles'}
+  },
+  {
     title: 'Third-party Accounts',
     icon: 'mdi-key',
     link: {path: '/auth/third-party'}
