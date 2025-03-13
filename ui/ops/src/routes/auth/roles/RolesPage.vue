@@ -19,6 +19,13 @@
           return-object
           show-select
           v-model="selectedRoles">
+        <template #top>
+          <v-expand-transition>
+            <div v-if="tableErrorStr">
+              <v-alert type="error" :text="tableErrorStr"/>
+            </div>
+          </v-expand-transition>
+        </template>
         <!-- no header select item -->
         <template #header.data-table-select/>
         <template #item.displayName="{item}">
@@ -60,6 +67,12 @@ const tableHeaders = computed(() => {
     {title: 'Name', key: 'displayName', maxWidth: '10em', cellProps: {class: 'text-overflow-ellipsis'}},
     {title: 'Permissions', key: 'permissions', align: 'end', maxWidth: '10em', cellProps: {class: 'text-overflow-ellipsis'}},
   ]
+});
+
+const tableErrorStr = computed(() => {
+  const errors = rolesCollection.errors.value;
+  if (errors.length === 0) return null;
+  return 'Error fetching roles: ' + errors.map((e) => (e.error ?? e).message ?? e).join(', ');
 });
 
 const latestRole = ref(null);
