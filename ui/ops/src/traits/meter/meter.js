@@ -105,7 +105,7 @@ export function useMeterReading(value, support = null) {
   const _s = computed(() => toValue(support));
 
   const unit = computed(() => {
-    return _s.value?.unit ?? '';
+    return _s.value?.usageUnit ?? '';
   });
 
   const usage = computed(() => {
