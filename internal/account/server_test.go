@@ -1670,8 +1670,9 @@ func TestServer_CreateRole(t *testing.T) {
 	ctx := context.Background()
 
 	type testCase struct {
-		role *gen.Role
-		err  error
+		existing []*gen.Role
+		role     *gen.Role
+		err      error
 	}
 
 	cases := map[string]testCase{
@@ -1736,6 +1737,13 @@ func TestServer_CreateRole(t *testing.T) {
 			role: nil,
 			err:  ErrResourceMissing,
 		},
+		"display_name_conflict": {
+			existing: []*gen.Role{
+				{DisplayName: "Role 1"},
+			},
+			role: &gen.Role{DisplayName: "Role 1"},
+			err:  ErrRoleDisplayNameExists,
+		},
 	}
 
 	for name, tc := range cases {
@@ -1743,6 +1751,13 @@ func TestServer_CreateRole(t *testing.T) {
 			logger := testLogger(t)
 			store := NewMemoryStore(logger)
 			server := NewServer(store, logger)
+
+			for _, existing := range tc.existing {
+				_, err := server.CreateRole(ctx, &gen.CreateRoleRequest{Role: existing})
+				if err != nil {
+					t.Fatalf("failed to create existing role: %v", err)
+				}
+			}
 
 			created, err := server.CreateRole(ctx, &gen.CreateRoleRequest{Role: tc.role})
 			if !errors.Is(err, tc.err) {
@@ -1780,6 +1795,7 @@ func TestServer_UpdateRole(t *testing.T) {
 
 	type testCase struct {
 		initial  *gen.Role
+		others   []*gen.Role // other roles to create before the update
 		update   *gen.UpdateRoleRequest
 		expected *gen.Role
 		code     codes.Code
@@ -1965,6 +1981,15 @@ func TestServer_UpdateRole(t *testing.T) {
 			expected: &gen.Role{DisplayName: "Role 1"},
 			code:     codes.InvalidArgument,
 		},
+		"display_name_conflict": {
+			initial: &gen.Role{DisplayName: "Role 1"},
+			others:  []*gen.Role{{DisplayName: "Role 2"}},
+			update: &gen.UpdateRoleRequest{
+				Role: &gen.Role{DisplayName: "Role 2"},
+			},
+			expected: &gen.Role{DisplayName: "Role 1"},
+			code:     codes.AlreadyExists,
+		},
 	}
 
 	for name, tc := range cases {
@@ -1979,6 +2004,15 @@ func TestServer_UpdateRole(t *testing.T) {
 			checkNilIfErrored(t, role, err)
 			if err != nil {
 				t.Fatalf("failed to create role: %v", err)
+			}
+
+			for _, other := range tc.others {
+				_, err := server.CreateRole(ctx, &gen.CreateRoleRequest{
+					Role: other,
+				})
+				if err != nil {
+					t.Fatalf("failed to create other role: %v", err)
+				}
 			}
 
 			// inject ID, which is now known, into update and expected

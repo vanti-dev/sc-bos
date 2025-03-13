@@ -33,6 +33,7 @@ var (
 	ErrServiceCredentialLimit    = status.Error(codes.ResourceExhausted, "too many service credentials")
 	ErrUsernameExists            = status.Error(codes.AlreadyExists, "username already exists")
 	ErrRoleAssignmentExists      = status.Error(codes.AlreadyExists, "role assignment already exists")
+	ErrRoleDisplayNameExists     = status.Error(codes.AlreadyExists, "role with this display name already exists")
 	ErrUnexpectedPasswordCreate  = status.Error(codes.InvalidArgument, "only user account can have password")
 	ErrUnexpectedPasswordUpdate  = status.Error(codes.FailedPrecondition, "only user account can have password")
 	ErrInvalidUsername           = status.Error(codes.InvalidArgument, "invalid username")
@@ -644,7 +645,9 @@ func (s *Server) CreateRole(ctx context.Context, req *gen.CreateRoleRequest) (*g
 			params.Description = sql.NullString{Valid: true, String: req.Role.Description}
 		}
 		role, err = tx.CreateRole(ctx, params)
-		if err != nil {
+		if sqlite.IsUniqueConstraintError(err) {
+			return ErrRoleDisplayNameExists
+		} else if err != nil {
 			return err
 		}
 
@@ -739,7 +742,9 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 				ID:          id,
 				DisplayName: req.Role.DisplayName,
 			})
-			if err != nil {
+			if sqlite.IsUniqueConstraintError(err) {
+				return ErrRoleDisplayNameExists
+			} else if err != nil {
 				return err
 			}
 			role.DisplayName = req.Role.DisplayName
