@@ -1,4 +1,5 @@
-import {listAccounts, listRoles} from '@/api/ui/account.js';
+import {getRole, listAccounts, listRoles} from '@/api/ui/account.js';
+import {useAction} from '@/composables/action.js';
 import useCollection from '@/composables/collection.js';
 import {ChangeType} from '@smart-core-os/sc-api-grpc-web/types/change_pb';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
@@ -76,6 +77,14 @@ export function useRolesCollection(request, options) {
 }
 
 /**
+ * @param {import('vue').MaybeRefOrGetter<Partial<GetRoleRequest.AsObject>>} request
+ * @return {ToRefs<UnwrapNestedRefs<UseActionResponse<Role.AsObject>>>}
+ */
+export function useGetRole(request) {
+  return useAction(request, getRole);
+}
+
+/**
  * Returns an object that looks like a Pull Change that adds the given val.
  * Useful when an API doesn't support Pull but you want to reuse utilities that do.
  *
@@ -95,14 +104,14 @@ export function toAddChange(val) {
       return changes;
     },
     getChangesList() {
-      return changes.changesList.map(change => ({toObject() { return change; } }));
+      return changes.changesList.map(change => ({toObject() { return change; }}));
     }
   }
 }
 
 /**
  * Returns an object that looks like a Pull Change that deletes the given val.
- * Useful when an API doesn't support Pull but you want to reuse
+ * Useful when an API doesn't support Pull but you want to reuse utilities that do.
  *
  * @param {T} val
  * @return {Object}
@@ -120,7 +129,34 @@ export function toRemoveChange(val) {
       return changes;
     },
     getChangesList() {
-      return changes.changesList.map(change => ({toObject() { return change; } }));
+      return changes.changesList.map(change => ({toObject() { return change; }}));
+    }
+  }
+}
+
+/**
+ * Returns an object that looks like a Pull Change that updates the val.
+ * Useful when an API doesn't support Pull but you want to reuse utilities that do.
+ *
+ * @param {T} oldVal
+ * @param {T} newVal
+ * @return {Object}
+ * @template T
+ */
+export function toUpdateChange(oldVal, newVal) {
+  const changes = {
+    changesList: [{
+      type: ChangeType.UPDATE,
+      oldValue: oldVal,
+      newValue: newVal,
+    }]
+  };
+  return {
+    toObject() {
+      return changes;
+    },
+    getChangesList() {
+      return changes.changesList.map(change => ({toObject() { return change; }}));
     }
   }
 }
