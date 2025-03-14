@@ -1,5 +1,5 @@
 <template>
-  <side-bar>
+  <side-bar @close="onCloseClick">
     <template #actions>
       <v-btn v-if="!editMode" @click="onEditClick" icon="mdi-pencil" variant="plain" size="small"/>
     </template>
@@ -31,6 +31,7 @@
 import SideBar from '@/components/SideBar.vue';
 import {useSidebarStore} from '@/stores/sidebar.js';
 import {computed, ref} from 'vue';
+import {useRouter} from 'vue-router';
 
 const sidebar = useSidebarStore();
 const role = computed(() => sidebar.data?.role);
@@ -50,6 +51,11 @@ const permissionsListTitle = computed(() => {
 const editMode = ref(false);
 const saving = ref(false);
 const saveError = ref(null);
+
+const router = useRouter();
+const onCloseClick = () => {
+  router.push({name: 'accounts'});
+}
 const onEditClick = () => {
   editDescriptionModel.value = role.value?.description ?? '';
   editMode.value = true;
