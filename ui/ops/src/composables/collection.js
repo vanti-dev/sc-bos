@@ -44,6 +44,7 @@ import {computed, onScopeDispose, reactive, ref, toValue, watch} from 'vue';
  * @property {Ref<boolean>} loading
  * @property {Ref<boolean>} loadingNextPage
  * @property {Ref<ResourceError[]>} errors
+ * @property {function(): void} refresh
  */
 
 /**
@@ -163,6 +164,15 @@ export default function useCollection(request, client, options) {
     lastListResponse.value = pageResponse;
 
     unprocessedChanges.value.push(...pageResponse.items.map(v => ({newValue: v})));
+  }
+
+  /**
+   * Force the collection to refresh, clearing all items and listing items again from page 1.
+   */
+  function refresh() {
+    items.value = [];
+    lastListResponse.value = null;
+    unprocessedChanges.value = [];
   }
 
   /**
@@ -307,6 +317,8 @@ export default function useCollection(request, client, options) {
     loading,
     loadingNextPage,
     errors,
+
+    refresh,
 
     _listTracker: listTracker,
     _pullResource: pullResource
