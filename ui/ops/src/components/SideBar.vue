@@ -4,7 +4,7 @@
       {{ sidebar.title }}
     </span>
     <slot name="actions"/>
-    <v-btn icon="mdi-close" variant="plain" size="small" @click="sidebar.closeSidebar()">
+    <v-btn icon="mdi-close" variant="plain" size="small" @click="onCloseClick">
       <v-icon size="24">mdi-close</v-icon>
     </v-btn>
   </div>
@@ -16,8 +16,13 @@
 <script setup>
 import {useSidebarStore} from '@/stores/sidebar';
 
+const emit = defineEmits(['close']);
 const sidebar = useSidebarStore();
 
+const onCloseClick = () => {
+  emit('close');
+  sidebar.closeSidebar();
+};
 </script>
 
 <style scoped>
