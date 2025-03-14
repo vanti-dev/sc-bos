@@ -28,7 +28,7 @@ const menuItems = [
   {
     title: 'Accounts',
     icon: 'mdi-account-box-outline',
-    link: {path: '/auth/accounts'}
+    link: {path: '/auth/accounts', name: 'accounts'}
   },
   {
     title: 'Roles',
