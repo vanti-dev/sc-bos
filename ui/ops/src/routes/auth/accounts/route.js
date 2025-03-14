@@ -1,12 +1,14 @@
 export default [
   {
     path: 'accounts/:accountId?',
+    name: 'accounts',
     components: {
-      default: () => import('./AccountsPage.vue')
+      default: () => import('./AccountsPage.vue'),
+      sidebar: () => import('./AccountsSidebar.vue')
     },
     props: {
-      default: false,
-      sidebar: true
+      default: true,
+      sidebar: false
     },
     meta: {
       authentication: {

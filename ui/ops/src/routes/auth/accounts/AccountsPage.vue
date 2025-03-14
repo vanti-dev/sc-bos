@@ -22,7 +22,9 @@
           :headers="tableHeaders"
           disable-sort
           return-object
-          v-model="selectedAccounts">
+          v-model="selectedAccounts"
+          :row-props="tableRowProps"
+          @click:row="onRowClick">
         <template #top>
           <v-expand-transition>
             <div v-if="tableErrorStr">
@@ -55,19 +57,30 @@
 
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
+import {updateAccount} from '@/api/ui/account.js';
 import {useDataTableCollection} from '@/composables/table.js';
 import {
-  toAddChange,
-  toRemoveChange,
   accountTypeIcon,
   accountTypeStr,
-  useAccountsCollection
+  toAddChange,
+  toRemoveChange, toUpdateChange,
+  useAccountsCollection,
+  useGetAccount
 } from '@/routes/auth/accounts.js';
 import CopySecretAlert from '@/routes/auth/accounts/CopySecretAlert.vue';
 import DeleteAccountsBtn from '@/routes/auth/accounts/DeleteAccountsBtn.vue';
 import NewAccountBtn from '@/routes/auth/accounts/NewAccountBtn.vue';
+import {useSidebarStore} from '@/stores/sidebar.js';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
+import {useRouter} from 'vue-router';
+
+const props = defineProps({
+  accountId: {
+    type: String,
+    default: null,
+  }
+});
 
 // used to fake PullAccounts when creating a new account.
 // the var isn't reactive, but the value will be whenever it's set
@@ -93,11 +106,39 @@ const tableHeaders = computed(() => {
   ]
 });
 
+const tableRowProps = ({item}) => {
+  return {
+    class: {
+      'row-selected': selectedAccounts.value.includes(item),
+      'row-active': item.id === props.accountId,
+    }
+  };
+};
 const tableErrorStr = computed(() => {
   const errors = accountsCollection.errors.value;
   if (errors.length === 0) return null;
   return 'Error fetching accounts: ' + errors.map((e) => (e.error ?? e).message ?? e).join(', ');
 });
+
+const router = useRouter();
+const onRowClick = (_, {item}) => {
+  if (item.id === props.accountId) return; // don't click on the same item
+  router.push({name: 'accounts', params: {accountId: item.id}});
+}
+const sidebar = useSidebarStore();
+const {response: sidebarItem, refresh: refreshSidebarItem} = useGetAccount(() => {
+  if (!props.accountId) return null;
+  return {id: props.accountId};
+});
+watch(sidebarItem, (item) => {
+  if (!item) {
+    sidebar.closeSidebar();
+    return;
+  }
+  sidebar.title = item.displayName || `Account ${props.roleId}`;
+  sidebar.data = {account: item, updateAccount: onAccountUpdate};
+  sidebar.visible = true;
+}, {immediate: true});
 
 const latestAccount = ref(null);
 const latestServiceCredential = ref(null);
@@ -109,6 +150,31 @@ const onNewAccountSave = ({account, serviceCredential}) => {
   latestAccount.value = account;
   latestServiceCredential.value = serviceCredential;
 };
+const onAccountUpdate = async ({account}) => {
+  const oldAccount = (() => {
+    if (sidebarItem.value?.id === account.id) return sidebarItem.value;
+    return accountsCollection.items.value.find((r) => r.id === account.id);
+  })();
+
+  const newAccount = await updateAccount({account})
+
+  if (!oldAccount) {
+    // we can't do a dynamic of the account, so just refresh the whole list
+    accountsCollection.refresh();
+  } else {
+    pullAccountsResource.lastResponse = toUpdateChange(oldAccount, newAccount);
+  }
+  if (latestAccount.value?.id === account.id) {
+    latestAccount.value = newAccount;
+  }
+  selectedAccounts.value = selectedAccounts.value.map((r) => {
+    if (r.id === account.id) return newAccount;
+    return r;
+  });
+  refreshSidebarItem();
+
+  return newAccount;
+}
 
 const onSecretClose = () => {
   latestServiceCredential.value = null;
@@ -128,6 +194,9 @@ const onDelete = () => {
     if (_latest && account.id === _latest.id) {
       latestAccount.value = null;
       latestServiceCredential.value = null;
+    }
+    if (account.id === props.accountId) {
+      router.push({name: 'accounts'});
     }
   }
   selectedAccounts.value = [];
@@ -164,6 +233,16 @@ const onDelete = () => {
     .v-icon {
       visibility: hidden;
     }
+  }
+}
+
+.v-data-table {
+  :deep(.row-selected) {
+    background-color: rgba(var(--v-theme-primary), 0.1);
+  }
+
+  :deep(.row-active) {
+    background-color: rgba(var(--v-theme-primary), 0.4);
   }
 }
 </style>

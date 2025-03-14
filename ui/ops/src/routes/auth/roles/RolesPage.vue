@@ -114,11 +114,6 @@ watch(sidebarItem, (item) => {
   sidebar.data = {role: item, updateRole: onRoleUpdate};
   sidebar.visible = true;
 }, {immediate: true});
-watch(() => sidebar.visible, (visible) => {
-  if (!visible && props.roleId) {
-    router.push({name: 'roles'});
-  }
-});
 
 const latestRole = ref(null);
 
