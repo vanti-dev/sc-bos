@@ -1,12 +1,14 @@
 export default [
   {
     path: 'roles/:roleId?',
+    name: 'roles',
     components: {
-      default: () => import('./RolesPage.vue')
+      default: () => import('./RolesPage.vue'),
+      sidebar: () => import('./RolesSideBar.vue')
     },
     props: {
-      default: false,
-      sidebar: true
+      default: true,
+      sidebar: false
     },
     meta: {
       authentication: {
