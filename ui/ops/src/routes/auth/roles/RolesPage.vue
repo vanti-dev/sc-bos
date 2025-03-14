@@ -35,7 +35,7 @@
           <span class="opacity-50 ml-2" v-if="item.description">{{ item.description }}</span>
         </template>
         <template #item.permissions="{item}">
-          {{ (item.permissionsList ?? []).length.toLocaleString() }}
+          {{ (item.permissionIdsList ?? []).length.toLocaleString() }}
         </template>
       </v-data-table-server>
     </v-card-text>
@@ -123,13 +123,14 @@ const onNewRoleSave = ({role}) => {
   }
   latestRole.value = role;
 };
-const onRoleUpdate = async ({role}) => {
+const onRoleUpdate = async ({role, updateMask}) => {
   const oldRole = (() => {
     if (sidebarItem.value?.id === role.id) return sidebarItem.value;
     return rolesCollection.items.value.find((r) => r.id === role.id);
   })();
 
-  const newRole = await updateRole({role})
+  const mask = updateMask && updateMask.length > 0 && {pathsList: updateMask} || undefined;
+  const newRole = await updateRole({role, updateMask: mask});
 
   if (!oldRole) {
     // we can't do a dynamic of the role, so just refresh the whole list
