@@ -1,4 +1,4 @@
-import {getRole, listAccounts, listRoles} from '@/api/ui/account.js';
+import {getAccount, getRole, listAccounts, listRoles} from '@/api/ui/account.js';
 import {useAction} from '@/composables/action.js';
 import useCollection from '@/composables/collection.js';
 import {ChangeType} from '@smart-core-os/sc-api-grpc-web/types/change_pb';
@@ -74,6 +74,14 @@ export function useRolesCollection(request, options) {
   };
 
   return useCollection(request, client, normOpts);
+}
+
+/**
+ * @param {import('vue').MaybeRefOrGetter<Partial<GetAccountRequest.AsObject>>} request
+ * @return {ToRefs<UnwrapNestedRefs<UseActionResponse<Account.AsObject>>>}
+ */
+export function useGetAccount(request) {
+  return useAction(request, getAccount);
 }
 
 /**
