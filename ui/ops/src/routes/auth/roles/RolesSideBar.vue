@@ -31,16 +31,20 @@
           <v-list-item-title>{{ perm.displayName }}</v-list-item-title>
           <v-menu activator="parent" location="left" open-on-hover>
             <v-card width="20em">
-              <v-card-title class="pb-0">{{ perm.displayName }}</v-card-title>
+              <v-card-title class="pb-0 text-wrap">{{ perm.displayName }}</v-card-title>
               <v-card-subtitle>{{ perm.id }}</v-card-subtitle>
               <v-card-text>{{ perm.description }}</v-card-text>
               <template v-if="perm.implies.length > 0">
                 <v-card-subtitle class="pt-2">Implies</v-card-subtitle>
-                <v-card-text class="pt-0">{{ perm.implies.join(', ') }}</v-card-text>
+                <v-card-text class="pt-0">
+                  <div v-for="p of perm.implies" :key="p.id">{{ p.displayName }}</div>
+                </v-card-text>
               </template>
               <template v-if="perm.dependsOn.length > 0">
                 <v-card-subtitle class="pt-2">Depends On</v-card-subtitle>
-                <v-card-text class="pt-0">{{ perm.dependsOn.join(', ') }}</v-card-text>
+                <v-card-text class="pt-0">
+                  <div v-for="p of perm.dependsOn" :key="p.id">{{ p.displayName }}</div>
+                </v-card-text>
               </template>
             </v-card>
           </v-menu>
