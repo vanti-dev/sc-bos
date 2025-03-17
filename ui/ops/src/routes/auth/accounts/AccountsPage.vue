@@ -59,14 +59,13 @@
 import {timestampToDate} from '@/api/convpb.js';
 import {updateAccount} from '@/api/ui/account.js';
 import {useDataTableCollection} from '@/composables/table.js';
+import {toAddChange, toRemoveChange, toUpdateChange} from '@/routes/auth/accounts.js';
 import {
   accountTypeIcon,
   accountTypeStr,
-  toAddChange,
-  toRemoveChange, toUpdateChange,
   useAccountsCollection,
   useGetAccount
-} from '@/routes/auth/accounts.js';
+} from '@/routes/auth/accounts/accounts.js';
 import CopySecretAlert from '@/routes/auth/accounts/CopySecretAlert.vue';
 import DeleteAccountsBtn from '@/routes/auth/accounts/DeleteAccountsBtn.vue';
 import NewAccountBtn from '@/routes/auth/accounts/NewAccountBtn.vue';

@@ -45,9 +45,10 @@
 <script setup>
 import {updateRole} from '@/api/ui/account.js';
 import {useDataTableCollection} from '@/composables/table.js';
-import {toAddChange, toRemoveChange, toUpdateChange, useGetRole, useRolesCollection} from '@/routes/auth/accounts.js';
+import {toAddChange, toRemoveChange, toUpdateChange} from '@/routes/auth/accounts.js';
 import DeleteRolesBtn from '@/routes/auth/roles/DeleteRolesBtn.vue';
 import NewRoleBtn from '@/routes/auth/roles/NewRoleBtn.vue';
+import {useGetRole, useRolesCollection} from '@/routes/auth/roles/roles.js';
 import {useSidebarStore} from '@/stores/sidebar.js';
 import {computed, ref, watch} from 'vue';
 import {useRouter} from 'vue-router';
