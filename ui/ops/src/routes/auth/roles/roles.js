@@ -23,8 +23,8 @@ export function useAssignedPermissions(perms) {
     return {
       ...perm,
       assigned: permIndex.value[perm.id] ?? false,
-      implies: permissionsStore.impliedPermissions(perm.id),
-      dependsOn: permissionsStore.dependentPermissions(perm.id),
+      implies: permissionsStore.impliedPermissions(perm.id).map((id) => permissionsStore.permissionsById(id)),
+      dependsOn: permissionsStore.dependentPermissions(perm.id).map((id) => permissionsStore.permissionsById(id)),
     };
   }));
   const assignedList = computed(() => toggleList.value.filter((perm) => perm.assigned));
