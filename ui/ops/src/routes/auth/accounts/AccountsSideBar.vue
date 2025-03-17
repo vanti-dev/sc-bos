@@ -4,7 +4,19 @@
       <v-btn v-if="!editMode" @click="onEditClick" icon="mdi-pencil" variant="plain" size="small"/>
     </template>
     <template v-if="!editMode">
-      <p class="px-4 my-4" v-if="account?.description">{{ account.description }}</p>
+      <div class="px-4 my-4" v-if="account">
+        <p v-if="account.description">{{ account.description }}</p>
+        <template v-if="account.username">
+          <h4>Username</h4>
+          <p>{{ account.username }}</p>
+        </template>
+        <template v-if="account.type === Account.Type.SERVICE_ACCOUNT">
+          <h4>Client ID</h4>
+          <p><copy-div :text="account.id" icon-size="18" :btn-props="{size: 'x-small'}"/></p>
+        </template>
+        <h4>Account Created</h4>
+        <p>{{ timestampToDate(account.createTime).toLocaleString() }}</p>
+      </div>
     </template>
     <template v-else>
       <v-form @submit.prevent="onSaveClick" v-model="formValid">
@@ -36,10 +48,13 @@
 </template>
 
 <script setup>
+import CopyDiv from '@/components/CopyDiv.vue';
 import SideBar from '@/components/SideBar.vue';
 import {useSidebarStore} from '@/stores/sidebar.js';
+import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
 import {computed, ref} from 'vue';
 import {useRouter} from 'vue-router';
+import {timestampToDate} from '@/api/convpb.js';
 
 const sidebar = useSidebarStore();
 const account = computed(() => sidebar.data?.account);
