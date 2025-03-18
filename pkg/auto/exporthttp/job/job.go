@@ -174,7 +174,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Ticker: time.NewTicker(interval),
 				Logger: logger,
 			},
-			Meters:     cfg.Sources.Energy.Meters,
+			Meters:     cfg.Sources.Water.Meters,
 			Interval:   interval,
 			client:     gen.NewMeterHistoryClient(node.ClientConn()),
 			infoClient: gen.NewMeterInfoClient(node.ClientConn()),
