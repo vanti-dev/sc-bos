@@ -35,6 +35,8 @@ type Root struct {
 	TopicPrefix         string             `json:"topicPrefix,omitempty"`
 
 	RefreshOccupancyInterval *jsontypes.Duration `json:"refreshOccupancyInterval,omitempty"`
+
+	OccupancyCountEnabled bool `json:"occupancyCountEnabled,omitempty"`
 }
 
 type HTTP struct {

@@ -100,14 +100,16 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		return sc.run(ctx, cfg.RefreshAlarms)
 	})
 
-	occupancyCtrl := newOccupancyEventController(client, d.logger, cfg.RefreshOccupancyInterval.Or(defaultOccupancyRefreshInterval))
-	announcer.Announce(path.Join(cfg.ScNamePrefix, "occupancy"), node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensorpb.WrapApi(occupancyCtrl))))
-	grp.Go(func() error {
-		if err := occupancyCtrl.run(ctx); err != nil {
-			return err
-		}
-		return nil
-	})
+	if cfg.OccupancyCountEnabled {
+		occupancyCtrl := newOccupancyEventController(client, d.logger, cfg.RefreshOccupancyInterval.Or(defaultOccupancyRefreshInterval))
+		announcer.Announce(path.Join(cfg.ScNamePrefix, "occupancy"), node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensorpb.WrapApi(occupancyCtrl))))
+		grp.Go(func() error {
+			if err := occupancyCtrl.run(ctx); err != nil {
+				return err
+			}
+			return nil
+		})
+	}
 
 	grp.Go(func() error {
 		return d.udmiExport(ctx, cc)
