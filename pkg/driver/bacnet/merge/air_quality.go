@@ -26,6 +26,7 @@ type airQualityConfig struct {
 	config.Trait
 	AirPressure *config.ValueSource `json:"airPressure,omitempty"`
 	Co2         *config.ValueSource `json:"co2,omitempty"`
+	IaqScore    *config.ValueSource `json:"iaqScore,omitempty"`
 	// A measure of particles in the air measuring 10 microns or less in size, in micrograms per cubic meter.
 	Pm10 *config.ValueSource `json:"pm10,omitempty"`
 	// A measure of particles in the air measuring 2.5 microns or less in size, in micrograms per cubic meter.
@@ -124,6 +125,18 @@ func (aq *airQualitySensor) pollPeer(ctx context.Context) (*traits.AirQuality, e
 				return comm.ErrReadProperty{Prop: "co2", Cause: err}
 			}
 			data.CarbonDioxideLevel = &co2
+			return nil
+		})
+	}
+	if aq.config.IaqScore != nil {
+		readValues = append(readValues, *aq.config.IaqScore)
+		requestNames = append(requestNames, "IaqScore")
+		resProcessors = append(resProcessors, func(response any) error {
+			iaq, err := comm.Float32Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "iaq", Cause: err}
+			}
+			data.Score = &iaq
 			return nil
 		})
 	}
