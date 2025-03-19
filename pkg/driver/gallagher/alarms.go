@@ -1,6 +1,7 @@
 package gallagher
 
 import (
+	"container/ring"
 	"context"
 	"encoding/json"
 	"slices"
@@ -14,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
@@ -57,12 +59,15 @@ type SecurityEventController struct {
 	client          *Client
 	logger          *zap.Logger
 	mu              sync.Mutex
-	securityEvents  []*gen.SecurityEvent
-	updates         minibus.Bus[*gen.PullSecurityEventsResponse_Change]
+	// security events is a circular buffer, it always points to the oldest security event
+	latestSecurityEvent *resource.Value // *gen.SecurityEvent
+	securityEvents      *ring.Ring      // *gen.SecurityEvent
+	updates             minibus.Bus[*gen.PullSecurityEventsResponse_Change]
 }
 
-func newSecurityEventController(client *Client, logger *zap.Logger, c time.Duration) *SecurityEventController {
+func newSecurityEventController(client *Client, logger *zap.Logger, c time.Duration, n int) *SecurityEventController {
 	return &SecurityEventController{
+		securityEvents:  ring.New(n),
 		cleanupDuration: c,
 		client:          client,
 		logger:          logger,
@@ -139,8 +144,8 @@ func (sc *SecurityEventController) refreshAlarms(ctx context.Context) error {
 	}
 
 	var currentNewest time.Time
-	if len(sc.securityEvents) > 0 {
-		currentNewest = sc.securityEvents[len(sc.securityEvents)-1].SecurityEventTime.AsTime()
+	if sc.securityEvents.Len() > 0 {
+		currentNewest = sc.securityEvents.Value.(*gen.SecurityEvent).SecurityEventTime.AsTime()
 	}
 	for _, alarm := range alarms {
 		// we only want to add new alarms
@@ -156,40 +161,19 @@ func (sc *SecurityEventController) refreshAlarms(ctx context.Context) error {
 					Subsystem: "acs",
 				},
 			}
-			sc.securityEvents = append(sc.securityEvents, event)
+			sc.securityEvents.Value = event
+			sc.securityEvents = sc.securityEvents.Next()
 			sc.updates.Send(ctx, &gen.PullSecurityEventsResponse_Change{
 				ChangeTime: timestamppb.Now(),
 				OldValue:   nil,
 				NewValue:   event,
 			})
+			// the events in alarms are always oldest first, so this is fine
+			_, _ = sc.latestSecurityEvent.Set(event)
 			sc.logger.Info("adding new security event", zap.Time("time", alarm.Time), zap.String("message", alarm.Message))
 		}
 	}
 	return nil
-}
-
-// cleanupSecurityEvents removes security events that are older than the configured time
-func (sc *SecurityEventController) cleanupSecurityEvents(ctx context.Context) {
-
-	toDeleteFrom := -1
-	// as the slices are sorted oldest first, we find the first one after the delete time and delete everything before that
-	for i := 0; i < len(sc.securityEvents); i++ {
-		if sc.securityEvents[i].SecurityEventTime.AsTime().After(time.Now().Add(-sc.cleanupDuration)) {
-			toDeleteFrom = i
-			break
-		}
-	}
-
-	if toDeleteFrom > 0 {
-		for i := 0; i < toDeleteFrom; i++ {
-			sc.updates.Send(ctx, &gen.PullSecurityEventsResponse_Change{
-				ChangeTime: timestamppb.Now(),
-				OldValue:   sc.securityEvents[i],
-				NewValue:   nil,
-			})
-		}
-		sc.securityEvents = slices.Delete(sc.securityEvents, 0, toDeleteFrom-1)
-	}
 }
 
 // run the alarm controller schedule to refresh the alarms
@@ -212,7 +196,6 @@ func (sc *SecurityEventController) run(ctx context.Context, schedule *jsontypes.
 
 		sc.mu.Lock()
 		err := sc.refreshAlarms(ctx)
-		sc.cleanupSecurityEvents(ctx)
 		sc.mu.Unlock()
 		if err != nil {
 			sc.logger.Error("failed to refresh alarms, will try again on next run...", zap.Error(err))
@@ -223,23 +206,23 @@ func (sc *SecurityEventController) run(ctx context.Context, schedule *jsontypes.
 func (sc *SecurityEventController) ListSecurityEvents(_ context.Context, req *gen.ListSecurityEventsRequest) (*gen.ListSecurityEventsResponse, error) {
 
 	nextPageToken := ""
-	start := int64(len(sc.securityEvents) - 1)
-	var err error
+	start := sc.securityEvents.Len() - 1
 
 	if req.PageToken != "" {
-		start, err = strconv.ParseInt(req.PageToken, 10, 64)
+		s, err := strconv.ParseInt(req.PageToken, 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		if start < 0 || start >= int64(len(sc.securityEvents)) {
+		start = int(s)
+		if start < 0 || start >= sc.securityEvents.Len() {
 			return nil, status.Error(codes.InvalidArgument, "invalid page token")
 		}
 	}
 
 	if req.PageSize <= 0 {
 		return nil, status.Error(codes.InvalidArgument, "invalid page size")
-	} else if req.PageSize > int32(len(sc.securityEvents)) {
-		req.PageSize = int32(len(sc.securityEvents))
+	} else if req.PageSize > int32(sc.securityEvents.Len()) {
+		req.PageSize = int32(sc.securityEvents.Len())
 	}
 
 	if req.PageSize > 1000 {
@@ -251,15 +234,16 @@ func (sc *SecurityEventController) ListSecurityEvents(_ context.Context, req *ge
 	var response gen.ListSecurityEventsResponse
 	// get the most recent ones first as that is what the UI expects
 	for i := start; i >= 0; i-- {
-		response.SecurityEvents = append(response.SecurityEvents, sc.securityEvents[i])
+		se := sc.securityEvents.Move(i)
+		response.SecurityEvents = append(response.SecurityEvents, se.Value.(*gen.SecurityEvent))
 		if len(response.SecurityEvents) >= int(req.PageSize) {
-			nextPageToken = strconv.FormatInt(i-1, 10)
+			nextPageToken = strconv.FormatInt(int64(i-1), 10)
 			break
 		}
 	}
 
 	response.NextPageToken = nextPageToken
-	response.TotalSize = int32(len(sc.securityEvents))
+	response.TotalSize = int32(sc.securityEvents.Len())
 	return &response, nil
 }
 

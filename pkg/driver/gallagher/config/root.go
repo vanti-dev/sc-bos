@@ -36,6 +36,8 @@ type Root struct {
 
 	RefreshOccupancyInterval *jsontypes.Duration `json:"refreshOccupancyInterval,omitempty"`
 
+	// number of security events to store, defaults to 200 if not set
+	NumSecurityEvents     int  `json:"numSecurityEvents,omitempty"`
 	OccupancyCountEnabled bool `json:"occupancyCountEnabled,omitempty"`
 }
 
@@ -63,5 +65,9 @@ func (cfg *Root) ApplyDefaults() {
 
 	if cfg.SecurityEventExpiry.Duration == 0 {
 		cfg.SecurityEventExpiry.Duration = 24 * time.Hour
+	}
+
+	if cfg.NumSecurityEvents == 0 {
+		cfg.NumSecurityEvents = 200
 	}
 }
