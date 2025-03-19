@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
@@ -60,17 +59,18 @@ type SecurityEventController struct {
 	logger          *zap.Logger
 	mu              sync.Mutex
 	// security events is a circular buffer, it always points to the oldest security event
-	latestSecurityEvent *resource.Value // *gen.SecurityEvent
-	securityEvents      *ring.Ring      // *gen.SecurityEvent
-	updates             minibus.Bus[*gen.PullSecurityEventsResponse_Change]
+	lastEventTime  time.Time  // *gen.SecurityEvent
+	securityEvents *ring.Ring // *gen.SecurityEvent
+	updates        minibus.Bus[*gen.PullSecurityEventsResponse_Change]
 }
 
 func newSecurityEventController(client *Client, logger *zap.Logger, c time.Duration, n int) *SecurityEventController {
 	return &SecurityEventController{
-		securityEvents:  ring.New(n),
 		cleanupDuration: c,
 		client:          client,
 		logger:          logger,
+		lastEventTime:   time.Now().Add(-24 * time.Hour),
+		securityEvents:  ring.New(n),
 	}
 }
 
@@ -143,13 +143,9 @@ func (sc *SecurityEventController) refreshAlarms(ctx context.Context) error {
 		return err
 	}
 
-	var currentNewest time.Time
-	if sc.securityEvents.Len() > 0 {
-		currentNewest = sc.securityEvents.Value.(*gen.SecurityEvent).SecurityEventTime.AsTime()
-	}
 	for _, alarm := range alarms {
 		// we only want to add new alarms
-		if alarm.Time.After(currentNewest) {
+		if alarm.Time.After(sc.lastEventTime) {
 			event := &gen.SecurityEvent{
 				SecurityEventTime: timestamppb.New(alarm.Time),
 				Description:       alarm.Message,
@@ -169,7 +165,7 @@ func (sc *SecurityEventController) refreshAlarms(ctx context.Context) error {
 				NewValue:   event,
 			})
 			// the events in alarms are always oldest first, so this is fine
-			_, _ = sc.latestSecurityEvent.Set(event)
+			sc.lastEventTime = alarm.Time
 			sc.logger.Info("adding new security event", zap.Time("time", alarm.Time), zap.String("message", alarm.Message))
 		}
 	}
