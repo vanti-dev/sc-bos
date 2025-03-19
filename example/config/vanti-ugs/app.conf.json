@@ -1,5 +1,10 @@
 {
   "name": "van/uk/brum/ugs/eg-ac-01",
+  "metadata": {
+    "appearance": {
+      "title": "Vanti UGS 01"
+    }
+  },
   "drivers": [
     {
       "name": "van/uk/brum/ugs/eg-ac-01/driver/basement",
