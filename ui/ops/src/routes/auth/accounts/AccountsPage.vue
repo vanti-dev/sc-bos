@@ -8,6 +8,7 @@
             variant="outlined"
             :accounts="selectedAccounts"
             @delete="onDelete"/>
+        <grant-role-btn v-if="showGrantBtn" variant="outlined" :accounts="allSelectedAccountIds"/>
         <new-account-btn variant="flat" color="primary" @save="onNewAccountSave"/>
       </template>
     </v-toolbar>
@@ -68,6 +69,7 @@ import {
 } from '@/routes/auth/accounts/accounts.js';
 import CopySecretAlert from '@/routes/auth/accounts/CopySecretAlert.vue';
 import DeleteAccountsBtn from '@/routes/auth/accounts/DeleteAccountsBtn.vue';
+import GrantRoleBtn from '@/routes/auth/accounts/GrantRoleBtn.vue';
 import NewAccountBtn from '@/routes/auth/accounts/NewAccountBtn.vue';
 import {useSidebarStore} from '@/stores/sidebar.js';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
@@ -180,6 +182,18 @@ const onSecretClose = () => {
 };
 
 const selectedAccounts = ref([]);
+const allSelectedAccountIds = computed(() => {
+  const ids = {};
+  for (const account of selectedAccounts.value) {
+    ids[account.id] = true;
+  }
+  if (props.accountId) {
+    ids[props.accountId] = true;
+  }
+  return Object.keys(ids).sort();
+})
+
+const showGrantBtn = computed(() => allSelectedAccountIds.value.length > 0);
 
 const showDeleteAccountsBtn = computed(() => selectedAccounts.value.length > 0);
 const onDelete = () => {

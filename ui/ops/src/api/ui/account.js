@@ -618,3 +618,14 @@ function getAccountLimitsRequestFromObject(obj) {
   setProperties(dst, obj, 'name');
   return dst;
 }
+
+/**
+ * A map from RoleAssignment.ResourceType to the enum name, the inverse of RoleAssignment.ResourceType.
+ *
+ * @type {Record<number, keyof RoleAssignment.ResourceType>}
+ */
+export const ResourceTypeById =
+    Object.entries(RoleAssignment.ResourceType).reduce((acc, [k, v]) => {
+      acc[v] = k;
+      return acc;
+    }, {});

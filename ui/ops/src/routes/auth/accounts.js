@@ -1,4 +1,7 @@
+import {listRoleAssignments} from '@/api/ui/account.js';
+import useCollection from '@/composables/collection.js';
 import {ChangeType} from '@smart-core-os/sc-api-grpc-web/types/change_pb';
+import {computed, toValue} from 'vue';
 
 /**
  * @typedef {UseCollectionOptions<T>} ListOnlyCollectionOptions
@@ -6,6 +9,38 @@ import {ChangeType} from '@smart-core-os/sc-api-grpc-web/types/change_pb';
  * @template R
  * @template T
  */
+
+/**
+ * @param {import('vue').MaybeRefOrGetter<Partial<ListRoleAssignmentsRequest.AsObject>>} request
+ * @param {import('vue').MaybeRefOrGetter<Partial<ListOnlyCollectionOptions<ListRoleAssignmentsRequest.AsObject, RoleAssignment.AsObject>>>} options
+ * @return {UseCollectionResponse<RoleAssignment.AsObject>}
+ */
+export function useRoleAssignmentsCollection(request, options) {
+  const normOpts = computed(() => {
+    return {
+      cmp: (a, b) => a.id.localeCompare(b.id, undefined, {numeric: true}),
+      ...toValue(options)
+    };
+  });
+  const client = {
+    async listFn(req, tracker) {
+      const res = await listRoleAssignments(req, tracker);
+      return {
+        items: res.roleAssignmentsList,
+        nextPageToken: res.nextPageToken,
+        totalSize: res.totalSize
+      };
+    },
+    pullFn(req, resource) {
+      const opts = toValue(normOpts);
+      if (opts.pullFn) {
+        opts.pullFn(req, resource);
+      }
+    }
+  };
+
+  return useCollection(request, client, normOpts);
+}
 
 /**
  * Returns an object that looks like a Pull Change that adds the given val.
