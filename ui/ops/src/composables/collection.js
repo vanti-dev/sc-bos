@@ -1,4 +1,5 @@
-import {closeResource, newActionTracker, newResourceCollection} from '@/api/resource.js';
+import {closeResource, newResourceCollection} from '@/api/resource.js';
+import {useAction} from '@/composables/action.js';
 import {cap} from '@/util/number.js';
 import {watchResource} from '@/util/traits.js';
 import deepEqual from 'fast-deep-equal';
@@ -64,8 +65,7 @@ export default function useCollection(request, client, options) {
   // The final items of the collection, combining listed and pulled items.
   const items = ref(/** @type {T[]} */ []);
 
-  // related to calls to client.listFn
-  const listTracker = reactive(/** @type {ActionTracker<T>} */ newActionTracker());
+  // used to fetch the next page when needed
   const lastListResponse = ref(/** @type {ListResponse<T>} */ null);
 
   // changes to items that have yet to be applied.
@@ -83,14 +83,13 @@ export default function useCollection(request, client, options) {
     }
   }, {flush: 'sync'});
 
-
   const targetListCount = computed(() => toValue(options)?.wantCount ?? 20);
   // Are there (likely) more pages available on the server?
   // If we've never asked, or the server says there are more pages, then we return true.
   const hasMorePages = computed(() => !lastListResponse.value || !!lastListResponse.value.nextPageToken);
   const shouldFetch = computed(() => {
+    if (!toValue(request)) return false; // don't fetch if there isn't a request
     if (toValue(options)?.paused ?? false) return false; // don't fetch if paused
-    if (listTracker.loading) return false; // don't fetch if already fetching
     if (!hasMorePages.value) return false; // don't fetch if there are no more pages
     // otherwise, fetch if we haven't fetched enough items
     return targetListCount.value === -1 || items.value.length < targetListCount.value;
@@ -100,14 +99,11 @@ export default function useCollection(request, client, options) {
   // Is totalItems a value returned by the server or calculated locally.
   const hasServerTotalItems = computed(() => Boolean(lastListResponse.value?.totalSize));
 
-  const loading = computed(() => listTracker.loading || pullResource.loading);
-  const loadingNextPage = computed(() => listTracker.loading);
-  const errors = computed(() => [listTracker.error, pullResource.streamError]
-      .filter(e => e));
-
-  // data fetching
+  // pull fetching
   const pullRequest = computed(() => {
-    const _req = {...toValue(request)};
+    const req = toValue(request);
+    if (!req) return null; // don't fetch if we shouldn't
+    const _req = {...req};
     _req.updatesOnly = true; // list will get the existing values
     return _req;
   });
@@ -122,22 +118,30 @@ export default function useCollection(request, client, options) {
   );
   onScopeDispose(() => stopPull());
 
-  const shouldFetchWatcherRunning = ref(false);
-  watch(shouldFetch, async () => {
-    if (shouldFetchWatcherRunning.value) return;
-    shouldFetchWatcherRunning.value = true;
+  // list fetching
+  const listRequest = computed(() => {
+    if (!shouldFetch.value) return null; // don't fetch if we shouldn't
+    const _req = {...toValue(request)};
+    if (lastListResponse.value) _req.pageToken = lastListResponse.value.nextPageToken;
+    _req.pageSize = _req.pageSize ??
+        toValue(options)?.pageSize ??
+        cap(targetListCount.value - items.value.length, 10, 500);
+    return _req;
+  });
+  const {refresh: refreshList, ...listTrackerRefs} = useAction(listRequest, async (req, tracker) => {
     try {
-      while (shouldFetch.value) {
-        await fetchNextPage();
-        processChanges();
-      }
+      const pageResponse = await client.listFn(req, tracker);
+      lastListResponse.value = pageResponse;
+      unprocessedChanges.value.push(...pageResponse.items.map(v => ({newValue: v})));
+      processChanges();
     } catch (e) {
       // todo: add options to not log the error because the caller is handling it
       console.warn(e);
-    } finally {
-      shouldFetchWatcherRunning.value = false;
     }
-  }, {immediate: true});
+  });
+  const listTracker = reactive(listTrackerRefs);
+
+  // reset our item list when the request changes
   watch(() => toValue(request), (o, n) => {
     if (deepEqual(o, n)) return; // no change
     items.value = [];
@@ -147,24 +151,11 @@ export default function useCollection(request, client, options) {
     unprocessedChanges.value = [];
   }, {deep: true});
 
-  /**
-   * Calls client.listFn to fetch the next page of items.
-   * Sets lastListResponse and updates listTracker.
-   *
-   * @return {Promise<void>}
-   */
-  async function fetchNextPage() {
-    const _request = {...toValue(request)}; // clone so we can modify it
-    if (lastListResponse.value) _request.pageToken = lastListResponse.value.nextPageToken;
-    _request.pageSize = _request.pageSize ??
-        toValue(options)?.pageSize ??
-        cap(targetListCount.value - items.value.length, 10, 500);
-
-    const pageResponse = await client.listFn(_request, listTracker);
-    lastListResponse.value = pageResponse;
-
-    unprocessedChanges.value.push(...pageResponse.items.map(v => ({newValue: v})));
-  }
+  // aggregate status of our requests
+  const loading = computed(() => listTracker.loading || pullResource.loading);
+  const loadingNextPage = computed(() => listTracker.loading);
+  const errors = computed(() => [listTracker.error, pullResource.streamError]
+      .filter(e => e));
 
   /**
    * Force the collection to refresh, clearing all items and listing items again from page 1.
@@ -173,6 +164,7 @@ export default function useCollection(request, client, options) {
     items.value = [];
     lastListResponse.value = null;
     unprocessedChanges.value = [];
+    refreshList();
   }
 
   /**
