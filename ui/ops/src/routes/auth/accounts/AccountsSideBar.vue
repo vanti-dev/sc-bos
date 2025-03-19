@@ -4,18 +4,18 @@
       <v-btn v-if="!editMode" @click="onEditClick" icon="mdi-pencil" variant="plain" size="small"/>
     </template>
     <template v-if="!editMode">
-      <div class="px-4 my-4" v-if="account">
-        <p v-if="account.description">{{ account.description }}</p>
+      <div v-if="account" class="details pt-4">
+        <p v-if="account.description" class="px-4">{{ account.description }}</p>
         <template v-if="account.username">
-          <h4>Username</h4>
-          <p>{{ account.username }}</p>
+          <v-list-subheader>Username</v-list-subheader>
+          <p class="px-4">{{ account.username }}</p>
         </template>
         <template v-if="account.type === Account.Type.SERVICE_ACCOUNT">
-          <h4>Client ID</h4>
-          <p><copy-div :text="account.id" icon-size="18" :btn-props="{size: 'x-small'}"/></p>
+          <v-list-subheader>Client ID</v-list-subheader>
+          <p class="px-4"><copy-div :text="account.id" icon-size="18" :btn-props="{size: 'small', class: 'ma-n2'}"/></p>
         </template>
-        <h4>Account Created</h4>
-        <p>{{ timestampToDate(account.createTime).toLocaleString() }}</p>
+        <v-list-subheader>Account Created</v-list-subheader>
+        <p class="px-4">{{ timestampToDate(account.createTime).toLocaleString() }}</p>
       </div>
     </template>
     <template v-else>
@@ -44,6 +44,9 @@
         </div>
       </v-expand-transition>
     </template>
+    <v-list>
+      <v-list-subheader>Roles</v-list-subheader>
+    </v-list>
   </side-bar>
 </template>
 
@@ -112,5 +115,7 @@ const editDescriptionModel = ref(null);
 </script>
 
 <style scoped>
-
+.details .v-list-subheader {
+  min-height: initial;
+}
 </style>
