@@ -43,40 +43,19 @@ export class AccountApiClient {
                response: account_pb.UpdateAccountPasswordResponse) => void
   ): grpcWeb.ClientReadableStream<account_pb.UpdateAccountPasswordResponse>;
 
+  rotateAccountClientSecret(
+    request: account_pb.RotateAccountClientSecretRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: account_pb.RotateAccountClientSecretResponse) => void
+  ): grpcWeb.ClientReadableStream<account_pb.RotateAccountClientSecretResponse>;
+
   deleteAccount(
     request: account_pb.DeleteAccountRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
                response: account_pb.DeleteAccountResponse) => void
   ): grpcWeb.ClientReadableStream<account_pb.DeleteAccountResponse>;
-
-  getServiceCredential(
-    request: account_pb.GetServiceCredentialRequest,
-    metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
-               response: account_pb.ServiceCredential) => void
-  ): grpcWeb.ClientReadableStream<account_pb.ServiceCredential>;
-
-  listServiceCredentials(
-    request: account_pb.ListServiceCredentialsRequest,
-    metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
-               response: account_pb.ListServiceCredentialsResponse) => void
-  ): grpcWeb.ClientReadableStream<account_pb.ListServiceCredentialsResponse>;
-
-  createServiceCredential(
-    request: account_pb.CreateServiceCredentialRequest,
-    metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
-               response: account_pb.ServiceCredential) => void
-  ): grpcWeb.ClientReadableStream<account_pb.ServiceCredential>;
-
-  deleteServiceCredential(
-    request: account_pb.DeleteServiceCredentialRequest,
-    metadata: grpcWeb.Metadata | undefined,
-    callback: (err: grpcWeb.RpcError,
-               response: account_pb.DeleteServiceCredentialResponse) => void
-  ): grpcWeb.ClientReadableStream<account_pb.DeleteServiceCredentialResponse>;
 
   getRole(
     request: account_pb.GetRoleRequest,
@@ -201,30 +180,15 @@ export class AccountApiPromiseClient {
     metadata?: grpcWeb.Metadata
   ): Promise<account_pb.UpdateAccountPasswordResponse>;
 
+  rotateAccountClientSecret(
+    request: account_pb.RotateAccountClientSecretRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<account_pb.RotateAccountClientSecretResponse>;
+
   deleteAccount(
     request: account_pb.DeleteAccountRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<account_pb.DeleteAccountResponse>;
-
-  getServiceCredential(
-    request: account_pb.GetServiceCredentialRequest,
-    metadata?: grpcWeb.Metadata
-  ): Promise<account_pb.ServiceCredential>;
-
-  listServiceCredentials(
-    request: account_pb.ListServiceCredentialsRequest,
-    metadata?: grpcWeb.Metadata
-  ): Promise<account_pb.ListServiceCredentialsResponse>;
-
-  createServiceCredential(
-    request: account_pb.CreateServiceCredentialRequest,
-    metadata?: grpcWeb.Metadata
-  ): Promise<account_pb.ServiceCredential>;
-
-  deleteServiceCredential(
-    request: account_pb.DeleteServiceCredentialRequest,
-    metadata?: grpcWeb.Metadata
-  ): Promise<account_pb.DeleteServiceCredentialResponse>;
 
   getRole(
     request: account_pb.GetRoleRequest,

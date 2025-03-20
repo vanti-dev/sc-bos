@@ -11,8 +11,6 @@ import (
 	"math"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/account/queries"
 	"github.com/vanti-dev/sc-bos/internal/sqlite"
@@ -85,12 +83,7 @@ type Tx struct {
 }
 
 func (tx *Tx) UpdateAccountPassword(ctx context.Context, accountID int64, password string) error {
-	password = normalisePassword(password)
-	if !permitPassword(password) {
-		return ErrInvalidPassword
-	}
-
-	hash, err := pass.Hash([]byte(password))
+	hash, err := hashPassword(password)
 	if err != nil {
 		return err
 	}
@@ -114,55 +107,19 @@ func (tx *Tx) UpdateAccountPassword(ctx context.Context, accountID int64, passwo
 func (tx *Tx) CheckAccountPassword(ctx context.Context, accountID int64, password string) error {
 	password = normalisePassword(password)
 
-	hash, err := tx.GetAccountPasswordHash(ctx, accountID)
+	details, err := tx.GetAccountDetails(ctx, accountID)
 	if err != nil {
 		return err
 	}
-
-	err = pass.Compare(hash, []byte(password))
+	if details.PasswordHash == nil {
+		return ErrIncorrectPassword // no password set
+	}
+	err = pass.Compare(details.PasswordHash, []byte(password))
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (tx *Tx) GenerateServiceCredential(ctx context.Context, create queries.ServiceCredential) (GeneratedServiceCredential, error) {
-	if !validateDisplayName(create.DisplayName) {
-		return GeneratedServiceCredential{}, status.Error(codes.InvalidArgument, "invalid display_name")
-	}
-
-	count, err := tx.CountServiceCredentialsForAccount(ctx, create.AccountID)
-	if err != nil {
-		return GeneratedServiceCredential{}, err
-	}
-	// refuse to generate a new credential if the limit is reached
-	if count >= maxServiceCredentialsPerAccount {
-		return GeneratedServiceCredential{}, ErrServiceCredentialLimit
-	}
-
-	secret, err := genSecret()
-	if err != nil {
-		return GeneratedServiceCredential{}, err
-	}
-
-	hash := sha256.Sum256([]byte(secret))
-
-	cred, err := tx.CreateServiceCredential(ctx, queries.CreateServiceCredentialParams{
-		AccountID:   create.AccountID,
-		DisplayName: create.DisplayName,
-		Description: create.Description,
-		ExpireTime:  create.ExpireTime,
-		SecretHash:  hash[:],
-	})
-	if err != nil {
-		return GeneratedServiceCredential{}, err
-	}
-
-	return GeneratedServiceCredential{
-		ServiceCredential: cred,
-		Secret:            secret,
-	}, nil
 }
 
 func (tx *Tx) ListRolesAndPermissions(ctx context.Context, params queries.ListRolesAndPermissionsParams) ([]RoleAndPermissions, error) {
@@ -184,11 +141,6 @@ func (tx *Tx) ListRolesAndPermissions(ctx context.Context, params queries.ListRo
 type RoleAndPermissions struct {
 	Role          queries.Role
 	PermissionIDs []string
-}
-
-type GeneratedServiceCredential struct {
-	queries.ServiceCredential
-	Secret string
 }
 
 // ListRoleAssignmentsFiltered returns a page of role assignments filtered by the given field and ID.
@@ -286,4 +238,17 @@ func genSecret() (string, error) {
 	encoding.Encode(encoded, secretBytes)
 
 	return string(encoded), nil
+}
+
+func hashPassword(password string) ([]byte, error) {
+	password = normalisePassword(password)
+	if !permitPassword(password) {
+		return nil, ErrInvalidPassword
+	}
+	return pass.Hash([]byte(password))
+}
+
+func hashSecret(secret string) []byte {
+	hash := sha256.Sum256([]byte(secret))
+	return hash[:]
 }

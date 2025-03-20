@@ -19,25 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AccountApi_GetAccount_FullMethodName              = "/smartcore.bos.AccountApi/GetAccount"
-	AccountApi_ListAccounts_FullMethodName            = "/smartcore.bos.AccountApi/ListAccounts"
-	AccountApi_CreateAccount_FullMethodName           = "/smartcore.bos.AccountApi/CreateAccount"
-	AccountApi_UpdateAccount_FullMethodName           = "/smartcore.bos.AccountApi/UpdateAccount"
-	AccountApi_UpdateAccountPassword_FullMethodName   = "/smartcore.bos.AccountApi/UpdateAccountPassword"
-	AccountApi_DeleteAccount_FullMethodName           = "/smartcore.bos.AccountApi/DeleteAccount"
-	AccountApi_GetServiceCredential_FullMethodName    = "/smartcore.bos.AccountApi/GetServiceCredential"
-	AccountApi_ListServiceCredentials_FullMethodName  = "/smartcore.bos.AccountApi/ListServiceCredentials"
-	AccountApi_CreateServiceCredential_FullMethodName = "/smartcore.bos.AccountApi/CreateServiceCredential"
-	AccountApi_DeleteServiceCredential_FullMethodName = "/smartcore.bos.AccountApi/DeleteServiceCredential"
-	AccountApi_GetRole_FullMethodName                 = "/smartcore.bos.AccountApi/GetRole"
-	AccountApi_ListRoles_FullMethodName               = "/smartcore.bos.AccountApi/ListRoles"
-	AccountApi_CreateRole_FullMethodName              = "/smartcore.bos.AccountApi/CreateRole"
-	AccountApi_UpdateRole_FullMethodName              = "/smartcore.bos.AccountApi/UpdateRole"
-	AccountApi_DeleteRole_FullMethodName              = "/smartcore.bos.AccountApi/DeleteRole"
-	AccountApi_GetRoleAssignment_FullMethodName       = "/smartcore.bos.AccountApi/GetRoleAssignment"
-	AccountApi_ListRoleAssignments_FullMethodName     = "/smartcore.bos.AccountApi/ListRoleAssignments"
-	AccountApi_CreateRoleAssignment_FullMethodName    = "/smartcore.bos.AccountApi/CreateRoleAssignment"
-	AccountApi_DeleteRoleAssignment_FullMethodName    = "/smartcore.bos.AccountApi/DeleteRoleAssignment"
+	AccountApi_GetAccount_FullMethodName                = "/smartcore.bos.AccountApi/GetAccount"
+	AccountApi_ListAccounts_FullMethodName              = "/smartcore.bos.AccountApi/ListAccounts"
+	AccountApi_CreateAccount_FullMethodName             = "/smartcore.bos.AccountApi/CreateAccount"
+	AccountApi_UpdateAccount_FullMethodName             = "/smartcore.bos.AccountApi/UpdateAccount"
+	AccountApi_UpdateAccountPassword_FullMethodName     = "/smartcore.bos.AccountApi/UpdateAccountPassword"
+	AccountApi_RotateAccountClientSecret_FullMethodName = "/smartcore.bos.AccountApi/RotateAccountClientSecret"
+	AccountApi_DeleteAccount_FullMethodName             = "/smartcore.bos.AccountApi/DeleteAccount"
+	AccountApi_GetRole_FullMethodName                   = "/smartcore.bos.AccountApi/GetRole"
+	AccountApi_ListRoles_FullMethodName                 = "/smartcore.bos.AccountApi/ListRoles"
+	AccountApi_CreateRole_FullMethodName                = "/smartcore.bos.AccountApi/CreateRole"
+	AccountApi_UpdateRole_FullMethodName                = "/smartcore.bos.AccountApi/UpdateRole"
+	AccountApi_DeleteRole_FullMethodName                = "/smartcore.bos.AccountApi/DeleteRole"
+	AccountApi_GetRoleAssignment_FullMethodName         = "/smartcore.bos.AccountApi/GetRoleAssignment"
+	AccountApi_ListRoleAssignments_FullMethodName       = "/smartcore.bos.AccountApi/ListRoleAssignments"
+	AccountApi_CreateRoleAssignment_FullMethodName      = "/smartcore.bos.AccountApi/CreateRoleAssignment"
+	AccountApi_DeleteRoleAssignment_FullMethodName      = "/smartcore.bos.AccountApi/DeleteRoleAssignment"
 )
 
 // AccountApiClient is the client API for AccountApi service.
@@ -52,11 +49,8 @@ type AccountApiClient interface {
 	// If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
 	// If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
 	UpdateAccountPassword(ctx context.Context, in *UpdateAccountPasswordRequest, opts ...grpc.CallOption) (*UpdateAccountPasswordResponse, error)
+	RotateAccountClientSecret(ctx context.Context, in *RotateAccountClientSecretRequest, opts ...grpc.CallOption) (*RotateAccountClientSecretResponse, error)
 	DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error)
-	GetServiceCredential(ctx context.Context, in *GetServiceCredentialRequest, opts ...grpc.CallOption) (*ServiceCredential, error)
-	ListServiceCredentials(ctx context.Context, in *ListServiceCredentialsRequest, opts ...grpc.CallOption) (*ListServiceCredentialsResponse, error)
-	CreateServiceCredential(ctx context.Context, in *CreateServiceCredentialRequest, opts ...grpc.CallOption) (*ServiceCredential, error)
-	DeleteServiceCredential(ctx context.Context, in *DeleteServiceCredentialRequest, opts ...grpc.CallOption) (*DeleteServiceCredentialResponse, error)
 	GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*Role, error)
 	ListRoles(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error)
 	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*Role, error)
@@ -126,50 +120,20 @@ func (c *accountApiClient) UpdateAccountPassword(ctx context.Context, in *Update
 	return out, nil
 }
 
+func (c *accountApiClient) RotateAccountClientSecret(ctx context.Context, in *RotateAccountClientSecretRequest, opts ...grpc.CallOption) (*RotateAccountClientSecretResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RotateAccountClientSecretResponse)
+	err := c.cc.Invoke(ctx, AccountApi_RotateAccountClientSecret_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accountApiClient) DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteAccountResponse)
 	err := c.cc.Invoke(ctx, AccountApi_DeleteAccount_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accountApiClient) GetServiceCredential(ctx context.Context, in *GetServiceCredentialRequest, opts ...grpc.CallOption) (*ServiceCredential, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ServiceCredential)
-	err := c.cc.Invoke(ctx, AccountApi_GetServiceCredential_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accountApiClient) ListServiceCredentials(ctx context.Context, in *ListServiceCredentialsRequest, opts ...grpc.CallOption) (*ListServiceCredentialsResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListServiceCredentialsResponse)
-	err := c.cc.Invoke(ctx, AccountApi_ListServiceCredentials_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accountApiClient) CreateServiceCredential(ctx context.Context, in *CreateServiceCredentialRequest, opts ...grpc.CallOption) (*ServiceCredential, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ServiceCredential)
-	err := c.cc.Invoke(ctx, AccountApi_CreateServiceCredential_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accountApiClient) DeleteServiceCredential(ctx context.Context, in *DeleteServiceCredentialRequest, opts ...grpc.CallOption) (*DeleteServiceCredentialResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteServiceCredentialResponse)
-	err := c.cc.Invoke(ctx, AccountApi_DeleteServiceCredential_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -278,11 +242,8 @@ type AccountApiServer interface {
 	// If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
 	// If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
 	UpdateAccountPassword(context.Context, *UpdateAccountPasswordRequest) (*UpdateAccountPasswordResponse, error)
+	RotateAccountClientSecret(context.Context, *RotateAccountClientSecretRequest) (*RotateAccountClientSecretResponse, error)
 	DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error)
-	GetServiceCredential(context.Context, *GetServiceCredentialRequest) (*ServiceCredential, error)
-	ListServiceCredentials(context.Context, *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error)
-	CreateServiceCredential(context.Context, *CreateServiceCredentialRequest) (*ServiceCredential, error)
-	DeleteServiceCredential(context.Context, *DeleteServiceCredentialRequest) (*DeleteServiceCredentialResponse, error)
 	GetRole(context.Context, *GetRoleRequest) (*Role, error)
 	ListRoles(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
 	CreateRole(context.Context, *CreateRoleRequest) (*Role, error)
@@ -317,20 +278,11 @@ func (UnimplementedAccountApiServer) UpdateAccount(context.Context, *UpdateAccou
 func (UnimplementedAccountApiServer) UpdateAccountPassword(context.Context, *UpdateAccountPasswordRequest) (*UpdateAccountPasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateAccountPassword not implemented")
 }
+func (UnimplementedAccountApiServer) RotateAccountClientSecret(context.Context, *RotateAccountClientSecretRequest) (*RotateAccountClientSecretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RotateAccountClientSecret not implemented")
+}
 func (UnimplementedAccountApiServer) DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAccount not implemented")
-}
-func (UnimplementedAccountApiServer) GetServiceCredential(context.Context, *GetServiceCredentialRequest) (*ServiceCredential, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetServiceCredential not implemented")
-}
-func (UnimplementedAccountApiServer) ListServiceCredentials(context.Context, *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListServiceCredentials not implemented")
-}
-func (UnimplementedAccountApiServer) CreateServiceCredential(context.Context, *CreateServiceCredentialRequest) (*ServiceCredential, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateServiceCredential not implemented")
-}
-func (UnimplementedAccountApiServer) DeleteServiceCredential(context.Context, *DeleteServiceCredentialRequest) (*DeleteServiceCredentialResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteServiceCredential not implemented")
 }
 func (UnimplementedAccountApiServer) GetRole(context.Context, *GetRoleRequest) (*Role, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRole not implemented")
@@ -470,6 +422,24 @@ func _AccountApi_UpdateAccountPassword_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountApi_RotateAccountClientSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RotateAccountClientSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountApiServer).RotateAccountClientSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountApi_RotateAccountClientSecret_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountApiServer).RotateAccountClientSecret(ctx, req.(*RotateAccountClientSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AccountApi_DeleteAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteAccountRequest)
 	if err := dec(in); err != nil {
@@ -484,78 +454,6 @@ func _AccountApi_DeleteAccount_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccountApiServer).DeleteAccount(ctx, req.(*DeleteAccountRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AccountApi_GetServiceCredential_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetServiceCredentialRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccountApiServer).GetServiceCredential(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AccountApi_GetServiceCredential_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountApiServer).GetServiceCredential(ctx, req.(*GetServiceCredentialRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AccountApi_ListServiceCredentials_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListServiceCredentialsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccountApiServer).ListServiceCredentials(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AccountApi_ListServiceCredentials_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountApiServer).ListServiceCredentials(ctx, req.(*ListServiceCredentialsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AccountApi_CreateServiceCredential_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateServiceCredentialRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccountApiServer).CreateServiceCredential(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AccountApi_CreateServiceCredential_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountApiServer).CreateServiceCredential(ctx, req.(*CreateServiceCredentialRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AccountApi_DeleteServiceCredential_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteServiceCredentialRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccountApiServer).DeleteServiceCredential(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AccountApi_DeleteServiceCredential_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccountApiServer).DeleteServiceCredential(ctx, req.(*DeleteServiceCredentialRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -750,24 +648,12 @@ var AccountApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AccountApi_UpdateAccountPassword_Handler,
 		},
 		{
+			MethodName: "RotateAccountClientSecret",
+			Handler:    _AccountApi_RotateAccountClientSecret_Handler,
+		},
+		{
 			MethodName: "DeleteAccount",
 			Handler:    _AccountApi_DeleteAccount_Handler,
-		},
-		{
-			MethodName: "GetServiceCredential",
-			Handler:    _AccountApi_GetServiceCredential_Handler,
-		},
-		{
-			MethodName: "ListServiceCredentials",
-			Handler:    _AccountApi_ListServiceCredentials_Handler,
-		},
-		{
-			MethodName: "CreateServiceCredential",
-			Handler:    _AccountApi_CreateServiceCredential_Handler,
-		},
-		{
-			MethodName: "DeleteServiceCredential",
-			Handler:    _AccountApi_DeleteServiceCredential_Handler,
 		},
 		{
 			MethodName: "GetRole",

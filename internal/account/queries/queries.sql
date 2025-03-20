@@ -3,9 +3,19 @@ SELECT *
 FROM accounts
 WHERE id = :id;
 
+-- name: GetAccountDetails :one
+SELECT * FROM account_details
+WHERE id = :id;
+
 -- name: ListAccounts :many
 SELECT *
 FROM accounts
+WHERE id > :after_id
+ORDER BY id
+LIMIT :limit;
+
+-- name: ListAccountDetails :many
+SELECT * FROM account_details
 WHERE id > :after_id
 ORDER BY id
 LIMIT :limit;
@@ -14,31 +24,25 @@ LIMIT :limit;
 SELECT COUNT(*) AS count
 FROM accounts;
 
--- name: GetAccountByUsername :one
-SELECT *
-FROM accounts
-WHERE username = :username;
+-- name: CreateAccount :one
+INSERT INTO accounts (display_name, description, type, create_time)
+VALUES (:display_name, :description, :type, datetime('now', 'subsec'))
+RETURNING *;
 
 -- name: CreateUserAccount :one
-INSERT INTO accounts (username, display_name, description, type, create_time)
-VALUES (:username, :display_name, :description, 'USER_ACCOUNT', datetime('now', 'subsec'))
+INSERT INTO user_accounts (account_id, username, password_hash)
+VALUES (:account_id, :username, :password_hash)
 RETURNING *;
 
 -- name: CreateServiceAccount :one
-INSERT INTO accounts (display_name, description, type, create_time)
-VALUES (:display_name, :description, 'SERVICE_ACCOUNT', datetime('now', 'subsec'))
+INSERT INTO service_accounts (account_id, primary_secret_hash)
+VALUES (:account_id, :primary_secret_hash)
 RETURNING *;
 
--- name: GetAccountPasswordHash :one
-SELECT password_hash
-FROM password_credentials
-WHERE account_id = :account_id;
-
 -- name: UpdateAccountPasswordHash :exec
-INSERT INTO password_credentials (account_id, password_hash)
-VALUES (:account_id, :password_hash)
-ON CONFLICT (account_id) DO UPDATE
-SET password_hash = excluded.password_hash;
+UPDATE user_accounts
+SET password_hash = :password_hash
+WHERE account_id = :account_id;
 
 -- name: UpdateAccountDisplayName :exec
 UPDATE accounts
@@ -46,9 +50,9 @@ SET display_name = :display_name
 WHERE id = :id;
 
 -- name: UpdateAccountUsername :exec
-UPDATE accounts
+UPDATE user_accounts
 SET username = :username
-WHERE id = :id;
+WHERE account_id = :account_id;
 
 -- name: UpdateAccountDescription :exec
 UPDATE accounts
@@ -58,31 +62,6 @@ WHERE id = :id;
 -- name: DeleteAccount :execrows
 DELETE FROM accounts
 WHERE id = :id;
-
--- name: CreateServiceCredential :one
-INSERT INTO service_credentials (account_id, display_name, description, secret_hash, create_time, expire_time)
-VALUES (:account_id, :display_name, :description, :secret_hash, datetime('now', 'subsec'), :expire_time)
-RETURNING *;
-
--- name: GetServiceCredential :one
-SELECT *
-FROM service_credentials
-WHERE id = :id;
-
--- name: ListAccountServiceCredentials :many
-SELECT *
-FROM service_credentials
-WHERE account_id = :account_id
-ORDER BY id;
-
--- name: DeleteServiceCredential :execrows
-DELETE FROM service_credentials
-WHERE id = :id;
-
--- name: CountServiceCredentialsForAccount :one
-SELECT COUNT(*) AS count
-FROM service_credentials
-WHERE account_id = :account_id;
 
 -- name: GetRole :one
 SELECT *

@@ -22,15 +22,30 @@ func formatID(id int64) string {
 	return strconv.FormatInt(id, 10)
 }
 
-func accountToProto(account queries.Account) *gen.Account {
+func accountToProto(account queries.AccountDetail, clientSecret string) *gen.Account {
+	id := formatID(account.ID)
 	converted := &gen.Account{
-		Id:          formatID(account.ID),
+		Id:          id,
 		DisplayName: account.DisplayName,
 		Type:        gen.Account_Type(gen.Account_Type_value[account.Type]), // default to ACCOUNT_TYPE_UNSPECIFIED
 		CreateTime:  timestamppb.New(account.CreateTime),
 	}
-	if account.Username.Valid {
-		converted.Username = account.Username.String
+	switch converted.Type {
+	case gen.Account_USER_ACCOUNT:
+		converted.Details = &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+			HasPassword: account.PasswordHash != nil,
+		}}
+		if account.Username.Valid {
+			converted.GetUserDetails().Username = account.Username.String
+		}
+	case gen.Account_SERVICE_ACCOUNT:
+		converted.Details = &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{
+			ClientId:     id,
+			ClientSecret: clientSecret,
+		}}
+		if account.SecondarySecretExpireTime.Valid {
+			converted.GetServiceDetails().PreviousSecretExpires = timestamppb.New(account.SecondarySecretExpireTime.Time)
+		}
 	}
 	if account.Description.Valid {
 		converted.Description = account.Description.String
@@ -48,22 +63,6 @@ func roleToProto(role queries.Role, permissions []string) *gen.Role {
 		protoRole.Description = role.Description.String
 	}
 	return protoRole
-}
-
-func serviceCredentialToProto(cred queries.ServiceCredential, secret string) *gen.ServiceCredential {
-	converted := &gen.ServiceCredential{
-		Id:          formatID(cred.ID),
-		DisplayName: cred.DisplayName,
-		CreateTime:  timestamppb.New(cred.CreateTime),
-		Secret:      secret,
-	}
-	if cred.ExpireTime.Valid {
-		converted.ExpireTime = timestamppb.New(cred.ExpireTime.Time)
-	}
-	if cred.Description.Valid {
-		converted.Description = cred.Description.String
-	}
-	return converted
 }
 
 func roleAssignmentToProto(assignment queries.RoleAssignment) *gen.RoleAssignment {

@@ -101,17 +101,29 @@ func (q *Queries) CountRoles(ctx context.Context) (int64, error) {
 	return count, err
 }
 
-const countServiceCredentialsForAccount = `-- name: CountServiceCredentialsForAccount :one
-SELECT COUNT(*) AS count
-FROM service_credentials
-WHERE account_id = ?1
+const createAccount = `-- name: CreateAccount :one
+INSERT INTO accounts (display_name, description, type, create_time)
+VALUES (?1, ?2, ?3, datetime('now', 'subsec'))
+RETURNING id, display_name, description, type, create_time
 `
 
-func (q *Queries) CountServiceCredentialsForAccount(ctx context.Context, accountID int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countServiceCredentialsForAccount, accountID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
+type CreateAccountParams struct {
+	DisplayName string
+	Description sql.NullString
+	Type        string
+}
+
+func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, createAccount, arg.DisplayName, arg.Description, arg.Type)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.DisplayName,
+		&i.Description,
+		&i.Type,
+		&i.CreateTime,
+	)
+	return i, err
 }
 
 const createRole = `-- name: CreateRole :one
@@ -164,88 +176,44 @@ func (q *Queries) CreateRoleAssignment(ctx context.Context, arg CreateRoleAssign
 }
 
 const createServiceAccount = `-- name: CreateServiceAccount :one
-INSERT INTO accounts (display_name, description, type, create_time)
-VALUES (?1, ?2, 'SERVICE_ACCOUNT', datetime('now', 'subsec'))
-RETURNING id, username, display_name, description, type, create_time
+INSERT INTO service_accounts (account_id, primary_secret_hash)
+VALUES (?1, ?2)
+RETURNING account_id, primary_secret_hash, secondary_secret_hash, secondary_secret_expire_time
 `
 
 type CreateServiceAccountParams struct {
-	DisplayName string
-	Description sql.NullString
+	AccountID         int64
+	PrimarySecretHash []byte
 }
 
-func (q *Queries) CreateServiceAccount(ctx context.Context, arg CreateServiceAccountParams) (Account, error) {
-	row := q.db.QueryRowContext(ctx, createServiceAccount, arg.DisplayName, arg.Description)
-	var i Account
+func (q *Queries) CreateServiceAccount(ctx context.Context, arg CreateServiceAccountParams) (ServiceAccount, error) {
+	row := q.db.QueryRowContext(ctx, createServiceAccount, arg.AccountID, arg.PrimarySecretHash)
+	var i ServiceAccount
 	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.DisplayName,
-		&i.Description,
-		&i.Type,
-		&i.CreateTime,
-	)
-	return i, err
-}
-
-const createServiceCredential = `-- name: CreateServiceCredential :one
-INSERT INTO service_credentials (account_id, display_name, description, secret_hash, create_time, expire_time)
-VALUES (?1, ?2, ?3, ?4, datetime('now', 'subsec'), ?5)
-RETURNING id, account_id, display_name, description, secret_hash, create_time, expire_time
-`
-
-type CreateServiceCredentialParams struct {
-	AccountID   int64
-	DisplayName string
-	Description sql.NullString
-	SecretHash  []byte
-	ExpireTime  sql.NullTime
-}
-
-func (q *Queries) CreateServiceCredential(ctx context.Context, arg CreateServiceCredentialParams) (ServiceCredential, error) {
-	row := q.db.QueryRowContext(ctx, createServiceCredential,
-		arg.AccountID,
-		arg.DisplayName,
-		arg.Description,
-		arg.SecretHash,
-		arg.ExpireTime,
-	)
-	var i ServiceCredential
-	err := row.Scan(
-		&i.ID,
 		&i.AccountID,
-		&i.DisplayName,
-		&i.Description,
-		&i.SecretHash,
-		&i.CreateTime,
-		&i.ExpireTime,
+		&i.PrimarySecretHash,
+		&i.SecondarySecretHash,
+		&i.SecondarySecretExpireTime,
 	)
 	return i, err
 }
 
 const createUserAccount = `-- name: CreateUserAccount :one
-INSERT INTO accounts (username, display_name, description, type, create_time)
-VALUES (?1, ?2, ?3, 'USER_ACCOUNT', datetime('now', 'subsec'))
-RETURNING id, username, display_name, description, type, create_time
+INSERT INTO user_accounts (account_id, username, password_hash)
+VALUES (?1, ?2, ?3)
+RETURNING account_id, username, password_hash
 `
 
 type CreateUserAccountParams struct {
-	Username    sql.NullString
-	DisplayName string
-	Description sql.NullString
+	AccountID    int64
+	Username     string
+	PasswordHash []byte
 }
 
-func (q *Queries) CreateUserAccount(ctx context.Context, arg CreateUserAccountParams) (Account, error) {
-	row := q.db.QueryRowContext(ctx, createUserAccount, arg.Username, arg.DisplayName, arg.Description)
-	var i Account
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.DisplayName,
-		&i.Description,
-		&i.Type,
-		&i.CreateTime,
-	)
+func (q *Queries) CreateUserAccount(ctx context.Context, arg CreateUserAccountParams) (UserAccount, error) {
+	row := q.db.QueryRowContext(ctx, createUserAccount, arg.AccountID, arg.Username, arg.PasswordHash)
+	var i UserAccount
+	err := row.Scan(&i.AccountID, &i.Username, &i.PasswordHash)
 	return i, err
 }
 
@@ -306,21 +274,8 @@ func (q *Queries) DeleteRolePermission(ctx context.Context, arg DeleteRolePermis
 	return result.RowsAffected()
 }
 
-const deleteServiceCredential = `-- name: DeleteServiceCredential :execrows
-DELETE FROM service_credentials
-WHERE id = ?1
-`
-
-func (q *Queries) DeleteServiceCredential(ctx context.Context, id int64) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteServiceCredential, id)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected()
-}
-
 const getAccount = `-- name: GetAccount :one
-SELECT id, username, display_name, description, type, create_time
+SELECT id, display_name, description, type, create_time
 FROM accounts
 WHERE id = ?1
 `
@@ -330,7 +285,6 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 	var i Account
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
 		&i.DisplayName,
 		&i.Description,
 		&i.Type,
@@ -339,37 +293,27 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 	return i, err
 }
 
-const getAccountByUsername = `-- name: GetAccountByUsername :one
-SELECT id, username, display_name, description, type, create_time
-FROM accounts
-WHERE username = ?1
+const getAccountDetails = `-- name: GetAccountDetails :one
+SELECT id, display_name, description, type, create_time, username, password_hash, primary_secret_hash, secondary_secret_hash, secondary_secret_expire_time FROM account_details
+WHERE id = ?1
 `
 
-func (q *Queries) GetAccountByUsername(ctx context.Context, username sql.NullString) (Account, error) {
-	row := q.db.QueryRowContext(ctx, getAccountByUsername, username)
-	var i Account
+func (q *Queries) GetAccountDetails(ctx context.Context, id int64) (AccountDetail, error) {
+	row := q.db.QueryRowContext(ctx, getAccountDetails, id)
+	var i AccountDetail
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
 		&i.DisplayName,
 		&i.Description,
 		&i.Type,
 		&i.CreateTime,
+		&i.Username,
+		&i.PasswordHash,
+		&i.PrimarySecretHash,
+		&i.SecondarySecretHash,
+		&i.SecondarySecretExpireTime,
 	)
 	return i, err
-}
-
-const getAccountPasswordHash = `-- name: GetAccountPasswordHash :one
-SELECT password_hash
-FROM password_credentials
-WHERE account_id = ?1
-`
-
-func (q *Queries) GetAccountPasswordHash(ctx context.Context, accountID int64) ([]byte, error) {
-	row := q.db.QueryRowContext(ctx, getAccountPasswordHash, accountID)
-	var password_hash []byte
-	err := row.Scan(&password_hash)
-	return password_hash, err
 }
 
 const getRole = `-- name: GetRole :one
@@ -404,51 +348,38 @@ func (q *Queries) GetRoleAssignment(ctx context.Context, id int64) (RoleAssignme
 	return i, err
 }
 
-const getServiceCredential = `-- name: GetServiceCredential :one
-SELECT id, account_id, display_name, description, secret_hash, create_time, expire_time
-FROM service_credentials
-WHERE id = ?1
+const listAccountDetails = `-- name: ListAccountDetails :many
+SELECT id, display_name, description, type, create_time, username, password_hash, primary_secret_hash, secondary_secret_hash, secondary_secret_expire_time FROM account_details
+WHERE id > ?1
+ORDER BY id
+LIMIT ?2
 `
 
-func (q *Queries) GetServiceCredential(ctx context.Context, id int64) (ServiceCredential, error) {
-	row := q.db.QueryRowContext(ctx, getServiceCredential, id)
-	var i ServiceCredential
-	err := row.Scan(
-		&i.ID,
-		&i.AccountID,
-		&i.DisplayName,
-		&i.Description,
-		&i.SecretHash,
-		&i.CreateTime,
-		&i.ExpireTime,
-	)
-	return i, err
+type ListAccountDetailsParams struct {
+	AfterID int64
+	Limit   int64
 }
 
-const listAccountServiceCredentials = `-- name: ListAccountServiceCredentials :many
-SELECT id, account_id, display_name, description, secret_hash, create_time, expire_time
-FROM service_credentials
-WHERE account_id = ?1
-ORDER BY id
-`
-
-func (q *Queries) ListAccountServiceCredentials(ctx context.Context, accountID int64) ([]ServiceCredential, error) {
-	rows, err := q.db.QueryContext(ctx, listAccountServiceCredentials, accountID)
+func (q *Queries) ListAccountDetails(ctx context.Context, arg ListAccountDetailsParams) ([]AccountDetail, error) {
+	rows, err := q.db.QueryContext(ctx, listAccountDetails, arg.AfterID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ServiceCredential
+	var items []AccountDetail
 	for rows.Next() {
-		var i ServiceCredential
+		var i AccountDetail
 		if err := rows.Scan(
 			&i.ID,
-			&i.AccountID,
 			&i.DisplayName,
 			&i.Description,
-			&i.SecretHash,
+			&i.Type,
 			&i.CreateTime,
-			&i.ExpireTime,
+			&i.Username,
+			&i.PasswordHash,
+			&i.PrimarySecretHash,
+			&i.SecondarySecretHash,
+			&i.SecondarySecretExpireTime,
 		); err != nil {
 			return nil, err
 		}
@@ -464,7 +395,7 @@ func (q *Queries) ListAccountServiceCredentials(ctx context.Context, accountID i
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT id, username, display_name, description, type, create_time
+SELECT id, display_name, description, type, create_time
 FROM accounts
 WHERE id > ?1
 ORDER BY id
@@ -487,7 +418,6 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		var i Account
 		if err := rows.Scan(
 			&i.ID,
-			&i.Username,
 			&i.DisplayName,
 			&i.Description,
 			&i.Type,
@@ -783,35 +713,34 @@ func (q *Queries) UpdateAccountDisplayName(ctx context.Context, arg UpdateAccoun
 }
 
 const updateAccountPasswordHash = `-- name: UpdateAccountPasswordHash :exec
-INSERT INTO password_credentials (account_id, password_hash)
-VALUES (?1, ?2)
-ON CONFLICT (account_id) DO UPDATE
-SET password_hash = excluded.password_hash
+UPDATE user_accounts
+SET password_hash = ?1
+WHERE account_id = ?2
 `
 
 type UpdateAccountPasswordHashParams struct {
-	AccountID    int64
 	PasswordHash []byte
+	AccountID    int64
 }
 
 func (q *Queries) UpdateAccountPasswordHash(ctx context.Context, arg UpdateAccountPasswordHashParams) error {
-	_, err := q.db.ExecContext(ctx, updateAccountPasswordHash, arg.AccountID, arg.PasswordHash)
+	_, err := q.db.ExecContext(ctx, updateAccountPasswordHash, arg.PasswordHash, arg.AccountID)
 	return err
 }
 
 const updateAccountUsername = `-- name: UpdateAccountUsername :exec
-UPDATE accounts
+UPDATE user_accounts
 SET username = ?1
-WHERE id = ?2
+WHERE account_id = ?2
 `
 
 type UpdateAccountUsernameParams struct {
-	Username sql.NullString
-	ID       int64
+	Username  string
+	AccountID int64
 }
 
 func (q *Queries) UpdateAccountUsername(ctx context.Context, arg UpdateAccountUsernameParams) error {
-	_, err := q.db.ExecContext(ctx, updateAccountUsername, arg.Username, arg.ID)
+	_, err := q.db.ExecContext(ctx, updateAccountUsername, arg.Username, arg.AccountID)
 	return err
 }
 

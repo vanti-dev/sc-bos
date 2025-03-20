@@ -387,6 +387,67 @@ proto.smartcore.bos.AccountApiPromiseClient.prototype.updateAccountPassword =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.RotateAccountClientSecretRequest,
+ *   !proto.smartcore.bos.RotateAccountClientSecretResponse>}
+ */
+const methodDescriptor_AccountApi_RotateAccountClientSecret = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccountApi/RotateAccountClientSecret',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.RotateAccountClientSecretRequest,
+  proto.smartcore.bos.RotateAccountClientSecretResponse,
+  /**
+   * @param {!proto.smartcore.bos.RotateAccountClientSecretRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.RotateAccountClientSecretResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.RotateAccountClientSecretRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.RotateAccountClientSecretResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.RotateAccountClientSecretResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AccountApiClient.prototype.rotateAccountClientSecret =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AccountApi/RotateAccountClientSecret',
+      request,
+      metadata || {},
+      methodDescriptor_AccountApi_RotateAccountClientSecret,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.RotateAccountClientSecretRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.RotateAccountClientSecretResponse>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.AccountApiPromiseClient.prototype.rotateAccountClientSecret =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AccountApi/RotateAccountClientSecret',
+      request,
+      metadata || {},
+      methodDescriptor_AccountApi_RotateAccountClientSecret);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.smartcore.bos.DeleteAccountRequest,
  *   !proto.smartcore.bos.DeleteAccountResponse>}
  */
@@ -442,250 +503,6 @@ proto.smartcore.bos.AccountApiPromiseClient.prototype.deleteAccount =
       request,
       metadata || {},
       methodDescriptor_AccountApi_DeleteAccount);
-};
-
-
-/**
- * @const
- * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.GetServiceCredentialRequest,
- *   !proto.smartcore.bos.ServiceCredential>}
- */
-const methodDescriptor_AccountApi_GetServiceCredential = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApi/GetServiceCredential',
-  grpc.web.MethodType.UNARY,
-  proto.smartcore.bos.GetServiceCredentialRequest,
-  proto.smartcore.bos.ServiceCredential,
-  /**
-   * @param {!proto.smartcore.bos.GetServiceCredentialRequest} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.smartcore.bos.ServiceCredential.deserializeBinary
-);
-
-
-/**
- * @param {!proto.smartcore.bos.GetServiceCredentialRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ServiceCredential)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ServiceCredential>|undefined}
- *     The XHR Node Readable Stream
- */
-proto.smartcore.bos.AccountApiClient.prototype.getServiceCredential =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApi/GetServiceCredential',
-      request,
-      metadata || {},
-      methodDescriptor_AccountApi_GetServiceCredential,
-      callback);
-};
-
-
-/**
- * @param {!proto.smartcore.bos.GetServiceCredentialRequest} request The
- *     request proto
- * @param {?Object<string, string>=} metadata User defined
- *     call metadata
- * @return {!Promise<!proto.smartcore.bos.ServiceCredential>}
- *     Promise that resolves to the response
- */
-proto.smartcore.bos.AccountApiPromiseClient.prototype.getServiceCredential =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApi/GetServiceCredential',
-      request,
-      metadata || {},
-      methodDescriptor_AccountApi_GetServiceCredential);
-};
-
-
-/**
- * @const
- * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.ListServiceCredentialsRequest,
- *   !proto.smartcore.bos.ListServiceCredentialsResponse>}
- */
-const methodDescriptor_AccountApi_ListServiceCredentials = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApi/ListServiceCredentials',
-  grpc.web.MethodType.UNARY,
-  proto.smartcore.bos.ListServiceCredentialsRequest,
-  proto.smartcore.bos.ListServiceCredentialsResponse,
-  /**
-   * @param {!proto.smartcore.bos.ListServiceCredentialsRequest} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.smartcore.bos.ListServiceCredentialsResponse.deserializeBinary
-);
-
-
-/**
- * @param {!proto.smartcore.bos.ListServiceCredentialsRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListServiceCredentialsResponse)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListServiceCredentialsResponse>|undefined}
- *     The XHR Node Readable Stream
- */
-proto.smartcore.bos.AccountApiClient.prototype.listServiceCredentials =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApi/ListServiceCredentials',
-      request,
-      metadata || {},
-      methodDescriptor_AccountApi_ListServiceCredentials,
-      callback);
-};
-
-
-/**
- * @param {!proto.smartcore.bos.ListServiceCredentialsRequest} request The
- *     request proto
- * @param {?Object<string, string>=} metadata User defined
- *     call metadata
- * @return {!Promise<!proto.smartcore.bos.ListServiceCredentialsResponse>}
- *     Promise that resolves to the response
- */
-proto.smartcore.bos.AccountApiPromiseClient.prototype.listServiceCredentials =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApi/ListServiceCredentials',
-      request,
-      metadata || {},
-      methodDescriptor_AccountApi_ListServiceCredentials);
-};
-
-
-/**
- * @const
- * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.CreateServiceCredentialRequest,
- *   !proto.smartcore.bos.ServiceCredential>}
- */
-const methodDescriptor_AccountApi_CreateServiceCredential = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApi/CreateServiceCredential',
-  grpc.web.MethodType.UNARY,
-  proto.smartcore.bos.CreateServiceCredentialRequest,
-  proto.smartcore.bos.ServiceCredential,
-  /**
-   * @param {!proto.smartcore.bos.CreateServiceCredentialRequest} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.smartcore.bos.ServiceCredential.deserializeBinary
-);
-
-
-/**
- * @param {!proto.smartcore.bos.CreateServiceCredentialRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ServiceCredential)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ServiceCredential>|undefined}
- *     The XHR Node Readable Stream
- */
-proto.smartcore.bos.AccountApiClient.prototype.createServiceCredential =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApi/CreateServiceCredential',
-      request,
-      metadata || {},
-      methodDescriptor_AccountApi_CreateServiceCredential,
-      callback);
-};
-
-
-/**
- * @param {!proto.smartcore.bos.CreateServiceCredentialRequest} request The
- *     request proto
- * @param {?Object<string, string>=} metadata User defined
- *     call metadata
- * @return {!Promise<!proto.smartcore.bos.ServiceCredential>}
- *     Promise that resolves to the response
- */
-proto.smartcore.bos.AccountApiPromiseClient.prototype.createServiceCredential =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApi/CreateServiceCredential',
-      request,
-      metadata || {},
-      methodDescriptor_AccountApi_CreateServiceCredential);
-};
-
-
-/**
- * @const
- * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.DeleteServiceCredentialRequest,
- *   !proto.smartcore.bos.DeleteServiceCredentialResponse>}
- */
-const methodDescriptor_AccountApi_DeleteServiceCredential = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AccountApi/DeleteServiceCredential',
-  grpc.web.MethodType.UNARY,
-  proto.smartcore.bos.DeleteServiceCredentialRequest,
-  proto.smartcore.bos.DeleteServiceCredentialResponse,
-  /**
-   * @param {!proto.smartcore.bos.DeleteServiceCredentialRequest} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.smartcore.bos.DeleteServiceCredentialResponse.deserializeBinary
-);
-
-
-/**
- * @param {!proto.smartcore.bos.DeleteServiceCredentialRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.DeleteServiceCredentialResponse)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.DeleteServiceCredentialResponse>|undefined}
- *     The XHR Node Readable Stream
- */
-proto.smartcore.bos.AccountApiClient.prototype.deleteServiceCredential =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AccountApi/DeleteServiceCredential',
-      request,
-      metadata || {},
-      methodDescriptor_AccountApi_DeleteServiceCredential,
-      callback);
-};
-
-
-/**
- * @param {!proto.smartcore.bos.DeleteServiceCredentialRequest} request The
- *     request proto
- * @param {?Object<string, string>=} metadata User defined
- *     call metadata
- * @return {!Promise<!proto.smartcore.bos.DeleteServiceCredentialResponse>}
- *     Promise that resolves to the response
- */
-proto.smartcore.bos.AccountApiPromiseClient.prototype.deleteServiceCredential =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AccountApi/DeleteServiceCredential',
-      request,
-      metadata || {},
-      methodDescriptor_AccountApi_DeleteServiceCredential);
 };
 
 

@@ -7,7 +7,6 @@ import (
 	"math/rand/v2"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
@@ -18,7 +17,6 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -37,13 +35,17 @@ func TestServer_CreateAccount(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: "user1",
+					}},
 				},
 			},
 			expect: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+					Username: "user1",
+				}},
 			},
 		},
 		"user_account_with_password": {
@@ -51,14 +53,19 @@ func TestServer_CreateAccount(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 2",
-					Username:    "user2",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: "user2",
+					}},
 				},
 				Password: "user2Password",
 			},
 			expect: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 2",
-				Username:    "user2",
+				Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+					Username:    "user2",
+					HasPassword: true,
+				}},
 			},
 		},
 		"user_account_short_password": {
@@ -66,7 +73,9 @@ func TestServer_CreateAccount(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 3",
-					Username:    "user3",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: "user3",
+					}},
 				},
 				Password: "short",
 			},
@@ -77,7 +86,9 @@ func TestServer_CreateAccount(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 4",
-					Username:    "user4",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: "user4",
+					}},
 				},
 				Password: strings.Repeat("a", 101),
 			},
@@ -88,7 +99,9 @@ func TestServer_CreateAccount(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 5",
-					Username:    "user5",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: "user5",
+					}},
 				},
 				Password: " short        ",
 			},
@@ -104,6 +117,7 @@ func TestServer_CreateAccount(t *testing.T) {
 			expect: &gen.Account{
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"service_account_password": {
@@ -116,7 +130,7 @@ func TestServer_CreateAccount(t *testing.T) {
 			},
 			code: codes.InvalidArgument,
 		},
-		"missing_account_kind": {
+		"missing_account_type": {
 			req: &gen.CreateAccountRequest{
 				Account: &gen.Account{
 					DisplayName: "Missing Kind",
@@ -127,8 +141,10 @@ func TestServer_CreateAccount(t *testing.T) {
 		"missing_display_name": {
 			req: &gen.CreateAccountRequest{
 				Account: &gen.Account{
-					Type:     gen.Account_USER_ACCOUNT,
-					Username: "foo",
+					Type: gen.Account_USER_ACCOUNT,
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: "foo",
+					}},
 				},
 			},
 			code: codes.InvalidArgument,
@@ -143,6 +159,7 @@ func TestServer_CreateAccount(t *testing.T) {
 			expect: &gen.Account{
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: strings.Repeat("a", maxDisplayNameLength),
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"display_name_too_long": {
@@ -168,13 +185,17 @@ func TestServer_CreateAccount(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    strings.Repeat("a", maxUsernameLength),
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: strings.Repeat("a", maxUsernameLength),
+					}},
 				},
 			},
 			expect: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    strings.Repeat("a", maxUsernameLength),
+				Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+					Username: strings.Repeat("a", maxUsernameLength),
+				}},
 			},
 		},
 		"username_too_long": {
@@ -182,7 +203,9 @@ func TestServer_CreateAccount(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    strings.Repeat("a", maxUsernameLength+1),
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: strings.Repeat("a", maxUsernameLength+1),
+					}},
 				},
 			},
 			code: codes.InvalidArgument,
@@ -199,6 +222,7 @@ func TestServer_CreateAccount(t *testing.T) {
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 				Description: "a description",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"description_long": {
@@ -213,6 +237,7 @@ func TestServer_CreateAccount(t *testing.T) {
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 				Description: strings.Repeat("a", maxDescriptionLength),
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"description_too_long": {
@@ -225,12 +250,14 @@ func TestServer_CreateAccount(t *testing.T) {
 			},
 			code: codes.InvalidArgument,
 		},
-		"username_supplied_for_service_account": {
+		"user_details_supplied_for_service_account": {
 			req: &gen.CreateAccountRequest{
 				Account: &gen.Account{
 					Type:        gen.Account_SERVICE_ACCOUNT,
 					DisplayName: "Service Account",
-					Username:    "service",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: "service",
+					}},
 				},
 			},
 			code: codes.InvalidArgument,
@@ -240,14 +267,18 @@ func TestServer_CreateAccount(t *testing.T) {
 				{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: "user1",
+					}},
 				},
 			},
 			req: &gen.CreateAccountRequest{
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1A",
-					Username:    "user1",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+						Username: "user1",
+					}},
 				},
 			},
 			code: codes.AlreadyExists,
@@ -281,6 +312,7 @@ func TestServer_CreateAccount(t *testing.T) {
 			diff := cmp.Diff(tc.expect, res,
 				protocmp.Transform(),
 				protocmp.IgnoreFields(&gen.Account{}, "id", "create_time"),
+				protocmp.IgnoreFields(&gen.ServiceAccount{}, "client_id", "client_secret"),
 			)
 			if diff != "" {
 				t.Errorf("unexpected provided account value (-want +got):\n%s", diff)
@@ -294,13 +326,25 @@ func TestServer_CreateAccount(t *testing.T) {
 					expect = proto.Clone(tc.expect).(*gen.Account)
 					expect.Id = id
 					expect.CreateTime = res.CreateTime
+					service := expect.GetServiceDetails()
+					if service != nil {
+						service.ClientId = id
+					}
 				}
 				account, err := server.GetAccount(context.Background(), &gen.GetAccountRequest{Id: id})
 				checkNilIfErrored(t, account, err)
 				if err != nil {
 					t.Fatalf("failed to get account %q: %v", id, err)
 				}
-				diff = cmp.Diff(expect, account, protocmp.Transform())
+				if res.Type == gen.Account_SERVICE_ACCOUNT {
+					if res.GetServiceDetails().GetClientSecret() == "" {
+						t.Errorf("service account created without client secret")
+					}
+				}
+				diff = cmp.Diff(expect, account,
+					protocmp.Transform(),
+					protocmp.IgnoreFields(&gen.ServiceAccount{}, "client_secret"),
+				)
 				if diff != "" {
 					t.Errorf("unexpected retrieved account value (-want +got):\n%s", diff)
 				}
@@ -316,20 +360,32 @@ func TestServer_ListAccounts(t *testing.T) {
 	store := NewMemoryStore(logger)
 	server := NewServer(store, logger)
 
-	createAccount := func(ty gen.Account_Type, username, displayName string) string {
+	createAccount := func(ty gen.Account_Type, username, displayName string) (*gen.Account, string) {
 		t.Helper()
+		account := &gen.Account{
+			Type:        ty,
+			DisplayName: displayName,
+		}
+		switch ty {
+		case gen.Account_USER_ACCOUNT:
+			account.Details = &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: username}}
+		case gen.Account_SERVICE_ACCOUNT:
+			account.Details = &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}}
+		default:
+			t.Fatalf("wrong type %v", ty)
+		}
 		res, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
-			Account: &gen.Account{
-				Type:        ty,
-				Username:    username,
-				DisplayName: displayName,
-			},
+			Account: account,
 		})
 		checkNilIfErrored(t, res, err)
 		if err != nil {
 			t.Fatalf("failed to create account: %v", err)
 		}
-		return res.Id
+		account.Id = res.Id
+		if service := account.GetServiceDetails(); service != nil {
+			service.ClientId = res.GetServiceDetails().ClientId
+		}
+		return account, res.Id
 	}
 
 	// we assume that accounts are returned in creation order
@@ -339,24 +395,15 @@ func TestServer_ListAccounts(t *testing.T) {
 		username := fmt.Sprintf("account-%03d", i)
 		displayName := fmt.Sprintf("Account %d", i)
 
+		var account *gen.Account
 		if i%2 == 0 {
 			// make it a user account
-			id := createAccount(gen.Account_USER_ACCOUNT, username, displayName)
-			expected = append(expected, &gen.Account{
-				Id:          id,
-				Type:        gen.Account_USER_ACCOUNT,
-				Username:    username,
-				DisplayName: displayName,
-			})
+			account, _ = createAccount(gen.Account_USER_ACCOUNT, username, displayName)
 		} else {
 			// make it a service account
-			id := createAccount(gen.Account_SERVICE_ACCOUNT, "", displayName)
-			expected = append(expected, &gen.Account{
-				Id:          id,
-				Type:        gen.Account_SERVICE_ACCOUNT,
-				DisplayName: displayName,
-			})
+			account, _ = createAccount(gen.Account_SERVICE_ACCOUNT, "", displayName)
 		}
+		expected = append(expected, account)
 	}
 
 	const pageSize = 42
@@ -407,7 +454,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{},
@@ -415,14 +462,14 @@ func TestServer_UpdateAccount(t *testing.T) {
 			expected: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 		},
 		"kind_change_prohibited": {
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
@@ -432,7 +479,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 			expected: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			code: codes.InvalidArgument,
 		},
@@ -440,7 +487,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
@@ -450,7 +497,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 			expected: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 		},
 		"update_display_name": {
@@ -466,23 +513,24 @@ func TestServer_UpdateAccount(t *testing.T) {
 			expected: &gen.Account{
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service MODIFIED",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"update_username": {
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Username: "user1-modified",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1-modified"}},
 				},
 			},
 			expected: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1-modified",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1-modified"}},
 			},
 		},
 		"update_username_service_account": {
@@ -492,12 +540,13 @@ func TestServer_UpdateAccount(t *testing.T) {
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Username: "username",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "username"}},
 				},
 			},
 			expected: &gen.Account{
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 			code: codes.FailedPrecondition,
 		},
@@ -515,6 +564,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 			expected: &gen.Account{
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 			code: codes.InvalidArgument,
 		},
@@ -522,18 +572,18 @@ func TestServer_UpdateAccount(t *testing.T) {
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Username: "",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: ""}},
 				},
-				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"user_details.username"}},
 			},
 			expected: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			code: codes.InvalidArgument,
 		},
@@ -544,13 +594,14 @@ func TestServer_UpdateAccount(t *testing.T) {
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Username: "",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: ""}},
 				},
-				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"user_details.username"}},
 			},
 			expected: &gen.Account{
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"update_description_implicit": {
@@ -567,6 +618,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 				Description: "Description",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"update_description_explicit": {
@@ -585,6 +637,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
 				Description: "After",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"update_description_empty": {
@@ -600,13 +653,14 @@ func TestServer_UpdateAccount(t *testing.T) {
 			expected: &gen.Account{
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"invalid_update_mask": {
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			update: &gen.UpdateAccountRequest{
 				Account:    &gen.Account{},
@@ -615,7 +669,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 			expected: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			code: codes.InvalidArgument,
 		},
@@ -623,41 +677,41 @@ func TestServer_UpdateAccount(t *testing.T) {
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				Description: "Description",
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1 MODIFIED",
-					Username:    "user1-modified",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1-modified"}},
 				},
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"*"}},
 			},
 			expected: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1 MODIFIED",
-				Username:    "user1-modified",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1-modified"}},
 			},
 		},
 		"wildcard_update_mask_zero": {
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1",
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1 MODIFIED",
-					Username:    "",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: ""}},
 				},
 				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"*"}},
 			},
 			expected: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "User 1", // not changed, because updates are all-or-nothing
-				Username:    "user1",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 			},
 			code: codes.InvalidArgument, // because username is required, and we have tried to clear it
 		},
@@ -676,6 +730,7 @@ func TestServer_UpdateAccount(t *testing.T) {
 			expected: &gen.Account{
 				Type:        gen.Account_SERVICE_ACCOUNT,
 				DisplayName: "Service MODIFIED",
+				Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
 			},
 		},
 		"username_conflict": {
@@ -683,32 +738,32 @@ func TestServer_UpdateAccount(t *testing.T) {
 				{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "Foo",
-					Username:    "foo",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "foo"}},
 				},
 			},
 			initial: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "Bar",
-				Username:    "bar",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "bar"}},
 			},
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Username: "foo",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "foo"}},
 				},
-				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
+				UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"user_details.username"}},
 			},
 			expected: &gen.Account{
 				Type:        gen.Account_USER_ACCOUNT,
 				DisplayName: "Bar",
-				Username:    "bar",
+				Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "bar"}},
 			},
 			code: codes.AlreadyExists,
 		},
 		"not_exist": {
 			update: &gen.UpdateAccountRequest{
 				Account: &gen.Account{
-					Id:       "123",
-					Username: "bar",
+					Id:      "123",
+					Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "bar"}},
 				},
 			},
 			code: codes.NotFound,
@@ -763,6 +818,9 @@ func TestServer_UpdateAccount(t *testing.T) {
 				expected = proto.Clone(tc.expected).(*gen.Account)
 				expected.Id = id
 				expected.CreateTime = account.CreateTime
+				if service := expected.GetServiceDetails(); service != nil {
+					service.ClientId = id
+				}
 			}
 
 			updated, err := server.UpdateAccount(ctx, update)
@@ -818,6 +876,7 @@ func TestServer_CreateAccount_Usernames(t *testing.T) {
 		Account: &gen.Account{
 			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User",
+			Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{}},
 		},
 	}
 
@@ -827,7 +886,7 @@ func TestServer_CreateAccount_Usernames(t *testing.T) {
 	server := NewServer(store, logger)
 	for _, username := range validUsernames {
 		req := proto.Clone(template).(*gen.CreateAccountRequest)
-		req.Account.Username = username
+		req.Account.GetUserDetails().Username = username
 		_, err := server.CreateAccount(ctx, req)
 		if err != nil {
 			t.Errorf("valid username %q failed: %v", username, err)
@@ -835,7 +894,7 @@ func TestServer_CreateAccount_Usernames(t *testing.T) {
 	}
 	for _, username := range invalidUsernames {
 		req := proto.Clone(template).(*gen.CreateAccountRequest)
-		req.Account.Username = username
+		req.Account.GetUserDetails().Username = username
 		_, err := server.CreateAccount(ctx, req)
 		if !errors.Is(err, ErrInvalidUsername) {
 			t.Errorf("invalid username %q returned %v", username, err)
@@ -853,7 +912,7 @@ func TestServer_UpdateAccount_Usernames(t *testing.T) {
 		Account: &gen.Account{
 			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User",
-			Username:    "user",
+			Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user"}},
 		},
 	})
 	if err != nil {
@@ -862,13 +921,14 @@ func TestServer_UpdateAccount_Usernames(t *testing.T) {
 
 	template := &gen.UpdateAccountRequest{
 		Account: &gen.Account{
-			Id: account.Id,
+			Id:      account.Id,
+			Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{}},
 		},
-		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"username"}},
+		UpdateMask: &fieldmaskpb.FieldMask{Paths: []string{"user_details.username"}},
 	}
 	for _, username := range validUsernames {
 		req := proto.Clone(template).(*gen.UpdateAccountRequest)
-		req.Account.Username = username
+		req.Account.GetUserDetails().Username = username
 		_, err := server.UpdateAccount(ctx, req)
 		if err != nil {
 			t.Errorf("valid username %q failed: %v", username, err)
@@ -876,7 +936,7 @@ func TestServer_UpdateAccount_Usernames(t *testing.T) {
 	}
 	for _, username := range invalidUsernames {
 		req := proto.Clone(template).(*gen.UpdateAccountRequest)
-		req.Account.Username = username
+		req.Account.GetUserDetails().Username = username
 		_, err := server.UpdateAccount(ctx, req)
 		if !errors.Is(err, ErrInvalidUsername) {
 			t.Errorf("invalid username %q returned %v", username, err)
@@ -892,12 +952,17 @@ func TestServer_DeleteAccount(t *testing.T) {
 
 	createAccount := func(ty gen.Account_Type, username, displayName, password string) *gen.Account {
 		t.Helper()
+		account := &gen.Account{
+			Type:        ty,
+			DisplayName: displayName,
+		}
+		if ty == gen.Account_USER_ACCOUNT {
+			account.Details = &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+				Username: username,
+			}}
+		}
 		res, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
-			Account: &gen.Account{
-				Type:        ty,
-				Username:    username,
-				DisplayName: displayName,
-			},
+			Account:  account,
 			Password: password,
 		})
 		checkNilIfErrored(t, res, err)
@@ -908,19 +973,6 @@ func TestServer_DeleteAccount(t *testing.T) {
 	}
 	user := createAccount(gen.Account_USER_ACCOUNT, "user1", "User 1", "user1Password")
 	service := createAccount(gen.Account_SERVICE_ACCOUNT, "", "Service", "")
-
-	// add a service credential to the service account, to check that
-	//  - existence of service credentials does not prevent deletion of the account
-	//  - service credentials are deleted when the account is deleted
-	cred, err := server.CreateServiceCredential(ctx, &gen.CreateServiceCredentialRequest{
-		ServiceCredential: &gen.ServiceCredential{
-			AccountId:   service.Id,
-			DisplayName: "Credential",
-		},
-	})
-	if err != nil {
-		t.Fatalf("failed to create service credential: %v", err)
-	}
 
 	// assign a role to the accounts
 	// to check that role assignments
@@ -981,12 +1033,6 @@ func TestServer_DeleteAccount(t *testing.T) {
 		t.Errorf("expected NotFound error for service account, got %v", err)
 	}
 
-	// check that the service credential is gone
-	_, err = server.GetServiceCredential(ctx, &gen.GetServiceCredentialRequest{Id: cred.Id})
-	if status.Code(err) != codes.NotFound {
-		t.Errorf("expected NotFound error for service credential, got %v", err)
-	}
-
 	// check that the role assignments are gone
 	_, err = server.GetRoleAssignment(ctx, &gen.GetRoleAssignmentRequest{Id: ra1.Id})
 	if status.Code(err) != codes.NotFound {
@@ -1009,7 +1055,7 @@ func TestServer_Account_Username(t *testing.T) {
 		Account: &gen.Account{
 			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User 1",
-			Username:    "user1",
+			Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 		},
 	})
 	if err != nil {
@@ -1019,7 +1065,7 @@ func TestServer_Account_Username(t *testing.T) {
 		Account: &gen.Account{
 			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User 2",
-			Username:    "user2",
+			Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user2"}},
 		},
 	})
 	if err != nil {
@@ -1031,7 +1077,7 @@ func TestServer_Account_Username(t *testing.T) {
 		Account: &gen.Account{
 			Type:        gen.Account_USER_ACCOUNT,
 			DisplayName: "User 1A",
-			Username:    "user1",
+			Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 		},
 	})
 	if status.Code(err) != codes.AlreadyExists {
@@ -1041,230 +1087,12 @@ func TestServer_Account_Username(t *testing.T) {
 	// try to change user2 to user1
 	_, err = server.UpdateAccount(ctx, &gen.UpdateAccountRequest{
 		Account: &gen.Account{
-			Id:       user2.Id,
-			Username: "user1",
+			Id:      user2.Id,
+			Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 		},
 	})
 	if status.Code(err) != codes.AlreadyExists {
 		t.Errorf("expected AlreadyExists error, got %v", err)
-	}
-}
-
-func TestServer_ServiceCredentials(t *testing.T) {
-	ctx := context.Background()
-	logger := testLogger(t)
-	store := NewMemoryStore(logger)
-	server := NewServer(store, logger)
-
-	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
-		Account: &gen.Account{
-			Type:        gen.Account_SERVICE_ACCOUNT,
-			DisplayName: "Service",
-		},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	checkCreds := func(expect []*gen.ServiceCredential) {
-		res, err := server.ListServiceCredentials(ctx, &gen.ListServiceCredentialsRequest{
-			AccountId: account.Id,
-		})
-		checkNilIfErrored(t, res, err)
-		if err != nil {
-			t.Fatalf("failed to list service credentials: %v", err)
-		}
-
-		diff := cmp.Diff(expect, res.ServiceCredentials,
-			protocmp.Transform(),
-			protocmp.IgnoreFields(&gen.ServiceCredential{}, "secret"),
-		)
-		if diff != "" {
-			t.Errorf("unexpected service credentials (-want +got):\n%s", diff)
-		}
-
-		// fetch them individually, checking we get the same result as in the list
-		for _, cred := range res.ServiceCredentials {
-			// a secret should never be returned except at creation time
-			if cred.Secret != "" {
-				t.Errorf("service credential %q has a secret", cred.Id)
-			}
-
-			fetched, err := server.GetServiceCredential(ctx, &gen.GetServiceCredentialRequest{Id: cred.Id})
-			checkNilIfErrored(t, fetched, err)
-			if err != nil {
-				t.Fatalf("failed to get service credential %q: %v", cred.Id, err)
-			}
-			diff = cmp.Diff(cred, fetched, protocmp.Transform())
-			if diff != "" {
-				t.Errorf("unexpected fetched service credential %q (-want +got):\n%s", cred.Id, diff)
-			}
-		}
-	}
-
-	var creds []*gen.ServiceCredential
-	expiry := time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)
-	for i := range maxServiceCredentialsPerAccount {
-		cred, err := server.CreateServiceCredential(ctx, &gen.CreateServiceCredentialRequest{
-			ServiceCredential: &gen.ServiceCredential{
-				AccountId:   account.Id,
-				DisplayName: fmt.Sprintf("Credential %d", i),
-				ExpireTime:  timestamppb.New(expiry),
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		creds = append(creds, cred)
-	}
-
-	checkCreds(creds)
-
-	// creating a new credential should fail because the limit is reached
-	_, err = server.CreateServiceCredential(ctx, &gen.CreateServiceCredentialRequest{
-		ServiceCredential: &gen.ServiceCredential{
-			AccountId:   account.Id,
-			DisplayName: "Credential",
-		},
-	})
-	if status.Code(err) != codes.ResourceExhausted {
-		t.Errorf("expected ResourceExhausted error, got %v", err)
-	}
-
-	checkCreds(creds)
-
-	// delete a credential, check it's gone
-	_, err = server.DeleteServiceCredential(ctx, &gen.DeleteServiceCredentialRequest{
-		Id: creds[0].Id,
-	})
-	if err != nil {
-		t.Fatalf("failed to delete service credential: %v", err)
-	}
-	creds = creds[1:]
-	checkCreds(creds)
-
-	// delete the account, check that credential access fails
-	_, err = server.DeleteAccount(ctx, &gen.DeleteAccountRequest{
-		Id: account.Id,
-	})
-	if err != nil {
-		t.Fatalf("failed to delete account: %v", err)
-	}
-	_, err = server.ListServiceCredentials(ctx, &gen.ListServiceCredentialsRequest{
-		AccountId: account.Id,
-	})
-	if status.Code(err) != codes.NotFound {
-		t.Errorf("expected NotFound error querying for credentials of deleted account, got %v", err)
-	}
-
-}
-
-func TestServer_CreateServiceCredential(t *testing.T) {
-	type testCase struct {
-		req    *gen.CreateServiceCredentialRequest
-		expect *gen.ServiceCredential
-		code   codes.Code
-	}
-
-	cases := map[string]testCase{
-		"no_expiry": {
-			req: &gen.CreateServiceCredentialRequest{
-				ServiceCredential: &gen.ServiceCredential{
-					DisplayName: "Credential 1",
-				},
-			},
-			expect: &gen.ServiceCredential{
-				DisplayName: "Credential 1",
-			},
-		},
-		"expiry": {
-			req: &gen.CreateServiceCredentialRequest{
-				ServiceCredential: &gen.ServiceCredential{
-					DisplayName: "Credential 2",
-					ExpireTime:  timestamppb.New(time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)),
-				},
-			},
-			expect: &gen.ServiceCredential{
-				DisplayName: "Credential 2",
-				ExpireTime:  timestamppb.New(time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)),
-			},
-		},
-		"no_display_name": {
-			req: &gen.CreateServiceCredentialRequest{
-				ServiceCredential: &gen.ServiceCredential{},
-			},
-			code: codes.InvalidArgument,
-		},
-		"long_display_name": {
-			req: &gen.CreateServiceCredentialRequest{
-				ServiceCredential: &gen.ServiceCredential{
-					DisplayName: strings.Repeat("a", maxDisplayNameLength),
-				},
-			},
-			expect: &gen.ServiceCredential{
-				DisplayName: strings.Repeat("a", maxDisplayNameLength),
-			},
-		},
-		"display_name_too_long": {
-			req: &gen.CreateServiceCredentialRequest{
-				ServiceCredential: &gen.ServiceCredential{
-					DisplayName: strings.Repeat("a", maxDisplayNameLength+1),
-				},
-			},
-			code: codes.InvalidArgument,
-		},
-		"description": {
-			req: &gen.CreateServiceCredentialRequest{
-				ServiceCredential: &gen.ServiceCredential{
-					DisplayName: "Credential 3",
-					Description: "This is a description",
-				},
-			},
-			expect: &gen.ServiceCredential{
-				DisplayName: "Credential 3",
-				Description: "This is a description",
-			},
-		},
-		"nil": {
-			req:  &gen.CreateServiceCredentialRequest{},
-			code: codes.InvalidArgument,
-		},
-	}
-
-	for name, tc := range cases {
-		t.Run(name, func(t *testing.T) {
-			logger := testLogger(t)
-			store := NewMemoryStore(logger)
-			server := NewServer(store, logger)
-
-			account, err := server.CreateAccount(context.Background(), &gen.CreateAccountRequest{
-				Account: &gen.Account{
-					Type:        gen.Account_SERVICE_ACCOUNT,
-					DisplayName: "Service",
-				},
-			})
-			if err != nil {
-				t.Fatalf("failed to create account: %v", err)
-			}
-
-			req := proto.Clone(tc.req).(*gen.CreateServiceCredentialRequest)
-			if req.ServiceCredential != nil {
-				req.ServiceCredential.AccountId = account.Id
-			}
-			created, err := server.CreateServiceCredential(context.Background(), req)
-			checkNilIfErrored(t, created, err)
-			if status.Code(err) != tc.code {
-				t.Errorf("expected error with code %v, got %v", tc.code, err)
-			}
-
-			diff := cmp.Diff(tc.expect, created,
-				protocmp.Transform(),
-				protocmp.IgnoreFields(&gen.ServiceCredential{}, "id", "create_time", "secret"),
-			)
-			if diff != "" {
-				t.Errorf("unexpected provided service credential value (-want +got):\n%s", diff)
-			}
-		})
 	}
 }
 
@@ -1285,7 +1113,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 			},
 			update: &gen.UpdateAccountPasswordRequest{
@@ -1298,7 +1126,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 				Password: "thepassword1",
 			},
@@ -1313,7 +1141,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 				Password: "thepassword1",
 			},
@@ -1329,7 +1157,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 				Password: "thepassword1",
 			},
@@ -1346,7 +1174,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 			},
 			update: &gen.UpdateAccountPasswordRequest{
@@ -1382,7 +1210,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 			},
 			update: &gen.UpdateAccountPasswordRequest{
@@ -1395,7 +1223,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 			},
 			update: &gen.UpdateAccountPasswordRequest{
@@ -1408,7 +1236,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 			},
 			update: &gen.UpdateAccountPasswordRequest{
@@ -1420,7 +1248,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 			},
 			update: &gen.UpdateAccountPasswordRequest{
@@ -1433,7 +1261,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 			},
 			update: &gen.UpdateAccountPasswordRequest{
@@ -1446,7 +1274,7 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User 1",
-					Username:    "user1",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user1"}},
 				},
 			},
 			update: &gen.UpdateAccountPasswordRequest{
@@ -2479,7 +2307,7 @@ func TestServer_CreateRoleAssignment(t *testing.T) {
 				Account: &gen.Account{
 					Type:        gen.Account_USER_ACCOUNT,
 					DisplayName: "User",
-					Username:    "user",
+					Details:     &gen.Account_UserDetails{UserDetails: &gen.UserAccount{Username: "user"}},
 				},
 			})
 			if err != nil {

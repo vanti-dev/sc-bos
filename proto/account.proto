@@ -16,12 +16,8 @@ service AccountApi {
   // If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
   // If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
   rpc UpdateAccountPassword(UpdateAccountPasswordRequest) returns (UpdateAccountPasswordResponse);
+  rpc RotateAccountClientSecret(RotateAccountClientSecretRequest) returns (RotateAccountClientSecretResponse);
   rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
-
-  rpc GetServiceCredential(GetServiceCredentialRequest) returns (ServiceCredential);
-  rpc ListServiceCredentials(ListServiceCredentialsRequest) returns (ListServiceCredentialsResponse);
-  rpc CreateServiceCredential(CreateServiceCredentialRequest) returns (ServiceCredential);
-  rpc DeleteServiceCredential(DeleteServiceCredentialRequest) returns (DeleteServiceCredentialResponse);
 
   rpc GetRole(GetRoleRequest) returns (Role);
   rpc ListRoles(ListRolesRequest) returns (ListRolesResponse);
@@ -117,6 +113,22 @@ message UpdateAccountPasswordResponse {
 
 }
 
+message RotateAccountClientSecretRequest {
+  // The name of the node where the account is located.
+  string name = 1;
+  // The id of the account to update the service credentials for.
+  string id = 2;
+
+  // If present, the previous client_secret will remain valid for authentication until this time.
+  // If absent, the previous client_secret is immediately invalidated.
+  google.protobuf.Timestamp previous_secret_expires = 3;
+}
+
+message RotateAccountClientSecretResponse {
+  // The new client_secret for the account.
+  string client_secret = 1;
+}
+
 message DeleteAccountRequest {
   // The name of the node where the account is located.
   // Optional - if absent, the node you are connected to is assumed.
@@ -130,51 +142,6 @@ message DeleteAccountRequest {
 }
 
 message DeleteAccountResponse {}
-
-message GetServiceCredentialRequest {
-  // The name of the node where the account is located.
-  // Optional - if absent, the node you are connected to is assumed.
-  string name = 1;
-
-  // The id of the service credential to get.
-  string id = 2;
-}
-
-message ListServiceCredentialsRequest {
-  // The name of the node to list service credentials for.
-  string name = 1;
-
-  // The ID of the Account to list service credentials for.
-  string account_id = 2;
-}
-
-message ListServiceCredentialsResponse {
-  repeated ServiceCredential service_credentials = 1;
-}
-
-message CreateServiceCredentialRequest {
-  // The name of the node where the account is located.
-  // Optional - if absent, the node you are connected to is assumed.
-  string name = 1;
-
-  ServiceCredential service_credential = 2;
-}
-
-message DeleteServiceCredentialRequest {
-  // The name of the node where the account is located.
-  // Optional - if absent, the node you are connected to is assumed.
-  string name = 1;
-
-  // The id of the service credential to delete.
-  string id = 2;
-
-  // If true, no error will be returned if the service credential does not exist.
-  bool allow_missing = 3;
-}
-
-message DeleteServiceCredentialResponse {
-
-}
 
 message GetRoleRequest {
   // The name of the node where the role is located.
@@ -353,16 +320,42 @@ message Account {
   // A longer human-readable description of this account. Optional.
   string description = 5;
 
-  // For user accounts, the username to use for authentication.
-  // A valid username is between 3 and 100 characters.
-  // ASCII alphanumerics, and the following special characters are allowed: .-_@
-  string username = 6;
+  // An account can be a user account or a service account.
+  // On create, one of these must be present to select the account type.
+  // Once an account is created, its type cannot be changed.
+  oneof details {
+    UserAccount user_details = 6;
+    ServiceAccount service_details = 7;
+  }
 
   enum Type {
     ACCOUNT_TYPE_UNSPECIFIED = 0;
     USER_ACCOUNT = 1;
     SERVICE_ACCOUNT = 2;
   }
+}
+
+message UserAccount {
+  // Used for username/password login.
+  // A valid username is between 3 and 100 characters.
+  // ASCII alphanumerics, and the following special characters are allowed: .-_@
+  string username = 1;
+  // Output only. True if a password is set for this account.
+  bool has_password = 2;
+}
+
+message ServiceAccount {
+  // The OAuth2 Client ID to use when authenticating against this service account.
+  string client_id = 1;
+  // The OAuth2 Client Secret to use when authenticating against this service account.
+  // This field is only populated in the response from CreateAccount and RotateAccountServiceCredentials.
+  // The secret is not stored in the system and cannot be retrieved later.
+  string client_secret = 2;
+
+  // Output only.
+  // If present, then the client_secret has been recently rotated, and the previous secret value is still valid
+  // until this time.
+  google.protobuf.Timestamp previous_secret_expires = 3;
 }
 
 // A Role is a named collection of permissions.
@@ -424,30 +417,6 @@ message RoleAssignment {
     // Matches resources whose advertised metadata zone property matches the specified value.
     ZONE = 5;
   }
-}
-
-// ServiceCredential is a credential that can be used to authenticate as a service account.
-// Unlike a username/password, the secret is generated by the system and is not human readable.
-message ServiceCredential {
-  // Auto-generated unique identifier for this service credential.
-  string id = 1;
-  // The account this service credential is associated with.
-  // At creation, must be set to the ID of a service account.
-  string account_id = 2;
-  // Must be present on creation.
-  // A human-readable short name of the service credential, so that users can identify it.
-  string display_name = 3;
-  // A long-form human-readable description of the service credential, such as its purpose.
-  // Optional.
-  string description = 4;
-  // Output only. Only returned on creation.
-  string secret = 5;
-  // Output only. Set automatically on creation.
-  google.protobuf.Timestamp create_time = 6;
-  // As an input to CreateServiceCredential, this is the time the credential will expire.
-  // Optional - if absent, the credential will not expire.
-  // Must be in the future at the time of creation.
-  google.protobuf.Timestamp expire_time = 7;
 }
 
 // A permission is a named action that can be granted to a role.

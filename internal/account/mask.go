@@ -1,6 +1,7 @@
 package account
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/mennanov/fmutils"
@@ -14,92 +15,134 @@ import (
 
 var ErrInvalidWildcardMask = status.Error(codes.InvalidArgument, "field mask cannot contain wildcard and field names")
 
-func maskContains(mask fmutils.NestedMask, field protoreflect.Name) bool {
-	if _, ok := mask[string(field)]; ok {
-		return true
-	}
-	return false
-}
-
-func resolveMask(m proto.Message, mask *fieldmaskpb.FieldMask, ignore ...protoreflect.Name) (fmutils.NestedMask, error) {
+func resolveMask(m proto.Message, mask *fieldmaskpb.FieldMask, ignorePaths ...string) (fmutils.NestedMask, error) {
+	ignoreMask := fmutils.NestedMaskFromPaths(ignorePaths)
 	if mask == nil {
-		return maskForSetFields(m, ignore...), nil
+		return maskForSetFields(m, ignoreMask), nil
 	}
 	if slices.Contains(mask.GetPaths(), "*") {
 		if len(mask.GetPaths()) != 1 {
 			return nil, ErrInvalidWildcardMask
 		}
-		return maskForAllFields(m, ignore...), nil
+		return maskForAllFields(m, ignoreMask), nil
 	}
 
 	// check that all fields specified in the mask exist on the message descriptor
-	desc := m.ProtoReflect().Descriptor()
-	paths := make([]string, 0, len(mask.GetPaths()))
-	for _, path := range mask.GetPaths() {
-		field := desc.Fields().ByName(protoreflect.Name(path))
-		if field == nil {
-			return nil, status.Errorf(codes.InvalidArgument, "unknown field %q in mask", path)
+	nestedMask := fmutils.NestedMaskFromPaths(mask.GetPaths())
+	err := validateMask(m.ProtoReflect(), "", nestedMask)
+	return nestedMask, err
+}
+
+func validateMask(m protoreflect.Message, prefix string, mask fmutils.NestedMask) error {
+	desc := m.Descriptor()
+	for path, submask := range mask {
+		fieldDesc := desc.Fields().ByName(protoreflect.Name(path))
+		if fieldDesc == nil {
+			return status.Errorf(codes.InvalidArgument, "invalid mask: unknown field %q", prefix+path)
 		}
-		if !slices.Contains(ignore, field.Name()) {
-			paths = append(paths, path)
+		field := m.Get(fieldDesc)
+
+		if len(submask) > 0 && fieldDesc.Kind() != protoreflect.MessageKind {
+			return status.Errorf(codes.InvalidArgument, "invalid mask: field %q is not a message", prefix+path)
+		}
+
+		if fieldDesc.Kind() == protoreflect.MessageKind && field.IsValid() {
+			if err := validateMask(field.Message(), prefix+path+".", submask); err != nil {
+				return err
+			}
 		}
 	}
-	return fmutils.NestedMaskFromPaths(paths), nil
+	return nil
 }
 
 // returns a FieldMask with the fields that are set in the message
 // shallow - only the top level fields are considered
 // except for the fields in the ignore list
-func maskForSetFields(m proto.Message, ignore ...protoreflect.Name) fmutils.NestedMask {
+func maskForSetFields(m proto.Message, ignore fmutils.NestedMask) fmutils.NestedMask {
+	return fmutils.NestedMaskFromPaths(setFieldNames(m.ProtoReflect(), "", ignore))
+}
+
+// returns a list of leaf (non-message) field paths that are set in the given message
+// field paths are prefixed with the given prefix
+// ignore fields will not be added; only simple field names can be ignored, not paths containing a '.'
+func setFieldNames(m protoreflect.Message, prefix string, ignore fmutils.NestedMask) []string {
 	var setFields []string
-	r := m.ProtoReflect()
-	r.Range(func(descriptor protoreflect.FieldDescriptor, value protoreflect.Value) bool {
-		if slices.Contains(ignore, descriptor.Name()) {
+	m.Range(func(descriptor protoreflect.FieldDescriptor, value protoreflect.Value) bool {
+		subignore, hasSubignore := ignore[string(descriptor.Name())]
+		if hasSubignore && len(subignore) == 0 {
+			// this field is ignored
 			return true
 		}
-		setFields = append(setFields, string(descriptor.Name()))
+		if descriptor.Kind() == protoreflect.MessageKind {
+			prefix := prefix + string(descriptor.Name()) + "."
+			setFields = append(setFields, setFieldNames(value.Message(), prefix, subignore)...)
+		} else {
+			setFields = append(setFields, prefix+string(descriptor.Name()))
+		}
 		return true
 	})
-	return fmutils.NestedMaskFromPaths(setFields)
+	return setFields
 }
 
-func maskForAllFields(m proto.Message, ignore ...protoreflect.Name) fmutils.NestedMask {
+func maskForAllFields(m proto.Message, ignore fmutils.NestedMask) fmutils.NestedMask {
+	return fmutils.NestedMaskFromPaths(allFieldPaths(m.ProtoReflect().Descriptor(), "", ignore))
+}
+
+func allFieldPaths(d protoreflect.MessageDescriptor, prefix string, ignore fmutils.NestedMask) []string {
 	var allFields []string
-	fieldDescs := m.ProtoReflect().Descriptor().Fields()
-	for i := 0; i < fieldDescs.Len(); i++ {
-		fieldDesc := fieldDescs.Get(i)
-		name := fieldDesc.Name()
-		if slices.Contains(ignore, name) {
+	for i := range d.Fields().Len() {
+		descriptor := d.Fields().Get(i)
+		subignore, hasSubignore := ignore[string(descriptor.Name())]
+		if hasSubignore && len(subignore) == 0 {
+			// this field is ignored
 			continue
 		}
-		allFields = append(allFields, string(name))
+		allFields = append(allFields, prefix+string(descriptor.Name()))
+		if descriptor.Kind() == protoreflect.MessageKind {
+			prefix := prefix + string(descriptor.Name()) + "."
+			allFields = append(allFields, allFieldPaths(descriptor.Message(), prefix, subignore)...)
+		}
 	}
-	return fmutils.NestedMaskFromPaths(allFields)
+	return allFields
 }
 
-func fieldsToUpdate(old, new proto.Message, mask fmutils.NestedMask) ([]protoreflect.Name, error) {
-	var fields []protoreflect.Name
-	newR, oldR := new.ProtoReflect(), old.ProtoReflect()
-	newDesc, oldDesc := newR.Descriptor(), oldR.Descriptor()
-	if newDesc != oldDesc {
-		return nil, fmt.Errorf("messages are of different types")
-	}
-	for path := range mask {
-		field := newR.Descriptor().Fields().ByName(protoreflect.Name(path))
-		if field == nil {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid field %q in mask", path)
-		}
-		if _, ok := mask[string(field.Name())]; !ok {
-			continue
-		}
+func fieldsToUpdate(old, new proto.Message, mask fmutils.NestedMask) ([]string, error) {
+	return diffMessages(old.ProtoReflect(), new.ProtoReflect(), "", mask)
+}
 
-		newValue := newR.Get(field)
-		oldValue := oldR.Get(field)
+func diffMessages(old, new protoreflect.Message, prefix string, mask fmutils.NestedMask) (paths []string, err error) {
+	oldDesc, newDesc := old.Descriptor(), new.Descriptor()
+	if oldDesc != newDesc {
+		return nil, errors.New("messages are of different types")
+	}
+
+	for path, subMask := range mask {
+		field := newDesc.Fields().ByName(protoreflect.Name(path))
+		if field == nil {
+			return nil, fmt.Errorf("unknown field %q in mask", path)
+		}
+		newValue := new.Get(field)
+		oldValue := old.Get(field)
 		if newValue.Equal(oldValue) {
 			continue
 		}
 
-		fields = append(fields, field.Name())
+		// no child fields, so this mask entry represents the entire sub-message
+		if len(subMask) == 0 {
+			paths = append(paths, prefix+string(field.Name()))
+			continue
+		}
+
+		if field.Kind() == protoreflect.MessageKind {
+			prefix := prefix + string(field.Name()) + "."
+			subPaths, err := diffMessages(oldValue.Message(), newValue.Message(), prefix, subMask)
+			if err != nil {
+				return nil, err
+			}
+			paths = append(paths, subPaths...)
+		} else {
+			paths = append(paths, prefix+string(field.Name()))
+		}
 	}
-	return fields, nil
+	return paths, nil
 }
