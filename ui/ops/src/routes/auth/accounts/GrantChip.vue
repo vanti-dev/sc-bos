@@ -28,9 +28,9 @@ const props = defineProps({
 const prependStr = computed(() => {
   switch (props.type) {
     case RoleAssignment.ResourceType.NAMED_RESOURCE:
-      return 'ID';
+      return 'Device';
     case RoleAssignment.ResourceType.NAMED_RESOURCE_PATH_PREFIX:
-      return 'ID+';
+      return 'Device+';
     case RoleAssignment.ResourceType.NODE:
       return 'On Node';
     case RoleAssignment.ResourceType.SUBSYSTEM:
