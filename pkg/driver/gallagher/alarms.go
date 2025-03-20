@@ -54,23 +54,21 @@ type Alarm struct {
 type SecurityEventController struct {
 	gen.UnimplementedSecurityEventApiServer
 
-	cleanupDuration time.Duration
-	client          *Client
-	logger          *zap.Logger
-	mu              sync.Mutex
+	client *Client
+	logger *zap.Logger
+	mu     sync.Mutex
 	// security events is a circular buffer, it always points to the oldest security event
 	lastEventTime  time.Time  // *gen.SecurityEvent
 	securityEvents *ring.Ring // *gen.SecurityEvent
 	updates        minibus.Bus[*gen.PullSecurityEventsResponse_Change]
 }
 
-func newSecurityEventController(client *Client, logger *zap.Logger, c time.Duration, n int) *SecurityEventController {
+func newSecurityEventController(client *Client, logger *zap.Logger, n int) *SecurityEventController {
 	return &SecurityEventController{
-		cleanupDuration: c,
-		client:          client,
-		logger:          logger,
-		lastEventTime:   time.Now().Add(-24 * time.Hour),
-		securityEvents:  ring.New(n),
+		client:         client,
+		logger:         logger,
+		lastEventTime:  time.Now().Add(-24 * time.Hour),
+		securityEvents: ring.New(n),
 	}
 }
 

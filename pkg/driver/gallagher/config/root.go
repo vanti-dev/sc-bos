@@ -27,12 +27,9 @@ type Root struct {
 	// poll the alerts API for updates on this schedule, defaults to once per minute
 	RefreshAlarms *jsontypes.Schedule `json:"refreshAlerts,omitempty"`
 	// poll the doors on this schedule, defaults to once per day
-	RefreshDoors *jsontypes.Schedule `json:"refreshDoors,omitempty"`
-	// the interval between udmi exports, defaults to every 5 seconds
-	// the duration after which a security event will expire and be removed from any List/Pull, defaults to 24 hours
-	SecurityEventExpiry jsontypes.Duration `json:"securityEventExpiry,omitempty"`
-	UdmiExportInterval  jsontypes.Duration `json:"udmiExportInterval,omitempty"`
-	TopicPrefix         string             `json:"topicPrefix,omitempty"`
+	RefreshDoors       *jsontypes.Schedule `json:"refreshDoors,omitempty"`
+	UdmiExportInterval jsontypes.Duration  `json:"udmiExportInterval,omitempty"`
+	TopicPrefix        string              `json:"topicPrefix,omitempty"`
 
 	RefreshOccupancyInterval *jsontypes.Duration `json:"refreshOccupancyInterval,omitempty"`
 
@@ -61,10 +58,6 @@ func (cfg *Root) ApplyDefaults() {
 
 	if cfg.RefreshAlarms == nil {
 		cfg.RefreshAlarms = jsontypes.MustParseSchedule("* * * * *")
-	}
-
-	if cfg.SecurityEventExpiry.Duration == 0 {
-		cfg.SecurityEventExpiry.Duration = 24 * time.Hour
 	}
 
 	if cfg.NumSecurityEvents == 0 {

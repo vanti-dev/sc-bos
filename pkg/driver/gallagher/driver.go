@@ -94,7 +94,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		return dc.run(ctx, cfg.RefreshDoors, announcer, cfg.ScNamePrefix)
 	})
 
-	sc := newSecurityEventController(client, d.logger, cfg.SecurityEventExpiry.Duration, cfg.NumSecurityEvents)
+	sc := newSecurityEventController(client, d.logger, cfg.NumSecurityEvents)
 	announcer.Announce(cfg.ScNamePrefix, node.HasTrait(securityevent.TraitName, node.WithClients(gen.WrapSecurityEventApi(sc))))
 	grp.Go(func() error {
 		return sc.run(ctx, cfg.RefreshAlarms)
