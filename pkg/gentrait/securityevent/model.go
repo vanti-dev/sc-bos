@@ -1,6 +1,7 @@
 package securityevent
 
 import (
+	"container/ring"
 	"context"
 	"strconv"
 	"sync"
@@ -17,7 +18,7 @@ var subSystems = [2]string{"access control", "cctv"}
 
 type Model struct {
 	mu                sync.Mutex // guards allSecurityEvents and genId
-	allSecurityEvents []*gen.SecurityEvent
+	allSecurityEvents *ring.Ring // *gen.SecurityEvent
 	genId             int
 
 	lastSecurityEvent *resource.Value // of *gen.SecurityEvent
@@ -29,6 +30,7 @@ func NewModel(opts ...resource.Option) *Model {
 
 	m := &Model{
 		lastSecurityEvent: resource.NewValue(opts...),
+		allSecurityEvents: ring.New(100),
 	}
 
 	// let's add some events to start with so we can test the list method without waiting
@@ -49,7 +51,8 @@ func (m *Model) AddSecurityEvent(se *gen.SecurityEvent, opts ...resource.WriteOp
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	m.allSecurityEvents = append(m.allSecurityEvents, se)
+	m.allSecurityEvents.Value = se
+	m.allSecurityEvents = m.allSecurityEvents.Next()
 	return v.(*gen.SecurityEvent), nil
 }
 
@@ -73,15 +76,17 @@ func (m *Model) GenerateSecurityEvent(time *timestamppb.Timestamp) (*gen.Securit
 func (m *Model) GetSecurityEventCount() int {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	return len(m.allSecurityEvents)
+	return m.allSecurityEvents.Len()
 }
 
 func (m *Model) ListSecurityEvents(start, count int) []*gen.SecurityEvent {
 
 	var events []*gen.SecurityEvent
 	// reverse to retrieve the latest events first
+
 	for i := start - 1; i >= 0; i-- {
-		events = append(events, m.allSecurityEvents[i])
+		e := m.allSecurityEvents.Move(i)
+		events = append(events, e.Value.(*gen.SecurityEvent))
 		if len(events) >= count {
 			break
 		}
@@ -92,15 +97,17 @@ func (m *Model) ListSecurityEvents(start, count int) []*gen.SecurityEvent {
 func (m *Model) pullSecurityEventsWrapper(request *gen.PullSecurityEventsRequest, server gen.SecurityEventApi_PullSecurityEventsServer) error {
 	if !request.UpdatesOnly {
 		m.mu.Lock()
-		i := len(m.allSecurityEvents) - 50
+		i := m.allSecurityEvents.Len() - 50
 		if i < 0 {
 			i = 0
 		}
-		for ; i < len(m.allSecurityEvents)-1; i++ {
+		for ; i < m.allSecurityEvents.Len()-1; i++ {
+			e := m.allSecurityEvents.Move(i)
+			event := e.Value.(*gen.SecurityEvent)
 			change := &gen.PullSecurityEventsResponse_Change{
 				Name:       request.Name,
-				NewValue:   m.allSecurityEvents[i],
-				ChangeTime: m.allSecurityEvents[i].SecurityEventTime,
+				NewValue:   event,
+				ChangeTime: event.SecurityEventTime,
 				Type:       types.ChangeType_ADD,
 			}
 			if err := server.Send(&gen.PullSecurityEventsResponse{Changes: []*gen.PullSecurityEventsResponse_Change{change}}); err != nil {

@@ -1,0 +1,17 @@
+{
+  "drivers": [
+    {
+      "name": "gallagher",
+      "type": "gallagher",
+      "http": {
+        "baseUrl": "https://<command-centre-ip>:<command-centre-port>/api",
+        "apiKeyFile": "/run/secrets/gallagher_api_key"
+      },
+      "caPath" : "/run/secrets/gallagher_server_certificate_authority",
+      "clientCertPath": "/run/secrets/gallagher_client_cert",
+      "clientKeyPath" : "/run/secrets/gallagher_client_key",
+      "scNamePrefix" : "<system-name>/access-control",
+      "occupancyCountEnabled" : true
+    }
+  ]
+}
