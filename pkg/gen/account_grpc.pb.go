@@ -49,6 +49,11 @@ type AccountApiClient interface {
 	// If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
 	// If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
 	UpdateAccountPassword(ctx context.Context, in *UpdateAccountPasswordRequest, opts ...grpc.CallOption) (*UpdateAccountPasswordResponse, error)
+	// Generates and returns a new client_secret for a service account.
+	// The new client_secret will only be returned once, and cannot be retrieved later.
+	// Optionally keeps the previous client_secret valid for a period of time, to allow for zero-downtime rotation.
+	// At most two secrets are valid at any one time for a service account - if an even older secret is still within the rotation
+	// grace period, it is immediately invalidated.
 	RotateAccountClientSecret(ctx context.Context, in *RotateAccountClientSecretRequest, opts ...grpc.CallOption) (*RotateAccountClientSecretResponse, error)
 	DeleteAccount(ctx context.Context, in *DeleteAccountRequest, opts ...grpc.CallOption) (*DeleteAccountResponse, error)
 	GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*Role, error)
@@ -242,6 +247,11 @@ type AccountApiServer interface {
 	// If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
 	// If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
 	UpdateAccountPassword(context.Context, *UpdateAccountPasswordRequest) (*UpdateAccountPasswordResponse, error)
+	// Generates and returns a new client_secret for a service account.
+	// The new client_secret will only be returned once, and cannot be retrieved later.
+	// Optionally keeps the previous client_secret valid for a period of time, to allow for zero-downtime rotation.
+	// At most two secrets are valid at any one time for a service account - if an even older secret is still within the rotation
+	// grace period, it is immediately invalidated.
 	RotateAccountClientSecret(context.Context, *RotateAccountClientSecretRequest) (*RotateAccountClientSecretResponse, error)
 	DeleteAccount(context.Context, *DeleteAccountRequest) (*DeleteAccountResponse, error)
 	GetRole(context.Context, *GetRoleRequest) (*Role, error)

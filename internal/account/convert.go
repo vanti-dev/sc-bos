@@ -44,7 +44,7 @@ func accountToProto(account queries.AccountDetail, clientSecret string) *gen.Acc
 			ClientSecret: clientSecret,
 		}}
 		if account.SecondarySecretExpireTime.Valid {
-			converted.GetServiceDetails().PreviousSecretExpires = timestamppb.New(account.SecondarySecretExpireTime.Time)
+			converted.GetServiceDetails().PreviousSecretExpireTime = timestamppb.New(account.SecondarySecretExpireTime.Time)
 		}
 	}
 	if account.Description.Valid {

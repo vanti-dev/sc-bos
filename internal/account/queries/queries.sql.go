@@ -680,6 +680,28 @@ func (q *Queries) ListRolesAndPermissions(ctx context.Context, arg ListRolesAndP
 	return items, nil
 }
 
+const rotateServiceAccountSecret = `-- name: RotateServiceAccountSecret :exec
+UPDATE service_accounts
+SET primary_secret_hash = ?1,
+    secondary_secret_hash = CASE
+        WHEN ?2 IS NULL THEN NULL
+        ELSE primary_secret_hash
+    END,
+    secondary_secret_expire_time = ?2
+WHERE account_id = ?3
+`
+
+type RotateServiceAccountSecretParams struct {
+	PrimarySecretHash         []byte
+	SecondarySecretExpireTime sql.NullTime
+	AccountID                 int64
+}
+
+func (q *Queries) RotateServiceAccountSecret(ctx context.Context, arg RotateServiceAccountSecretParams) error {
+	_, err := q.db.ExecContext(ctx, rotateServiceAccountSecret, arg.PrimarySecretHash, arg.SecondarySecretExpireTime, arg.AccountID)
+	return err
+}
+
 const updateAccountDescription = `-- name: UpdateAccountDescription :exec
 UPDATE accounts
 SET description = ?1

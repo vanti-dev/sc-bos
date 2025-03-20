@@ -189,10 +189,10 @@ export class RotateAccountClientSecretRequest extends jspb.Message {
   getId(): string;
   setId(value: string): RotateAccountClientSecretRequest;
 
-  getPreviousSecretExpires(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setPreviousSecretExpires(value?: google_protobuf_timestamp_pb.Timestamp): RotateAccountClientSecretRequest;
-  hasPreviousSecretExpires(): boolean;
-  clearPreviousSecretExpires(): RotateAccountClientSecretRequest;
+  getPreviousSecretExpireTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setPreviousSecretExpireTime(value?: google_protobuf_timestamp_pb.Timestamp): RotateAccountClientSecretRequest;
+  hasPreviousSecretExpireTime(): boolean;
+  clearPreviousSecretExpireTime(): RotateAccountClientSecretRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): RotateAccountClientSecretRequest.AsObject;
@@ -206,7 +206,7 @@ export namespace RotateAccountClientSecretRequest {
   export type AsObject = {
     name: string,
     id: string,
-    previousSecretExpires?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    previousSecretExpireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 
@@ -767,10 +767,10 @@ export class ServiceAccount extends jspb.Message {
   getClientSecret(): string;
   setClientSecret(value: string): ServiceAccount;
 
-  getPreviousSecretExpires(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setPreviousSecretExpires(value?: google_protobuf_timestamp_pb.Timestamp): ServiceAccount;
-  hasPreviousSecretExpires(): boolean;
-  clearPreviousSecretExpires(): ServiceAccount;
+  getPreviousSecretExpireTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setPreviousSecretExpireTime(value?: google_protobuf_timestamp_pb.Timestamp): ServiceAccount;
+  hasPreviousSecretExpireTime(): boolean;
+  clearPreviousSecretExpireTime(): ServiceAccount;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ServiceAccount.AsObject;
@@ -784,7 +784,7 @@ export namespace ServiceAccount {
   export type AsObject = {
     clientId: string,
     clientSecret: string,
-    previousSecretExpires?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    previousSecretExpireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 

@@ -29,6 +29,7 @@ var (
 	ErrMissingUsername          = status.Error(codes.InvalidArgument, "user account requires username")
 	ErrMissingDisplayName       = status.Error(codes.InvalidArgument, "account requires display name")
 	ErrUnexpectedUsernameUpdate = status.Error(codes.FailedPrecondition, "service account cannot have username")
+	ErrUnexpectedSecretRotate   = status.Error(codes.FailedPrecondition, "only service account have client secrets")
 	ErrUsernameExists           = status.Error(codes.AlreadyExists, "username already exists")
 	ErrRoleAssignmentExists     = status.Error(codes.AlreadyExists, "role assignment already exists")
 	ErrRoleDisplayNameExists    = status.Error(codes.AlreadyExists, "role with this display name already exists")
@@ -41,10 +42,12 @@ var (
 	ErrInvalidResourceType      = status.Error(codes.InvalidArgument, "invalid scope resource type")
 	ErrInvalidResource          = status.Error(codes.InvalidArgument, "invalid scope resource")
 	ErrIncorrectPassword        = status.Error(codes.FailedPrecondition, "incorrect password")
+	ErrIncorrectSecret          = status.Error(codes.FailedPrecondition, "incorrect secret")
 	ErrInvalidPageToken         = status.Error(codes.InvalidArgument, "invalid page token")
 	ErrInvalidFilter            = status.Error(codes.InvalidArgument, "invalid filter")
 	ErrRoleInUse                = status.Error(codes.FailedPrecondition, "role is in use")
 	ErrResourceMissing          = status.Error(codes.InvalidArgument, "resource to create/update not supplied")
+	ErrGenerateSecret           = status.Error(codes.Internal, "failed to generate secret")
 )
 
 type Server struct {
@@ -236,7 +239,8 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		case gen.Account_SERVICE_ACCOUNT:
 			secret, err = genSecret()
 			if err != nil {
-				return err
+				s.logger.Error("failed to generate secret on account create", zap.Error(err))
+				return ErrGenerateSecret
 			}
 			hash := hashSecret(secret)
 
@@ -446,6 +450,47 @@ func (s *Server) UpdateAccountPassword(ctx context.Context, req *gen.UpdateAccou
 	}
 
 	return &gen.UpdateAccountPasswordResponse{}, nil
+}
+
+func (s *Server) RotateAccountClientSecret(ctx context.Context, req *gen.RotateAccountClientSecretRequest) (*gen.RotateAccountClientSecretResponse, error) {
+	id, ok := parseID(req.Id)
+	if !ok {
+		return nil, ErrAccountNotFound
+	}
+
+	secret, err := genSecret()
+	if err != nil {
+		s.logger.Error("failed to generate secret for rotation", zap.Error(err))
+		return nil, ErrGenerateSecret
+	}
+
+	err = s.store.Write(ctx, func(tx *Tx) error {
+		account, err := tx.GetAccount(ctx, id)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrAccountNotFound
+		} else if err != nil {
+			return err
+		}
+		if account.Type != gen.Account_SERVICE_ACCOUNT.String() {
+			return ErrUnexpectedSecretRotate
+		}
+
+		var secondaryExpireTime sql.NullTime
+		if req.PreviousSecretExpireTime != nil {
+			secondaryExpireTime = sql.NullTime{Valid: true, Time: req.PreviousSecretExpireTime.AsTime()}
+		}
+		err = tx.RotateServiceAccountSecret(ctx, queries.RotateServiceAccountSecretParams{
+			AccountID:                 id,
+			PrimarySecretHash:         hashSecret(secret),
+			SecondarySecretExpireTime: secondaryExpireTime,
+		})
+		return err
+	})
+	if err != nil {
+		return nil, s.processError(err, zap.String("rpc", "RotateAccountClientSecret"), zap.String("id", req.Id))
+	}
+
+	return &gen.RotateAccountClientSecretResponse{ClientSecret: secret}, nil
 }
 
 func (s *Server) GetRole(ctx context.Context, req *gen.GetRoleRequest) (*gen.Role, error) {

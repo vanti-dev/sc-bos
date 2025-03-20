@@ -1,6 +1,7 @@
 package account
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -9,6 +10,7 @@ import (
 	"errors"
 	"io"
 	"math"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -120,6 +122,32 @@ func (tx *Tx) CheckAccountPassword(ctx context.Context, accountID int64, passwor
 	}
 
 	return nil
+}
+
+func (tx *Tx) CheckClientSecret(ctx context.Context, accountID int64, clientSecret string) error {
+	checkHash := hashSecret(clientSecret)
+	details, err := tx.GetAccountDetails(ctx, accountID)
+	if err != nil {
+		return err
+	}
+
+	validHashes := make([][]byte, 0, 2)
+	if len(details.PrimarySecretHash) != 0 {
+		validHashes = append(validHashes, details.PrimarySecretHash)
+	}
+	// we require an expiry time for the secondary secret, so if that column is null, we treat it as having
+	// no secondary secret at all
+	if expires := details.SecondarySecretExpireTime; expires.Valid && expires.Time.After(time.Now()) && len(details.SecondarySecretHash) != 0 {
+		validHashes = append(validHashes, details.SecondarySecretHash)
+	}
+
+	// no need to be constant time, as learning about prefixes of the hash doesn't help you learn the actual secret
+	for _, hash := range validHashes {
+		if bytes.Equal(checkHash, hash) {
+			return nil
+		}
+	}
+	return ErrIncorrectSecret
 }
 
 func (tx *Tx) ListRolesAndPermissions(ctx context.Context, params queries.ListRolesAndPermissionsParams) ([]RoleAndPermissions, error) {
