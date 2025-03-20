@@ -22,8 +22,6 @@ import (
 
 const appID = 0x5C0501
 
-const maxServiceCredentialsPerAccount = 2
-
 type Store struct {
 	db *sqlite.Database
 }
