@@ -229,7 +229,9 @@ func (sc *SecurityEventController) ListSecurityEvents(_ context.Context, req *ge
 	// get the most recent ones first as that is what the UI expects
 	for i := start; i >= 0; i-- {
 		se := sc.securityEvents.Move(i)
-		response.SecurityEvents = append(response.SecurityEvents, se.Value.(*gen.SecurityEvent))
+		if se.Value != nil {
+			response.SecurityEvents = append(response.SecurityEvents, se.Value.(*gen.SecurityEvent))
+		}
 		if len(response.SecurityEvents) >= int(req.PageSize) {
 			nextPageToken = strconv.FormatInt(int64(i-1), 10)
 			break

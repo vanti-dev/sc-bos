@@ -52,6 +52,9 @@ func run() error {
 				return err
 			}
 			log.Printf("got %d events for %s", len(res.SecurityEvents), name)
+			for _, event := range res.SecurityEvents {
+				log.Printf("event: %v", event)
+			}
 			if res.NextPageToken == "" {
 				break
 			}

@@ -84,10 +84,8 @@ func (m *Model) ListSecurityEvents(start, count int) []*gen.SecurityEvent {
 	var events []*gen.SecurityEvent
 	// reverse to retrieve the latest events first
 
-	e := m.allSecurityEvents.Move(start)
-	events = append(events, e.Value.(*gen.SecurityEvent))
 	for i := start - 1; i >= 0; i-- {
-		e.Next()
+		e := m.allSecurityEvents.Move(i)
 		events = append(events, e.Value.(*gen.SecurityEvent))
 		if len(events) >= count {
 			break
