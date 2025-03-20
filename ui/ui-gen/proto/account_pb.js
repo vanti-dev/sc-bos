@@ -7517,8 +7517,7 @@ proto.smartcore.bos.AccountLimits.toObject = function(includeInstance, msg) {
 username: (f = msg.getUsername()) && proto.smartcore.bos.AccountLimits.Field.toObject(includeInstance, f),
 password: (f = msg.getPassword()) && proto.smartcore.bos.AccountLimits.Field.toObject(includeInstance, f),
 displayName: (f = msg.getDisplayName()) && proto.smartcore.bos.AccountLimits.Field.toObject(includeInstance, f),
-description: (f = msg.getDescription()) && proto.smartcore.bos.AccountLimits.Field.toObject(includeInstance, f),
-maxServiceCredentialsPerAccount: jspb.Message.getFieldWithDefault(msg, 5, 0)
+description: (f = msg.getDescription()) && proto.smartcore.bos.AccountLimits.Field.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -7574,10 +7573,6 @@ proto.smartcore.bos.AccountLimits.deserializeBinaryFromReader = function(msg, re
       var value = new proto.smartcore.bos.AccountLimits.Field;
       reader.readMessage(value,proto.smartcore.bos.AccountLimits.Field.deserializeBinaryFromReader);
       msg.setDescription(value);
-      break;
-    case 5:
-      var value = /** @type {number} */ (reader.readInt32());
-      msg.setMaxServiceCredentialsPerAccount(value);
       break;
     default:
       reader.skipField();
@@ -7638,13 +7633,6 @@ proto.smartcore.bos.AccountLimits.serializeBinaryToWriter = function(message, wr
       4,
       f,
       proto.smartcore.bos.AccountLimits.Field.serializeBinaryToWriter
-    );
-  }
-  f = message.getMaxServiceCredentialsPerAccount();
-  if (f !== 0) {
-    writer.writeInt32(
-      5,
-      f
     );
   }
 };
@@ -7955,24 +7943,6 @@ proto.smartcore.bos.AccountLimits.prototype.clearDescription = function() {
  */
 proto.smartcore.bos.AccountLimits.prototype.hasDescription = function() {
   return jspb.Message.getField(this, 4) != null;
-};
-
-
-/**
- * optional int32 max_service_credentials_per_account = 5;
- * @return {number}
- */
-proto.smartcore.bos.AccountLimits.prototype.getMaxServiceCredentialsPerAccount = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.smartcore.bos.AccountLimits} returns this
- */
-proto.smartcore.bos.AccountLimits.prototype.setMaxServiceCredentialsPerAccount = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
 };
 
 

@@ -446,5 +446,5 @@ message AccountLimits {
   Field display_name = 3;
   Field description = 4;
 
-  int32 max_service_credentials_per_account = 5;
+  reserved 5; // max_service_credentials_per_account (ServiceCredential resource removed)
 }

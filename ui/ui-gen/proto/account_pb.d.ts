@@ -931,9 +931,6 @@ export class AccountLimits extends jspb.Message {
   hasDescription(): boolean;
   clearDescription(): AccountLimits;
 
-  getMaxServiceCredentialsPerAccount(): number;
-  setMaxServiceCredentialsPerAccount(value: number): AccountLimits;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): AccountLimits.AsObject;
   static toObject(includeInstance: boolean, msg: AccountLimits): AccountLimits.AsObject;
@@ -948,7 +945,6 @@ export namespace AccountLimits {
     password?: AccountLimits.Field.AsObject,
     displayName?: AccountLimits.Field.AsObject,
     description?: AccountLimits.Field.AsObject,
-    maxServiceCredentialsPerAccount: number,
   }
 
   export class Field extends jspb.Message {

@@ -977,7 +977,6 @@ func (s *Server) GetAccountLimits(ctx context.Context, req *gen.GetAccountLimits
 			MinLength: minDescriptionLength,
 			MaxLength: maxDescriptionLength,
 		},
-		MaxServiceCredentialsPerAccount: maxServiceCredentialsPerAccount,
 	}, nil
 }
 
