@@ -11,16 +11,23 @@ import (
 
 type Account struct {
 	ID          int64
-	Username    sql.NullString
 	DisplayName string
 	Description sql.NullString
 	Type        string
 	CreateTime  time.Time
 }
 
-type PasswordCredential struct {
-	AccountID    int64
-	PasswordHash []byte
+type AccountDetail struct {
+	ID                        int64
+	DisplayName               string
+	Description               sql.NullString
+	Type                      string
+	CreateTime                time.Time
+	Username                  sql.NullString
+	PasswordHash              []byte
+	PrimarySecretHash         []byte
+	SecondarySecretHash       []byte
+	SecondarySecretExpireTime sql.NullTime
 }
 
 type Role struct {
@@ -42,12 +49,15 @@ type RolePermission struct {
 	Permission string
 }
 
-type ServiceCredential struct {
-	ID          int64
-	AccountID   int64
-	DisplayName string
-	Description sql.NullString
-	SecretHash  []byte
-	CreateTime  time.Time
-	ExpireTime  sql.NullTime
+type ServiceAccount struct {
+	AccountID                 int64
+	PrimarySecretHash         []byte
+	SecondarySecretHash       []byte
+	SecondarySecretExpireTime sql.NullTime
+}
+
+type UserAccount struct {
+	AccountID    int64
+	Username     string
+	PasswordHash []byte
 }

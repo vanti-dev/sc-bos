@@ -12,11 +12,3 @@
 // The resources can be persistently stored using the Store. The Server uses the data in the Store
 // to implement the AccountApiService.
 package account
-
-import (
-	"github.com/vanti-dev/sc-bos/internal/account/queries"
-)
-
-type (
-	Account = queries.Account
-)

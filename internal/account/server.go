@@ -18,35 +18,33 @@ import (
 )
 
 var (
-	ErrDatabase                  = status.Error(codes.Internal, "database internal error")
-	ErrAccountNotFound           = status.Error(codes.NotFound, "account not found")
-	ErrRoleNotFound              = status.Error(codes.NotFound, "role not found")
-	ErrRoleAssignmentNotFound    = status.Error(codes.NotFound, "role assignment not found")
-	ErrServiceCredentialNotFound = status.Error(codes.NotFound, "service credential not found")
-	ErrPermissionNotFound        = status.Error(codes.NotFound, "permission not found")
-	ErrInvalidAccountType        = status.Error(codes.InvalidArgument, "invalid account type")
-	ErrMissingUsername           = status.Error(codes.InvalidArgument, "user account requires username")
-	ErrMissingDisplayName        = status.Error(codes.InvalidArgument, "account requires display name")
-	ErrUnexpectedUsernameCreate  = status.Error(codes.InvalidArgument, "service account cannot have username")
-	ErrUnexpectedUsernameUpdate  = status.Error(codes.FailedPrecondition, "service account cannot have username")
-	ErrUnexpectedServiceCreds    = status.Error(codes.FailedPrecondition, "user account cannot have service credentials")
-	ErrServiceCredentialLimit    = status.Error(codes.ResourceExhausted, "too many service credentials")
-	ErrUsernameExists            = status.Error(codes.AlreadyExists, "username already exists")
-	ErrRoleAssignmentExists      = status.Error(codes.AlreadyExists, "role assignment already exists")
-	ErrRoleDisplayNameExists     = status.Error(codes.AlreadyExists, "role with this display name already exists")
-	ErrUnexpectedPasswordCreate  = status.Error(codes.InvalidArgument, "only user account can have password")
-	ErrUnexpectedPasswordUpdate  = status.Error(codes.FailedPrecondition, "only user account can have password")
-	ErrInvalidUsername           = status.Error(codes.InvalidArgument, "invalid username")
-	ErrInvalidDisplayName        = status.Error(codes.InvalidArgument, "invalid display name")
-	ErrInvalidDescription        = status.Error(codes.InvalidArgument, "invalid description")
-	ErrInvalidPassword           = status.Error(codes.InvalidArgument, "password does not comply with policy")
-	ErrInvalidResourceType       = status.Error(codes.InvalidArgument, "invalid scope resource type")
-	ErrInvalidResource           = status.Error(codes.InvalidArgument, "invalid scope resource")
-	ErrIncorrectPassword         = status.Error(codes.FailedPrecondition, "incorrect password")
-	ErrInvalidPageToken          = status.Error(codes.InvalidArgument, "invalid page token")
-	ErrInvalidFilter             = status.Error(codes.InvalidArgument, "invalid filter")
-	ErrRoleInUse                 = status.Error(codes.FailedPrecondition, "role is in use")
-	ErrResourceMissing           = status.Error(codes.InvalidArgument, "resource to create/update not supplied")
+	ErrDatabase                 = status.Error(codes.Internal, "database internal error")
+	ErrAccountNotFound          = status.Error(codes.NotFound, "account not found")
+	ErrRoleNotFound             = status.Error(codes.NotFound, "role not found")
+	ErrRoleAssignmentNotFound   = status.Error(codes.NotFound, "role assignment not found")
+	ErrPermissionNotFound       = status.Error(codes.NotFound, "permission not found")
+	ErrInvalidAccountType       = status.Error(codes.InvalidArgument, "invalid account type")
+	ErrMissingUserDetails       = status.Error(codes.InvalidArgument, "required user details not supplied")
+	ErrIncorrectDetails         = status.Error(codes.InvalidArgument, "wrong details variant supplied for account type")
+	ErrMissingUsername          = status.Error(codes.InvalidArgument, "user account requires username")
+	ErrMissingDisplayName       = status.Error(codes.InvalidArgument, "account requires display name")
+	ErrUnexpectedUsernameUpdate = status.Error(codes.FailedPrecondition, "service account cannot have username")
+	ErrUsernameExists           = status.Error(codes.AlreadyExists, "username already exists")
+	ErrRoleAssignmentExists     = status.Error(codes.AlreadyExists, "role assignment already exists")
+	ErrRoleDisplayNameExists    = status.Error(codes.AlreadyExists, "role with this display name already exists")
+	ErrUnexpectedPasswordCreate = status.Error(codes.InvalidArgument, "only user account can have password")
+	ErrUnexpectedPasswordUpdate = status.Error(codes.FailedPrecondition, "only user account can have password")
+	ErrInvalidUsername          = status.Error(codes.InvalidArgument, "invalid username")
+	ErrInvalidDisplayName       = status.Error(codes.InvalidArgument, "invalid display name")
+	ErrInvalidDescription       = status.Error(codes.InvalidArgument, "invalid description")
+	ErrInvalidPassword          = status.Error(codes.InvalidArgument, "password does not comply with policy")
+	ErrInvalidResourceType      = status.Error(codes.InvalidArgument, "invalid scope resource type")
+	ErrInvalidResource          = status.Error(codes.InvalidArgument, "invalid scope resource")
+	ErrIncorrectPassword        = status.Error(codes.FailedPrecondition, "incorrect password")
+	ErrInvalidPageToken         = status.Error(codes.InvalidArgument, "invalid page token")
+	ErrInvalidFilter            = status.Error(codes.InvalidArgument, "invalid filter")
+	ErrRoleInUse                = status.Error(codes.FailedPrecondition, "role is in use")
+	ErrResourceMissing          = status.Error(codes.InvalidArgument, "resource to create/update not supplied")
 )
 
 type Server struct {
@@ -67,10 +65,10 @@ func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*g
 		return nil, ErrAccountNotFound
 	}
 
-	var dbAccount queries.Account
+	var dbAccount queries.AccountDetail
 	err := s.store.Read(ctx, func(tx *Tx) error {
 		var err error
-		dbAccount, err = tx.GetAccount(ctx, id)
+		dbAccount, err = tx.GetAccountDetails(ctx, id)
 		return err
 	})
 	if errors.Is(err, sql.ErrNoRows) {
@@ -79,7 +77,7 @@ func (s *Server) GetAccount(ctx context.Context, req *gen.GetAccountRequest) (*g
 		return nil, s.processError(err, zap.String("rpc", "GetAccount"), zap.String("id", req.Id))
 	}
 
-	return accountToProto(dbAccount), nil
+	return accountToProto(dbAccount, ""), nil
 }
 
 func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest) (*gen.ListAccountsResponse, error) {
@@ -100,7 +98,7 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 	}
 
 	err := s.store.Read(ctx, func(tx *Tx) error {
-		page, err := tx.ListAccounts(ctx, queries.ListAccountsParams{
+		page, err := tx.ListAccountDetails(ctx, queries.ListAccountDetailsParams{
 			AfterID: afterID,
 			Limit:   pageSize + 1, // fetch one extra to determine if there are more
 		})
@@ -129,7 +127,7 @@ func (s *Server) ListAccounts(ctx context.Context, req *gen.ListAccountsRequest)
 			page = page[:pageSize]
 		}
 		for _, dbAccount := range page {
-			res.Accounts = append(res.Accounts, accountToProto(dbAccount))
+			res.Accounts = append(res.Accounts, accountToProto(dbAccount, ""))
 		}
 		return nil
 	})
@@ -157,17 +155,29 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 	if !validateDescription(account.Description) {
 		return nil, ErrInvalidDescription
 	}
+
+	var username string
 	switch account.Type {
 	case gen.Account_USER_ACCOUNT:
-		if account.Username == "" {
+		if account.Details == nil {
+			return nil, ErrMissingUserDetails
+		}
+		details := account.GetUserDetails()
+		if details == nil {
+			return nil, ErrIncorrectDetails
+		}
+		username = details.Username
+		if username == "" {
 			return nil, ErrMissingUsername
 		}
-		if !validateUsername(account.Username) {
+		if !validateUsername(username) {
 			return nil, ErrInvalidUsername
 		}
 	case gen.Account_SERVICE_ACCOUNT:
-		if account.Username != "" {
-			return nil, ErrUnexpectedUsernameCreate
+		// allow not providing a details value for service accounts because there are no required fields
+		// but still check that no other type of details is provided
+		if account.Details != nil && account.GetServiceDetails() == nil {
+			return nil, ErrIncorrectDetails
 		}
 		if req.Password != "" {
 			return nil, ErrUnexpectedPasswordCreate
@@ -176,42 +186,71 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		return nil, ErrInvalidAccountType
 	}
 
-	var created queries.Account
+	var detail queries.AccountDetail
+	var secret string
 	err := s.store.Write(ctx, func(tx *Tx) error {
 		var description sql.NullString
 		if req.Account.Description != "" {
 			description = sql.NullString{Valid: true, String: req.Account.Description}
 		}
 
-		var err error
-		switch req.Account.Type {
-		case gen.Account_USER_ACCOUNT:
-			created, err = tx.CreateUserAccount(ctx, queries.CreateUserAccountParams{
-				Username:    sql.NullString{Valid: true, String: account.Username},
-				DisplayName: account.DisplayName,
-				Description: description,
-			})
-		case gen.Account_SERVICE_ACCOUNT:
-			created, err = tx.CreateServiceAccount(ctx, queries.CreateServiceAccountParams{
-				DisplayName: account.DisplayName,
-				Description: description,
-			})
-		default:
-			return ErrInvalidAccountType
-		}
-		if sqlite.IsUniqueConstraintError(err) {
-			return ErrUsernameExists
-		} else if err != nil {
+		dbAccount, err := tx.CreateAccount(ctx, queries.CreateAccountParams{
+			DisplayName: account.DisplayName,
+			Description: description,
+			Type:        account.Type.String(),
+		})
+		if err != nil {
 			return err
 		}
+		detail = queries.AccountDetail{
+			ID:          dbAccount.ID,
+			DisplayName: dbAccount.DisplayName,
+			Description: dbAccount.Description,
+			Type:        dbAccount.Type,
+			CreateTime:  dbAccount.CreateTime,
+		}
 
-		if req.Password != "" {
-			err = tx.UpdateAccountPassword(ctx, created.ID, req.Password)
-			if errors.Is(err, ErrInvalidPassword) {
-				return err
+		switch req.Account.Type {
+		case gen.Account_USER_ACCOUNT:
+			var passwordHash []byte
+			if req.Password != "" {
+				passwordHash, err = hashPassword(req.Password)
+				if err != nil {
+					return err
+				}
+			}
+
+			var userAccount queries.UserAccount
+			userAccount, err = tx.CreateUserAccount(ctx, queries.CreateUserAccountParams{
+				AccountID:    dbAccount.ID,
+				Username:     username,
+				PasswordHash: passwordHash,
+			})
+			if sqlite.IsUniqueConstraintError(err) {
+				return ErrUsernameExists
 			} else if err != nil {
 				return err
 			}
+			detail.Username = sql.NullString{Valid: true, String: userAccount.Username}
+			detail.PasswordHash = userAccount.PasswordHash
+		case gen.Account_SERVICE_ACCOUNT:
+			secret, err = genSecret()
+			if err != nil {
+				return err
+			}
+			hash := hashSecret(secret)
+
+			var serviceAccount queries.ServiceAccount
+			serviceAccount, err = tx.CreateServiceAccount(ctx, queries.CreateServiceAccountParams{
+				AccountID:         dbAccount.ID,
+				PrimarySecretHash: hash,
+			})
+			if err != nil {
+				return err
+			}
+			detail.PrimarySecretHash = serviceAccount.PrimarySecretHash
+		default:
+			return ErrInvalidAccountType
 		}
 		return nil
 	})
@@ -219,18 +258,20 @@ func (s *Server) CreateAccount(ctx context.Context, req *gen.CreateAccountReques
 		return nil, s.processError(err, zap.String("rpc", "CreateAccount"))
 	}
 
-	return accountToProto(created), nil
+	return accountToProto(detail, secret), nil
 }
 
 func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountRequest) (*gen.Account, error) {
 	const (
-		fieldDisplayName = "display_name"
-		fieldDescription = "description"
-		fieldUsername    = "username"
-		fieldCreateTime  = "create_time"
+		fieldDisplayName            = "display_name"
+		fieldDescription            = "description"
+		fieldUserDetails            = "user_details"
+		fieldUserDetailsUsername    = "user_details.username"
+		fieldCreateTime             = "create_time"
+		fieldServiceDetailsClientID = "service_details.client_id"
 	)
 	// ignore output-only fields in masks, as per AIP-203
-	mask, err := resolveMask(req.Account, req.UpdateMask, fieldCreateTime)
+	mask, err := resolveMask(req.Account, req.UpdateMask, fieldCreateTime, fieldServiceDetailsClientID)
 	if err != nil {
 		return nil, err
 	}
@@ -244,10 +285,10 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		return nil, ErrAccountNotFound
 	}
 
-	var account queries.Account
+	var account queries.AccountDetail
 	err = s.store.Write(ctx, func(tx *Tx) error {
 		var err error
-		account, err = tx.GetAccount(ctx, id)
+		account, err = tx.GetAccountDetails(ctx, id)
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrAccountNotFound
 		} else if err != nil {
@@ -259,7 +300,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 			updateDisplayName bool
 			updateDescription bool
 		)
-		fields, err := fieldsToUpdate(accountToProto(account), req.Account, mask)
+		fields, err := fieldsToUpdate(accountToProto(account, ""), req.Account, mask)
 		if err != nil {
 			return err
 		}
@@ -267,7 +308,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 			switch field {
 			case fieldDisplayName:
 				updateDisplayName = true
-			case fieldUsername:
+			case fieldUserDetails, fieldUserDetailsUsername:
 				updateUsername = true
 			case fieldDescription:
 				updateDescription = true
@@ -297,19 +338,20 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		}
 
 		if updateUsername {
-			if !validateUsername(req.Account.Username) {
+			username := req.Account.GetUserDetails().GetUsername()
+			if !validateUsername(username) {
 				return ErrInvalidUsername
 			}
 			err = tx.UpdateAccountUsername(ctx, queries.UpdateAccountUsernameParams{
-				ID:       id,
-				Username: sql.NullString{Valid: true, String: req.Account.Username},
+				AccountID: id,
+				Username:  username,
 			})
 			if sqlite.IsUniqueConstraintError(err) {
 				return ErrUsernameExists
 			} else if err != nil {
 				return err
 			}
-			account.Username = sql.NullString{Valid: true, String: req.Account.Username}
+			account.Username = sql.NullString{Valid: true, String: username}
 		}
 
 		if updateDescription {
@@ -337,7 +379,7 @@ func (s *Server) UpdateAccount(ctx context.Context, req *gen.UpdateAccountReques
 		return nil, s.processError(err, zap.String("rpc", "UpdateAccount"), zap.String("id", req.Account.Id))
 	}
 
-	return accountToProto(account), nil
+	return accountToProto(account, ""), nil
 }
 
 func (s *Server) DeleteAccount(ctx context.Context, req *gen.DeleteAccountRequest) (*gen.DeleteAccountResponse, error) {
@@ -362,133 +404,6 @@ func (s *Server) DeleteAccount(ctx context.Context, req *gen.DeleteAccountReques
 		return nil, ErrAccountNotFound
 	}
 	return &gen.DeleteAccountResponse{}, nil
-}
-
-func (s *Server) GetServiceCredential(ctx context.Context, req *gen.GetServiceCredentialRequest) (*gen.ServiceCredential, error) {
-	id, ok := parseID(req.Id)
-	if !ok {
-		return nil, ErrServiceCredentialNotFound
-	}
-
-	var cred queries.ServiceCredential
-	err := s.store.Read(ctx, func(tx *Tx) error {
-		var err error
-		cred, err = tx.GetServiceCredential(ctx, id)
-		return err
-	})
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, ErrServiceCredentialNotFound
-	} else if err != nil {
-		return nil, s.processError(err, zap.String("rpc", "GetServiceCredential"), zap.String("id", req.Id))
-	}
-
-	return serviceCredentialToProto(cred, ""), nil
-}
-
-func (s *Server) ListServiceCredentials(ctx context.Context, req *gen.ListServiceCredentialsRequest) (*gen.ListServiceCredentialsResponse, error) {
-	accountID, ok := parseID(req.AccountId)
-	if !ok {
-		return nil, ErrAccountNotFound
-	}
-
-	res := &gen.ListServiceCredentialsResponse{}
-	err := s.store.Read(ctx, func(tx *Tx) error {
-		account, err := tx.GetAccount(ctx, accountID)
-		if errors.Is(err, sql.ErrNoRows) {
-			return ErrAccountNotFound
-		} else if err != nil {
-			return err
-		}
-		if account.Type != gen.Account_SERVICE_ACCOUNT.String() {
-			return ErrUnexpectedServiceCreds
-		}
-
-		page, err := tx.ListAccountServiceCredentials(ctx, accountID)
-		if err != nil {
-			return err
-		}
-
-		for _, cred := range page {
-			res.ServiceCredentials = append(res.ServiceCredentials, serviceCredentialToProto(cred, ""))
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, s.processError(err, zap.String("rpc", "ListServiceCredentials"), zap.String("accountId", req.AccountId))
-	}
-
-	return res, nil
-}
-
-func (s *Server) CreateServiceCredential(ctx context.Context, req *gen.CreateServiceCredentialRequest) (*gen.ServiceCredential, error) {
-	if req.ServiceCredential == nil {
-		return nil, status.Error(codes.InvalidArgument, "service_credential is required")
-	}
-
-	if !validateDisplayName(req.ServiceCredential.DisplayName) {
-		return nil, ErrInvalidDisplayName
-	}
-	if !validateDescription(req.ServiceCredential.Description) {
-		return nil, ErrInvalidDescription
-	}
-
-	accountID, ok := parseID(req.ServiceCredential.AccountId)
-	if !ok {
-		return nil, ErrAccountNotFound
-	}
-
-	var generated GeneratedServiceCredential
-	err := s.store.Write(ctx, func(tx *Tx) error {
-		var (
-			expireTime  sql.NullTime
-			description sql.NullString
-		)
-		if req.ServiceCredential.ExpireTime != nil {
-			expireTime = sql.NullTime{Valid: true, Time: req.ServiceCredential.ExpireTime.AsTime()}
-		}
-		if req.ServiceCredential.Description != "" {
-			description = sql.NullString{Valid: true, String: req.ServiceCredential.Description}
-		}
-		var err error
-		generated, err = tx.GenerateServiceCredential(ctx, queries.ServiceCredential{
-			AccountID:   accountID,
-			DisplayName: req.ServiceCredential.DisplayName,
-			Description: description,
-			ExpireTime:  expireTime,
-		})
-		return err
-	})
-	if err != nil {
-		return nil, s.processError(err, zap.String("rpc", "CreateServiceCredential"), zap.String("accountId", req.ServiceCredential.AccountId))
-	}
-
-	return serviceCredentialToProto(generated.ServiceCredential, generated.Secret), nil
-}
-
-func (s *Server) DeleteServiceCredential(ctx context.Context, req *gen.DeleteServiceCredentialRequest) (*gen.DeleteServiceCredentialResponse, error) {
-	credID, ok := parseID(req.Id)
-	if !ok {
-		return nil, ErrServiceCredentialNotFound
-	}
-
-	var deleted bool
-	err := s.store.Write(ctx, func(tx *Tx) error {
-		rowsDeleted, err := tx.DeleteServiceCredential(ctx, credID)
-		if err != nil {
-			return err
-		}
-		deleted = rowsDeleted > 0
-		return nil
-	})
-	if err != nil {
-		s.logger.Error("failed to delete service credential", zap.Error(err), zap.String("id", req.Id))
-		return nil, ErrDatabase
-	}
-	if !deleted && !req.AllowMissing {
-		return nil, ErrServiceCredentialNotFound
-	}
-
-	return &gen.DeleteServiceCredentialResponse{}, nil
 }
 
 func (s *Server) UpdateAccountPassword(ctx context.Context, req *gen.UpdateAccountPasswordRequest) (*gen.UpdateAccountPasswordResponse, error) {

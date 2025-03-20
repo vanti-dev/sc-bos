@@ -182,6 +182,52 @@ export namespace UpdateAccountPasswordResponse {
   }
 }
 
+export class RotateAccountClientSecretRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): RotateAccountClientSecretRequest;
+
+  getId(): string;
+  setId(value: string): RotateAccountClientSecretRequest;
+
+  getPreviousSecretExpires(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setPreviousSecretExpires(value?: google_protobuf_timestamp_pb.Timestamp): RotateAccountClientSecretRequest;
+  hasPreviousSecretExpires(): boolean;
+  clearPreviousSecretExpires(): RotateAccountClientSecretRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RotateAccountClientSecretRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RotateAccountClientSecretRequest): RotateAccountClientSecretRequest.AsObject;
+  static serializeBinaryToWriter(message: RotateAccountClientSecretRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RotateAccountClientSecretRequest;
+  static deserializeBinaryFromReader(message: RotateAccountClientSecretRequest, reader: jspb.BinaryReader): RotateAccountClientSecretRequest;
+}
+
+export namespace RotateAccountClientSecretRequest {
+  export type AsObject = {
+    name: string,
+    id: string,
+    previousSecretExpires?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+  }
+}
+
+export class RotateAccountClientSecretResponse extends jspb.Message {
+  getClientSecret(): string;
+  setClientSecret(value: string): RotateAccountClientSecretResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RotateAccountClientSecretResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: RotateAccountClientSecretResponse): RotateAccountClientSecretResponse.AsObject;
+  static serializeBinaryToWriter(message: RotateAccountClientSecretResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RotateAccountClientSecretResponse;
+  static deserializeBinaryFromReader(message: RotateAccountClientSecretResponse, reader: jspb.BinaryReader): RotateAccountClientSecretResponse;
+}
+
+export namespace RotateAccountClientSecretResponse {
+  export type AsObject = {
+    clientSecret: string,
+  }
+}
+
 export class DeleteAccountRequest extends jspb.Message {
   getName(): string;
   setName(value: string): DeleteAccountRequest;
@@ -218,134 +264,6 @@ export class DeleteAccountResponse extends jspb.Message {
 }
 
 export namespace DeleteAccountResponse {
-  export type AsObject = {
-  }
-}
-
-export class GetServiceCredentialRequest extends jspb.Message {
-  getName(): string;
-  setName(value: string): GetServiceCredentialRequest;
-
-  getId(): string;
-  setId(value: string): GetServiceCredentialRequest;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetServiceCredentialRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetServiceCredentialRequest): GetServiceCredentialRequest.AsObject;
-  static serializeBinaryToWriter(message: GetServiceCredentialRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetServiceCredentialRequest;
-  static deserializeBinaryFromReader(message: GetServiceCredentialRequest, reader: jspb.BinaryReader): GetServiceCredentialRequest;
-}
-
-export namespace GetServiceCredentialRequest {
-  export type AsObject = {
-    name: string,
-    id: string,
-  }
-}
-
-export class ListServiceCredentialsRequest extends jspb.Message {
-  getName(): string;
-  setName(value: string): ListServiceCredentialsRequest;
-
-  getAccountId(): string;
-  setAccountId(value: string): ListServiceCredentialsRequest;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ListServiceCredentialsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: ListServiceCredentialsRequest): ListServiceCredentialsRequest.AsObject;
-  static serializeBinaryToWriter(message: ListServiceCredentialsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ListServiceCredentialsRequest;
-  static deserializeBinaryFromReader(message: ListServiceCredentialsRequest, reader: jspb.BinaryReader): ListServiceCredentialsRequest;
-}
-
-export namespace ListServiceCredentialsRequest {
-  export type AsObject = {
-    name: string,
-    accountId: string,
-  }
-}
-
-export class ListServiceCredentialsResponse extends jspb.Message {
-  getServiceCredentialsList(): Array<ServiceCredential>;
-  setServiceCredentialsList(value: Array<ServiceCredential>): ListServiceCredentialsResponse;
-  clearServiceCredentialsList(): ListServiceCredentialsResponse;
-  addServiceCredentials(value?: ServiceCredential, index?: number): ServiceCredential;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ListServiceCredentialsResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: ListServiceCredentialsResponse): ListServiceCredentialsResponse.AsObject;
-  static serializeBinaryToWriter(message: ListServiceCredentialsResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ListServiceCredentialsResponse;
-  static deserializeBinaryFromReader(message: ListServiceCredentialsResponse, reader: jspb.BinaryReader): ListServiceCredentialsResponse;
-}
-
-export namespace ListServiceCredentialsResponse {
-  export type AsObject = {
-    serviceCredentialsList: Array<ServiceCredential.AsObject>,
-  }
-}
-
-export class CreateServiceCredentialRequest extends jspb.Message {
-  getName(): string;
-  setName(value: string): CreateServiceCredentialRequest;
-
-  getServiceCredential(): ServiceCredential | undefined;
-  setServiceCredential(value?: ServiceCredential): CreateServiceCredentialRequest;
-  hasServiceCredential(): boolean;
-  clearServiceCredential(): CreateServiceCredentialRequest;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): CreateServiceCredentialRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: CreateServiceCredentialRequest): CreateServiceCredentialRequest.AsObject;
-  static serializeBinaryToWriter(message: CreateServiceCredentialRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): CreateServiceCredentialRequest;
-  static deserializeBinaryFromReader(message: CreateServiceCredentialRequest, reader: jspb.BinaryReader): CreateServiceCredentialRequest;
-}
-
-export namespace CreateServiceCredentialRequest {
-  export type AsObject = {
-    name: string,
-    serviceCredential?: ServiceCredential.AsObject,
-  }
-}
-
-export class DeleteServiceCredentialRequest extends jspb.Message {
-  getName(): string;
-  setName(value: string): DeleteServiceCredentialRequest;
-
-  getId(): string;
-  setId(value: string): DeleteServiceCredentialRequest;
-
-  getAllowMissing(): boolean;
-  setAllowMissing(value: boolean): DeleteServiceCredentialRequest;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeleteServiceCredentialRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: DeleteServiceCredentialRequest): DeleteServiceCredentialRequest.AsObject;
-  static serializeBinaryToWriter(message: DeleteServiceCredentialRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeleteServiceCredentialRequest;
-  static deserializeBinaryFromReader(message: DeleteServiceCredentialRequest, reader: jspb.BinaryReader): DeleteServiceCredentialRequest;
-}
-
-export namespace DeleteServiceCredentialRequest {
-  export type AsObject = {
-    name: string,
-    id: string,
-    allowMissing: boolean,
-  }
-}
-
-export class DeleteServiceCredentialResponse extends jspb.Message {
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): DeleteServiceCredentialResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: DeleteServiceCredentialResponse): DeleteServiceCredentialResponse.AsObject;
-  static serializeBinaryToWriter(message: DeleteServiceCredentialResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): DeleteServiceCredentialResponse;
-  static deserializeBinaryFromReader(message: DeleteServiceCredentialResponse, reader: jspb.BinaryReader): DeleteServiceCredentialResponse;
-}
-
-export namespace DeleteServiceCredentialResponse {
   export type AsObject = {
   }
 }
@@ -776,8 +694,17 @@ export class Account extends jspb.Message {
   getDescription(): string;
   setDescription(value: string): Account;
 
-  getUsername(): string;
-  setUsername(value: string): Account;
+  getUserDetails(): UserAccount | undefined;
+  setUserDetails(value?: UserAccount): Account;
+  hasUserDetails(): boolean;
+  clearUserDetails(): Account;
+
+  getServiceDetails(): ServiceAccount | undefined;
+  setServiceDetails(value?: ServiceAccount): Account;
+  hasServiceDetails(): boolean;
+  clearServiceDetails(): Account;
+
+  getDetailsCase(): Account.DetailsCase;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Account.AsObject;
@@ -794,13 +721,70 @@ export namespace Account {
     type: Account.Type,
     displayName: string,
     description: string,
-    username: string,
+    userDetails?: UserAccount.AsObject,
+    serviceDetails?: ServiceAccount.AsObject,
   }
 
   export enum Type { 
     ACCOUNT_TYPE_UNSPECIFIED = 0,
     USER_ACCOUNT = 1,
     SERVICE_ACCOUNT = 2,
+  }
+
+  export enum DetailsCase { 
+    DETAILS_NOT_SET = 0,
+    USER_DETAILS = 6,
+    SERVICE_DETAILS = 7,
+  }
+}
+
+export class UserAccount extends jspb.Message {
+  getUsername(): string;
+  setUsername(value: string): UserAccount;
+
+  getHasPassword(): boolean;
+  setHasPassword(value: boolean): UserAccount;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UserAccount.AsObject;
+  static toObject(includeInstance: boolean, msg: UserAccount): UserAccount.AsObject;
+  static serializeBinaryToWriter(message: UserAccount, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UserAccount;
+  static deserializeBinaryFromReader(message: UserAccount, reader: jspb.BinaryReader): UserAccount;
+}
+
+export namespace UserAccount {
+  export type AsObject = {
+    username: string,
+    hasPassword: boolean,
+  }
+}
+
+export class ServiceAccount extends jspb.Message {
+  getClientId(): string;
+  setClientId(value: string): ServiceAccount;
+
+  getClientSecret(): string;
+  setClientSecret(value: string): ServiceAccount;
+
+  getPreviousSecretExpires(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setPreviousSecretExpires(value?: google_protobuf_timestamp_pb.Timestamp): ServiceAccount;
+  hasPreviousSecretExpires(): boolean;
+  clearPreviousSecretExpires(): ServiceAccount;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ServiceAccount.AsObject;
+  static toObject(includeInstance: boolean, msg: ServiceAccount): ServiceAccount.AsObject;
+  static serializeBinaryToWriter(message: ServiceAccount, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ServiceAccount;
+  static deserializeBinaryFromReader(message: ServiceAccount, reader: jspb.BinaryReader): ServiceAccount;
+}
+
+export namespace ServiceAccount {
+  export type AsObject = {
+    clientId: string,
+    clientSecret: string,
+    previousSecretExpires?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 
@@ -897,52 +881,6 @@ export namespace RoleAssignment {
     NODE = 3,
     SUBSYSTEM = 4,
     ZONE = 5,
-  }
-}
-
-export class ServiceCredential extends jspb.Message {
-  getId(): string;
-  setId(value: string): ServiceCredential;
-
-  getAccountId(): string;
-  setAccountId(value: string): ServiceCredential;
-
-  getDisplayName(): string;
-  setDisplayName(value: string): ServiceCredential;
-
-  getDescription(): string;
-  setDescription(value: string): ServiceCredential;
-
-  getSecret(): string;
-  setSecret(value: string): ServiceCredential;
-
-  getCreateTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setCreateTime(value?: google_protobuf_timestamp_pb.Timestamp): ServiceCredential;
-  hasCreateTime(): boolean;
-  clearCreateTime(): ServiceCredential;
-
-  getExpireTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setExpireTime(value?: google_protobuf_timestamp_pb.Timestamp): ServiceCredential;
-  hasExpireTime(): boolean;
-  clearExpireTime(): ServiceCredential;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ServiceCredential.AsObject;
-  static toObject(includeInstance: boolean, msg: ServiceCredential): ServiceCredential.AsObject;
-  static serializeBinaryToWriter(message: ServiceCredential, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ServiceCredential;
-  static deserializeBinaryFromReader(message: ServiceCredential, reader: jspb.BinaryReader): ServiceCredential;
-}
-
-export namespace ServiceCredential {
-  export type AsObject = {
-    id: string,
-    accountId: string,
-    displayName: string,
-    description: string,
-    secret: string,
-    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    expireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 

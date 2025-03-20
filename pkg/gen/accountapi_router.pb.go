@@ -122,6 +122,15 @@ func (r *AccountApiRouter) UpdateAccountPassword(ctx context.Context, request *U
 	return child.UpdateAccountPassword(ctx, request)
 }
 
+func (r *AccountApiRouter) RotateAccountClientSecret(ctx context.Context, request *RotateAccountClientSecretRequest) (*RotateAccountClientSecretResponse, error) {
+	child, err := r.GetAccountApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.RotateAccountClientSecret(ctx, request)
+}
+
 func (r *AccountApiRouter) DeleteAccount(ctx context.Context, request *DeleteAccountRequest) (*DeleteAccountResponse, error) {
 	child, err := r.GetAccountApiClient(request.Name)
 	if err != nil {
@@ -129,42 +138,6 @@ func (r *AccountApiRouter) DeleteAccount(ctx context.Context, request *DeleteAcc
 	}
 
 	return child.DeleteAccount(ctx, request)
-}
-
-func (r *AccountApiRouter) GetServiceCredential(ctx context.Context, request *GetServiceCredentialRequest) (*ServiceCredential, error) {
-	child, err := r.GetAccountApiClient(request.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return child.GetServiceCredential(ctx, request)
-}
-
-func (r *AccountApiRouter) ListServiceCredentials(ctx context.Context, request *ListServiceCredentialsRequest) (*ListServiceCredentialsResponse, error) {
-	child, err := r.GetAccountApiClient(request.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return child.ListServiceCredentials(ctx, request)
-}
-
-func (r *AccountApiRouter) CreateServiceCredential(ctx context.Context, request *CreateServiceCredentialRequest) (*ServiceCredential, error) {
-	child, err := r.GetAccountApiClient(request.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return child.CreateServiceCredential(ctx, request)
-}
-
-func (r *AccountApiRouter) DeleteServiceCredential(ctx context.Context, request *DeleteServiceCredentialRequest) (*DeleteServiceCredentialResponse, error) {
-	child, err := r.GetAccountApiClient(request.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return child.DeleteServiceCredential(ctx, request)
 }
 
 func (r *AccountApiRouter) GetRole(ctx context.Context, request *GetRoleRequest) (*Role, error) {
