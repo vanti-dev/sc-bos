@@ -2210,7 +2210,7 @@ proto.smartcore.bos.RotateAccountClientSecretRequest.toObject = function(include
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
 id: jspb.Message.getFieldWithDefault(msg, 2, ""),
-previousSecretExpires: (f = msg.getPreviousSecretExpires()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+previousSecretExpireTime: (f = msg.getPreviousSecretExpireTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2258,7 +2258,7 @@ proto.smartcore.bos.RotateAccountClientSecretRequest.deserializeBinaryFromReader
     case 3:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setPreviousSecretExpires(value);
+      msg.setPreviousSecretExpireTime(value);
       break;
     default:
       reader.skipField();
@@ -2303,7 +2303,7 @@ proto.smartcore.bos.RotateAccountClientSecretRequest.serializeBinaryToWriter = f
       f
     );
   }
-  f = message.getPreviousSecretExpires();
+  f = message.getPreviousSecretExpireTime();
   if (f != null) {
     writer.writeMessage(
       3,
@@ -2351,10 +2351,10 @@ proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.setId = function(
 
 
 /**
- * optional google.protobuf.Timestamp previous_secret_expires = 3;
+ * optional google.protobuf.Timestamp previous_secret_expire_time = 3;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.getPreviousSecretExpires = function() {
+proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.getPreviousSecretExpireTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
     jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 3));
 };
@@ -2364,7 +2364,7 @@ proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.getPreviousSecret
  * @param {?proto.google.protobuf.Timestamp|undefined} value
  * @return {!proto.smartcore.bos.RotateAccountClientSecretRequest} returns this
 */
-proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.setPreviousSecretExpires = function(value) {
+proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.setPreviousSecretExpireTime = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
@@ -2373,8 +2373,8 @@ proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.setPreviousSecret
  * Clears the message field making it undefined.
  * @return {!proto.smartcore.bos.RotateAccountClientSecretRequest} returns this
  */
-proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.clearPreviousSecretExpires = function() {
-  return this.setPreviousSecretExpires(undefined);
+proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.clearPreviousSecretExpireTime = function() {
+  return this.setPreviousSecretExpireTime(undefined);
 };
 
 
@@ -2382,7 +2382,7 @@ proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.clearPreviousSecr
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.hasPreviousSecretExpires = function() {
+proto.smartcore.bos.RotateAccountClientSecretRequest.prototype.hasPreviousSecretExpireTime = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 
@@ -6456,7 +6456,7 @@ proto.smartcore.bos.ServiceAccount.toObject = function(includeInstance, msg) {
   var f, obj = {
 clientId: jspb.Message.getFieldWithDefault(msg, 1, ""),
 clientSecret: jspb.Message.getFieldWithDefault(msg, 2, ""),
-previousSecretExpires: (f = msg.getPreviousSecretExpires()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+previousSecretExpireTime: (f = msg.getPreviousSecretExpireTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -6504,7 +6504,7 @@ proto.smartcore.bos.ServiceAccount.deserializeBinaryFromReader = function(msg, r
     case 3:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setPreviousSecretExpires(value);
+      msg.setPreviousSecretExpireTime(value);
       break;
     default:
       reader.skipField();
@@ -6549,7 +6549,7 @@ proto.smartcore.bos.ServiceAccount.serializeBinaryToWriter = function(message, w
       f
     );
   }
-  f = message.getPreviousSecretExpires();
+  f = message.getPreviousSecretExpireTime();
   if (f != null) {
     writer.writeMessage(
       3,
@@ -6597,10 +6597,10 @@ proto.smartcore.bos.ServiceAccount.prototype.setClientSecret = function(value) {
 
 
 /**
- * optional google.protobuf.Timestamp previous_secret_expires = 3;
+ * optional google.protobuf.Timestamp previous_secret_expire_time = 3;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.smartcore.bos.ServiceAccount.prototype.getPreviousSecretExpires = function() {
+proto.smartcore.bos.ServiceAccount.prototype.getPreviousSecretExpireTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
     jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 3));
 };
@@ -6610,7 +6610,7 @@ proto.smartcore.bos.ServiceAccount.prototype.getPreviousSecretExpires = function
  * @param {?proto.google.protobuf.Timestamp|undefined} value
  * @return {!proto.smartcore.bos.ServiceAccount} returns this
 */
-proto.smartcore.bos.ServiceAccount.prototype.setPreviousSecretExpires = function(value) {
+proto.smartcore.bos.ServiceAccount.prototype.setPreviousSecretExpireTime = function(value) {
   return jspb.Message.setWrapperField(this, 3, value);
 };
 
@@ -6619,8 +6619,8 @@ proto.smartcore.bos.ServiceAccount.prototype.setPreviousSecretExpires = function
  * Clears the message field making it undefined.
  * @return {!proto.smartcore.bos.ServiceAccount} returns this
  */
-proto.smartcore.bos.ServiceAccount.prototype.clearPreviousSecretExpires = function() {
-  return this.setPreviousSecretExpires(undefined);
+proto.smartcore.bos.ServiceAccount.prototype.clearPreviousSecretExpireTime = function() {
+  return this.setPreviousSecretExpireTime(undefined);
 };
 
 
@@ -6628,7 +6628,7 @@ proto.smartcore.bos.ServiceAccount.prototype.clearPreviousSecretExpires = functi
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.smartcore.bos.ServiceAccount.prototype.hasPreviousSecretExpires = function() {
+proto.smartcore.bos.ServiceAccount.prototype.hasPreviousSecretExpireTime = function() {
   return jspb.Message.getField(this, 3) != null;
 };
 

@@ -62,8 +62,8 @@ func TestMigrations(t *testing.T) {
 					CreateTime:  timestamppb.New(time.Date(2025, 3, 19, 12, 22, 0, 0, time.UTC)),
 					Details: &gen.Account_ServiceDetails{
 						ServiceDetails: &gen.ServiceAccount{
-							ClientId:              "4",
-							PreviousSecretExpires: timestamppb.New(time.Date(2025, 3, 19, 12, 30, 0, 0, time.UTC)),
+							ClientId:                 "4",
+							PreviousSecretExpireTime: timestamppb.New(time.Date(2025, 3, 19, 12, 30, 0, 0, time.UTC)),
 						},
 					},
 				},

@@ -44,6 +44,17 @@ UPDATE user_accounts
 SET password_hash = :password_hash
 WHERE account_id = :account_id;
 
+-- name: RotateServiceAccountSecret :exec
+UPDATE service_accounts
+SET primary_secret_hash = :primary_secret_hash,
+    -- if no secondary_secret_expire_time is supplied, then we don't want a secondary secret
+    secondary_secret_hash = CASE
+        WHEN :secondary_secret_expire_time IS NULL THEN NULL
+        ELSE primary_secret_hash
+    END,
+    secondary_secret_expire_time = :secondary_secret_expire_time
+WHERE account_id = :account_id;
+
 -- name: UpdateAccountDisplayName :exec
 UPDATE accounts
 SET display_name = :display_name

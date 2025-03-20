@@ -7,6 +7,7 @@ import (
 	"math/rand/v2"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
@@ -17,6 +18,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -1335,6 +1337,94 @@ func TestServer_UpdateAccountPassword(t *testing.T) {
 		})
 	}
 
+}
+
+func TestServer_RotateAccountClientSecret(t *testing.T) {
+	ctx := context.Background()
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
+
+	past := time.Now().Add(-time.Hour)
+	future := time.Now().Add(time.Hour)
+
+	// create a service account
+	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
+		Account: &gen.Account{
+			Type:        gen.Account_SERVICE_ACCOUNT,
+			DisplayName: "Service",
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create account: %v", err)
+	}
+	secret1 := account.GetServiceDetails().GetClientSecret()
+	id, ok := parseID(account.Id)
+	if !ok {
+		t.Fatalf("failed to parse account ID %q", account.Id)
+	}
+
+	check := func(secret string, wantOK bool) {
+		err := store.Read(ctx, func(tx *Tx) error {
+			err := tx.CheckClientSecret(ctx, id, secret)
+			if wantOK {
+				if errors.Is(err, ErrIncorrectSecret) {
+					t.Errorf("expected secret %q to be valid, got error %v", secret, err)
+				} else if err != nil {
+					return err
+				}
+			} else {
+				if !errors.Is(err, ErrIncorrectSecret) {
+					t.Errorf("expected secret %q to be invalid, got error %v", secret, err)
+					return err
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			t.Errorf("unexpected error checking secret: %v", err)
+		}
+	}
+
+	check(secret1, true)
+
+	// rotate the secret, keeping the old one valid for a while
+	res, err := server.RotateAccountClientSecret(ctx, &gen.RotateAccountClientSecretRequest{
+		Id:                       account.Id,
+		PreviousSecretExpireTime: timestamppb.New(future),
+	})
+	if err != nil {
+		t.Fatalf("failed to rotate secret: %v", err)
+	}
+	secret2 := res.ClientSecret
+	check(secret1, true)
+	check(secret2, true)
+
+	// rotate again, this time supplying a time that is already expired
+	res, err = server.RotateAccountClientSecret(ctx, &gen.RotateAccountClientSecretRequest{
+		Id:                       account.Id,
+		PreviousSecretExpireTime: timestamppb.New(past),
+	})
+	if err != nil {
+		t.Fatalf("failed to rotate secret: %v", err)
+	}
+	secret3 := res.ClientSecret
+	check(secret1, false)
+	check(secret2, false)
+	check(secret3, true)
+
+	// rotate again, with no expiry time
+	res, err = server.RotateAccountClientSecret(ctx, &gen.RotateAccountClientSecretRequest{
+		Id: account.Id,
+	})
+	if err != nil {
+		t.Fatalf("failed to rotate secret: %v", err)
+	}
+	secret4 := res.ClientSecret
+	check(secret1, false)
+	check(secret2, false)
+	check(secret3, false)
+	check(secret4, true)
 }
 
 func TestServer_Role(t *testing.T) {

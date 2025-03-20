@@ -16,6 +16,11 @@ service AccountApi {
   // If the new_password does not comply with the password policy, the request will fail with INVALID_ARGUMENT.
   // If the old_password is supplied and does not match the current password, the request will fail with FAILED_PRECONDITION.
   rpc UpdateAccountPassword(UpdateAccountPasswordRequest) returns (UpdateAccountPasswordResponse);
+  // Generates and returns a new client_secret for a service account.
+  // The new client_secret will only be returned once, and cannot be retrieved later.
+  // Optionally keeps the previous client_secret valid for a period of time, to allow for zero-downtime rotation.
+  // At most two secrets are valid at any one time for a service account - if an even older secret is still within the rotation
+  // grace period, it is immediately invalidated.
   rpc RotateAccountClientSecret(RotateAccountClientSecretRequest) returns (RotateAccountClientSecretResponse);
   rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
 
@@ -116,12 +121,12 @@ message UpdateAccountPasswordResponse {
 message RotateAccountClientSecretRequest {
   // The name of the node where the account is located.
   string name = 1;
-  // The id of the account to update the service credentials for.
+  // The id of the account to update the service credentials for. Must be a service account.
   string id = 2;
 
   // If present, the previous client_secret will remain valid for authentication until this time.
   // If absent, the previous client_secret is immediately invalidated.
-  google.protobuf.Timestamp previous_secret_expires = 3;
+  google.protobuf.Timestamp previous_secret_expire_time = 3;
 }
 
 message RotateAccountClientSecretResponse {
@@ -355,7 +360,7 @@ message ServiceAccount {
   // Output only.
   // If present, then the client_secret has been recently rotated, and the previous secret value is still valid
   // until this time.
-  google.protobuf.Timestamp previous_secret_expires = 3;
+  google.protobuf.Timestamp previous_secret_expire_time = 3;
 }
 
 // A Role is a named collection of permissions.
