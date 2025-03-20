@@ -2359,7 +2359,7 @@ func TestServer_CreateRoleAssignment(t *testing.T) {
 			},
 			code: codes.InvalidArgument,
 		},
-		"conflict": {
+		"scoped_and_unscoped": {
 			existing: []*gen.RoleAssignment{
 				{
 					AccountId: accountPlaceholder,
@@ -2371,8 +2371,92 @@ func TestServer_CreateRoleAssignment(t *testing.T) {
 					AccountId: accountPlaceholder,
 					RoleId:    rolePlaceholder,
 					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: gen.RoleAssignment_NODE,
+						Resource:     "node1",
+					},
+				},
+			},
+			code: codes.OK,
+		},
+		"different_scope_types": {
+			existing: []*gen.RoleAssignment{
+				{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
 						ResourceType: gen.RoleAssignment_NAMED_RESOURCE,
-						Resource:     "resource name",
+						Resource:     "name1",
+					},
+				},
+			},
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: gen.RoleAssignment_NODE,
+						Resource:     "node1",
+					},
+				},
+			},
+			code: codes.OK,
+		},
+		"different_scope_resources": {
+			existing: []*gen.RoleAssignment{
+				{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: gen.RoleAssignment_NODE,
+						Resource:     "node1",
+					},
+				},
+			},
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: gen.RoleAssignment_NODE,
+						Resource:     "node2",
+					},
+				},
+			},
+			code: codes.OK,
+		},
+		"conflict_unscoped": {
+			existing: []*gen.RoleAssignment{
+				{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+				},
+			},
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+				},
+			},
+			code: codes.AlreadyExists,
+		},
+		"conflict_scoped": {
+			existing: []*gen.RoleAssignment{
+				{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: gen.RoleAssignment_NAMED_RESOURCE,
+						Resource:     "resource1",
+					},
+				},
+			},
+			req: &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: accountPlaceholder,
+					RoleId:    rolePlaceholder,
+					Scope: &gen.RoleAssignment_Scope{
+						ResourceType: gen.RoleAssignment_NAMED_RESOURCE,
+						Resource:     "resource1",
 					},
 				},
 			},
