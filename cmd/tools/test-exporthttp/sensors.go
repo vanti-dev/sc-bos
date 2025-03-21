@@ -13,7 +13,7 @@ import (
 
 func announceOccupancy(root node.Announcer, name string, val int32) error {
 	model := occupancysensorpb.NewModel()
-	_, err := model.SetOccupancy(&traits.Occupancy{PeopleCount: val})
+	_, err := model.SetOccupancy(&traits.Occupancy{PeopleCount: val, Confidence: 1})
 	if err != nil {
 		return err
 	}

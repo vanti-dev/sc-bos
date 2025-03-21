@@ -34,8 +34,8 @@ type Authentication struct {
 }
 
 type Source struct {
-	Path     string             `json:"path"`
-	Interval jsontypes.Duration `json:"interval"`
+	Path     string              `json:"path"`
+	Schedule *jsontypes.Schedule `json:"schedule"`
 }
 
 type Occupancy struct {

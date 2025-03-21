@@ -83,7 +83,7 @@ func main() {
 	}()
 
 	// wait for all automations in exporthttp to finish
-	time.Sleep(15 * time.Second)
+	time.Sleep(3 * time.Minute)
 }
 
 const (
@@ -101,27 +101,27 @@ const (
   "sources": {
 	"occupancy":    {
 	  "path": "occupancy",
-	  "interval": "10s",
+	  "schedule": "0/1 * * * *",
 	  "sensors":  ["pir/01","pir/02","pir/03"]
 	},
 	"temperature": {
 	  "path": "temperature",
-	  "interval": "11s",
+	  "schedule": "0/2 * * * *",
 	  "sensors": ["FCU/01","FCU/02"]
 	},
 	"energy":       {
 	  "path": "energy",
-	  "interval": "10s",
+	  "schedule": "0/1 * * * *",
 	  "meters": ["smart-core/meters/01"]
 	},
 	"airQuality":  {
 	  "path": "air_quality",
-	  "interval": "10s",
+	  "schedule": "0/1 * * * *",
 	  "sensors": ["smart-core/iaq/01"]
 	},
 	"water": {
 	  "path": "water",
-	  "interval": "10s",
+	  "schedule": "0/1 * * * *",
 	  "meters" : ["smart-core/meters/03"]
 	}
   }

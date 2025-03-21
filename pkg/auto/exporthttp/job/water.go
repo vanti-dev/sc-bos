@@ -11,27 +11,23 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-// WaterJob gets water consumed over the previous interval (typically 24 hours)
+// WaterJob gets water consumed over the previous execution interval (typically 24 hours)
 type WaterJob struct {
 	BaseJob
 	client     gen.MeterHistoryClient
 	infoClient gen.MeterInfoClient
 	Meters     []string
-	Interval   time.Duration
 }
 
 func (w *WaterJob) GetName() string {
 	return "water"
 }
 
-func (w *WaterJob) GetInterval() time.Duration {
-	return w.Interval
-}
-
 func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 	consumption := float32(.0)
 
 	now := time.Now()
+	filterTime := now.Sub(w.PreviousExecution)
 
 	for _, meter := range w.Meters {
 		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -44,7 +40,7 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 			continue
 		}
 
-		earliest, latest, err := getRecordsByTime(cctx, w.client.ListMeterReadingHistory, meter, now, w.GetInterval())
+		earliest, latest, err := getRecordsByTime(cctx, w.client.ListMeterReadingHistory, meter, now, filterTime)
 
 		cancel()
 		if err != nil {

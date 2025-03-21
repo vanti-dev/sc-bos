@@ -57,23 +57,20 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 
 	go func() {
-		mulpx := job.Multiplex(jobs...)
+		mulpx := job.Multiplex(ctx, jobs...)
 
 		// tear down
-		defer func() {
-			for _, jb := range jobs {
-				jb.Stop()
-			}
-			mulpx.WaitForDone()
-		}()
+		defer mulpx.WaitForDone()
 
 		// run
 		for {
 			select {
 			case jb := <-mulpx.C:
-				if err := jb.Do(ctx, client.Post); err != nil {
-					logger.Warn(fmt.Sprintf("failed to run %s", jb.GetName()), zap.Error(err))
-				}
+				go func() {
+					if err := jb.Do(ctx, client.Post); err != nil {
+						logger.Warn(fmt.Sprintf("failed to run %s", jb.GetName()), zap.Error(err))
+					}
+				}()
 			case <-ctx.Done():
 				return
 			}
