@@ -110,13 +110,16 @@ func (b *BaseJob) GetSite() string {
 func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 	var jobs []Job
 
+	now := time.Now().UTC()
+
 	if cfg.Sources.Occupancy != nil && len(cfg.Sources.Occupancy.Sensors) > 0 {
 		occ := &OccupancyJob{
 			BaseJob: BaseJob{
-				Site:     cfg.Site,
-				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Occupancy.Path),
-				Schedule: cfg.Sources.Occupancy.Schedule,
-				Logger:   logger,
+				Site:              cfg.Site,
+				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Occupancy.Path),
+				Schedule:          cfg.Sources.Occupancy.Schedule,
+				Logger:            logger,
+				PreviousExecution: now,
 			},
 			Sensors: cfg.Sources.Occupancy.Sensors,
 			client:  traits.NewOccupancySensorApiClient(node.ClientConn()),
@@ -127,10 +130,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 	if cfg.Sources.Temperature != nil && len(cfg.Sources.Temperature.Sensors) > 0 {
 		temperature := &TemperatureJob{
 			BaseJob: BaseJob{
-				Site:     cfg.Site,
-				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Temperature.Path),
-				Schedule: cfg.Sources.Temperature.Schedule,
-				Logger:   logger,
+				Site:              cfg.Site,
+				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Temperature.Path),
+				Schedule:          cfg.Sources.Temperature.Schedule,
+				PreviousExecution: now,
+				Logger:            logger,
 			},
 			Sensors: cfg.Sources.Temperature.Sensors,
 			client:  traits.NewAirTemperatureApiClient(node.ClientConn()),
@@ -141,10 +145,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 	if cfg.Sources.Energy != nil && len(cfg.Sources.Energy.Meters) > 0 {
 		energy := &EnergyJob{
 			BaseJob: BaseJob{
-				Site:     cfg.Site,
-				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Energy.Path),
-				Schedule: cfg.Sources.Energy.Schedule,
-				Logger:   logger,
+				Site:              cfg.Site,
+				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Energy.Path),
+				Schedule:          cfg.Sources.Energy.Schedule,
+				PreviousExecution: now,
+				Logger:            logger,
 			},
 			Meters:     cfg.Sources.Energy.Meters,
 			client:     gen.NewMeterHistoryClient(node.ClientConn()),
@@ -156,10 +161,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 	if cfg.Sources.AirQuality != nil && len(cfg.Sources.AirQuality.Sensors) > 0 {
 		air := &AirQualityJob{
 			BaseJob: BaseJob{
-				Site:     cfg.Site,
-				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.AirQuality.Path),
-				Schedule: cfg.Sources.AirQuality.Schedule,
-				Logger:   logger,
+				Site:              cfg.Site,
+				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.AirQuality.Path),
+				Schedule:          cfg.Sources.AirQuality.Schedule,
+				PreviousExecution: now,
+				Logger:            logger,
 			},
 			Sensors: cfg.Sources.AirQuality.Sensors,
 			client:  traits.NewAirQualitySensorApiClient(node.ClientConn()),
@@ -170,10 +176,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 	if cfg.Sources.Water != nil && len(cfg.Sources.Water.Meters) > 0 {
 		water := &WaterJob{
 			BaseJob: BaseJob{
-				Site:     cfg.Site,
-				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Water.Path),
-				Schedule: cfg.Sources.Water.Schedule,
-				Logger:   logger,
+				Site:              cfg.Site,
+				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Water.Path),
+				Schedule:          cfg.Sources.Water.Schedule,
+				PreviousExecution: now,
+				Logger:            logger,
 			},
 			Meters:     cfg.Sources.Water.Meters,
 			client:     gen.NewMeterHistoryClient(node.ClientConn()),
