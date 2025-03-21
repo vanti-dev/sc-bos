@@ -72,6 +72,7 @@
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
 import {deleteRoleAssignment, updateAccount} from '@/api/ui/account.js';
+import {useDevicesCollection} from '@/composables/devices.js';
 import {useDataTableCollection} from '@/composables/table.js';
 import {toAddChange, toRemoveChange, toUpdateChange} from '@/routes/auth/accounts.js';
 import {
@@ -88,7 +89,7 @@ import NewAccountBtn from '@/routes/auth/accounts/NewAccountBtn.vue';
 import RoleAssignmentLink from '@/routes/auth/accounts/RoleAssignmentLink.vue';
 import {useGetRoles} from '@/routes/auth/roles/roles.js';
 import {useSidebarStore} from '@/stores/sidebar.js';
-import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
+import {Account, RoleAssignment} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
 import {omit} from 'lodash';
 import {computed, ref, toValue, watch} from 'vue';
 import {useRouter} from 'vue-router';
@@ -137,16 +138,45 @@ const accountsToGetRoleAssignments = computed(() => {
 const accountsRoleAssignments = useAccountsRoleAssignments(accountsToGetRoleAssignments);
 const allRoleIds = computed(() => Object.values(accountsRoleAssignments).map((r) => r.items ?? []).flat().map((r) => r.roleId));
 const rolesById = useGetRoles(null, allRoleIds);
+const isNamedAssignment = (r) => {
+  return r.scope?.resourceType === RoleAssignment.ResourceType.NAMED_RESOURCE ||
+      r.scope?.resourceType === RoleAssignment.ResourceType.NAMED_RESOURCE_PATH_PREFIX
+}
+const allNamedResources = computed(() => Object.values(accountsRoleAssignments).map((r) => r.items ?? []).flat()
+    .filter((r) => isNamedAssignment(r))
+    .map((r) => r.scope?.resource));
+const {items: nameResourceDevices} = useDevicesCollection(() => {
+  return {query: {conditionsList: [{field: 'name', stringIn: {stringsList: allNamedResources.value}}]}};
+});
+const namedResourceDevicesByName = computed(() => {
+  const devices = {};
+  for (const device of nameResourceDevices.value) {
+    devices[device.name] = device;
+  }
+  return devices;
+});
+
 /**
  * @param {import('vue').Reactive<AccountRoleAssignmentsResponse>} roleAssignments
  * @return {import('vue').Reactive<AccountRoleAssignmentsResponse & {items: Array<RoleAssgnment.AsObject & {role: Role.AsObject}>}>}
  */
 const hydrateRoleAssignments = (roleAssignments) => {
+  const _devicesByName = namedResourceDevicesByName.value;
   const assignments = (roleAssignments?.items ?? [])
       .map((assignment) => {
         const role = rolesById[assignment.roleId];
         if (!role) return assignment;
-        return {...assignment, role: role.response, _role: role};
+        const device = (() => {
+          if (isNamedAssignment(assignment)) {
+            return _devicesByName[assignment.scope?.resource];
+          }
+          return null;
+        })();
+        return {
+          ...assignment,
+          role: role.response, _role: role,
+          device,
+        };
       });
   const loading = computed(() => roleAssignments.loading || assignments.some((a) => toValue(a._role?.loading)));
   return {...roleAssignments, items: assignments, loading};
