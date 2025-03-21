@@ -46,7 +46,7 @@ const props = defineProps({
     required: true,
   }
 });
-const emit = defineEmits(['grant', 'cancel']);
+const emit = defineEmits(['save', 'cancel']);
 
 const selectedRole = ref(null);
 const selectedScopes = ref([]);
@@ -70,10 +70,11 @@ const _accountIds = computed(() => {
 })
 const onGrantClick = async () => {
   grantLoading.value = true;
+  const ras = [];
   try {
     for (const accountId of _accountIds.value) {
       for (const scope of selectedScopes.value) {
-        await createRoleAssignment({
+        const res = await createRoleAssignment({
           name: props.name,
           roleAssignment: {
             accountId: accountId,
@@ -84,10 +85,11 @@ const onGrantClick = async () => {
             }
           }
         });
+        ras.push(res);
       }
     }
     grantError.value = null;
-    emit('grant', {role: selectedRole.value, scopes: selectedScopes.value});
+    emit('save', ras);
     hideAndClear();
   } catch (e) {
     grantError.value = e;
