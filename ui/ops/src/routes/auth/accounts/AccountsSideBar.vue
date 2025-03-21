@@ -12,7 +12,9 @@
         </template>
         <template v-if="account.type === Account.Type.SERVICE_ACCOUNT">
           <v-list-subheader>Client ID</v-list-subheader>
-          <p class="px-4"><copy-div :text="account.id" icon-size="18" :btn-props="{size: 'small', class: 'ma-n2'}"/></p>
+          <p class="px-4">
+            <copy-div :text="account.id" icon-size="18" :btn-props="{size: 'small', class: 'ma-n2'}"/>
+          </p>
         </template>
         <v-list-subheader>Account Created</v-list-subheader>
         <p class="px-4">{{ timestampToDate(account.createTime).toLocaleString() }}</p>
@@ -45,22 +47,45 @@
       </v-expand-transition>
     </template>
     <v-list>
-      <v-list-subheader>Roles</v-list-subheader>
+      <v-list-subheader>
+        {{ roleAssignments.length }} Role{{ roleAssignments.length === 1 ? '' : 's' }}
+      </v-list-subheader>
+      <v-list-item v-for="roleAssignment in roleAssignments" :key="roleAssignment.id" min-height="0px">
+        <v-list-item-title>
+          <role-assignment-link :role-assignment="roleAssignment"/>
+        </v-list-item-title>
+        <template #append>
+          <v-list-item-action>
+            <v-btn
+                icon="mdi-delete"
+                size="small"
+                variant="plain"
+                v-tooltip:bottom="'Remove role'"
+                class="my-n2"
+                :loading="roleDeleteLoading[roleAssignment.id]"
+                @click="onRoleRemoveClick(roleAssignment)"/>
+          </v-list-item-action>
+        </template>
+      </v-list-item>
     </v-list>
   </side-bar>
 </template>
 
 <script setup>
+import {timestampToDate} from '@/api/convpb.js';
 import CopyDiv from '@/components/CopyDiv.vue';
 import SideBar from '@/components/SideBar.vue';
+import RoleAssignmentLink from '@/routes/auth/accounts/RoleAssignmentLink.vue';
 import {useSidebarStore} from '@/stores/sidebar.js';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
-import {computed, ref} from 'vue';
+import {computed, reactive, ref} from 'vue';
 import {useRouter} from 'vue-router';
-import {timestampToDate} from '@/api/convpb.js';
 
 const sidebar = useSidebarStore();
 const account = computed(() => sidebar.data?.account);
+const roleAssignmentsCollection = computed(() => sidebar.data?.roleAssignments);
+
+const roleAssignments = computed(() => roleAssignmentsCollection.value?.items ?? []);
 
 const editMode = ref(false);
 const formValid = ref(false);
@@ -112,6 +137,20 @@ const editDisplayNameRules = computed(() => {
   ];
 })
 const editDescriptionModel = ref(null);
+
+const roleDeleteLoading = reactive({});
+const roleDeleteError = reactive({});
+const onRoleRemoveClick = async (roleAssignment) => {
+  roleDeleteLoading[roleAssignment.id] = true;
+  try {
+    delete roleDeleteError[roleAssignment.id];
+    await sidebar.data.removeRole(roleAssignment);
+  } catch (e) {
+    roleDeleteError[roleAssignment.id] = e;
+  } finally {
+    delete roleDeleteLoading[roleAssignment.id];
+  }
+}
 </script>
 
 <style scoped>
