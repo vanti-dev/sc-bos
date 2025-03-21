@@ -71,7 +71,7 @@
 
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
-import {deleteRoleAssignment, updateAccount} from '@/api/ui/account.js';
+import {deleteRoleAssignment, rotateAccountClientSecret, updateAccount} from '@/api/ui/account.js';
 import {useDevicesCollection} from '@/composables/devices.js';
 import {useDataTableCollection} from '@/composables/table.js';
 import {toAddChange, toRemoveChange, toUpdateChange} from '@/routes/auth/accounts.js';
@@ -237,6 +237,7 @@ watch(sidebarAccount, (item) => {
     account: item,
     roleAssignments: sidebarRoleAssignments,
     updateAccount: onAccountUpdate,
+    rotateServiceAccountSecret: onRotateServiceAccountSecret,
     removeRole: onGrantRemove
   };
   sidebar.visible = true;
@@ -277,6 +278,12 @@ const onAccountUpdate = async ({account}) => {
   return newAccount;
 }
 
+const onRotateServiceAccountSecret = async ({account, expireTime}) => {
+  const res = await rotateAccountClientSecret({id: account.id, previousSecretExpireTime: expireTime});
+  account.serviceDetails.clientSecret = res.clientSecret;
+  latestAccount.value = account;
+  refreshSidebarAccount();
+}
 const onSecretClose = () => {
   latestAccount.value = null;
 };
