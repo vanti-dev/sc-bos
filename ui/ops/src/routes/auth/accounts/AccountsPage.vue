@@ -8,7 +8,7 @@
             variant="outlined"
             :accounts="selectedAccounts"
             @delete="onDelete"/>
-        <grant-role-btn v-if="showGrantBtn" variant="outlined" :accounts="allSelectedAccountIds"/>
+        <grant-role-btn v-if="showGrantBtn" variant="outlined" :accounts="allSelectedAccountIds" @save="onGrantSave"/>
         <new-account-btn variant="flat" color="primary" @save="onNewAccountSave"/>
       </template>
     </v-toolbar>
@@ -19,7 +19,8 @@
     </v-expand-transition>
     <v-card-text>
       <v-data-table-server
-          v-bind="tableAttrs"
+          v-bind="omit(tableAttrs, 'items')"
+          :items="tableItemsWithRoleAssignments"
           :headers="tableHeaders"
           disable-sort
           return-object
@@ -51,6 +52,18 @@
         <template #item.createTime="{item}">
           {{ timestampToDate(item.createTime).toLocaleDateString() }}
         </template>
+        <template #item.roles="{item}">
+          <v-progress-circular indeterminate v-if="item.roles?.loading" size="small"/>
+          <template v-else>
+            <span v-for="(role, i) in item.roles?.items.slice(0, 2)" :key="role.id">
+              <role-assignment-link :role-assignment="role" data-skip-row-select="true"/>
+              <template v-if="i < item.roles?.items.length - 1">, </template>
+            </span>
+            <template v-if="item.roles.items.length > 2">
+              and {{ item.roles.items.length - 2 }} more
+            </template>
+          </template>
+        </template>
       </v-data-table-server>
     </v-card-text>
   </v-card>
@@ -58,22 +71,26 @@
 
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
-import {updateAccount} from '@/api/ui/account.js';
+import {deleteRoleAssignment, updateAccount} from '@/api/ui/account.js';
 import {useDataTableCollection} from '@/composables/table.js';
 import {toAddChange, toRemoveChange, toUpdateChange} from '@/routes/auth/accounts.js';
 import {
   accountTypeIcon,
   accountTypeStr,
   useAccountsCollection,
+  useAccountsRoleAssignments,
   useGetAccount
 } from '@/routes/auth/accounts/accounts.js';
 import CopySecretAlert from '@/routes/auth/accounts/CopySecretAlert.vue';
 import DeleteAccountsBtn from '@/routes/auth/accounts/DeleteAccountsBtn.vue';
 import GrantRoleBtn from '@/routes/auth/accounts/GrantRoleBtn.vue';
 import NewAccountBtn from '@/routes/auth/accounts/NewAccountBtn.vue';
+import RoleAssignmentLink from '@/routes/auth/accounts/RoleAssignmentLink.vue';
+import {useGetRoles} from '@/routes/auth/roles/roles.js';
 import {useSidebarStore} from '@/stores/sidebar.js';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
-import {computed, ref, watch} from 'vue';
+import {omit} from 'lodash';
+import {computed, ref, toValue, watch} from 'vue';
 import {useRouter} from 'vue-router';
 
 const props = defineProps({
@@ -97,14 +114,58 @@ const accountsCollectionOpts = computed(() => {
   };
 })
 const accountsCollection = useAccountsCollection({}, accountsCollectionOpts);
+
 const tableAttrs = useDataTableCollection(wantCount, accountsCollection);
 const tableHeaders = computed(() => {
   return [
     {key: 'type', width: '1.5rem', cellProps: {class: 'pr-0'}},
     {title: 'Name', key: 'displayName', maxWidth: '10em', cellProps: {class: 'text-overflow-ellipsis'}},
-    {title: 'Username / Client ID', key: 'username', maxWidth: '10em', cellProps: {class: 'text-overflow-ellipsis'}},
-    {title: 'Created', key: 'createTime', label: 'Created'},
+    {title: 'Username / Client ID', key: 'username', width: '20em', cellProps: {class: 'text-overflow-ellipsis'}},
+    {title: 'Created', key: 'createTime', width: '8em'},
+    {title: 'Roles', key: 'roles', maxWidth: '10em', cellProps: {class: 'text-overflow-ellipsis'}},
   ]
+});
+
+// additional info we want to inline in the table, instead of showing ids
+const accountsOnCurrentPage = computed(() => tableAttrs.items);
+const accountsToGetRoleAssignments = computed(() => {
+  if (props.accountId) {
+    return [...accountsOnCurrentPage.value, props.accountId];
+  }
+  return accountsOnCurrentPage.value;
+})
+const accountsRoleAssignments = useAccountsRoleAssignments(accountsToGetRoleAssignments);
+const allRoleIds = computed(() => Object.values(accountsRoleAssignments).map((r) => r.items ?? []).flat().map((r) => r.roleId));
+const rolesById = useGetRoles(null, allRoleIds);
+/**
+ * @param {import('vue').Reactive<AccountRoleAssignmentsResponse>} roleAssignments
+ * @return {import('vue').Reactive<AccountRoleAssignmentsResponse & {items: Array<RoleAssgnment.AsObject & {role: Role.AsObject}>}>}
+ */
+const hydrateRoleAssignments = (roleAssignments) => {
+  const assignments = (roleAssignments?.items ?? [])
+      .map((assignment) => {
+        const role = rolesById[assignment.roleId];
+        if (!role) return assignment;
+        return {...assignment, role: role.response, _role: role};
+      });
+  const loading = computed(() => roleAssignments.loading || assignments.some((a) => toValue(a._role?.loading)));
+  return {...roleAssignments, items: assignments, loading};
+}
+const hydratedAccountsRoleAssignments = computed(() => {
+  const hydrated = {};
+  for (const [id, roleAssignments] of Object.entries(accountsRoleAssignments)) {
+    hydrated[id] = hydrateRoleAssignments(roleAssignments);
+  }
+  return hydrated;
+});
+
+const tableItemsWithRoleAssignments = computed(() => {
+  const accounts = accountsOnCurrentPage.value;
+  const roleAssignmentsByAccount = hydratedAccountsRoleAssignments.value;
+  for (const account of accounts) {
+    account.roles = roleAssignmentsByAccount[account.id];
+  }
+  return accounts;
 });
 
 const tableRowProps = ({item}) => {
@@ -122,22 +183,32 @@ const tableErrorStr = computed(() => {
 });
 
 const router = useRouter();
-const onRowClick = (_, {item}) => {
+const onRowClick = (e, {item}) => {
   if (item.id === props.accountId) return; // don't click on the same item
+  if (e.target.closest('[data-skip-row-select]')) return; // something else is handling the click
   router.push({name: 'accounts', params: {accountId: item.id}});
 }
 const sidebar = useSidebarStore();
-const {response: sidebarItem, refresh: refreshSidebarItem} = useGetAccount(() => {
+const {response: sidebarAccount, refresh: refreshSidebarAccount} = useGetAccount(() => {
   if (!props.accountId) return null;
   return {id: props.accountId};
 });
-watch(sidebarItem, (item) => {
+const sidebarRoleAssignments = computed(() => {
+  if (!sidebarAccount.value) return null;
+  return hydratedAccountsRoleAssignments.value[sidebarAccount.value.id];
+})
+watch(sidebarAccount, (item) => {
   if (!item) {
     sidebar.closeSidebar();
     return;
   }
   sidebar.title = item.displayName || `Account ${props.roleId}`;
-  sidebar.data = {account: item, updateAccount: onAccountUpdate};
+  sidebar.data = {
+    account: item,
+    roleAssignments: sidebarRoleAssignments,
+    updateAccount: onAccountUpdate,
+    removeRole: onGrantRemove
+  };
   sidebar.visible = true;
 }, {immediate: true});
 
@@ -153,7 +224,7 @@ const onNewAccountSave = ({account, serviceCredential}) => {
 };
 const onAccountUpdate = async ({account}) => {
   const oldAccount = (() => {
-    if (sidebarItem.value?.id === account.id) return sidebarItem.value;
+    if (sidebarAccount.value?.id === account.id) return sidebarAccount.value;
     return accountsCollection.items.value.find((r) => r.id === account.id);
   })();
 
@@ -172,7 +243,7 @@ const onAccountUpdate = async ({account}) => {
     if (r.id === account.id) return newAccount;
     return r;
   });
-  refreshSidebarItem();
+  refreshSidebarAccount();
 
   return newAccount;
 }
@@ -194,6 +265,19 @@ const allSelectedAccountIds = computed(() => {
 })
 
 const showGrantBtn = computed(() => allSelectedAccountIds.value.length > 0);
+const onGrantSave = (ras) => {
+  for (const ra of ras) {
+    const col = accountsRoleAssignments[ra.accountId];
+    if (!col) continue;
+    col.applyCreate(ra);
+  }
+};
+const onGrantRemove = async (ra) => {
+  await deleteRoleAssignment({id: ra.id, allowMissing: true});
+  const col = accountsRoleAssignments[ra.accountId];
+  if (!col) return;
+  col.applyRemove(ra);
+}
 
 const showDeleteAccountsBtn = computed(() => selectedAccounts.value.length > 0);
 const onDelete = () => {

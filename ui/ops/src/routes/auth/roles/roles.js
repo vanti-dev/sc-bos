@@ -2,7 +2,7 @@ import {getRole, listRoles} from '@/api/ui/account.js';
 import {useAction} from '@/composables/action.js';
 import useCollection from '@/composables/collection.js';
 import {usePermissionsStore} from '@/stores/permissions.js';
-import {computed, toValue} from 'vue';
+import {computed, effectScope, onScopeDispose, reactive, toValue, watch} from 'vue';
 
 /**
  * @param {import('vue').MaybeRefOrGetter<Partial<ListRolesRequest.AsObject>>} request
@@ -42,6 +42,60 @@ export function useRolesCollection(request, options) {
  */
 export function useGetRole(request) {
   return useAction(request, getRole);
+}
+
+/**
+ * Returns a reactive object with a key per id whose values are the result of useGetRole.
+ *
+ * @param {import('vue').MaybeRefOrGetter<string>} name
+ * @param {import('vue').MaybeRefOrGetter<string[]>} ids
+ * @return {import('vue').Reactive<Record<string, ToRefs<UnwrapNestedRefs<UseActionResponse<Role.AsObject>>>>>}
+ */
+export function useGetRoles(name, ids) {
+  // keyed by id
+  const res = reactive(
+      /** @type {Record<string, ToRefs<UnwrapNestedRefs<UseActionResponse<Role.AsObject>>>>} */
+      {}
+  );
+  // keyed by id
+  const closers = /** @type {Record<string, function(): void>} */ {};
+
+  const requests = computed(() => {
+    const _name = toValue(name);
+    // make sure no duplicate ids exist
+    const idSet = new Set(toValue(ids));
+    return Array.from(idSet).map((id) => ({name: _name, id}));
+  });
+  watch(requests, (requests) => {
+    const toDelete = new Set(Object.keys(res)); // of id strings
+    const toAdd = new Set(); // of requests
+    for (const request of requests) {
+      const key = request.id;
+      toDelete.delete(key);
+      if (!Object.hasOwn(closers, key)) {
+        toAdd.add(request);
+      }
+    }
+    for (const key of toDelete.values()) {
+      closers[key]();
+      delete res[key];
+      delete closers[key];
+    }
+    for (const request of toAdd.values()) {
+      const scope = effectScope();
+      closers[request.id] = () => scope.stop();
+      scope.run(() => {
+        res[request.id] = useGetRole(request);
+      });
+    }
+  });
+  onScopeDispose(() => {
+    for (const close of Object.values(closers)) {
+      close();
+    }
+  });
+
+  return res;
 }
 
 /**
