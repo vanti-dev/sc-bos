@@ -6,15 +6,56 @@
     <template v-if="!editMode">
       <div v-if="account" class="details pt-4">
         <p v-if="account.description" class="px-4">{{ account.description }}</p>
-        <template v-if="account.username">
+        <template v-if="account.userDetails?.username">
           <v-list-subheader>Username</v-list-subheader>
-          <p class="px-4">{{ account.username }}</p>
+          <p class="px-4">{{ account.userDetails?.username }}</p>
         </template>
         <template v-if="account.type === Account.Type.SERVICE_ACCOUNT">
           <v-list-subheader>Client ID</v-list-subheader>
           <p class="px-4">
             <copy-div :text="account.id" icon-size="18" :btn-props="{size: 'small', class: 'ma-n2'}"/>
           </p>
+          <p class="px-4">
+            <v-btn block variant="outlined">
+              <v-icon icon="mdi-key" start/>
+              Generate Secret...
+              <v-dialog activator="parent" width="440" v-model="rotateSecretDialogVisible">
+                <v-card title="Generate a New Secret">
+                  <v-card-text>
+                    Replace the secret associated with {{ sidebar.title }} with a new one.
+                  </v-card-text>
+                  <v-card-text class="pt-0">
+                    The old secret will remain valid for a short period of time to allow for a smooth transition
+                    while systems using that secret are updated.
+                  </v-card-text>
+                  <v-card-actions class="px-6 mb-6">
+                    Expire old secret:
+                    <v-select :items="rotateSecretExpiryItems"
+                              v-model="rotateSecretExpiry"
+                              density="compact"
+                              hide-details/>
+                  </v-card-actions>
+                  <v-card-actions>
+                    <v-btn text="cancel" @click="onRotateCancel"/>
+                    <v-btn type="submit" color="primary" variant="flat" @click="onRotateSave">Generate New Secret
+                    </v-btn>
+                  </v-card-actions>
+                  <v-expand-transition>
+                    <div v-if="rotateSecretError">
+                      <v-alert type="error" tile>
+                        Error rotating secret:
+                        {{ rotateSecretError.error?.message || rotateSecretError.message || rotateSecretError }}
+                      </v-alert>
+                    </div>
+                  </v-expand-transition>
+                </v-card>
+              </v-dialog>
+            </v-btn>
+          </p>
+          <template v-if="account.serviceDetails.previousSecretExpireTime">
+            <v-list-subheader>Old Secret Expires</v-list-subheader>
+            <p class="px-4">{{ timestampToDate(account.serviceDetails.previousSecretExpireTime).toLocaleString() }}</p>
+          </template>
         </template>
         <v-list-subheader>Account Created</v-list-subheader>
         <p class="px-4">{{ timestampToDate(account.createTime).toLocaleString() }}</p>
@@ -74,6 +115,7 @@
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
 import CopyDiv from '@/components/CopyDiv.vue';
+import {DAY, HOUR, MINUTE} from '@/components/now.js';
 import SideBar from '@/components/SideBar.vue';
 import RoleAssignmentLink from '@/routes/auth/accounts/RoleAssignmentLink.vue';
 import {useSidebarStore} from '@/stores/sidebar.js';
@@ -96,7 +138,42 @@ const saveErrorStr = computed(() => {
   if (!err) return null;
   const msg = `${err.error?.message ?? err.message ?? err}`;
   return 'Error saving account: ' + msg;
-})
+});
+
+const rotateSecretExpiryItems = [
+  {title: 'Immediately', value: null},
+  {title: 'In 15 minutes', value: 15 * MINUTE},
+  {title: 'In an hour', value: HOUR},
+  {title: 'In a day', value: DAY},
+  {title: 'In 7 days', value: 7 * DAY},
+  {title: 'In 30 days', value: 30 * DAY},
+];
+const rotateSecretExpiry = ref(null);
+const rotateSecretDialogVisible = ref(false);
+const rotateSecretInProgress = ref(false);
+const rotateSecretError = ref(null);
+const onRotateCancel = () => {
+  rotateSecretDialogVisible.value = false;
+}
+const onRotateSave = async () => {
+  rotateSecretInProgress.value = true
+  try {
+    rotateSecretDialogVisible.value = false;
+    const expireTime = (() => {
+      if (!rotateSecretExpiry.value) return null;
+      return new Date(Date.now() + rotateSecretExpiry.value);
+    })();
+    await sidebar.data.rotateServiceAccountSecret({
+      account: account.value,
+      expireTime
+    });
+    rotateSecretDialogVisible.value = false;
+  } catch (e) {
+    rotateSecretError.value = e;
+  } finally {
+    rotateSecretInProgress.value = false;
+  }
+}
 
 const router = useRouter();
 const onCloseClick = () => {
