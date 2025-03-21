@@ -1,25 +1,33 @@
 import * as jspb from 'google-protobuf'
 
+import * as types_info_pb from '@smart-core-os/sc-api-grpc-web/types/info_pb'; // proto import: "types/info.proto"
 
 
 export class Ticket extends jspb.Message {
   getId(): string;
   setId(value: string): Ticket;
 
+  getSummary(): string;
+  setSummary(value: string): Ticket;
+
   getDescription(): string;
   setDescription(value: string): Ticket;
-
-  getDetails(): string;
-  setDetails(value: string): Ticket;
 
   getReporterName(): string;
   setReporterName(value: string): Ticket;
 
-  getClassification(): Ticket.Classification;
-  setClassification(value: Ticket.Classification): Ticket;
+  getClassification(): Ticket.Classification | undefined;
+  setClassification(value?: Ticket.Classification): Ticket;
+  hasClassification(): boolean;
+  clearClassification(): Ticket;
 
-  getSeverity(): Ticket.Severity;
-  setSeverity(value: Ticket.Severity): Ticket;
+  getSeverity(): Ticket.Severity | undefined;
+  setSeverity(value?: Ticket.Severity): Ticket;
+  hasSeverity(): boolean;
+  clearSeverity(): Ticket;
+
+  getExternalUrl(): string;
+  setExternalUrl(value: string): Ticket;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Ticket.AsObject;
@@ -32,40 +40,59 @@ export class Ticket extends jspb.Message {
 export namespace Ticket {
   export type AsObject = {
     id: string,
+    summary: string,
     description: string,
-    details: string,
     reporterName: string,
-    classification: Ticket.Classification,
-    severity: Ticket.Severity,
+    classification?: Ticket.Classification.AsObject,
+    severity?: Ticket.Severity.AsObject,
+    externalUrl: string,
   }
 
-  export enum Classification { 
-    CLASSIFICATION_UNSPECIFIED = 0,
-    MAINTENANCE = 1,
-    CLEANING = 2,
-    FIRE = 3,
-    ELECTRICAL = 4,
-    EMERGENCY_REPAIR = 5,
-    NON_EMERGENCY_REPAIR = 6,
-    PLUMBING = 7,
-    WASTE = 8,
-    RECYCLING = 9,
-    SECURITY = 10,
-    URGENT_REPAIR = 11,
-    OBSERVATION = 12,
-    PORTERAGE = 13,
-    SPACE_PREPARATION = 14,
+  export class Classification extends jspb.Message {
+    getTitle(): string;
+    setTitle(value: string): Classification;
+
+    getDescription(): string;
+    setDescription(value: string): Classification;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Classification.AsObject;
+    static toObject(includeInstance: boolean, msg: Classification): Classification.AsObject;
+    static serializeBinaryToWriter(message: Classification, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Classification;
+    static deserializeBinaryFromReader(message: Classification, reader: jspb.BinaryReader): Classification;
   }
 
-  export enum Severity { 
-    SEVERITY_UNSPECIFIED = 0,
-    EMERGENCY = 1,
-    CRITICAL = 2,
-    URGENT = 3,
-    HIGH = 4,
-    MEDIUM = 5,
-    LOW = 6,
+  export namespace Classification {
+    export type AsObject = {
+      title: string,
+      description: string,
+    }
   }
+
+
+  export class Severity extends jspb.Message {
+    getTitle(): string;
+    setTitle(value: string): Severity;
+
+    getDescription(): string;
+    setDescription(value: string): Severity;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Severity.AsObject;
+    static toObject(includeInstance: boolean, msg: Severity): Severity.AsObject;
+    static serializeBinaryToWriter(message: Severity, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Severity;
+    static deserializeBinaryFromReader(message: Severity, reader: jspb.BinaryReader): Severity;
+  }
+
+  export namespace Severity {
+    export type AsObject = {
+      title: string,
+      description: string,
+    }
+  }
+
 }
 
 export class CreateTicketRequest extends jspb.Message {
@@ -113,6 +140,56 @@ export namespace UpdateTicketRequest {
   export type AsObject = {
     name: string,
     ticket?: Ticket.AsObject,
+  }
+}
+
+export class DescribeTicketRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): DescribeTicketRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DescribeTicketRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DescribeTicketRequest): DescribeTicketRequest.AsObject;
+  static serializeBinaryToWriter(message: DescribeTicketRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DescribeTicketRequest;
+  static deserializeBinaryFromReader(message: DescribeTicketRequest, reader: jspb.BinaryReader): DescribeTicketRequest;
+}
+
+export namespace DescribeTicketRequest {
+  export type AsObject = {
+    name: string,
+  }
+}
+
+export class TicketSupport extends jspb.Message {
+  getResourceSupport(): types_info_pb.ResourceSupport | undefined;
+  setResourceSupport(value?: types_info_pb.ResourceSupport): TicketSupport;
+  hasResourceSupport(): boolean;
+  clearResourceSupport(): TicketSupport;
+
+  getClassificationsList(): Array<Ticket.Classification>;
+  setClassificationsList(value: Array<Ticket.Classification>): TicketSupport;
+  clearClassificationsList(): TicketSupport;
+  addClassifications(value?: Ticket.Classification, index?: number): Ticket.Classification;
+
+  getSeveritiesList(): Array<Ticket.Severity>;
+  setSeveritiesList(value: Array<Ticket.Severity>): TicketSupport;
+  clearSeveritiesList(): TicketSupport;
+  addSeverities(value?: Ticket.Severity, index?: number): Ticket.Severity;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): TicketSupport.AsObject;
+  static toObject(includeInstance: boolean, msg: TicketSupport): TicketSupport.AsObject;
+  static serializeBinaryToWriter(message: TicketSupport, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): TicketSupport;
+  static deserializeBinaryFromReader(message: TicketSupport, reader: jspb.BinaryReader): TicketSupport;
+}
+
+export namespace TicketSupport {
+  export type AsObject = {
+    resourceSupport?: types_info_pb.ResourceSupport.AsObject,
+    classificationsList: Array<Ticket.Classification.AsObject>,
+    severitiesList: Array<Ticket.Severity.AsObject>,
   }
 }
 

@@ -19,6 +19,8 @@
 const grpc = {};
 grpc.web = require('grpc-web');
 
+
+var types_info_pb = require('@smart-core-os/sc-api-grpc-web/types/info_pb.js')
 const proto = {};
 proto.smartcore = {};
 proto.smartcore.bos = require('./service_ticket_pb.js');
@@ -194,6 +196,119 @@ proto.smartcore.bos.ServiceTicketApiPromiseClient.prototype.updateTicket =
       request,
       metadata || {},
       methodDescriptor_ServiceTicketApi_UpdateTicket);
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.ServiceTicketInfoClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.ServiceTicketInfoPromiseClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.DescribeTicketRequest,
+ *   !proto.smartcore.bos.TicketSupport>}
+ */
+const methodDescriptor_ServiceTicketInfo_DescribeTicket = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.ServiceTicketInfo/DescribeTicket',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.DescribeTicketRequest,
+  proto.smartcore.bos.TicketSupport,
+  /**
+   * @param {!proto.smartcore.bos.DescribeTicketRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.TicketSupport.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.DescribeTicketRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.TicketSupport)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.TicketSupport>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.ServiceTicketInfoClient.prototype.describeTicket =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.ServiceTicketInfo/DescribeTicket',
+      request,
+      metadata || {},
+      methodDescriptor_ServiceTicketInfo_DescribeTicket,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.DescribeTicketRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.TicketSupport>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.ServiceTicketInfoPromiseClient.prototype.describeTicket =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.ServiceTicketInfo/DescribeTicket',
+      request,
+      metadata || {},
+      methodDescriptor_ServiceTicketInfo_DescribeTicket);
 };
 
 

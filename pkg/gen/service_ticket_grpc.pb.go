@@ -163,3 +163,111 @@ var ServiceTicketApi_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "service_ticket.proto",
 }
+
+const (
+	ServiceTicketInfo_DescribeTicket_FullMethodName = "/smartcore.bos.ServiceTicketInfo/DescribeTicket"
+)
+
+// ServiceTicketInfoClient is the client API for ServiceTicketInfo service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ServiceTicketInfo can be used to fetch information that is required to create or update a ticket for a
+// system specific implementation.
+type ServiceTicketInfoClient interface {
+	DescribeTicket(ctx context.Context, in *DescribeTicketRequest, opts ...grpc.CallOption) (*TicketSupport, error)
+}
+
+type serviceTicketInfoClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewServiceTicketInfoClient(cc grpc.ClientConnInterface) ServiceTicketInfoClient {
+	return &serviceTicketInfoClient{cc}
+}
+
+func (c *serviceTicketInfoClient) DescribeTicket(ctx context.Context, in *DescribeTicketRequest, opts ...grpc.CallOption) (*TicketSupport, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TicketSupport)
+	err := c.cc.Invoke(ctx, ServiceTicketInfo_DescribeTicket_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ServiceTicketInfoServer is the server API for ServiceTicketInfo service.
+// All implementations must embed UnimplementedServiceTicketInfoServer
+// for forward compatibility.
+//
+// ServiceTicketInfo can be used to fetch information that is required to create or update a ticket for a
+// system specific implementation.
+type ServiceTicketInfoServer interface {
+	DescribeTicket(context.Context, *DescribeTicketRequest) (*TicketSupport, error)
+	mustEmbedUnimplementedServiceTicketInfoServer()
+}
+
+// UnimplementedServiceTicketInfoServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedServiceTicketInfoServer struct{}
+
+func (UnimplementedServiceTicketInfoServer) DescribeTicket(context.Context, *DescribeTicketRequest) (*TicketSupport, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DescribeTicket not implemented")
+}
+func (UnimplementedServiceTicketInfoServer) mustEmbedUnimplementedServiceTicketInfoServer() {}
+func (UnimplementedServiceTicketInfoServer) testEmbeddedByValue()                           {}
+
+// UnsafeServiceTicketInfoServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ServiceTicketInfoServer will
+// result in compilation errors.
+type UnsafeServiceTicketInfoServer interface {
+	mustEmbedUnimplementedServiceTicketInfoServer()
+}
+
+func RegisterServiceTicketInfoServer(s grpc.ServiceRegistrar, srv ServiceTicketInfoServer) {
+	// If the following call pancis, it indicates UnimplementedServiceTicketInfoServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&ServiceTicketInfo_ServiceDesc, srv)
+}
+
+func _ServiceTicketInfo_DescribeTicket_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DescribeTicketRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ServiceTicketInfoServer).DescribeTicket(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ServiceTicketInfo_DescribeTicket_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ServiceTicketInfoServer).DescribeTicket(ctx, req.(*DescribeTicketRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// ServiceTicketInfo_ServiceDesc is the grpc.ServiceDesc for ServiceTicketInfo service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ServiceTicketInfo_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "smartcore.bos.ServiceTicketInfo",
+	HandlerType: (*ServiceTicketInfoServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "DescribeTicket",
+			Handler:    _ServiceTicketInfo_DescribeTicket_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "service_ticket.proto",
+}

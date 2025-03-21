@@ -24,6 +24,20 @@ export class ServiceTicketApiClient {
 
 }
 
+export class ServiceTicketInfoClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  describeTicket(
+    request: service_ticket_pb.DescribeTicketRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: service_ticket_pb.TicketSupport) => void
+  ): grpcWeb.ClientReadableStream<service_ticket_pb.TicketSupport>;
+
+}
+
 export class ServiceTicketApiPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
@@ -38,6 +52,18 @@ export class ServiceTicketApiPromiseClient {
     request: service_ticket_pb.UpdateTicketRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<service_ticket_pb.Ticket>;
+
+}
+
+export class ServiceTicketInfoPromiseClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  describeTicket(
+    request: service_ticket_pb.DescribeTicketRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<service_ticket_pb.TicketSupport>;
 
 }
 
