@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import {createAccount, createServiceCredential} from '@/api/ui/account.js';
+import {createAccount} from '@/api/ui/account.js';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
 import {computed, ref, watch} from 'vue';
 
@@ -149,7 +149,9 @@ const onSave = async () => {
           account: {
             type: Account.Type.USER_ACCOUNT,
             displayName: fullName.value,
-            username: username.value,
+            userDetails: {
+              username: username.value,
+            }
           },
           password: password.value,
         }
@@ -167,15 +169,7 @@ const onSave = async () => {
           }
         };
         const account = await createAccount(createAccountReq);
-        const createServiceCredentialReq = {
-          name: props.name,
-          serviceCredential: {
-            accountId: account.id,
-            displayName: 'Credential 1',
-          }
-        };
-        const serviceCredential = await createServiceCredential(createServiceCredentialReq);
-        emit('save', {account, serviceCredential});
+        emit('save', {account});
         break;
       }
     }
