@@ -13,8 +13,8 @@
       </template>
     </v-toolbar>
     <v-expand-transition>
-      <div v-if="latestServiceCredential">
-        <copy-secret-alert :credential="latestServiceCredential.secret" @close="onSecretClose"/>
+      <div v-if="latestServiceAccount">
+        <copy-secret-alert :credential="latestServiceAccount.clientSecret" @close="onSecretClose"/>
       </div>
     </v-expand-transition>
     <v-card-text>
@@ -47,7 +47,7 @@
           <span class="opacity-50 ml-2" v-if="item.description">{{ item.description }}</span>
         </template>
         <template #item.username="{item}">
-          {{ item.type === Account.Type.USER_ACCOUNT ? item.username : item.id }}
+          {{ item.userDetails?.username ?? item.serviceDetails?.clientId }}
         </template>
         <template #item.createTime="{item}">
           {{ timestampToDate(item.createTime).toLocaleDateString() }}
@@ -89,7 +89,7 @@ import NewAccountBtn from '@/routes/auth/accounts/NewAccountBtn.vue';
 import RoleAssignmentLink from '@/routes/auth/accounts/RoleAssignmentLink.vue';
 import {useGetRoles} from '@/routes/auth/roles/roles.js';
 import {useSidebarStore} from '@/stores/sidebar.js';
-import {Account, RoleAssignment} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
+import {RoleAssignment} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
 import {omit} from 'lodash';
 import {computed, ref, toValue, watch} from 'vue';
 import {useRouter} from 'vue-router';
@@ -243,14 +243,13 @@ watch(sidebarAccount, (item) => {
 }, {immediate: true});
 
 const latestAccount = ref(null);
-const latestServiceCredential = ref(null);
+const latestServiceAccount = computed(() => latestAccount.value?.serviceDetails);
 
-const onNewAccountSave = ({account, serviceCredential}) => {
+const onNewAccountSave = ({account}) => {
   if (pullAccountsResource) {
     pullAccountsResource.lastResponse = toAddChange(account);
   }
   latestAccount.value = account;
-  latestServiceCredential.value = serviceCredential;
 };
 const onAccountUpdate = async ({account}) => {
   const oldAccount = (() => {
@@ -279,7 +278,7 @@ const onAccountUpdate = async ({account}) => {
 }
 
 const onSecretClose = () => {
-  latestServiceCredential.value = null;
+  latestAccount.value = null;
 };
 
 const selectedAccounts = ref([]);
@@ -320,7 +319,6 @@ const onDelete = () => {
   for (const account of selectedAccounts.value) {
     if (_latest && account.id === _latest.id) {
       latestAccount.value = null;
-      latestServiceCredential.value = null;
     }
     if (account.id === props.accountId) {
       router.push({name: 'accounts'});
