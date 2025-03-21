@@ -13,27 +13,23 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-// EnergyJob gets energy consumed over the previous interval (typically 24 hours)
+// EnergyJob gets energy consumed over the previous execution interval (typically 24 hours)
 type EnergyJob struct {
 	BaseJob
 	client     gen.MeterHistoryClient
 	infoClient gen.MeterInfoClient
 	Meters     []string
-	Interval   time.Duration
 }
 
 func (e *EnergyJob) GetName() string {
 	return "energy"
 }
 
-func (e *EnergyJob) GetInterval() time.Duration {
-	return e.Interval
-}
-
 func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 	consumption := float32(.0)
 
 	now := time.Now()
+	filterTime := now.Sub(e.PreviousExecution)
 
 	for _, meter := range e.Meters {
 		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
@@ -46,7 +42,7 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 			continue
 		}
 
-		earliest, latest, err := getRecordsByTime(cctx, e.client.ListMeterReadingHistory, meter, now, e.GetInterval())
+		earliest, latest, err := getRecordsByTime(cctx, e.client.ListMeterReadingHistory, meter, now, filterTime)
 
 		cancel()
 

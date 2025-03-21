@@ -38,7 +38,7 @@ func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
 		}
 
 		// confidence value semantics can vary between driver implementations
-		// 0.2 can be a bad threshold. We will assume it isn't for WordPress
+		// 0.2 can be a bad threshold. We will assume it isn't for exporthttp
 		if resp.GetConfidence() > 0.2 {
 			hasCounted = true
 			sum += resp.GetPeopleCount()
