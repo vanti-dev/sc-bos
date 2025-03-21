@@ -247,9 +247,9 @@ export function createRoleAssignment(request, tracker = {}) {
 }
 
 /**
- * @param {Partial<DeleteRoleRequest.AsObject>} request
- * @param {ActionTracker<DeleteRoleResponse.AsObject>} [tracker]
- * @return {Promise<DeleteRoleResponse.AsObject>}
+ * @param {Partial<DeleteRoleAssignmentRequest.AsObject>} request
+ * @param {ActionTracker<DeleteRoleAssignmentResponse.AsObject>} [tracker]
+ * @return {Promise<DeleteRoleAssignmentResponse.AsObject>}
  */
 export function deleteRoleAssignment(request, tracker = {}) {
   return trackAction('Account.deleteRoleAssignment', tracker, endpoint => {
