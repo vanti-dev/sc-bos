@@ -1,7 +1,7 @@
 <template>
   <v-alert type="info" tile icon="mdi-key" closable @click:close="emit('close')">
     <template #title>
-      Service Account Created
+      Service Account Secret Created
     </template>
     <template #text>
       <p class="mb-3">
