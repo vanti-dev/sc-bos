@@ -37,7 +37,8 @@
                   </v-card-actions>
                   <v-card-actions>
                     <v-btn text="cancel" @click="onRotateCancel"/>
-                    <v-btn type="submit" color="primary" variant="flat" @click="onRotateSave">Generate New Secret
+                    <v-btn type="submit" color="primary" variant="flat" @click="onRotateSave">
+                      Generate New Secret
                     </v-btn>
                   </v-card-actions>
                   <v-expand-transition>
@@ -52,9 +53,9 @@
               </v-dialog>
             </v-btn>
           </p>
-          <template v-if="account.serviceDetails.previousSecretExpireTime">
+          <template v-if="previousSecretExpireTime && previousSecretNotExpired">
             <v-list-subheader>Old Secret Expires</v-list-subheader>
-            <p class="px-4">{{ timestampToDate(account.serviceDetails.previousSecretExpireTime).toLocaleString() }}</p>
+            <p class="px-4">{{ previousSecretExpireTime.toLocaleString() }}</p>
           </template>
         </template>
         <v-list-subheader>Account Created</v-list-subheader>
@@ -117,6 +118,7 @@ import {timestampToDate} from '@/api/convpb.js';
 import CopyDiv from '@/components/CopyDiv.vue';
 import {DAY, HOUR, MINUTE} from '@/components/now.js';
 import SideBar from '@/components/SideBar.vue';
+import {useIsFutureDate} from '@/composables/time.js';
 import RoleAssignmentLink from '@/routes/auth/accounts/RoleAssignmentLink.vue';
 import {useSidebarStore} from '@/stores/sidebar.js';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
@@ -128,6 +130,9 @@ const account = computed(() => sidebar.data?.account);
 const roleAssignmentsCollection = computed(() => sidebar.data?.roleAssignments);
 
 const roleAssignments = computed(() => roleAssignmentsCollection.value?.items ?? []);
+
+const previousSecretExpireTime = computed(() => timestampToDate(account.value?.serviceDetails?.previousSecretExpireTime));
+const previousSecretNotExpired = useIsFutureDate(previousSecretExpireTime);
 
 const editMode = ref(false);
 const formValid = ref(false);
