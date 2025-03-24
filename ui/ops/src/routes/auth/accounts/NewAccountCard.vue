@@ -31,7 +31,9 @@
           <v-text-field label="Password"
                         v-model.trim="password"
                         required
-                        type="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+                        @click:append-inner="showPassword = !showPassword"
                         autocomplete="off"/>
         </template>
         <template v-if="accountType === Account.Type.SERVICE_ACCOUNT">
@@ -100,6 +102,7 @@ const usernameRules = computed(() => {
   ];
 })
 const password = ref('');
+const showPassword = ref(false);
 // guess a suitable username based on the entered full name
 const nameToUsername = (name) => {
   if (!name) return '';
@@ -136,6 +139,7 @@ const reset = () => {
   form.reset();
   accountType.value = Account.Type.USER_ACCOUNT;
   saveError.value = null;
+  showPassword.value = false;
 }
 
 const onSave = async () => {
