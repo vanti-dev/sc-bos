@@ -12,7 +12,7 @@ import {
   startOfMinute,
   startOfMonth,
   startOfWeek,
-  startOfYear
+  startOfYear, toDate
 } from 'date-fns';
 import {computed, effectScope, onMounted, onScopeDispose, onUnmounted, reactive, ref, toValue, watch} from 'vue';
 import {setTimeout, clearTimeout} from 'safe-timers'
@@ -293,5 +293,34 @@ export function usePastDates(dates) {
       res.push(_dates[i]);
     }
     return res;
+  });
+}
+
+/**
+ * Returns a ref that says whether the given date is in the future.
+ * The ref will update as time changes.
+ *
+ * @param {import('vue').MaybeRefOrGetter<Date | number>} date
+ * @return {import('vue').ComputedRef<boolean>}
+ */
+export function useIsFutureDate(date) {
+  const _date = computed(() => toDate(toValue(date)))
+  const now = ref(new Date());
+  let nowHandle = 0;
+  onScopeDispose(() => clearTimeout(nowHandle));
+
+  watch(_date, (date) => {
+    const updateNow = () => {
+      clearTimeout(nowHandle);
+      const t = new Date();
+      now.value = t;
+      const delay = date.getTime() - t.getTime();
+      nowHandle = setTimeout(() => updateNow(), delay);
+    }
+    updateNow();
+  }, {immediate: true});
+
+  return computed(() => {
+    return now.value.getTime() < _date.value.getTime();
   });
 }
