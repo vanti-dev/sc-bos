@@ -55,12 +55,12 @@
         <template #item.roles="{item}">
           <v-progress-circular indeterminate v-if="item.roles?.loading" size="small"/>
           <template v-else>
-            <span v-for="(role, i) in item.roles?.items.slice(0, 2)" :key="role.id">
+            <span v-for="(role, i) in item.roles?.items.slice(0, 1)" :key="role.id">
               <role-assignment-link :role-assignment="role" data-skip-row-select="true"/>
               <template v-if="i < item.roles?.items.length - 1">, </template>
             </span>
-            <template v-if="item.roles.items.length > 2">
-              and {{ item.roles.items.length - 2 }} more
+            <template v-if="item.roles.items.length > 1">
+              and {{ item.roles.items.length - 1 }} more
             </template>
           </template>
         </template>
