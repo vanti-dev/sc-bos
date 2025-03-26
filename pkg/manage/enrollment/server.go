@@ -232,7 +232,7 @@ func (es *Server) DeleteEnrollment(ctx context.Context, request *gen.DeleteEnrol
 			es.logger.Error("delete failed, rollback failed - manual intervention required", zap.NamedError("delErr", err), zap.NamedError("rollbackErr", saveErr))
 			return nil, status.Errorf(codes.DataLoss, "failed to delete, failed to rollback")
 		}
-		return nil, status.Errorf(codes.Aborted, err.Error())
+		return nil, status.Errorf(codes.Aborted, "failed to delete, aborted")
 	}
 	es.done = make(chan struct{})
 	go es.enrollmentChanged.Send(context.Background(), Enrollment{})
