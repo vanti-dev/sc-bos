@@ -106,7 +106,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 			_, _, pool, err = s.stores.Postgres()
 		} else {
 			pool, err = pgxutil.Connect(ctx, cfg.Storage.ConnectConfig)
-			if err != nil {
+			if err == nil {
 				go func() {
 					<-ctx.Done()
 					pool.Close()
