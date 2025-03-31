@@ -16,7 +16,16 @@
           {{ timestampToDate(item.wasteCreateTime).toLocaleString() }}
         </template>
         <template #item.weight="{ item }">
-          {{ item.weight.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.unit ?? "kg" }}
+          {{ item.weight.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.weightUnit ?? "kg" }}
+        </template>
+        <template #item.co2Saved="{ item }">
+          {{ item.co2Saved.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.co2SavedUnit ?? "kg" }}
+        </template>
+        <template #item.landSaved="{ item }">
+          {{ item.landSaved.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.landSavedUnit ?? "km²" }}
+        </template>
+        <template #item.treesSaved="{ item }">
+          {{ item.treesSaved.toFixed(2) }}
         </template>
         <template #item.disposalMethod="{ item }">
           {{ getDisposalMethod(item.disposalMethod) }}
@@ -60,7 +69,10 @@ const allHeaders = [
   {title: 'Disposal Method', value: 'disposalMethod', width: '30%'},
   {title: 'Weight', value: 'weight', width: '10em', align: 'end'},
   {title: 'Stream', value: 'stream', width: '30%'},
-  {title: 'System', value: 'system', width: '30%'}
+  {title: 'System', value: 'system', width: '30%'},
+  {title: 'Co2 Saved', value: 'co2Saved', width: '10em', align: 'end'},
+  {title: 'Land Saved', value: 'landSaved', width: '10em', align: 'end'},
+  {title: 'Trees Saved', value: 'treesSaved', width: '10em', align: 'end'},
 ];
 
 const getDisposalMethod = (disposalMethod) => {
