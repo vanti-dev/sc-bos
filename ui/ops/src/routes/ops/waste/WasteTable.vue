@@ -16,7 +16,7 @@
           {{ timestampToDate(item.wasteCreateTime).toLocaleString() }}
         </template>
         <template #item.weight="{ item }">
-          {{ item.weight.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.weightUnit ?? "kg" }}
+          {{ item.weight.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.unit ?? "kg" }}
         </template>
         <template #item.co2Saved="{ item }">
           {{ item.co2Saved.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.co2SavedUnit ?? "kg" }}
