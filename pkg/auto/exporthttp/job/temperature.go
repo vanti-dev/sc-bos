@@ -29,7 +29,7 @@ func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {
 	count := 0
 
 	for _, sensor := range t.Sensors {
-		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		cctx, cancel := context.WithTimeout(ctx, t.Timeout.Or(defaultTimeout))
 
 		resp, err := t.client.GetAirTemperature(cctx, &traits.GetAirTemperatureRequest{Name: sensor})
 		cancel()

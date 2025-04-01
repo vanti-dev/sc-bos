@@ -32,7 +32,7 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 	filterTime := now.Sub(e.PreviousExecution)
 
 	for _, meter := range e.Meters {
-		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		cctx, cancel := context.WithTimeout(ctx, e.Timeout.Or(defaultTimeout))
 
 		multiplier, err := e.getUnitMultiplier(cctx, meter)
 

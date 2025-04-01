@@ -28,6 +28,8 @@ var (
 	errNoSensorsRetrieved = errors.New("no sensors retrieved")
 )
 
+const defaultTimeout = time.Second * 5
+
 // Job represents an exporthttp automation task that executes Do to send a POST request
 type Job interface {
 	GetName() string
@@ -86,6 +88,7 @@ func Multiplex(ctx context.Context, jobs ...Job) *Mulpx {
 type BaseJob struct {
 	Url               string
 	Schedule          *jsontypes.Schedule
+	Timeout           *jsontypes.Duration
 	PreviousExecution time.Time
 	Site              string
 	Logger            *zap.Logger
@@ -120,6 +123,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Schedule:          cfg.Sources.Occupancy.Schedule,
 				Logger:            logger,
 				PreviousExecution: now,
+				Timeout:           cfg.Sources.Occupancy.Timeout,
 			},
 			Sensors: cfg.Sources.Occupancy.Sensors,
 			client:  traits.NewOccupancySensorApiClient(node.ClientConn()),
@@ -135,6 +139,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Schedule:          cfg.Sources.Temperature.Schedule,
 				PreviousExecution: now,
 				Logger:            logger,
+				Timeout:           cfg.Sources.Temperature.Timeout,
 			},
 			Sensors: cfg.Sources.Temperature.Sensors,
 			client:  traits.NewAirTemperatureApiClient(node.ClientConn()),
@@ -150,6 +155,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Schedule:          cfg.Sources.Energy.Schedule,
 				PreviousExecution: now,
 				Logger:            logger,
+				Timeout:           cfg.Sources.Energy.Timeout,
 			},
 			Meters:     cfg.Sources.Energy.Meters,
 			client:     gen.NewMeterHistoryClient(node.ClientConn()),
@@ -166,6 +172,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Schedule:          cfg.Sources.AirQuality.Schedule,
 				PreviousExecution: now,
 				Logger:            logger,
+				Timeout:           cfg.Sources.AirQuality.Timeout,
 			},
 			Sensors: cfg.Sources.AirQuality.Sensors,
 			client:  traits.NewAirQualitySensorApiClient(node.ClientConn()),
@@ -181,6 +188,7 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Schedule:          cfg.Sources.Water.Schedule,
 				PreviousExecution: now,
 				Logger:            logger,
+				Timeout:           cfg.Sources.Water.Timeout,
 			},
 			Meters:     cfg.Sources.Water.Meters,
 			client:     gen.NewMeterHistoryClient(node.ClientConn()),

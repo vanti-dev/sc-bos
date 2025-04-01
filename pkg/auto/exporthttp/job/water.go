@@ -30,7 +30,7 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 	filterTime := now.Sub(w.PreviousExecution)
 
 	for _, meter := range w.Meters {
-		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		cctx, cancel := context.WithTimeout(ctx, w.Timeout.Or(defaultTimeout))
 
 		multiplier, err := w.getUnitMultiplier(cctx, meter)
 
@@ -47,7 +47,6 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 		}
 
 		consumption += processMeterRecords(multiplier, earliest, latest)
-
 	}
 
 	body := &types.WaterConsumption{
