@@ -27,7 +27,7 @@ func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
 	hasCounted := false
 
 	for _, sensor := range o.Sensors {
-		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		cctx, cancel := context.WithTimeout(ctx, o.Timeout.Or(defaultTimeout))
 
 		resp, err := o.client.GetOccupancy(cctx, &traits.GetOccupancyRequest{Name: sensor})
 		cancel()

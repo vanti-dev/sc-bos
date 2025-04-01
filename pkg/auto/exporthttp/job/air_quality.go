@@ -29,7 +29,7 @@ func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {
 	count := 0
 
 	for _, sensor := range a.Sensors {
-		cctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		cctx, cancel := context.WithTimeout(ctx, a.Timeout.Or(defaultTimeout))
 
 		resp, err := a.client.GetAirQuality(cctx, &traits.GetAirQualityRequest{Name: sensor})
 

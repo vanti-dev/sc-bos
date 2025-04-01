@@ -36,6 +36,7 @@ type Authentication struct {
 type Source struct {
 	Path     string              `json:"path"`
 	Schedule *jsontypes.Schedule `json:"schedule"`
+	Timeout  *jsontypes.Duration `json:"timeout,omitempty"`
 }
 
 type Occupancy struct {

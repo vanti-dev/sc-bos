@@ -102,26 +102,31 @@ const (
 	"occupancy":    {
 	  "path": "occupancy",
 	  "schedule": "0/1 * * * *",
+	  "timeout": "15s",
 	  "sensors":  ["pir/01","pir/02","pir/03"]
 	},
 	"temperature": {
 	  "path": "temperature",
 	  "schedule": "0/2 * * * *",
+	  "timeout": "15s",
 	  "sensors": ["FCU/01","FCU/02"]
 	},
 	"energy":       {
 	  "path": "energy",
 	  "schedule": "0/1 * * * *",
+	  "timeout": "15s",
 	  "meters": ["smart-core/meters/01"]
 	},
 	"airQuality":  {
 	  "path": "air_quality",
 	  "schedule": "0/1 * * * *",
+	  "timeout": "15s",
 	  "sensors": ["smart-core/iaq/01"]
 	},
 	"water": {
 	  "path": "water",
 	  "schedule": "0/1 * * * *",
+	  "timeout": "15s",
 	  "meters" : ["smart-core/meters/03"]
 	}
   }
