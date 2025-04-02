@@ -61,6 +61,7 @@ message PullEventsRequest {
 }
 
 message PullEventsResponse {
+  repeated Change changes = 1;
   // The detection event.
   message Change {
     string name = 1;

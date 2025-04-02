@@ -126,7 +126,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.smartcore.bos.PullEventsResponse = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.smartcore.bos.PullEventsResponse.repeatedFields_, null);
 };
 goog.inherits(proto.smartcore.bos.PullEventsResponse, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -1224,6 +1224,13 @@ proto.smartcore.bos.PullEventsRequest.prototype.setUpdatesOnly = function(value)
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.smartcore.bos.PullEventsResponse.repeatedFields_ = [1];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1255,7 +1262,8 @@ proto.smartcore.bos.PullEventsResponse.prototype.toObject = function(opt_include
  */
 proto.smartcore.bos.PullEventsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+changesList: jspb.Message.toObjectList(msg.getChangesList(),
+    proto.smartcore.bos.PullEventsResponse.Change.toObject, includeInstance)
   };
 
   if (includeInstance) {
@@ -1292,6 +1300,11 @@ proto.smartcore.bos.PullEventsResponse.deserializeBinaryFromReader = function(ms
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = new proto.smartcore.bos.PullEventsResponse.Change;
+      reader.readMessage(value,proto.smartcore.bos.PullEventsResponse.Change.deserializeBinaryFromReader);
+      msg.addChanges(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1321,6 +1334,14 @@ proto.smartcore.bos.PullEventsResponse.prototype.serializeBinary = function() {
  */
 proto.smartcore.bos.PullEventsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getChangesList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      1,
+      f,
+      proto.smartcore.bos.PullEventsResponse.Change.serializeBinaryToWriter
+    );
+  }
 };
 
 
@@ -1553,6 +1574,44 @@ proto.smartcore.bos.PullEventsResponse.Change.prototype.clearAnprEvent = functio
  */
 proto.smartcore.bos.PullEventsResponse.Change.prototype.hasAnprEvent = function() {
   return jspb.Message.getField(this, 3) != null;
+};
+
+
+/**
+ * repeated Change changes = 1;
+ * @return {!Array<!proto.smartcore.bos.PullEventsResponse.Change>}
+ */
+proto.smartcore.bos.PullEventsResponse.prototype.getChangesList = function() {
+  return /** @type{!Array<!proto.smartcore.bos.PullEventsResponse.Change>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.smartcore.bos.PullEventsResponse.Change, 1));
+};
+
+
+/**
+ * @param {!Array<!proto.smartcore.bos.PullEventsResponse.Change>} value
+ * @return {!proto.smartcore.bos.PullEventsResponse} returns this
+*/
+proto.smartcore.bos.PullEventsResponse.prototype.setChangesList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.PullEventsResponse.Change=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.smartcore.bos.PullEventsResponse.Change}
+ */
+proto.smartcore.bos.PullEventsResponse.prototype.addChanges = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.smartcore.bos.PullEventsResponse.Change, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.smartcore.bos.PullEventsResponse} returns this
+ */
+proto.smartcore.bos.PullEventsResponse.prototype.clearChangesList = function() {
+  return this.setChangesList([]);
 };
 
 

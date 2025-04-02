@@ -171,6 +171,11 @@ export namespace PullEventsRequest {
 }
 
 export class PullEventsResponse extends jspb.Message {
+  getChangesList(): Array<PullEventsResponse.Change>;
+  setChangesList(value: Array<PullEventsResponse.Change>): PullEventsResponse;
+  clearChangesList(): PullEventsResponse;
+  addChanges(value?: PullEventsResponse.Change, index?: number): PullEventsResponse.Change;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PullEventsResponse.AsObject;
   static toObject(includeInstance: boolean, msg: PullEventsResponse): PullEventsResponse.AsObject;
@@ -181,6 +186,7 @@ export class PullEventsResponse extends jspb.Message {
 
 export namespace PullEventsResponse {
   export type AsObject = {
+    changesList: Array<PullEventsResponse.Change.AsObject>,
   }
 
   export class Change extends jspb.Message {
