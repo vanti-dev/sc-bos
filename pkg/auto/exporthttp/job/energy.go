@@ -28,8 +28,8 @@ func (e *EnergyJob) GetName() string {
 func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 	consumption := float32(.0)
 
-	now := time.Now()
-	filterTime := now.Sub(e.PreviousExecution)
+	now := time.Now().UTC()
+	filterTime := now.Sub(e.PreviousExecution.UTC())
 
 	for _, meter := range e.Meters {
 		cctx, cancel := context.WithTimeout(ctx, e.Timeout.Or(defaultTimeout))
@@ -49,6 +49,7 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 			continue
 		}
 
+		e.Logger.Debug("records", zap.String("meter", meter), zap.Time("earliest", earliest.GetRecordTime().AsTime()), zap.Time("latest", latest.GetRecordTime().AsTime()), zap.Time("now", now), zap.Duration("filter", filterTime))
 		consumption += processMeterRecords(multiplier, earliest, latest)
 
 	}
@@ -70,7 +71,11 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	return sendFn(ctx, e.GetUrl(), bytes)
+	err = sendFn(ctx, e.GetUrl(), bytes)
+
+	e.PreviousExecution = time.Now().UTC()
+
+	return err
 }
 
 func (e *EnergyJob) getUnitMultiplier(ctx context.Context, meter string) (float32, error) {

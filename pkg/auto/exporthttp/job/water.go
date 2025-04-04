@@ -26,8 +26,8 @@ func (w *WaterJob) GetName() string {
 func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 	consumption := float32(.0)
 
-	now := time.Now()
-	filterTime := now.Sub(w.PreviousExecution)
+	now := time.Now().UTC()
+	filterTime := now.Sub(w.PreviousExecution.UTC())
 
 	for _, meter := range w.Meters {
 		cctx, cancel := context.WithTimeout(ctx, w.Timeout.Or(defaultTimeout))
@@ -66,7 +66,11 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	return sendFn(ctx, w.GetUrl(), bytes)
+	err = sendFn(ctx, w.GetUrl(), bytes)
+
+	w.PreviousExecution = time.Now().UTC()
+
+	return err
 }
 
 func (w *WaterJob) getUnitMultiplier(ctx context.Context, meter string) (float32, error) {
