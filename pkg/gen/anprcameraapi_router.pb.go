@@ -78,16 +78,16 @@ func (r *AnprCameraApiRouter) GetAnprCameraApiClient(name string) (AnprCameraApi
 	return res.(AnprCameraApiClient), nil
 }
 
-func (r *AnprCameraApiRouter) GetEvent(ctx context.Context, request *GetLastEventRequest) (*AnprEvent, error) {
+func (r *AnprCameraApiRouter) ListAnprEvents(ctx context.Context, request *ListAnprEventsRequest) (*ListAnprEventsResponse, error) {
 	child, err := r.GetAnprCameraApiClient(request.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	return child.GetEvent(ctx, request)
+	return child.ListAnprEvents(ctx, request)
 }
 
-func (r *AnprCameraApiRouter) PullEvents(request *PullEventsRequest, server AnprCameraApi_PullEventsServer) error {
+func (r *AnprCameraApiRouter) PullAnprEvents(request *PullAnprEventsRequest, server AnprCameraApi_PullAnprEventsServer) error {
 	child, err := r.GetAnprCameraApiClient(request.Name)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (r *AnprCameraApiRouter) PullEvents(request *PullEventsRequest, server Anpr
 	// so we can cancel our forwarding request if we can't send responses to our caller
 	reqCtx, reqDone := context.WithCancel(server.Context())
 	// issue the request
-	stream, err := child.PullEvents(reqCtx, request)
+	stream, err := child.PullAnprEvents(reqCtx, request)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func (r *AnprCameraApiRouter) PullEvents(request *PullEventsRequest, server Anpr
 		// Impl note: we could improve throughput here by issuing the Recv and Send in different goroutines, but we're doing
 		// it synchronously until we have a need to change the behaviour
 
-		var msg *PullEventsResponse
+		var msg *PullAnprEventsResponse
 		msg, err = stream.Recv()
 		if err != nil {
 			break

@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AnprCameraApi_GetEvent_FullMethodName   = "/smartcore.bos.AnprCameraApi/GetEvent"
-	AnprCameraApi_PullEvents_FullMethodName = "/smartcore.bos.AnprCameraApi/PullEvents"
+	AnprCameraApi_ListAnprEvents_FullMethodName = "/smartcore.bos.AnprCameraApi/ListAnprEvents"
+	AnprCameraApi_PullAnprEvents_FullMethodName = "/smartcore.bos.AnprCameraApi/PullAnprEvents"
 )
 
 // AnprCameraApiClient is the client API for AnprCameraApi service.
@@ -29,8 +29,8 @@ const (
 //
 // AnprCameraApi describes the capability to retrieve detection events from ANPR cameras.
 type AnprCameraApiClient interface {
-	GetEvent(ctx context.Context, in *GetLastEventRequest, opts ...grpc.CallOption) (*AnprEvent, error)
-	PullEvents(ctx context.Context, in *PullEventsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullEventsResponse], error)
+	ListAnprEvents(ctx context.Context, in *ListAnprEventsRequest, opts ...grpc.CallOption) (*ListAnprEventsResponse, error)
+	PullAnprEvents(ctx context.Context, in *PullAnprEventsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullAnprEventsResponse], error)
 }
 
 type anprCameraApiClient struct {
@@ -41,23 +41,23 @@ func NewAnprCameraApiClient(cc grpc.ClientConnInterface) AnprCameraApiClient {
 	return &anprCameraApiClient{cc}
 }
 
-func (c *anprCameraApiClient) GetEvent(ctx context.Context, in *GetLastEventRequest, opts ...grpc.CallOption) (*AnprEvent, error) {
+func (c *anprCameraApiClient) ListAnprEvents(ctx context.Context, in *ListAnprEventsRequest, opts ...grpc.CallOption) (*ListAnprEventsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AnprEvent)
-	err := c.cc.Invoke(ctx, AnprCameraApi_GetEvent_FullMethodName, in, out, cOpts...)
+	out := new(ListAnprEventsResponse)
+	err := c.cc.Invoke(ctx, AnprCameraApi_ListAnprEvents_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *anprCameraApiClient) PullEvents(ctx context.Context, in *PullEventsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullEventsResponse], error) {
+func (c *anprCameraApiClient) PullAnprEvents(ctx context.Context, in *PullAnprEventsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullAnprEventsResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AnprCameraApi_ServiceDesc.Streams[0], AnprCameraApi_PullEvents_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &AnprCameraApi_ServiceDesc.Streams[0], AnprCameraApi_PullAnprEvents_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[PullEventsRequest, PullEventsResponse]{ClientStream: stream}
+	x := &grpc.GenericClientStream[PullAnprEventsRequest, PullAnprEventsResponse]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (c *anprCameraApiClient) PullEvents(ctx context.Context, in *PullEventsRequ
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AnprCameraApi_PullEventsClient = grpc.ServerStreamingClient[PullEventsResponse]
+type AnprCameraApi_PullAnprEventsClient = grpc.ServerStreamingClient[PullAnprEventsResponse]
 
 // AnprCameraApiServer is the server API for AnprCameraApi service.
 // All implementations must embed UnimplementedAnprCameraApiServer
@@ -76,8 +76,8 @@ type AnprCameraApi_PullEventsClient = grpc.ServerStreamingClient[PullEventsRespo
 //
 // AnprCameraApi describes the capability to retrieve detection events from ANPR cameras.
 type AnprCameraApiServer interface {
-	GetEvent(context.Context, *GetLastEventRequest) (*AnprEvent, error)
-	PullEvents(*PullEventsRequest, grpc.ServerStreamingServer[PullEventsResponse]) error
+	ListAnprEvents(context.Context, *ListAnprEventsRequest) (*ListAnprEventsResponse, error)
+	PullAnprEvents(*PullAnprEventsRequest, grpc.ServerStreamingServer[PullAnprEventsResponse]) error
 	mustEmbedUnimplementedAnprCameraApiServer()
 }
 
@@ -88,11 +88,11 @@ type AnprCameraApiServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAnprCameraApiServer struct{}
 
-func (UnimplementedAnprCameraApiServer) GetEvent(context.Context, *GetLastEventRequest) (*AnprEvent, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetEvent not implemented")
+func (UnimplementedAnprCameraApiServer) ListAnprEvents(context.Context, *ListAnprEventsRequest) (*ListAnprEventsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAnprEvents not implemented")
 }
-func (UnimplementedAnprCameraApiServer) PullEvents(*PullEventsRequest, grpc.ServerStreamingServer[PullEventsResponse]) error {
-	return status.Errorf(codes.Unimplemented, "method PullEvents not implemented")
+func (UnimplementedAnprCameraApiServer) PullAnprEvents(*PullAnprEventsRequest, grpc.ServerStreamingServer[PullAnprEventsResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method PullAnprEvents not implemented")
 }
 func (UnimplementedAnprCameraApiServer) mustEmbedUnimplementedAnprCameraApiServer() {}
 func (UnimplementedAnprCameraApiServer) testEmbeddedByValue()                       {}
@@ -115,34 +115,34 @@ func RegisterAnprCameraApiServer(s grpc.ServiceRegistrar, srv AnprCameraApiServe
 	s.RegisterService(&AnprCameraApi_ServiceDesc, srv)
 }
 
-func _AnprCameraApi_GetEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLastEventRequest)
+func _AnprCameraApi_ListAnprEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAnprEventsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AnprCameraApiServer).GetEvent(ctx, in)
+		return srv.(AnprCameraApiServer).ListAnprEvents(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AnprCameraApi_GetEvent_FullMethodName,
+		FullMethod: AnprCameraApi_ListAnprEvents_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AnprCameraApiServer).GetEvent(ctx, req.(*GetLastEventRequest))
+		return srv.(AnprCameraApiServer).ListAnprEvents(ctx, req.(*ListAnprEventsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AnprCameraApi_PullEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(PullEventsRequest)
+func _AnprCameraApi_PullAnprEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PullAnprEventsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(AnprCameraApiServer).PullEvents(m, &grpc.GenericServerStream[PullEventsRequest, PullEventsResponse]{ServerStream: stream})
+	return srv.(AnprCameraApiServer).PullAnprEvents(m, &grpc.GenericServerStream[PullAnprEventsRequest, PullAnprEventsResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type AnprCameraApi_PullEventsServer = grpc.ServerStreamingServer[PullEventsResponse]
+type AnprCameraApi_PullAnprEventsServer = grpc.ServerStreamingServer[PullAnprEventsResponse]
 
 // AnprCameraApi_ServiceDesc is the grpc.ServiceDesc for AnprCameraApi service.
 // It's only intended for direct use with grpc.RegisterService,
@@ -152,14 +152,14 @@ var AnprCameraApi_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AnprCameraApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetEvent",
-			Handler:    _AnprCameraApi_GetEvent_Handler,
+			MethodName: "ListAnprEvents",
+			Handler:    _AnprCameraApi_ListAnprEvents_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "PullEvents",
-			Handler:       _AnprCameraApi_PullEvents_Handler,
+			StreamName:    "PullAnprEvents",
+			Handler:       _AnprCameraApi_PullAnprEvents_Handler,
 			ServerStreams: true,
 		},
 	},

@@ -82,117 +82,117 @@ proto.smartcore.bos.AnprCameraApiPromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.GetLastEventRequest,
- *   !proto.smartcore.bos.AnprEvent>}
+ *   !proto.smartcore.bos.ListAnprEventsRequest,
+ *   !proto.smartcore.bos.ListAnprEventsResponse>}
  */
-const methodDescriptor_AnprCameraApi_GetEvent = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AnprCameraApi/GetEvent',
+const methodDescriptor_AnprCameraApi_ListAnprEvents = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AnprCameraApi/ListAnprEvents',
   grpc.web.MethodType.UNARY,
-  proto.smartcore.bos.GetLastEventRequest,
-  proto.smartcore.bos.AnprEvent,
+  proto.smartcore.bos.ListAnprEventsRequest,
+  proto.smartcore.bos.ListAnprEventsResponse,
   /**
-   * @param {!proto.smartcore.bos.GetLastEventRequest} request
+   * @param {!proto.smartcore.bos.ListAnprEventsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.AnprEvent.deserializeBinary
+  proto.smartcore.bos.ListAnprEventsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.smartcore.bos.GetLastEventRequest} request The
+ * @param {!proto.smartcore.bos.ListAnprEventsRequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.AnprEvent)}
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListAnprEventsResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.AnprEvent>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListAnprEventsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AnprCameraApiClient.prototype.getEvent =
+proto.smartcore.bos.AnprCameraApiClient.prototype.listAnprEvents =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
-      '/smartcore.bos.AnprCameraApi/GetEvent',
+      '/smartcore.bos.AnprCameraApi/ListAnprEvents',
       request,
       metadata || {},
-      methodDescriptor_AnprCameraApi_GetEvent,
+      methodDescriptor_AnprCameraApi_ListAnprEvents,
       callback);
 };
 
 
 /**
- * @param {!proto.smartcore.bos.GetLastEventRequest} request The
+ * @param {!proto.smartcore.bos.ListAnprEventsRequest} request The
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.smartcore.bos.AnprEvent>}
+ * @return {!Promise<!proto.smartcore.bos.ListAnprEventsResponse>}
  *     Promise that resolves to the response
  */
-proto.smartcore.bos.AnprCameraApiPromiseClient.prototype.getEvent =
+proto.smartcore.bos.AnprCameraApiPromiseClient.prototype.listAnprEvents =
     function(request, metadata) {
   return this.client_.unaryCall(this.hostname_ +
-      '/smartcore.bos.AnprCameraApi/GetEvent',
+      '/smartcore.bos.AnprCameraApi/ListAnprEvents',
       request,
       metadata || {},
-      methodDescriptor_AnprCameraApi_GetEvent);
+      methodDescriptor_AnprCameraApi_ListAnprEvents);
 };
 
 
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.smartcore.bos.PullEventsRequest,
- *   !proto.smartcore.bos.PullEventsResponse>}
+ *   !proto.smartcore.bos.PullAnprEventsRequest,
+ *   !proto.smartcore.bos.PullAnprEventsResponse>}
  */
-const methodDescriptor_AnprCameraApi_PullEvents = new grpc.web.MethodDescriptor(
-  '/smartcore.bos.AnprCameraApi/PullEvents',
+const methodDescriptor_AnprCameraApi_PullAnprEvents = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AnprCameraApi/PullAnprEvents',
   grpc.web.MethodType.SERVER_STREAMING,
-  proto.smartcore.bos.PullEventsRequest,
-  proto.smartcore.bos.PullEventsResponse,
+  proto.smartcore.bos.PullAnprEventsRequest,
+  proto.smartcore.bos.PullAnprEventsResponse,
   /**
-   * @param {!proto.smartcore.bos.PullEventsRequest} request
+   * @param {!proto.smartcore.bos.PullAnprEventsRequest} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.PullEventsResponse.deserializeBinary
+  proto.smartcore.bos.PullAnprEventsResponse.deserializeBinary
 );
 
 
 /**
- * @param {!proto.smartcore.bos.PullEventsRequest} request The request proto
+ * @param {!proto.smartcore.bos.PullAnprEventsRequest} request The request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullEventsResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAnprEventsResponse>}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AnprCameraApiClient.prototype.pullEvents =
+proto.smartcore.bos.AnprCameraApiClient.prototype.pullAnprEvents =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/smartcore.bos.AnprCameraApi/PullEvents',
+      '/smartcore.bos.AnprCameraApi/PullAnprEvents',
       request,
       metadata || {},
-      methodDescriptor_AnprCameraApi_PullEvents);
+      methodDescriptor_AnprCameraApi_PullAnprEvents);
 };
 
 
 /**
- * @param {!proto.smartcore.bos.PullEventsRequest} request The request proto
+ * @param {!proto.smartcore.bos.PullAnprEventsRequest} request The request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullEventsResponse>}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.PullAnprEventsResponse>}
  *     The XHR Node Readable Stream
  */
-proto.smartcore.bos.AnprCameraApiPromiseClient.prototype.pullEvents =
+proto.smartcore.bos.AnprCameraApiPromiseClient.prototype.pullAnprEvents =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/smartcore.bos.AnprCameraApi/PullEvents',
+      '/smartcore.bos.AnprCameraApi/PullAnprEvents',
       request,
       metadata || {},
-      methodDescriptor_AnprCameraApi_PullEvents);
+      methodDescriptor_AnprCameraApi_PullAnprEvents);
 };
 
 

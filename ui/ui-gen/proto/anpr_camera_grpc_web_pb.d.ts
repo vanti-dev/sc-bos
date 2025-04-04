@@ -8,17 +8,17 @@ export class AnprCameraApiClient {
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
 
-  getEvent(
-    request: anpr_camera_pb.GetLastEventRequest,
+  listAnprEvents(
+    request: anpr_camera_pb.ListAnprEventsRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: anpr_camera_pb.AnprEvent) => void
-  ): grpcWeb.ClientReadableStream<anpr_camera_pb.AnprEvent>;
+               response: anpr_camera_pb.ListAnprEventsResponse) => void
+  ): grpcWeb.ClientReadableStream<anpr_camera_pb.ListAnprEventsResponse>;
 
-  pullEvents(
-    request: anpr_camera_pb.PullEventsRequest,
+  pullAnprEvents(
+    request: anpr_camera_pb.PullAnprEventsRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<anpr_camera_pb.PullEventsResponse>;
+  ): grpcWeb.ClientReadableStream<anpr_camera_pb.PullAnprEventsResponse>;
 
 }
 
@@ -27,15 +27,15 @@ export class AnprCameraApiPromiseClient {
                credentials?: null | { [index: string]: string; },
                options?: null | { [index: string]: any; });
 
-  getEvent(
-    request: anpr_camera_pb.GetLastEventRequest,
+  listAnprEvents(
+    request: anpr_camera_pb.ListAnprEventsRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<anpr_camera_pb.AnprEvent>;
+  ): Promise<anpr_camera_pb.ListAnprEventsResponse>;
 
-  pullEvents(
-    request: anpr_camera_pb.PullEventsRequest,
+  pullAnprEvents(
+    request: anpr_camera_pb.PullAnprEventsRequest,
     metadata?: grpcWeb.Metadata
-  ): grpcWeb.ClientReadableStream<anpr_camera_pb.PullEventsResponse>;
+  ): grpcWeb.ClientReadableStream<anpr_camera_pb.PullAnprEventsResponse>;
 
 }
 

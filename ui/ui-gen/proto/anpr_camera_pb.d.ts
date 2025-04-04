@@ -18,8 +18,6 @@ export class AnprEvent extends jspb.Message {
 
   getArea(): string;
   setArea(value: string): AnprEvent;
-  hasArea(): boolean;
-  clearArea(): AnprEvent;
 
   getConfidence(): number;
   setConfidence(value: number): AnprEvent;
@@ -28,13 +26,9 @@ export class AnprEvent extends jspb.Message {
 
   getPlateType(): string;
   setPlateType(value: string): AnprEvent;
-  hasPlateType(): boolean;
-  clearPlateType(): AnprEvent;
 
   getYear(): string;
   setYear(value: string): AnprEvent;
-  hasYear(): boolean;
-  clearYear(): AnprEvent;
 
   getVehicleInfo(): AnprEvent.VehicleInfo | undefined;
   setVehicleInfo(value?: AnprEvent.VehicleInfo): AnprEvent;
@@ -54,10 +48,10 @@ export namespace AnprEvent {
     eventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     registrationPlate: string,
     country: string,
-    area?: string,
+    area: string,
     confidence?: number,
-    plateType?: string,
-    year?: string,
+    plateType: string,
+    year: string,
     vehicleInfo?: AnprEvent.VehicleInfo.AsObject,
   }
 
@@ -92,77 +86,93 @@ export namespace AnprEvent {
   }
 
 
-  export enum AreaCase { 
-    _AREA_NOT_SET = 0,
-    AREA = 4,
-  }
-
   export enum ConfidenceCase { 
     _CONFIDENCE_NOT_SET = 0,
     CONFIDENCE = 5,
   }
-
-  export enum PlateTypeCase { 
-    _PLATE_TYPE_NOT_SET = 0,
-    PLATE_TYPE = 6,
-  }
-
-  export enum YearCase { 
-    _YEAR_NOT_SET = 0,
-    YEAR = 7,
-  }
-
-  export enum VehicleInfoCase { 
-    _VEHICLE_INFO_NOT_SET = 0,
-    VEHICLE_INFO = 8,
-  }
 }
 
-export class GetLastEventRequest extends jspb.Message {
+export class ListAnprEventsRequest extends jspb.Message {
   getName(): string;
-  setName(value: string): GetLastEventRequest;
+  setName(value: string): ListAnprEventsRequest;
 
   getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
-  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetLastEventRequest;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): ListAnprEventsRequest;
   hasReadMask(): boolean;
-  clearReadMask(): GetLastEventRequest;
+  clearReadMask(): ListAnprEventsRequest;
+
+  getPageSize(): number;
+  setPageSize(value: number): ListAnprEventsRequest;
+
+  getPageToken(): string;
+  setPageToken(value: string): ListAnprEventsRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetLastEventRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetLastEventRequest): GetLastEventRequest.AsObject;
-  static serializeBinaryToWriter(message: GetLastEventRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetLastEventRequest;
-  static deserializeBinaryFromReader(message: GetLastEventRequest, reader: jspb.BinaryReader): GetLastEventRequest;
+  toObject(includeInstance?: boolean): ListAnprEventsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListAnprEventsRequest): ListAnprEventsRequest.AsObject;
+  static serializeBinaryToWriter(message: ListAnprEventsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListAnprEventsRequest;
+  static deserializeBinaryFromReader(message: ListAnprEventsRequest, reader: jspb.BinaryReader): ListAnprEventsRequest;
 }
 
-export namespace GetLastEventRequest {
+export namespace ListAnprEventsRequest {
   export type AsObject = {
     name: string,
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    pageSize: number,
+    pageToken: string,
   }
 }
 
-export class PullEventsRequest extends jspb.Message {
-  getName(): string;
-  setName(value: string): PullEventsRequest;
+export class ListAnprEventsResponse extends jspb.Message {
+  getAnprEventsList(): Array<AnprEvent>;
+  setAnprEventsList(value: Array<AnprEvent>): ListAnprEventsResponse;
+  clearAnprEventsList(): ListAnprEventsResponse;
+  addAnprEvents(value?: AnprEvent, index?: number): AnprEvent;
 
-  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
-  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullEventsRequest;
-  hasReadMask(): boolean;
-  clearReadMask(): PullEventsRequest;
+  getNextPageToken(): string;
+  setNextPageToken(value: string): ListAnprEventsResponse;
 
-  getUpdatesOnly(): boolean;
-  setUpdatesOnly(value: boolean): PullEventsRequest;
+  getTotalSize(): number;
+  setTotalSize(value: number): ListAnprEventsResponse;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PullEventsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: PullEventsRequest): PullEventsRequest.AsObject;
-  static serializeBinaryToWriter(message: PullEventsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PullEventsRequest;
-  static deserializeBinaryFromReader(message: PullEventsRequest, reader: jspb.BinaryReader): PullEventsRequest;
+  toObject(includeInstance?: boolean): ListAnprEventsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListAnprEventsResponse): ListAnprEventsResponse.AsObject;
+  static serializeBinaryToWriter(message: ListAnprEventsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListAnprEventsResponse;
+  static deserializeBinaryFromReader(message: ListAnprEventsResponse, reader: jspb.BinaryReader): ListAnprEventsResponse;
 }
 
-export namespace PullEventsRequest {
+export namespace ListAnprEventsResponse {
+  export type AsObject = {
+    anprEventsList: Array<AnprEvent.AsObject>,
+    nextPageToken: string,
+    totalSize: number,
+  }
+}
+
+export class PullAnprEventsRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): PullAnprEventsRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullAnprEventsRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): PullAnprEventsRequest;
+
+  getUpdatesOnly(): boolean;
+  setUpdatesOnly(value: boolean): PullAnprEventsRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullAnprEventsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PullAnprEventsRequest): PullAnprEventsRequest.AsObject;
+  static serializeBinaryToWriter(message: PullAnprEventsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullAnprEventsRequest;
+  static deserializeBinaryFromReader(message: PullAnprEventsRequest, reader: jspb.BinaryReader): PullAnprEventsRequest;
+}
+
+export namespace PullAnprEventsRequest {
   export type AsObject = {
     name: string,
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
@@ -170,23 +180,23 @@ export namespace PullEventsRequest {
   }
 }
 
-export class PullEventsResponse extends jspb.Message {
-  getChangesList(): Array<PullEventsResponse.Change>;
-  setChangesList(value: Array<PullEventsResponse.Change>): PullEventsResponse;
-  clearChangesList(): PullEventsResponse;
-  addChanges(value?: PullEventsResponse.Change, index?: number): PullEventsResponse.Change;
+export class PullAnprEventsResponse extends jspb.Message {
+  getChangesList(): Array<PullAnprEventsResponse.Change>;
+  setChangesList(value: Array<PullAnprEventsResponse.Change>): PullAnprEventsResponse;
+  clearChangesList(): PullAnprEventsResponse;
+  addChanges(value?: PullAnprEventsResponse.Change, index?: number): PullAnprEventsResponse.Change;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): PullEventsResponse.AsObject;
-  static toObject(includeInstance: boolean, msg: PullEventsResponse): PullEventsResponse.AsObject;
-  static serializeBinaryToWriter(message: PullEventsResponse, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): PullEventsResponse;
-  static deserializeBinaryFromReader(message: PullEventsResponse, reader: jspb.BinaryReader): PullEventsResponse;
+  toObject(includeInstance?: boolean): PullAnprEventsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PullAnprEventsResponse): PullAnprEventsResponse.AsObject;
+  static serializeBinaryToWriter(message: PullAnprEventsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullAnprEventsResponse;
+  static deserializeBinaryFromReader(message: PullAnprEventsResponse, reader: jspb.BinaryReader): PullAnprEventsResponse;
 }
 
-export namespace PullEventsResponse {
+export namespace PullAnprEventsResponse {
   export type AsObject = {
-    changesList: Array<PullEventsResponse.Change.AsObject>,
+    changesList: Array<PullAnprEventsResponse.Change.AsObject>,
   }
 
   export class Change extends jspb.Message {
