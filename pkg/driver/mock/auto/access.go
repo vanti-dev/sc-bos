@@ -2,6 +2,7 @@ package auto
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -14,6 +15,8 @@ import (
 
 func Access(model *accesspb.Model) service.Lifecycle {
 	grants := maps.Values(gen.AccessAttempt_Grant_value)
+	slices.Sort(grants)
+	grants = grants[1:]
 	reasons := []string{
 		"It's Monday, everyone can come in",
 		"Unknown card ID",
