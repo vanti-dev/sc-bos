@@ -51,8 +51,8 @@
     "glob": "^11.0.0",
     "globals": "^15.14.0",
     "pkijs": "^3.0.15",
-    "vite": "^6.0.7",
+    "vite": "^6.2.5",
     "vite-plugin-eslint": "^1.8.1",
-    "vite-plugin-vuetify": "^2.0.4"
+    "vite-plugin-vuetify": "^2.1.1"
   }
 }
