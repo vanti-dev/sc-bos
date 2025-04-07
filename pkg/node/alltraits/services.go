@@ -7,6 +7,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/anprcamera"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
@@ -52,6 +53,7 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 
 	// sc-bos private traits
 	accesspb.TraitName:       {gen.AccessApi_ServiceDesc},
+	anprcamera.TraitName:     {gen.AnprCameraApi_ServiceDesc},
 	button.TraitName:         {gen.ButtonApi_ServiceDesc},
 	dalipb.TraitName:         {gen.DaliApi_ServiceDesc},
 	emergencylight.TraitName: {gen.DaliApi_ServiceDesc},
