@@ -62,7 +62,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	cfg.OccupancySensors = []deviceName{"pir01", "pir02"}
 	cfg.Lights = []deviceName{"light01", "light02"}
 	cfg.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
-	cfg.RefreshEvery = jsontypes.Duration{Duration: 8 * time.Minute}
+	cfg.RefreshEvery = &jsontypes.Duration{Duration: 8 * time.Minute}
 
 	tickChan := make(chan time.Time, 1)
 	automation.newTimer = func(d time.Duration) (<-chan time.Time, func() bool) {

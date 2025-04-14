@@ -47,14 +47,14 @@ type Root struct {
 	ToggleButtons []string `json:"toggleButtons,omitempty"`
 
 	// RefreshEvery guarantees the last read state will eventually be processed if no event happens for this long
-	RefreshEvery jsontypes.Duration `json:"refreshEvery,omitempty"`
+	RefreshEvery *jsontypes.Duration `json:"refreshEvery,omitempty"`
 	// WriteCacheExpiry controls how old a past write must be before it stops affecting future writes.
 	// A value of 0 means no expiry, a value <0 means no caching, see DefaultWriteCacheExpiry.
 	WriteCacheExpiry *jsontypes.Duration `json:"writeCacheExpiry,omitempty"`
 
 	// OnProcessError provides parameters for when updating the brightness fails
 	// based on occupancy sensor outcomes
-	OnProcessError OnProcessError `json:"onProcessError,omitempty"`
+	OnProcessError *OnProcessError `json:"onProcessError,omitempty"`
 
 	// Now returns the current time. It's configurable for testing purposes, typically for testing the logic.
 	Now func() time.Time `json:"-"`
@@ -64,7 +64,7 @@ type Root struct {
 type OnProcessError struct {
 	// BackOffMultiplier is the wait duration multiplier for each iteration
 	// attempt in updating a light's brightness until it succeeds
-	BackOffMultiplier jsontypes.Duration `json:"backOffMultiplier,omitempty"`
+	BackOffMultiplier *jsontypes.Duration `json:"backOffMultiplier,omitempty"`
 	// MaxRetries is the number of iteration attempts in updating a light's brightness until it succeeds
 	// Or a newer state is received,
 	// in which case, retries are cancelled and the newer state is processed instead
@@ -207,9 +207,9 @@ func Default() Root {
 		Mode: Mode{
 			UnoccupiedOffDelay: jsontypes.Duration{Duration: 10 * time.Minute},
 		},
-		RefreshEvery: jsontypes.Duration{Duration: DefaultRefreshEvery},
-		OnProcessError: OnProcessError{
-			BackOffMultiplier: jsontypes.Duration{Duration: DefaultBackOffMultiplier},
+		RefreshEvery: &jsontypes.Duration{Duration: DefaultRefreshEvery},
+		OnProcessError: &OnProcessError{
+			BackOffMultiplier: &jsontypes.Duration{Duration: DefaultBackOffMultiplier},
 			MaxRetries:        DefaultMaxRetries,
 		},
 	}

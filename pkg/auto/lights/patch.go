@@ -13,6 +13,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 // Patcher represents a single patch that adjusts ReadState.
@@ -156,14 +157,17 @@ type source struct {
 }
 
 func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Root, sources []*source, changes chan<- Patcher) (sourceCount int) {
-	if cfg.OnProcessError.BackOffMultiplier.Duration.Nanoseconds() <= 0 {
-		cfg.OnProcessError.BackOffMultiplier.Duration = config.DefaultBackOffMultiplier
+	if cfg.OnProcessError == nil {
+		cfg.OnProcessError = &config.OnProcessError{}
+	}
+	if cfg.OnProcessError.BackOffMultiplier == nil || cfg.OnProcessError.BackOffMultiplier.Duration.Nanoseconds() <= 0 {
+		cfg.OnProcessError.BackOffMultiplier = &jsontypes.Duration{Duration: config.DefaultBackOffMultiplier}
 	}
 	if cfg.OnProcessError.MaxRetries < 0 {
 		cfg.OnProcessError.MaxRetries = config.DefaultMaxRetries
 	}
-	if cfg.RefreshEvery.Duration.Nanoseconds() <= 0 {
-		cfg.RefreshEvery.Duration = config.DefaultRefreshEvery
+	if cfg.RefreshEvery == nil || cfg.RefreshEvery.Duration.Nanoseconds() <= 0 {
+		cfg.RefreshEvery = &jsontypes.Duration{Duration: config.DefaultRefreshEvery}
 	}
 
 	for _, source := range sources {
