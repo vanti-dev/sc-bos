@@ -1,6 +1,6 @@
 import {localLogin} from '@/api/localLogin.js';
 import {loadFromBrowserStorage, saveToBrowserStorage} from '@/util/browserStorage';
-import jwtDecode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import {ref} from 'vue';
 
 /**

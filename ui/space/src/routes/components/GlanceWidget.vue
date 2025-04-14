@@ -9,7 +9,7 @@
 
 <script setup>
 import {SECOND, useNow} from '@/components/now';
-import {computed, defineEmits} from 'vue';
+import {computed} from 'vue';
 
 const {now} = useNow(SECOND);
 const timeStr = computed(() => now.value.toLocaleTimeString('en-GB', {
