@@ -44,9 +44,9 @@ func main() {
 
 func run(ctx context.Context) error {
 	host := "localhost:23557"
-	conn, err := grpc.Dial(host, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})))
+	conn, err := grpc.NewClient(host, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})))
 	if err != nil {
-		return fmt.Errorf("grpc.Dial: %w", err)
+		return fmt.Errorf("grpc.NewClient: %w", err)
 	}
 
 	devicesClient := gen.NewDevicesApiClient(conn)

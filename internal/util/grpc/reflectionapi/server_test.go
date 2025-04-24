@@ -33,14 +33,14 @@ func TestServer(t *testing.T) {
 	ctx, stop := context.WithCancel(context.Background())
 	t.Cleanup(stop)
 
-	apiClient := nodeClient(t, ctx, func(s grpc.ServiceRegistrar) {
+	apiClient := nodeClient(t, func(s grpc.ServiceRegistrar) {
 		traits.RegisterOnOffApiServer(s, &traits.UnimplementedOnOffApiServer{})
 	})
-	infoClient := nodeClient(t, ctx, func(s grpc.ServiceRegistrar) {
+	infoClient := nodeClient(t, func(s grpc.ServiceRegistrar) {
 		traits.RegisterOnOffInfoServer(s, &traits.UnimplementedOnOffInfoServer{})
 	})
 
-	gwClient, rs := gwServer(t, ctx)
+	gwClient, rs := gwServer(t)
 	t.Run("before register", func(t *testing.T) {
 		testNoDynamicAPIs(t, ctx, gwClient)
 	})
@@ -124,7 +124,7 @@ func testNoDynamicAPIs(t *testing.T, ctx context.Context, client *grpc.ClientCon
 
 }
 
-func nodeClient(t *testing.T, ctx context.Context, register func(grpc.ServiceRegistrar)) *grpc.ClientConn {
+func nodeClient(t *testing.T, register func(grpc.ServiceRegistrar)) *grpc.ClientConn {
 	lis := bufconn.Listen(1024 * 1024)
 	server := grpc.NewServer()
 	reflection.Register(server)
@@ -137,14 +137,14 @@ func nodeClient(t *testing.T, ctx context.Context, register func(grpc.ServiceReg
 		}
 	}()
 
-	client, err := bufConn(ctx, lis)
+	client, err := bufConn(lis)
 	if err != nil {
 		t.Fatalf("nodeClient failed to create client = %v", err)
 	}
 	return client
 }
 
-func gwServer(t *testing.T, ctx context.Context) (*grpc.ClientConn, *Server) {
+func gwServer(t *testing.T) (*grpc.ClientConn, *Server) {
 	gwLis := bufconn.Listen(1024 * 1024)
 	gwServer := grpc.NewServer()
 
@@ -168,15 +168,15 @@ func gwServer(t *testing.T, ctx context.Context) (*grpc.ClientConn, *Server) {
 		}
 	}()
 
-	client, err := bufConn(ctx, gwLis)
+	client, err := bufConn(gwLis)
 	if err != nil {
 		t.Fatalf("gwServer failed to create client = %v", err)
 	}
 	return client, reflectionServer
 }
 
-func bufConn(ctx context.Context, buf *bufconn.Listener) (*grpc.ClientConn, error) {
-	return grpc.DialContext(ctx, "",
+func bufConn(buf *bufconn.Listener) (*grpc.ClientConn, error) {
+	return grpc.NewClient("localhost:0",
 		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 			return buf.Dial()
 		}),

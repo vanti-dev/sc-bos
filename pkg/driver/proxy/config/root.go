@@ -16,7 +16,7 @@ type Root struct {
 
 // Node is a networked Smart Core node, identified by its host.
 type Node struct {
-	Host string `json:"host,omitempty"` // for accepted values see grpc.Dial
+	Host string `json:"host,omitempty"` // for accepted values see grpc.NewClient
 
 	// TLS allows us to override the default enrollment managed TLS configuration.
 	TLS TLS `json:"tls,omitempty"`

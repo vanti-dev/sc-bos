@@ -19,9 +19,9 @@ type Remote interface {
 	Connect(ctx context.Context) (*grpc.ClientConn, error)
 }
 
-// Dial calls grpc.DialContext and returns it as a Remote.
+// Dial calls grpc.NewClient and returns it as a Remote.
 func Dial(ctx context.Context, target string, opts ...grpc.DialOption) Remote {
-	conn, err := dial(ctx, target, opts...)
+	conn, err := dial(target, opts...)
 	return &eagerRemote{
 		target:  target,
 		conn:    conn,
@@ -66,7 +66,7 @@ func DialChan(ctx context.Context, targets <-chan string, opts ...grpc.DialOptio
 	// res.CC.UpdateState. This does this for us when the resolver builders Build method is called during dial.
 	res.InitialState(resolver.State{})
 	opts = append(opts, grpc.WithResolvers(res))
-	conn, err := dial(ctx, "dialchan:ignored", opts...)
+	conn, err := dial("dialchan:ignored", opts...)
 	remote := &chanRemote{
 		targets:  targets,
 		resolver: res,
@@ -76,6 +76,7 @@ func DialChan(ctx context.Context, targets <-chan string, opts ...grpc.DialOptio
 		closed: make(chan struct{}),
 	}
 	if err == nil { // only start if the conn was a success
+		conn.Connect() // connect causes the resolver to be built
 		remote.start()
 	}
 	return remote
@@ -142,10 +143,10 @@ func (c *chanRemote) Connect(_ context.Context) (*grpc.ClientConn, error) {
 	return c.conn, c.dialErr
 }
 
-func dial(ctx context.Context, target string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
+func dial(target string, opts ...grpc.DialOption) (*grpc.ClientConn, error) {
 	dialOpts := processOpts(opts)
 
-	conn, err := grpc.DialContext(ctx, target, opts...)
+	conn, err := grpc.NewClient(target, opts...)
 	if err != nil {
 		return nil, err
 	}

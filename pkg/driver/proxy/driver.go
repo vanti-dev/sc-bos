@@ -86,7 +86,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 			dialOpts = append(dialOpts, grpc.WithPerRPCCredentials(creds))
 		}
-		conn, err := grpc.DialContext(ctx, n.Host, dialOpts...)
+		conn, err := grpc.NewClient(n.Host, dialOpts...)
 		if err != nil {
 			// dial shouldn't fail, connections are lazy. If we do see an error here make sure we surface it!
 			allErrs = multierr.Append(allErrs, fmt.Errorf("dial %v %w", n.Host, err))

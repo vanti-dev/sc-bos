@@ -170,7 +170,7 @@ func waitForNodes(t *testing.T, ctx context.Context) {
 func waitForNode(t *testing.T, ctx context.Context, addr string) {
 	t.Helper()
 
-	conn, err := grpc.DialContext(ctx, addr, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
 	})))
 	if err != nil {
@@ -196,7 +196,7 @@ func configureCohort(t *testing.T, ctx context.Context) {
 
 	// todo: use the hubs ca (should be in dir, after the first request) for our client cert checks
 
-	hubConn, err := grpc.DialContext(ctx, shared.HubGRPCAddr, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+	hubConn, err := grpc.NewClient(shared.HubGRPCAddr, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
 	})))
 	if err != nil {
@@ -228,7 +228,7 @@ func configureCohort(t *testing.T, ctx context.Context) {
 func testGW(t *testing.T, ctx context.Context, addr string) {
 	t.Helper()
 
-	conn, err := grpc.DialContext(ctx, addr, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
 	})))
 	if err != nil {

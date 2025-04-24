@@ -255,7 +255,7 @@ func (es *Server) TestEnrollment(ctx context.Context, _ *gen.TestEnrollmentReque
 	tlsConfig := pki.TLSClientConfig(pki.FuncSource(func() (*tls.Certificate, []*x509.Certificate, error) {
 		return &e.Cert, []*x509.Certificate{e.RootCA}, nil
 	}))
-	conn, err := grpc.DialContext(ctx, e.ManagerAddress, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	conn, err := grpc.NewClient(e.ManagerAddress, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +341,7 @@ func (es *Server) RequestRenew(ctx context.Context) error {
 		return clientCert, roots, err
 	})
 	tlsConfig := pki.TLSClientConfig(source)
-	conn, err := grpc.DialContext(ctx, hubAddress, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	conn, err := grpc.NewClient(hubAddress, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	if err != nil {
 		return err
 	}

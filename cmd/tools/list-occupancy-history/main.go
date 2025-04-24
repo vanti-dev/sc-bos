@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	conn, err := grpc.DialContext(context.Background(), "10.1.104.3:23557", grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+	conn, err := grpc.NewClient("10.1.104.3:23557", grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 		InsecureSkipVerify: true,
 	})))
 	if err != nil {
