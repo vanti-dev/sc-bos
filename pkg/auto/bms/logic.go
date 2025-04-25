@@ -22,27 +22,60 @@ func processReadState(ctx context.Context, readState *ReadState, writeState *Wri
 	// process occupancy state
 	unoccupiedDelay := readState.Config.UnoccupiedDelay.Or(config.DefaultUnoccupiedDelay)
 	occupiedCount, totalExpectedOccupancy, noResponseFromSensor, unoccupiedFor := analyseOccupancy(now, readState)
+	schedOccupied, occupiedStart, occupiedEnd, occupancySchedChanges := analyseTimeOfDay(now, readState.Config.OccupiedSchedule)
+	usingOccupancySched := !occupiedStart.IsZero() || !occupiedEnd.IsZero() || occupancySchedChanges != 0
+	if usingOccupancySched {
+		ttl.set(occupancySchedChanges)
+	}
+	turnOccupancyOn := func() {
+		for _, target := range readState.Config.OccupancyModeTargets {
+			target.ApplyDefaults(config.DefaultOccupancyModeTarget)
+			modeUpdates.setMode(target.Name, target.Key, target.On)
+		}
+	}
+	turnOccupancyOff := func() {
+		for _, target := range readState.Config.OccupancyModeTargets {
+			target.ApplyDefaults(config.DefaultOccupancyModeTarget)
+			modeUpdates.setMode(target.Name, target.Key, target.Off)
+		}
+	}
 	switch {
 	case occupiedCount > 0:
+		if usingOccupancySched {
+			if schedOccupied {
+				writeState.AddReasonf("occupied within [%s,%s)", occupiedStart.Format("15:04"), occupiedEnd.Format("15:04"))
+			} else {
+				writeState.AddReasonf("occupancy starts in %v", formatDuration(occupancySchedChanges))
+				turnOccupancyOff()
+				break
+			}
+		}
 		if noResponseFromSensor > 0 {
 			writeState.AddReasonf("%d/%d[/%d] occupied", occupiedCount, totalExpectedOccupancy-noResponseFromSensor, totalExpectedOccupancy)
 		} else {
 			writeState.AddReasonf("%d/%d occupied", occupiedCount, totalExpectedOccupancy)
 		}
-		for _, target := range readState.Config.OccupancyModeTargets {
-			modeUpdates.setMode(target.Name, target.Key, target.On)
-		}
+		turnOccupancyOn()
 	case unoccupiedFor >= unoccupiedDelay:
 		if noResponseFromSensor > 0 {
 			writeState.AddReasonf("unoccupied for %v %d/%d", formatDuration(unoccupiedFor), totalExpectedOccupancy-noResponseFromSensor, totalExpectedOccupancy)
 		} else {
 			writeState.AddReasonf("unoccupied for %v", formatDuration(unoccupiedFor))
 		}
-		for _, target := range readState.Config.OccupancyModeTargets {
-			modeUpdates.setMode(target.Name, target.Key, target.Off)
-		}
+		turnOccupancyOff()
 	case noResponseFromSensor == totalExpectedOccupancy:
+		// this case also triggers when no sensors are configured
 		writeState.AddReason("no occupancy")
+		if !usingOccupancySched {
+			break
+		}
+		if schedOccupied {
+			writeState.AddReasonf("occupied within [%s,%s)", occupiedStart.Format("15:04"), occupiedEnd.Format("15:04"))
+			turnOccupancyOn()
+		} else {
+			writeState.AddReasonf("occupancy starts in %v", formatDuration(occupancySchedChanges))
+			turnOccupancyOff()
+		}
 	case unoccupiedFor == 0:
 		writeState.AddReasonf("ambiguous occupancy %d/%d", totalExpectedOccupancy-noResponseFromSensor, totalExpectedOccupancy)
 	default:
@@ -51,7 +84,7 @@ func processReadState(ctx context.Context, readState *ReadState, writeState *Wri
 	}
 
 	// deadband adjustment processing
-	deadbandOn, onStart, onEnd, deadbandChangesIn := analyseTimeOfDay(now, readState)
+	deadbandOn, onStart, onEnd, deadbandChangesIn := analyseTimeOfDay(now, readState.Config.DeadbandSchedule)
 	ttl.set(deadbandChangesIn)
 	switch {
 	case deadbandOn:
@@ -126,14 +159,14 @@ func analyseOccupancy(now time.Time, state *ReadState) (occupied, total, noRespo
 }
 
 // analyseTimeOfDay works out if we are currently within the deadband period, and when that might change.
-func analyseTimeOfDay(now time.Time, state *ReadState) (on bool, onStart, onEnd time.Time, changesIn time.Duration) {
+func analyseTimeOfDay(now time.Time, schedule []config.Range) (on bool, onStart, onEnd time.Time, changesIn time.Duration) {
 	checkTime := func(t time.Time) {
 		d := t.Sub(now)
 		if changesIn == 0 || d < changesIn {
 			changesIn = d
 		}
 	}
-	for _, period := range state.Config.DeadbandSchedule {
+	for _, period := range schedule {
 		startAt := period.Start.Next(now)
 		endAt := period.End.Next(now)
 		if startAt.After(endAt) {

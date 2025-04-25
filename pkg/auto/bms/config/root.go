@@ -59,9 +59,17 @@ type Root struct {
 	// If this device supports AirTemperatureHistory then it will be used to seed the weighted average.
 	AutoModeOATemp string `json:"oaTemp,omitempty"`
 
-	OccupancySensors     []string            `json:"occupancySensors,omitempty"`     // Sensors whose occupancy is linked with OccupancyModeTargets On mode.
+	// Settings to control how and when we adjust the OccupancyModeTargets between occupied=on and unoccupied=off.
+	// We support both sensor based occupancy and schedule based occupancy triggers.
+	//
+	// When using sensor based occupancy, if any sensor reports occupied then the mode targets are set to on.
+	// If no sensors report occupied then the UnoccupiedDelay is used to determine when to set the mode targets to off.
+	// The mode targets are only ever set to occupied when within the OccupiedSchedule.
+	// If no sensors are configured then the mode targets are set to on when within the OccupiedSchedule, and off otherwise.
 	OccupancyModeTargets []SwitchMode        `json:"occupancyModeTargets,omitempty"` // Defaults: on=occupied, off=unoccupied
+	OccupancySensors     []string            `json:"occupancySensors,omitempty"`     // Sensors whose occupancy is linked with OccupancyModeTargets On mode.
 	UnoccupiedDelay      *jsontypes.Duration `json:"unoccupiedDelay,omitempty"`      // Defaults to 15m.
+	OccupiedSchedule     []Range             `json:"occupiedSchedule,omitempty"`     // Periods of time when OccupancyModeTargets should be On
 
 	DeadbandSchedule    []Range      `json:"deadbandSchedule,omitempty"`    // Periods of time when DeadbandModeTargets should be On
 	DeadbandModeTargets []SwitchMode `json:"deadbandModeTargets,omitempty"` // Defaults: on=comfort, off=eco
