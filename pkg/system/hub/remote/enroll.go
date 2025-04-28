@@ -40,7 +40,7 @@ func Enroll(ctx context.Context, enrollment *gen.Enrollment, authority pki.Sourc
 		}
 
 		// Make sure there's a timeout to avoid infinite (or 120s) connection loops in the case when tls fails.
-		// There's no way to actually get the grpc.Dial func to return on first tls error, it will continue to retry
+		// There's no way to actually get the ClientConn to return on first tls error, it will continue to retry
 		// until ctx expires.
 		var cleanUp context.CancelFunc
 		ctx, cleanUp = context.WithTimeout(ctx, 30*time.Second)
@@ -49,13 +49,18 @@ func Enroll(ctx context.Context, enrollment *gen.Enrollment, authority pki.Sourc
 
 	// the certInterceptor captures and saves the certificate presented by the server when the connection is opened
 	creds := &certInterceptor{TransportCredentials: credentials.NewTLS(tlsConfig)}
-	conn, err := grpc.DialContext(ctx, enrollment.TargetAddress,
+	conn, err := grpc.NewClient(enrollment.TargetAddress,
 		grpc.WithTransportCredentials(creds),
-		grpc.WithBlock(),
-		grpc.FailOnNonTempDialError(true),
-		grpc.WithReturnConnectionError(),
 	)
 	if err != nil {
+		return nil, err
+	}
+
+	client := gen.NewEnrollmentApiClient(conn)
+	// any api call will do to force the connection to be established (or fail)
+	_, err = client.GetEnrollment(ctx, &gen.GetEnrollmentRequest{})
+	if err != nil && status.Code(err) != codes.NotFound {
+		// NotFound is expected if the remote node is not enrolled yet, ignore that error
 		return nil, err
 	}
 
@@ -83,7 +88,6 @@ func Enroll(ctx context.Context, enrollment *gen.Enrollment, authority pki.Sourc
 		return nil, err
 	}
 
-	client := gen.NewEnrollmentApiClient(conn)
 	_, err = client.CreateEnrollment(ctx, &gen.CreateEnrollmentRequest{
 		Enrollment: enrollment,
 	})
@@ -113,7 +117,7 @@ func Forget(ctx context.Context, enrollment *gen.Enrollment, tlsConfig *tls.Conf
 	//    - get the current enrollment and compare it with the one we would have used
 	//    - if it matches, ask the remote node to forget about us
 
-	conn, err := grpc.DialContext(ctx, enrollment.TargetAddress,
+	conn, err := grpc.NewClient(enrollment.TargetAddress,
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
 	)
 	if err != nil {
@@ -138,7 +142,7 @@ func Forget(ctx context.Context, enrollment *gen.Enrollment, tlsConfig *tls.Conf
 		return fmt.Errorf("trusted: %w", err)
 	}
 
-	conn, err = grpc.DialContext(ctx, enrollment.TargetAddress,
+	conn, err = grpc.NewClient(enrollment.TargetAddress,
 		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 			InsecureSkipVerify: true,
 		})),
@@ -187,12 +191,16 @@ func Renew(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source
 
 	// the certInterceptor captures and saves the certificate presented by the server when the connection is opened
 	creds := &certInterceptor{TransportCredentials: credentials.NewTLS(tlsConfig)}
-	conn, err := grpc.DialContext(ctx, enrollment.TargetAddress,
+	conn, err := grpc.NewClient(enrollment.TargetAddress,
 		grpc.WithTransportCredentials(creds),
-		grpc.WithBlock(),
-		grpc.FailOnNonTempDialError(true),
-		grpc.WithReturnConnectionError(),
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	client := gen.NewEnrollmentApiClient(conn)
+	// any api call will do to force the connection to be established (or fail)
+	_, err = client.GetEnrollment(ctx, &gen.GetEnrollmentRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +226,6 @@ func Renew(ctx context.Context, enrollment *gen.Enrollment, authority pki.Source
 		return nil, err
 	}
 
-	client := gen.NewEnrollmentApiClient(conn)
 	_, err = client.UpdateEnrollment(ctx, &gen.UpdateEnrollmentRequest{
 		Enrollment: enrollment,
 	})

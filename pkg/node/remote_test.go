@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+
+	"github.com/vanti-dev/sc-bos/pkg/util/client"
 )
 
 func TestDialChan(t *testing.T) {
@@ -78,12 +80,12 @@ func TestDialChan(t *testing.T) {
 func awaitServing(ctx context.Context, addr string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	conn, err := grpc.DialContext(ctx, addr, grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}
-	conn.Close()
-	return nil
+	defer conn.Close()
+	return client.WaitForReady(ctx, conn)
 }
 
 func awaitSend[T any](ctx context.Context, ch chan<- T, v T) error {

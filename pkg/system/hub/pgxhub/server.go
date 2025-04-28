@@ -284,7 +284,7 @@ func (n *Server) TestHubNode(ctx context.Context, request *gen.TestHubNodeReques
 
 	logger := n.logger.With(zap.String("node_address", reg.Address))
 
-	conn, err := grpc.DialContext(ctx, reg.Address, grpc.WithTransportCredentials(credentials.NewTLS(n.TestTLSConfig)))
+	conn, err := grpc.NewClient(reg.Address, grpc.WithTransportCredentials(credentials.NewTLS(n.TestTLSConfig)))
 	if err != nil {
 		logger.Debug("failed connection", zap.Error(err))
 		return nil, status.Error(codes.Unavailable, "failed connection")

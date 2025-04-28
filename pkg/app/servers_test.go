@@ -116,8 +116,7 @@ func TestServeGRPC(t *testing.T) {
 		serveErr <- err
 	}()
 
-	conn, err := grpc.DialContext(clientCtx, addr,
-		grpc.WithBlock(),
+	conn, err := grpc.NewClient(addr,
 		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 			InsecureSkipVerify: true,
 		})),

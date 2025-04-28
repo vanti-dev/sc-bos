@@ -28,11 +28,11 @@ func TestStreamHandler(t *testing.T) {
 	defer stop()
 
 	// downstream nodes
-	n1Client, err := newNode(t, ctx, "n1")
+	n1Client, err := newNode(t, "n1")
 	if err != nil {
 		t.Fatalf("newNode(n1) = %v", err)
 	}
-	n2Client, err := newNode(t, ctx, "n2")
+	n2Client, err := newNode(t, "n2")
 	if err != nil {
 		t.Fatalf("newNode(n2) = %v", err)
 	}
@@ -49,7 +49,7 @@ func TestStreamHandler(t *testing.T) {
 		}
 	}()
 
-	proxyConn, err := bufConn(ctx, proxyLis)
+	proxyConn, err := bufConn(proxyLis)
 	if err != nil {
 		t.Fatalf("bufConn(proxyLis) = %v", err)
 	}
@@ -137,7 +137,7 @@ func TestStreamHandler_Interceptors(t *testing.T) {
 			t.Errorf("server.Serve() = %v", err)
 		}
 	}()
-	conn, err := bufConn(context.Background(), lis)
+	conn, err := bufConn(lis)
 	if err != nil {
 		t.Fatalf("bufConn error %v", err)
 	}
@@ -254,10 +254,10 @@ func supportService(reg *Router, service string) {
 	_ = reg.AddService(s)
 }
 
-func newNode(t *testing.T, ctx context.Context, name string) (*grpc.ClientConn, error) {
+func newNode(t *testing.T, name string) (*grpc.ClientConn, error) {
 	lis := bufconn.Listen(1024 * 1024)
 	s := nodeServer(name)
-	c, err := bufConn(ctx, lis)
+	c, err := bufConn(lis)
 
 	t.Cleanup(func() { c.Close() })
 	t.Cleanup(func() { s.Stop() })
@@ -282,8 +282,8 @@ func nodeServer(name string) *grpc.Server {
 	return grpc.NewServer(grpc.UnknownServiceHandler(StreamHandler(r)))
 }
 
-func bufConn(ctx context.Context, buf *bufconn.Listener) (*grpc.ClientConn, error) {
-	return grpc.DialContext(ctx, "",
+func bufConn(buf *bufconn.Listener) (*grpc.ClientConn, error) {
+	return grpc.NewClient("localhost:0",
 		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 			return buf.Dial()
 		}),
