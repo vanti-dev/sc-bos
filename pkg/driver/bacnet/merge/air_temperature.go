@@ -30,10 +30,18 @@ type airTemperatureConfig struct {
 	AmbientHumidity    *config.ValueSource `json:"ambientHumidity,omitempty"`
 	SetPointLow        *config.ValueSource `json:"setPointLow,omitempty"`
 	SetPointHigh       *config.ValueSource `json:"setPointHigh,omitempty"`
+	// SetPointDeadBand should be defined when SetPointLow & SetPointHigh are, defaults to 1
+	SetPointDeadBand *float32 `json:"deadBand,omitempty,omitzero"`
 }
 
 func readAirTemperatureConfig(raw []byte) (cfg airTemperatureConfig, err error) {
 	err = json.Unmarshal(raw, &cfg)
+	if err != nil {
+		if cfg.SetPointDeadBand == nil || *cfg.SetPointDeadBand == 0 {
+			cfg.SetPointDeadBand = new(float32)
+			*cfg.SetPointDeadBand = 1
+		}
+	}
 	return
 }
 
@@ -97,25 +105,27 @@ func (t *airTemperature) UpdateAirTemperature(ctx context.Context, request *trai
 	newSetPoint := float32(request.GetState().GetTemperatureSetPoint().GetValueCelsius())
 
 	if t.config.SetPointLow != nil && t.config.SetPointHigh != nil {
-		// for the artus units at Arup, we need to set 2 additional high and low set points to control the dead band,
-		// just use +- 1 degree for now
-		err := comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPointLow, newSetPoint-1, 0)
+		deadBand := *t.config.SetPointDeadBand
+		err := comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPointLow, newSetPoint-deadBand, 0)
 		if err != nil {
 			t.logger.Error("WriteProperty SetPointLow", zap.Error(err))
 			return nil, err
 		}
 
-		err = comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPointHigh, newSetPoint+1, 0)
+		err = comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPointHigh, newSetPoint+deadBand, 0)
 		if err != nil {
 			t.logger.Error("WriteProperty SetPointHigh", zap.Error(err))
 			return nil, err
 		}
 	}
 
-	err := comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPoint, newSetPoint, 0)
-	if err != nil {
-		return nil, err
+	if t.config.SetPoint != nil {
+		err := comm.WriteProperty(ctx, t.client, t.known, *t.config.SetPoint, newSetPoint, 0)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	// todo: not strictly correct as we're not paying attention to the require customisation properties that ModelServer would give us
 	return pollUntil(ctx, t.config.DefaultRWConsistencyTimeoutDuration(), t.pollPeer, func(temperature *traits.AirTemperature) bool {
 		return temperature.GetTemperatureSetPoint().ValueCelsius == float64(newSetPoint)
@@ -148,6 +158,37 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 			return nil
 		})
 	}
+
+	if t.config.SetPointHigh != nil {
+		requestNames = append(requestNames, "setPointHigh")
+		readValues = append(readValues, *t.config.SetPointHigh)
+		resProcessors = append(resProcessors, func(response any) error {
+			setPointHigh, err := comm.Float64Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "setPointHigh", Cause: err}
+			}
+			setPoint := setPointHigh - float64(*t.config.SetPointDeadBand)
+			data.TemperatureGoal = &traits.AirTemperature_TemperatureSetPoint{
+				TemperatureSetPoint: &types.Temperature{ValueCelsius: setPoint},
+			}
+			return nil
+		})
+	} else if t.config.SetPointLow != nil {
+		requestNames = append(requestNames, "setPointLow")
+		readValues = append(readValues, *t.config.SetPointLow)
+		resProcessors = append(resProcessors, func(response any) error {
+			setPointLow, err := comm.Float64Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "setPointLow", Cause: err}
+			}
+			setPoint := setPointLow + float64(*t.config.SetPointDeadBand)
+			data.TemperatureGoal = &traits.AirTemperature_TemperatureSetPoint{
+				TemperatureSetPoint: &types.Temperature{ValueCelsius: setPoint},
+			}
+			return nil
+		})
+	}
+
 	if t.config.AmbientTemperature != nil {
 		requestNames = append(requestNames, "ambientTemperature")
 		readValues = append(readValues, *t.config.AmbientTemperature)
