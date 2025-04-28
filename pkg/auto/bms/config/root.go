@@ -64,8 +64,10 @@ type Root struct {
 	//
 	// When using sensor based occupancy, if any sensor reports occupied then the mode targets are set to on.
 	// If no sensors report occupied then the UnoccupiedDelay is used to determine when to set the mode targets to off.
-	// The mode targets are only ever set to occupied when within the OccupiedSchedule.
-	// If no sensors are configured then the mode targets are set to on when within the OccupiedSchedule, and off otherwise.
+	//
+	// When using schedule based occupancy, the mode targets are set to on when within the OccupiedSchedule, and off otherwise.
+	//
+	// If both sensor and schedule based occupancy are used, the mode targets are set to on if both are true.
 	OccupancyModeTargets []SwitchMode        `json:"occupancyModeTargets,omitempty"` // Defaults: on=occupied, off=unoccupied
 	OccupancySensors     []string            `json:"occupancySensors,omitempty"`     // Sensors whose occupancy is linked with OccupancyModeTargets On mode.
 	UnoccupiedDelay      *jsontypes.Duration `json:"unoccupiedDelay,omitempty"`      // Defaults to 15m.
