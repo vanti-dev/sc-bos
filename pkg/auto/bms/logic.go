@@ -158,7 +158,12 @@ func analyseOccupancy(now time.Time, state *ReadState) (occupied, total, noRespo
 	return
 }
 
-// analyseTimeOfDay works out if we are currently within the deadband period, and when that might change.
+// analyseTimeOfDay works out if we are currently within a schedule period, and when that might change.
+// It returns:
+//   - on: true if now is currently within a schedule config.Range
+//   - onStart: the next time the matching range starts
+//   - onEnd: the next time the matching range ends, aka the end of the matched range
+//   - changesIn: the time until the matching schedule range ends, or the next range starts
 func analyseTimeOfDay(now time.Time, schedule []config.Range) (on bool, onStart, onEnd time.Time, changesIn time.Duration) {
 	checkTime := func(t time.Time) {
 		d := t.Sub(now)
