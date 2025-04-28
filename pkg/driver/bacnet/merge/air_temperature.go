@@ -36,7 +36,7 @@ type airTemperatureConfig struct {
 
 func readAirTemperatureConfig(raw []byte) (cfg airTemperatureConfig, err error) {
 	err = json.Unmarshal(raw, &cfg)
-	if err != nil {
+	if err == nil {
 		if cfg.SetPointDeadBand == nil || *cfg.SetPointDeadBand == 0 {
 			cfg.SetPointDeadBand = new(float32)
 			*cfg.SetPointDeadBand = 1
