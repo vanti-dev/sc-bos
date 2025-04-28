@@ -59,7 +59,8 @@ func Enroll(ctx context.Context, enrollment *gen.Enrollment, authority pki.Sourc
 	client := gen.NewEnrollmentApiClient(conn)
 	// any api call will do to force the connection to be established (or fail)
 	_, err = client.GetEnrollment(ctx, &gen.GetEnrollmentRequest{})
-	if err != nil {
+	if err != nil && status.Code(err) != codes.NotFound {
+		// NotFound is expected if the remote node is not enrolled yet, ignore that error
 		return nil, err
 	}
 
