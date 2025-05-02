@@ -11,6 +11,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/meteremail"
 	"github.com/vanti-dev/sc-bos/pkg/auto/notificationsemail"
 	"github.com/vanti-dev/sc-bos/pkg/auto/occupancyemail"
+	"github.com/vanti-dev/sc-bos/pkg/auto/resetbrightness"
 	"github.com/vanti-dev/sc-bos/pkg/auto/resetenterleave"
 	"github.com/vanti-dev/sc-bos/pkg/auto/statusalerts"
 	"github.com/vanti-dev/sc-bos/pkg/auto/statusemail"
@@ -28,6 +29,7 @@ func Factories() map[string]auto.Factory {
 		meteremail.AutoName:         meteremail.Factory,
 		notificationsemail.AutoName: notificationsemail.Factory,
 		occupancyemail.AutoName:     occupancyemail.Factory,
+		resetbrightness.AutoName:    resetbrightness.Factory,
 		resetenterleave.AutoName:    resetenterleave.Factory,
 		statusalerts.AutoName:       statusalerts.Factory,
 		statusemail.AutoName:        statusemail.Factory,
