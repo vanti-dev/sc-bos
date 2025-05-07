@@ -115,7 +115,7 @@ const nameForDescribe = computed(() => {
   return undefined;
 })
 const {response: meterInfo} = useDescribeMeterReading(nameForDescribe);
-const unit = computed(() => meterInfo.value?.unit);
+const unit = computed(() => meterInfo.value?.usageUnit);
 
 /**
  * @template T
