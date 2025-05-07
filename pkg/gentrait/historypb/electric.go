@@ -29,7 +29,7 @@ func (m *ElectricServer) Unwrap() any {
 	return m.store
 }
 
-var electricDemandPager = newPageReader(func(r history.Record) (*gen.ElectricDemandRecord, error) {
+var electricDemandPager = NewPageReader(func(r history.Record) (*gen.ElectricDemandRecord, error) {
 	v := &traits.ElectricDemand{}
 	err := proto.Unmarshal(r.Payload, v)
 	if err != nil {
@@ -42,7 +42,7 @@ var electricDemandPager = newPageReader(func(r history.Record) (*gen.ElectricDem
 })
 
 func (m *ElectricServer) ListElectricDemandHistory(ctx context.Context, request *gen.ListElectricDemandHistoryRequest) (*gen.ListElectricDemandHistoryResponse, error) {
-	page, size, nextToken, err := electricDemandPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
+	page, size, nextToken, err := electricDemandPager.ListRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}
