@@ -27,7 +27,7 @@ func getRecordsByTime(ctx context.Context, historyFn listMeterReadingFn, meter s
 		resp, err = historyFn(ctx, &gen.ListMeterReadingHistoryRequest{
 			Name: meter,
 			Period: &sctime.Period{
-				StartTime: timestamppb.New(now.Add(-filterTime - time.Second)),
+				StartTime: timestamppb.New(now.Add(-filterTime)),
 				EndTime:   timestamppb.New(now),
 			},
 			PageToken: pageToken,
