@@ -28,7 +28,7 @@ func (m *StatusServer) Unwrap() any {
 	return m.store
 }
 
-var currentStatusPager = newPageReader(func(r history.Record) (*gen.StatusLogRecord, error) {
+var currentStatusPager = NewPageReader(func(r history.Record) (*gen.StatusLogRecord, error) {
 	v := &gen.StatusLog{}
 	err := proto.Unmarshal(r.Payload, v)
 	if err != nil {
@@ -41,7 +41,7 @@ var currentStatusPager = newPageReader(func(r history.Record) (*gen.StatusLogRec
 })
 
 func (m *StatusServer) ListCurrentStatusHistory(ctx context.Context, request *gen.ListCurrentStatusHistoryRequest) (*gen.ListCurrentStatusHistoryResponse, error) {
-	page, size, nextToken, err := currentStatusPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
+	page, size, nextToken, err := currentStatusPager.ListRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}

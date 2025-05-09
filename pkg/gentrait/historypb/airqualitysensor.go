@@ -29,7 +29,7 @@ func (m *AirQualitySensorServer) Unwrap() any {
 	return m.store
 }
 
-var airQualityPager = newPageReader(func(r history.Record) (*gen.AirQualityRecord, error) {
+var airQualityPager = NewPageReader(func(r history.Record) (*gen.AirQualityRecord, error) {
 	v := &traits.AirQuality{}
 	err := proto.Unmarshal(r.Payload, v)
 	if err != nil {
@@ -42,7 +42,7 @@ var airQualityPager = newPageReader(func(r history.Record) (*gen.AirQualityRecor
 })
 
 func (m *AirQualitySensorServer) ListAirQualityHistory(ctx context.Context, request *gen.ListAirQualityHistoryRequest) (*gen.ListAirQualityHistoryResponse, error) {
-	page, size, nextToken, err := airQualityPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
+	page, size, nextToken, err := airQualityPager.ListRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}

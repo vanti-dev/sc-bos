@@ -2,13 +2,14 @@ package history
 
 import (
 	"context"
-	"errors"
+	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 	"github.com/vanti-dev/sc-bos/pkg/history"
 )
 
@@ -38,49 +39,37 @@ func (s *storeServer) ListHistoryRecords(ctx context.Context, request *gen.ListH
 	_, to := protoRecordToStoreRecord(request.GetQuery().GetToRecord())
 
 	store := s.store(source)
-	slice := store.Slice(from, to)
-
-	res := &gen.ListHistoryRecordsResponse{}
-
-	pageSize := normPageSize(request.GetPageSize())
-	pageToken, totalCount, err := unmarshalPageToken(request.GetPageToken())
-	if totalCount == 0 {
-		// avoid this potentially expensive step if possible
-		totalCount, _ = slice.Len(ctx) // ignore error, totalCount will be 0
-	}
-	res.TotalSize = int32(totalCount)
-
-	switch {
-	case errors.Is(err, errPageTokenEmpty):
-	case err != nil:
-		return nil, status.Errorf(codes.InvalidArgument, "page_token invalid %v", err)
-	default:
-		slice = slice.Slice(pageToken, to)
-	}
-
-	buf := make([]history.Record, pageSize+1) // +1 for nexPageToken calculation
-	n, err := slice.Read(ctx, buf)
+	pager := newPageReader(source)
+	page, size, nextToken, err := pager.ListRecordsBetween(ctx, store, from, to, int(request.GetPageSize()), request.GetPageToken(), request.GetOrderBy())
 	if err != nil {
 		return nil, err
 	}
-	if int32(n) > pageSize {
-		// there's another page
-		last := buf[n-1]
-		buf = buf[:n-1]
-		nextPageToken, err := marshalPageToken(last, totalCount)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "failed to marshal page token %v", err)
-		}
-		res.NextPageToken = nextPageToken
-	} else {
-		buf = buf[:n]
-	}
 
-	res.Records = make([]*gen.HistoryRecord, len(buf))
-	for i, r := range buf {
-		res.Records[i] = storeRecordToProtoRecord(source, r)
+	return &gen.ListHistoryRecordsResponse{
+		Records:       page,
+		NextPageToken: nextToken,
+		TotalSize:     int32(size),
+	}, nil
+}
+
+func newPageReader(source string) historypb.PageReader[*gen.HistoryRecord] {
+	pr := historypb.NewPageReader(func(r history.Record) (*gen.HistoryRecord, error) {
+		return storeRecordToProtoRecord(source, r), nil
+	})
+	// we use create_time in our API, so override the default record_time parsing
+	pr.OrderByParser = func(s string) historypb.OrderBy {
+		sn := strings.ToLower(s)
+		sn = strings.Join(strings.Fields(sn), " ") // normalise whitespace
+		switch sn {
+		case "", "createtime", "createtime asc", "create_time", "create_time asc":
+			return historypb.OrderByTimeAsc
+		case "createtime desc", "create_time desc":
+			return historypb.OrderByTimeDesc
+		default:
+			return historypb.OrderBy(s)
+		}
 	}
-	return res, nil
+	return pr
 }
 
 func protoRecordToStoreRecord(r *gen.HistoryRecord) (string, history.Record) {

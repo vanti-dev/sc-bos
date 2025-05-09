@@ -37,7 +37,7 @@ func Test_pageReader_listRecords(t *testing.T) {
 	}
 
 	pr := occupancyPager
-	page, size, nextToken, err := pr.listRecords(context.Background(), s, &timepb.Period{}, 5, "", "")
+	page, size, nextToken, err := pr.ListRecords(context.Background(), s, &timepb.Period{}, 5, "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func Test_pageReader_listRecords(t *testing.T) {
 		t.Fatalf("page (-want,+got)\n%s", diff)
 	}
 
-	page, size, nextToken, err = pr.listRecords(context.Background(), s, &timepb.Period{}, 5, nextToken, "")
+	page, size, nextToken, err = pr.ListRecords(context.Background(), s, &timepb.Period{}, 5, nextToken, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,7 +100,7 @@ func Test_pageReader_listRecords_reverse(t *testing.T) {
 	}
 
 	pr := occupancyPager
-	page, size, nextToken, err := pr.listRecords(context.Background(), s, &timepb.Period{}, 5, "", "record_time desc")
+	page, size, nextToken, err := pr.ListRecords(context.Background(), s, &timepb.Period{}, 5, "", "record_time desc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,7 +121,7 @@ func Test_pageReader_listRecords_reverse(t *testing.T) {
 		t.Fatalf("page (-want,+got)\n%s", diff)
 	}
 
-	page, size, nextToken, err = pr.listRecords(context.Background(), s, &timepb.Period{}, 5, nextToken, "record_time desc")
+	page, size, nextToken, err = pr.ListRecords(context.Background(), s, &timepb.Period{}, 5, nextToken, "record_time desc")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,7 +163,7 @@ func Test_pageReader_listRecords_period(t *testing.T) {
 	}
 
 	pr := occupancyPager
-	page, size, nextToken, err := pr.listRecords(context.Background(), s, &timepb.Period{
+	page, size, nextToken, err := pr.ListRecords(context.Background(), s, &timepb.Period{
 		StartTime: timestamppb.New(time.UnixMilli(30)),
 		EndTime:   timestamppb.New(time.UnixMilli(70)),
 	}, 5, "", "")
@@ -209,7 +209,7 @@ func Test_pageReader_listRecords_period_reverse(t *testing.T) {
 	}
 
 	pr := occupancyPager
-	page, size, nextToken, err := pr.listRecords(context.Background(), s, &timepb.Period{
+	page, size, nextToken, err := pr.ListRecords(context.Background(), s, &timepb.Period{
 		StartTime: timestamppb.New(time.UnixMilli(30)),
 		EndTime:   timestamppb.New(time.UnixMilli(70)),
 	}, 5, "", "record_time desc")
