@@ -28,7 +28,7 @@ func (m *MeterServer) Unwrap() any {
 	return m.store
 }
 
-var meterReadingPager = newPageReader(func(r history.Record) (*gen.MeterReadingRecord, error) {
+var meterReadingPager = NewPageReader(func(r history.Record) (*gen.MeterReadingRecord, error) {
 	v := &gen.MeterReading{}
 	err := proto.Unmarshal(r.Payload, v)
 	if err != nil {
@@ -41,7 +41,7 @@ var meterReadingPager = newPageReader(func(r history.Record) (*gen.MeterReadingR
 })
 
 func (m *MeterServer) ListMeterReadingHistory(ctx context.Context, request *gen.ListMeterReadingHistoryRequest) (*gen.ListMeterReadingHistoryResponse, error) {
-	page, size, nextToken, err := meterReadingPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
+	page, size, nextToken, err := meterReadingPager.ListRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}

@@ -29,7 +29,7 @@ func (m *OccupancySensorServer) Unwrap() any {
 	return m.store
 }
 
-var occupancyPager = newPageReader(func(r history.Record) (*gen.OccupancyRecord, error) {
+var occupancyPager = NewPageReader(func(r history.Record) (*gen.OccupancyRecord, error) {
 	v := &traits.Occupancy{}
 	err := proto.Unmarshal(r.Payload, v)
 	if err != nil {
@@ -42,7 +42,7 @@ var occupancyPager = newPageReader(func(r history.Record) (*gen.OccupancyRecord,
 })
 
 func (m *OccupancySensorServer) ListOccupancyHistory(ctx context.Context, request *gen.ListOccupancyHistoryRequest) (*gen.ListOccupancyHistoryResponse, error) {
-	page, size, nextToken, err := occupancyPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
+	page, size, nextToken, err := occupancyPager.ListRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}
