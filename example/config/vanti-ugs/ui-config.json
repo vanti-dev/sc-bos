@@ -711,6 +711,7 @@
         "unit" : "kg"
       }
     },
+    "securityEventsSource": "van/uk/brum/ugs/devices/security-events",
     "proxy": true,
     "siteFloorPlans": [
       {"name": "Ground Floor", "svgPath": "./assets/floor0-bg.svg"},
