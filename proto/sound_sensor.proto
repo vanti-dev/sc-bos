@@ -20,15 +20,18 @@ service SoundSensorInfo {
 
 // SoundLevel represents a sound/noise level.
 message SoundLevel {
-  // The measured sound/noise level, usually in dBA or dB. Use Info service to check.
-  // Optional. 0 means no sound or possibly broken sensor. Omitted means unknown.
+  //  Optional. The measured sound/noise level, usually in dBA or dB, use Info service to check the unit.
+  //  Omitted means unknown sound/noise level.
   optional float sound_pressure_level = 1;
 }
 
 message SoundLevelSupport {
   // How a named device supports read/write/pull apis
   smartcore.types.ResourceSupport resource_support = 1;
-  // The unit associated with the sound_level value in dBA or dB.
+  // The unit associated with the sound_pressure_level value.
+  // Known units:
+  //   - dBA - decibels SPL, A-weighted
+  //   - dB - decibels SPL, unweighted
   string sound_level_unit = 2;
 }
 

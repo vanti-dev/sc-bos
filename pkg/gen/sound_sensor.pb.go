@@ -29,8 +29,8 @@ type SoundLevel struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// The measured sound/noise level, usually in dBA or dB. Use Info service to check.
-	// Optional. 0 means no sound or possibly broken sensor. Omitted means unknown.
+	// Optional. The measured sound/noise level, usually in dBA or dB, use Info service to check the unit.
+	// Omitted means unknown sound/noise level.
 	SoundPressureLevel *float32 `protobuf:"fixed32,1,opt,name=sound_pressure_level,json=soundPressureLevel,proto3,oneof" json:"sound_pressure_level,omitempty"`
 }
 
@@ -80,7 +80,10 @@ type SoundLevelSupport struct {
 
 	// How a named device supports read/write/pull apis
 	ResourceSupport *types.ResourceSupport `protobuf:"bytes,1,opt,name=resource_support,json=resourceSupport,proto3" json:"resource_support,omitempty"`
-	// The unit associated with the sound_level value in dBA or dB.
+	// The unit associated with the sound_pressure_level value.
+	// Known units:
+	//   - dBA - decibels SPL, A-weighted
+	//   - dB - decibels SPL, unweighted
 	SoundLevelUnit string `protobuf:"bytes,2,opt,name=sound_level_unit,json=soundLevelUnit,proto3" json:"sound_level_unit,omitempty"`
 }
 
