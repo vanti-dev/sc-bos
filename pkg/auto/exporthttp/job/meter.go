@@ -42,7 +42,7 @@ func getRecordsByTime(ctx context.Context, logger *zap.Logger, historyFn listMet
 	resp, err = historyFn(ctx, &gen.ListMeterReadingHistoryRequest{
 		Name: meter,
 		Period: &sctime.Period{
-			StartTime: timestamppb.New(now),
+			EndTime: timestamppb.New(now),
 		},
 		PageSize: 1,
 		OrderBy:  "record_time DESC",
