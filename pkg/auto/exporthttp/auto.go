@@ -10,6 +10,7 @@ package exporthttp
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -70,6 +71,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					if err := jb.Do(ctx, client.Post); err != nil {
 						logger.Warn(fmt.Sprintf("failed to run %s", jb.GetName()), zap.Error(err))
 					}
+					jb.SetPreviousExecution(time.Now())
 				}()
 			case <-ctx.Done():
 				return

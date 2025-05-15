@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -20,6 +21,8 @@ func Test_processMeter(t *testing.T) {
 		now        time.Time
 		filterTime time.Duration
 	}
+
+	logger := zap.NewNop()
 
 	start := time.Time{}.Add(time.Nanosecond)
 
@@ -74,7 +77,7 @@ func Test_processMeter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			earliest, latest, err := getRecordsByTime(context.Background(), tt.args.historyFn, tt.args.meter, tt.args.now, tt.args.filterTime)
+			earliest, latest, err := getRecordsByTime(context.Background(), logger, tt.args.historyFn, tt.args.meter, tt.args.now, tt.args.filterTime)
 
 			assert.Equal(t, tt.wantEarliest, earliest, tt.name)
 			assert.Equal(t, tt.wantLatest, latest, tt.name)
