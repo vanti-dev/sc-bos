@@ -38,7 +38,7 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 			w.Logger.Error("getting unit multiplier", zap.String("meter", meter), zap.Error(err))
 		}
 
-		earliest, latest, err := getRecordsByTime(cctx, w.client.ListMeterReadingHistory, meter, now, filterTime)
+		earliest, latest, err := getRecordsByTime(cctx, w.Logger, w.client.ListMeterReadingHistory, meter, now, filterTime)
 
 		cancel()
 		if err != nil {
