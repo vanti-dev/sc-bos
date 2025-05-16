@@ -1,3 +1,0 @@
-CREATE EXTENSION "uuid-ossp";
-
-CREATE DATABASE keycloak;

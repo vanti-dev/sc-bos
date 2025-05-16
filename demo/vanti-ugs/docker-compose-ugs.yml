@@ -8,8 +8,9 @@ services:
       POSTGRES_DB: smart_core
     ports:
       - "5432:5432"
-    volumes:
-      - "./scripts/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d"
+    configs:
+      - source: postgres-init
+        target: /docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d smart_core" ]
       interval: 10s
@@ -43,6 +44,12 @@ services:
       db:
         condition: service_healthy
         restart: true
+
+configs:
+  postgres-init:
+    content: |
+      CREATE EXTENSION "uuid-ossp";
+      CREATE DATABASE keycloak;
 
 #  keycloak:
 #    image: quay.io/keycloak/keycloak:21.0.1
