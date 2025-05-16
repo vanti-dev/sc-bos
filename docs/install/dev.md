@@ -1,23 +1,28 @@
-Installing the system for development
-=====================================
-This guide explains how to set up the system on your development machine. This guide DOES NOT produce a secure system
-and must not be used for installation in production. 
+# Set up for local development
 
-# Dependencies
-The system depends on two third-party servers:
-  - Keycloak
-  - PostgreSQL
-
-These must be installed and running in order to test the system locally.
+Local development of sc-bos requires a PostgreSQL db and Keycloak server to be running.
+We've provided a compose file in the root of the repo which includes these services and some setup (but not all).
 
 ## Using Docker Compose
 
-In the root of the repo is a `docker-compose.yml`. Running this will start Keycloak and PostgreSQL, but some manual
-configuration will still be required.
+In the root of this repo, run:
 
-# Setup
+```shell
+podman compose up -d
+# or docker-compose up -d
+```
 
-## PostgreSQL
+Which will start the DB and Keycloak services.
+We also include a pgAdmin service to help with db inspection.
+
+The compose file will automatically configure the DB with the relevant tables and extensions
+and configure Keycloak with a Smart Core realm containing users, applications, and OAuth settings.
+
+## Additional Setup
+
+### PgAdmin
+
+PgAdmin needs to be told which database to admin:
 
 1. Login to [pg-admin](http://localhost:8881) using the username and password defined in the docker-compose file (
    admin@example.com/postgres)
@@ -26,17 +31,3 @@ configuration will still be required.
 
    It might be `172.18.0.4`, but if that doesn't work you can find the correct IP by doing:
    `docker network inspect bsp-ew_default` and looking for `bsp-ew-db-1`
-
-_The following steps will have been applied automatically if you used the above docker-compose file:_
-   
-3. Create a database called `keycloak`
-4. Create a database called `smart_core`
-5. `CREATE EXTENSION "uuid-ossp"` in the `smart_core` database.
-
-Individual database tables are created by the relevant systems when they are started for the first time.
-
-## Keycloak
-
-1. [Login](http://localhost:8888) using the username and password defined in the docker-compose file (admin/admin)
-2. Import realm `smart_core` from `manifests/keycloak/realm-smart-core.json` (the import option is on the 'add realm'
-   page, available in the dropdown next to the current realm name (which is likely 'Master'))
