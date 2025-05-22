@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"golang.org/x/exp/rand"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -34,11 +36,15 @@ func AirTemperatureAuto(model *airtemperaturepb.Model) *service.Service[string] 
 				case <-ctx.Done():
 					return
 				case <-ticker.C:
-					state.AmbientTemperature = &types.Temperature{
+					state, err := model.GetAirTemperature()
+					if err == nil {
+						setPoint = state.GetTemperatureSetPoint().ValueCelsius
 						// update the ambient to be +- 2 degrees from the set point
-						ValueCelsius: setPoint + (rand.Float64()*4 - 2),
+						state.AmbientTemperature.ValueCelsius = setPoint + (rand.Float64()*4 - 2)
+						_, _ = model.UpdateAirTemperature(state, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
+							Paths: []string{"ambient_temperature.value_celsius"},
+						}))
 					}
-					_, _ = model.UpdateAirTemperature(state)
 				}
 			}
 		}()
