@@ -3,6 +3,7 @@ package history
 import (
 	"context"
 	"errors"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -66,4 +67,50 @@ func (a *automation) collectOccupancyChanges(ctx context.Context, source config.
 	if err != nil {
 		a.logger.Warn("collection aborted", zap.Error(err))
 	}
+}
+
+func (a *automation) sampleOccupancyChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
+	var client traits.OccupancySensorApiClient
+	if err := a.clients.Client(&client); err != nil {
+		a.logger.Error("sampling aborted", zap.Error(err))
+		return
+	}
+
+	t := time.Now()
+
+	var prev *traits.Occupancy
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(time.Until(source.Sample.Schedule.Next(t))):
+			resp, err := client.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
+
+			t = time.Now()
+			if err != nil {
+				a.logger.Warn("sample aborted", zap.Error(err))
+				continue
+			}
+
+			if proto.Equal(prev, resp) {
+				continue
+			}
+
+			prev = resp
+
+			payload, err := proto.Marshal(resp)
+			if err != nil {
+				a.logger.Warn("sample aborted", zap.Error(err))
+				continue
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+			case payloads <- payload:
+			}
+		}
+	}
+
 }

@@ -3,6 +3,7 @@ package history
 import (
 	"context"
 	"errors"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -65,5 +66,50 @@ func (a *automation) collectCurrentStatusChanges(ctx context.Context, source con
 	}
 	if err != nil {
 		a.logger.Warn("collection aborted", zap.Error(err))
+	}
+}
+
+func (a *automation) sampleCurrentStatusChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
+	var client gen.StatusApiClient
+	if err := a.clients.Client(&client); err != nil {
+		a.logger.Error("sampling aborted", zap.Error(err))
+		return
+	}
+
+	t := time.Now()
+
+	var prev *gen.StatusLog
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(time.Until(source.Sample.Schedule.Next(t))):
+			resp, err := client.GetCurrentStatus(ctx, &gen.GetCurrentStatusRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
+
+			t = time.Now()
+			if err != nil {
+				a.logger.Warn("sample aborted", zap.Error(err))
+				continue
+			}
+
+			if proto.Equal(prev, resp) {
+				continue
+			}
+
+			prev = resp
+
+			payload, err := proto.Marshal(resp)
+			if err != nil {
+				a.logger.Warn("sample aborted", zap.Error(err))
+				continue
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+			case payloads <- payload:
+			}
+		}
 	}
 }

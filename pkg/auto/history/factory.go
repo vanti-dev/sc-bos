@@ -46,6 +46,7 @@ func NewAutomation(services auto.Services) service.Lifecycle {
 	}
 	a.Service = service.New(
 		service.MonoApply(a.applyConfig),
+		service.WithParser[config.Root](config.ParseConfig),
 		service.WithRetry[config.Root](service.RetryWithLogger(func(logContext service.RetryContext) {
 			logContext.LogTo("applyConfig", a.logger)
 		})),
@@ -157,26 +158,56 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	// work out where we're getting the records from
 	var serverClient wrap.ServiceUnwrapper
 	payloads := make(chan []byte)
-	var collect func(context.Context, config.Source, chan<- []byte)
+	var collect collector
 	switch cfg.Source.Trait {
 	case trait.AirQualitySensor:
 		serverClient = gen.WrapAirQualitySensorHistory(historypb.NewAirQualitySensorServer(store))
-		collect = a.collectAirQualityChanges
+
+		if cfg.Source.Sample != nil && !cfg.Source.Sample.Disabled {
+			collect = a.sampleAirQualityChanges
+		} else {
+			collect = a.collectAirQualityChanges
+		}
 	case trait.AirTemperature:
 		serverClient = gen.WrapAirTemperatureHistory(historypb.NewAirTemperatureServer(store))
-		collect = a.collectAirTemperatureChanges
+
+		if cfg.Source.Sample != nil && !cfg.Source.Sample.Disabled {
+			collect = a.sampleAirTemperatureChanges
+		} else {
+			collect = a.collectAirTemperatureChanges
+		}
 	case trait.Electric:
 		serverClient = gen.WrapElectricHistory(historypb.NewElectricServer(store))
-		collect = a.collectElectricDemandChanges
+
+		if cfg.Source.Sample != nil && !cfg.Source.Sample.Disabled {
+			collect = a.sampleElectricDemandChanges
+		} else {
+			collect = a.collectElectricDemandChanges
+		}
 	case meter.TraitName:
 		serverClient = gen.WrapMeterHistory(historypb.NewMeterServer(store))
-		collect = a.collectMeterReadingChanges
+
+		if cfg.Source.Sample != nil && !cfg.Source.Sample.Disabled {
+			collect = a.sampleMeterReadingChanges
+		} else {
+			collect = a.collectMeterReadingChanges
+		}
 	case trait.OccupancySensor:
 		serverClient = gen.WrapOccupancySensorHistory(historypb.NewOccupancySensorServer(store))
-		collect = a.collectOccupancyChanges
+
+		if cfg.Source.Sample != nil && !cfg.Source.Sample.Disabled {
+			collect = a.sampleOccupancyChanges
+		} else {
+			collect = a.collectOccupancyChanges
+		}
 	case statuspb.TraitName:
 		serverClient = gen.WrapStatusHistory(historypb.NewStatusServer(store))
-		collect = a.collectCurrentStatusChanges
+
+		if cfg.Source.Sample != nil && !cfg.Source.Sample.Disabled {
+			collect = a.sampleCurrentStatusChanges
+		} else {
+			collect = a.collectCurrentStatusChanges
+		}
 	default:
 		return fmt.Errorf("unsupported trait %s", cfg.Source.Trait)
 	}
@@ -205,3 +236,5 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	return nil
 }
+
+type collector func(context.Context, config.Source, chan<- []byte)
