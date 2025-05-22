@@ -97,9 +97,9 @@ func (a *automation) sampleAirTemperatureChanges(ctx context.Context, source con
 				continue
 			}
 
-			prev = resp
+			prev = proto.Clone(resp).(*traits.AirTemperature)
 
-			payload, err := proto.Marshal(resp)
+			payload, err := proto.Marshal(proto.Clone(resp).(*traits.AirTemperature))
 			if err != nil {
 				a.logger.Warn("sample aborted", zap.Error(err))
 				continue

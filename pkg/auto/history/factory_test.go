@@ -30,10 +30,7 @@ func Test_automation_applyConfig(t *testing.T) {
 	ctx, cancel = context.WithCancel(ctx)
 	t.Cleanup(cancel)
 
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		t.Fatal(err)
-	}
+	logger := zap.NewNop()
 	occupancy := occupancysensorpb.NewModel()
 	airQuality := airqualitysensorpb.NewModel()
 	airTemperature := airtemperaturepb.NewModel()

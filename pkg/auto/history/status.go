@@ -97,9 +97,9 @@ func (a *automation) sampleCurrentStatusChanges(ctx context.Context, source conf
 				continue
 			}
 
-			prev = resp
+			prev = proto.Clone(resp).(*gen.StatusLog)
 
-			payload, err := proto.Marshal(resp)
+			payload, err := proto.Marshal(proto.Clone(resp).(*gen.StatusLog))
 			if err != nil {
 				a.logger.Warn("sample aborted", zap.Error(err))
 				continue

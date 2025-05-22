@@ -96,9 +96,9 @@ func (a *automation) sampleMeterReadingChanges(ctx context.Context, source confi
 				continue
 			}
 
-			prev = resp
+			prev = proto.Clone(resp).(*gen.MeterReading)
 
-			payload, err := proto.Marshal(resp)
+			payload, err := proto.Marshal(proto.Clone(resp).(*gen.MeterReading))
 			if err != nil {
 				a.logger.Warn("sample aborted", zap.Error(err))
 				continue

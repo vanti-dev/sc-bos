@@ -97,9 +97,9 @@ func (a *automation) sampleOccupancyChanges(ctx context.Context, source config.S
 				continue
 			}
 
-			prev = resp
+			prev = proto.Clone(resp).(*traits.Occupancy)
 
-			payload, err := proto.Marshal(resp)
+			payload, err := proto.Marshal(proto.Clone(resp).(*traits.Occupancy))
 			if err != nil {
 				a.logger.Warn("sample aborted", zap.Error(err))
 				continue
