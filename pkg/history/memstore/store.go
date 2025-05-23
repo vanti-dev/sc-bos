@@ -119,12 +119,16 @@ func (rs *slice) Read(_ context.Context, into []history.Record) (int, error) {
 }
 
 func (rs *slice) ReadDesc(_ context.Context, into []history.Record) (int, error) {
+	rs.mtx.Lock()
+	defer rs.mtx.Unlock()
 	i := copy(into, rs.records[max(len(rs.records)-len(into), 0):])
 	slices.Reverse(into[:i])
 	return i, nil
 }
 
 func (rs *slice) Len(_ context.Context) (int, error) {
+	rs.mtx.Lock()
+	defer rs.mtx.Unlock()
 	return len(rs.records), nil
 }
 
