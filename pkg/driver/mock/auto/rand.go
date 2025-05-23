@@ -9,6 +9,10 @@ func float32Between(min, max float32) float32 {
 	return min + (max-min)*rand.Float32()
 }
 
+func float64Between(min, max float64) float64 {
+	return min + (max-min)*rand.Float64()
+}
+
 func oneOf[T any](vals ...T) T {
 	return vals[rand.Intn(len(vals))]
 }
