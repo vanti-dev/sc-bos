@@ -1,0 +1,31 @@
+{
+  "drivers": [
+    {
+      "api": {
+        "address": "http://172.16.1.2:9016",
+        "appKey": "00000000",
+        "secretFile": "path/to/app_secret"
+      },
+      "cameras": [
+        {
+          "name": "site/floors/building/devices/CAM-1",
+          "topic": "site/floors/building/devices/CAM-1",
+          "indexCode": "1",
+          "metadata": {
+            "appearance": {
+              "title": "External"
+            },
+            "location": {
+              "floor": "External"
+            },
+            "product": {
+              "manufacturer": "Hikvision",
+              "model": "DS-2CD2346G2-IU"
+            }
+          },
+          "ipAddress": "172.16.1.3"
+        }
+      ]
+    }
+  ]
+}
