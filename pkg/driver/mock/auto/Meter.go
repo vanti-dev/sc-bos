@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"golang.org/x/exp/rand"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/vanti-dev/sc-bos/pkg/driver/mock/scale"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -15,22 +15,26 @@ import (
 func MeterAuto(model *meter.Model) *service.Service[string] {
 	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		go func() {
-			timer := time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)
-			start := timestamppb.Now()
-			value := rand.Float32() * 100
+			timer := time.NewTimer(durationBetween(30*time.Second, 2*time.Minute))
+			lastT := time.Now()
+			start := timestamppb.New(lastT)
+			var value float32
 			for {
 				select {
 				case <-ctx.Done():
 					return
-				case <-timer.C:
-					value += rand.Float32() * 100
+				case t := <-timer.C:
+					tod := scale.NineToFive.At(t)
+					// typical daily household usage is 8 kWh, with TOD adjustment this is close enough
+					kwh := float64Between(5, 15) * tod
+					value += float32(t.Sub(lastT).Hours() / 24 * kwh)
 					state := gen.MeterReading{
 						Usage:     value,
 						StartTime: start,
 						EndTime:   timestamppb.Now(),
 					}
 					_, _ = model.UpdateMeterReading(&state)
-					timer = time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)
+					timer = time.NewTimer(durationBetween(time.Minute, 30*time.Minute))
 				}
 			}
 		}()
