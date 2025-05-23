@@ -33,7 +33,6 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
 	github.com/vanti-dev/gobacnet v0.0.0-20250122134204-5b55cc2d13fe
-	github.com/vanti-dev/mepc-3cs v0.0.0-20250523093338-dd77bdcf0150
 	go.etcd.io/bbolt v1.3.10
 	go.uber.org/multierr v1.9.0
 	go.uber.org/zap v1.21.0

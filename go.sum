@@ -523,8 +523,6 @@ github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijb
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/vanti-dev/gobacnet v0.0.0-20250122134204-5b55cc2d13fe h1:q64WrqS1Wqc1ohqHmfXVw9bPYRutcvBDnSkWGJhTwIo=
 github.com/vanti-dev/gobacnet v0.0.0-20250122134204-5b55cc2d13fe/go.mod h1:iqax38QEyUZ8cVgKXJpK4Qd2CIB6Rd3muRGQ/r89lyE=
-github.com/vanti-dev/mepc-3cs v0.0.0-20250523093338-dd77bdcf0150 h1:gZjmQV+/crOU5sibhURZjdZ6iKdbz3erFqBgw4Ulwp0=
-github.com/vanti-dev/mepc-3cs v0.0.0-20250523093338-dd77bdcf0150/go.mod h1:8EQ8sw2oBwjIiwe6ChKIVI007BzbWrG4DOlfRTRNt2w=
 github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb h1:zGWFAtiMcyryUHoUjUJX0/lt1H2+i2Ka2n+D3DImSNo=
 github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
 github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 h1:EzJWgHovont7NscjpAxXsDA8S8BMYve8Y5+7cuRE7R0=
