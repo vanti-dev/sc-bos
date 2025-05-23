@@ -373,9 +373,6 @@ func (c *Camera) getInfo(ctx context.Context) {
 func (c *Camera) updateCount(ctx context.Context, count string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	if c.state.CamOcc == count {
-		return
-	}
 	c.state.CamOcc = count
 	c.bus.Send(ctx, c.state)
 }
@@ -383,9 +380,6 @@ func (c *Camera) updateCount(ctx context.Context, count string) {
 func (c *Camera) updateVideo(ctx context.Context, video string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	if c.state.CamVideo == video {
-		return
-	}
 	c.state.CamVideo = video
 	c.bus.Send(ctx, c.state)
 }
@@ -393,9 +387,6 @@ func (c *Camera) updateVideo(ctx context.Context, video string) {
 func (c *Camera) updateFault(ctx context.Context, fault bool) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	if c.state.CamFlt == fault {
-		return
-	}
 	c.state.CamFlt = fault
 	c.state.CamFltTime = c.now()
 	c.bus.Send(ctx, c.state)
@@ -404,9 +395,6 @@ func (c *Camera) updateFault(ctx context.Context, fault bool) {
 func (c *Camera) updateActive(ctx context.Context, active bool) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	if c.state.CamState == active {
-		return
-	}
 	c.state.CamState = active
 	c.state.CamStateTime = c.now()
 	c.bus.Send(ctx, c.state)
@@ -415,9 +403,6 @@ func (c *Camera) updateActive(ctx context.Context, active bool) {
 func (c *Camera) updateState(ctx context.Context, new *CameraState) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	if c.state.IsEqual(new) {
-		return
-	}
 	c.state = new
 	c.bus.Send(ctx, c.state)
 }
