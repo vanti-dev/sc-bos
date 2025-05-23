@@ -21,6 +21,14 @@ func MustParseSchedule(raw string) *Schedule {
 	return &Schedule{Schedule: schedule, Raw: raw}
 }
 
+func MustParseExtendedSchedule(raw string) *Schedule {
+	schedule, err := cron.NewParser(cron.SecondOptional | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow).Parse(raw)
+	if err != nil {
+		panic(err)
+	}
+	return &Schedule{Schedule: schedule, Raw: raw}
+}
+
 func (s *Schedule) String() string {
 	return s.Raw
 }

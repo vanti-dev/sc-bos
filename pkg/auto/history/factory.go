@@ -157,25 +157,31 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	// work out where we're getting the records from
 	var serverClient wrap.ServiceUnwrapper
 	payloads := make(chan []byte)
-	var collect func(context.Context, config.Source, chan<- []byte)
+	var collect collector
 	switch cfg.Source.Trait {
 	case trait.AirQualitySensor:
 		serverClient = gen.WrapAirQualitySensorHistory(historypb.NewAirQualitySensorServer(store))
+
 		collect = a.collectAirQualityChanges
 	case trait.AirTemperature:
 		serverClient = gen.WrapAirTemperatureHistory(historypb.NewAirTemperatureServer(store))
+
 		collect = a.collectAirTemperatureChanges
 	case trait.Electric:
 		serverClient = gen.WrapElectricHistory(historypb.NewElectricServer(store))
+
 		collect = a.collectElectricDemandChanges
 	case meter.TraitName:
 		serverClient = gen.WrapMeterHistory(historypb.NewMeterServer(store))
+
 		collect = a.collectMeterReadingChanges
 	case trait.OccupancySensor:
 		serverClient = gen.WrapOccupancySensorHistory(historypb.NewOccupancySensorServer(store))
+
 		collect = a.collectOccupancyChanges
 	case statuspb.TraitName:
 		serverClient = gen.WrapStatusHistory(historypb.NewStatusServer(store))
+
 		collect = a.collectCurrentStatusChanges
 	default:
 		return fmt.Errorf("unsupported trait %s", cfg.Source.Trait)

@@ -23,6 +23,13 @@ type Source struct {
 	Trait trait.Name `json:"trait,omitempty"`
 	// ReadMask instructs the history service to only read the specified fields
 	ReadMask *FieldMask `json:"readMask,omitempty"`
+	// SparsePollingSchedule controls whether periodic downsampling is applied to the data source.
+	// It is intended for high-frequency sources where storing every data point is excessive.
+	// When SparsePollingSchedule is set, the source is polled using the Cron schedule, and only values
+	// that differ from the previous sample are recorded — reducing storage by skipping redundant data.
+	// If SparsePollingSchedule is not set (the default), the source will be treated as event-driven:
+	// all changes will be recorded at their native frequency, with no sampling applied.
+	SparsePollingSchedule *jsontypes.Schedule `json:"sparsePollingSchedule,omitempty"`
 }
 
 func (s Source) SourceName() string {
