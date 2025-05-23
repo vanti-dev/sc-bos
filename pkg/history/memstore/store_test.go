@@ -13,10 +13,10 @@ import (
 )
 
 // makeSlice returns a slice of n records, each 1 hour apart in ascending order, with the last record being now.
-func makeSlice(n int) (slice, time.Time) {
+func makeSlice(n int) (records, time.Time) {
 	now, _ := time.Parse(time.RFC3339, "2023-11-16T10:00:00Z")
 	now = now.Round(time.Second) // get rid of millis, etc
-	all := make(slice, n)
+	all := make(records, n)
 	for i := range all {
 		t := now.Add(time.Duration(i-n+1) * time.Hour)
 		all[i] = history.Record{ID: createTimeToID(t), CreateTime: t, Payload: []byte(fmt.Sprint(i))}
@@ -31,7 +31,7 @@ func TestStore_Append_gc(t *testing.T) {
 	tests := []struct {
 		maxAge   time.Duration
 		maxCount int64
-		want     slice
+		want     records
 	}{
 		{0 * time.Hour, 0, all},     // no gc needed, no cap
 		{n * time.Hour, 0, all},     // no gc needed, age cap is too big
@@ -46,7 +46,7 @@ func TestStore_Append_gc(t *testing.T) {
 		name := fmt.Sprintf("maxAge=%v,maxCount=%d", tt.maxAge, tt.maxCount)
 		t.Run(name, func(t *testing.T) {
 			s := &Store{
-				slice:    all[: n-1 : n-1], // make sure slice has no spare capacity to avoid Append assigning to the underlying array of all
+				slice:    slice{records: all[: n-1 : n-1]}, // make sure slice has no spare capacity to avoid Append assigning to the underlying array of all
 				maxAge:   tt.maxAge,
 				maxCount: tt.maxCount,
 				now:      func() time.Time { return now },
@@ -56,7 +56,7 @@ func TestStore_Append_gc(t *testing.T) {
 				t.Errorf("Append() error = %v", err)
 				return
 			}
-			if diff := cmp.Diff(tt.want, s.slice); diff != "" {
+			if diff := cmp.Diff(tt.want, s.slice.records); diff != "" {
 				t.Errorf("Append() slice diff (-want +got):\n%s", diff)
 			}
 		})
@@ -76,13 +76,13 @@ func TestSlice_Read(t *testing.T) {
 		from, to history.Record
 		want     []history.Record
 	}{
-		{empty, empty, all},                   // no from/to
-		{empty, all[5], all[:5]},              // no from
-		{all[5], empty, all[5:]},              // no to
-		{all[3], all[7], all[3:7]},            // range
-		{beforeStart1, beforeStart2, slice{}}, // before all
-		{afterEnd1, afterEnd2, slice{}},       // after all
-		{beforeStart1, afterEnd2, all},        // wider range
+		{empty, empty, all},                     // no from/to
+		{empty, all[5], all[:5]},                // no from
+		{all[5], empty, all[5:]},                // no to
+		{all[3], all[7], all[3:7]},              // range
+		{beforeStart1, beforeStart2, records{}}, // before all
+		{afterEnd1, afterEnd2, records{}},       // after all
+		{beforeStart1, afterEnd2, all},          // wider range
 		{beforeStart1, all[1], all[:1]},
 		{all[n-2], afterEnd2, all[n-2:]},
 	}
@@ -96,7 +96,8 @@ func TestSlice_Read(t *testing.T) {
 	for _, tt := range tests {
 		name := fmt.Sprintf("[%s,%s)", formatRecord(tt.from), formatRecord(tt.to))
 		t.Run(name, func(t *testing.T) {
-			s := all.Slice(tt.from, tt.to)
+			sl := &slice{records: all}
+			s := sl.Slice(tt.from, tt.to)
 
 			t.Run("Read", func(t *testing.T) {
 				dst := make([]history.Record, len(all)+4)
