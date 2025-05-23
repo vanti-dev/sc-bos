@@ -228,11 +228,9 @@ func ptr[T any](v T) *T {
 var cfgs = []config.Root{
 	{
 		Source: &config.Source{
-			Name:  "occupancy",
-			Trait: trait.OccupancySensor,
-			Sample: &config.Sampling{
-				Schedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
-			},
+			Name:                  "occupancy",
+			Trait:                 trait.OccupancySensor,
+			SparsePollingSchedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
 		},
 		Storage: &config.Storage{
 			Type: "memory",
@@ -244,11 +242,9 @@ var cfgs = []config.Root{
 	},
 	{
 		Source: &config.Source{
-			Name:  "airquality",
-			Trait: trait.AirQualitySensor,
-			Sample: &config.Sampling{
-				Schedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
-			},
+			Name:                  "airquality",
+			Trait:                 trait.AirQualitySensor,
+			SparsePollingSchedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
 		},
 		Storage: &config.Storage{
 			Type: "memory",
@@ -260,11 +256,9 @@ var cfgs = []config.Root{
 	},
 	{
 		Source: &config.Source{
-			Name:  "airtemperature",
-			Trait: trait.AirTemperature,
-			Sample: &config.Sampling{
-				Schedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
-			},
+			Name:                  "airtemperature",
+			Trait:                 trait.AirTemperature,
+			SparsePollingSchedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
 		},
 		Storage: &config.Storage{
 			Type: "memory",
@@ -276,11 +270,9 @@ var cfgs = []config.Root{
 	},
 	{
 		Source: &config.Source{
-			Name:  "electric",
-			Trait: trait.Electric,
-			Sample: &config.Sampling{
-				Schedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
-			},
+			Name:                  "electric",
+			Trait:                 trait.Electric,
+			SparsePollingSchedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
 		},
 		Storage: &config.Storage{
 			Type: "memory",
@@ -292,11 +284,9 @@ var cfgs = []config.Root{
 	},
 	{
 		Source: &config.Source{
-			Name:  "meter",
-			Trait: meterpb.TraitName,
-			Sample: &config.Sampling{
-				Schedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
-			},
+			Name:                  "meter",
+			Trait:                 meterpb.TraitName,
+			SparsePollingSchedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
 		},
 		Storage: &config.Storage{
 			Type: "memory",
@@ -308,11 +298,9 @@ var cfgs = []config.Root{
 	},
 	{
 		Source: &config.Source{
-			Name:  "status",
-			Trait: statuspb.TraitName,
-			Sample: &config.Sampling{
-				Schedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
-			},
+			Name:                  "status",
+			Trait:                 statuspb.TraitName,
+			SparsePollingSchedule: jsontypes.MustParseExtendedSchedule("*/5 * * * * *"),
 		},
 		Storage: &config.Storage{
 			Type: "memory",

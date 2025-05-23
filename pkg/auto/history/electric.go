@@ -2,15 +2,12 @@ package history
 
 import (
 	"context"
-	"errors"
-	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
-	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 func (a *automation) collectElectricDemandChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
@@ -44,11 +41,11 @@ func (a *automation) collectElectricDemandChanges(ctx context.Context, source co
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetDemand(ctx, &traits.GetDemandRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
+		resp, err := client.GetDemand(ctx, &traits.GetDemandRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
-		payload, err := proto.Marshal(demand)
+		payload, err := proto.Marshal(resp)
 		if err != nil {
 			return err
 		}
@@ -60,56 +57,7 @@ func (a *automation) collectElectricDemandChanges(ctx context.Context, source co
 		return nil
 	}
 
-	err := pull.Changes(ctx, pull.NewFetcher(pullFn, pollFn), payloads, pull.WithLogger(a.logger))
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		return
-	}
-	if err != nil {
+	if err := collectChanges(ctx, source, pullFn, pollFn, payloads, a.logger); err != nil {
 		a.logger.Warn("collection aborted", zap.Error(err))
-	}
-}
-
-func (a *automation) sampleElectricDemandChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
-	var client traits.ElectricApiClient
-	if err := a.clients.Client(&client); err != nil {
-		a.logger.Error("sampling aborted", zap.Error(err))
-		return
-	}
-
-	t := time.Now()
-
-	var prev *traits.ElectricDemand
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(time.Until(source.Sample.Schedule.Next(t))):
-			resp, err := client.GetDemand(ctx, &traits.GetDemandRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
-
-			t = time.Now()
-			if err != nil {
-				a.logger.Warn("sample aborted", zap.Error(err))
-				continue
-			}
-
-			if proto.Equal(prev, resp) {
-				continue
-			}
-
-			prev = proto.Clone(resp).(*traits.ElectricDemand)
-
-			payload, err := proto.Marshal(proto.Clone(resp).(*traits.ElectricDemand))
-			if err != nil {
-				a.logger.Warn("sample aborted", zap.Error(err))
-				continue
-			}
-
-			select {
-			case <-ctx.Done():
-				return
-			case payloads <- payload:
-			}
-		}
 	}
 }
