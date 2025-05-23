@@ -19,8 +19,6 @@ type Store struct {
 
 	maxAge   time.Duration
 	maxCount int64
-
-	mtx sync.Mutex
 }
 
 func New(opts ...Option) *Store {
