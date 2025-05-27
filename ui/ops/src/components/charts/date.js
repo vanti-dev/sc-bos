@@ -10,6 +10,10 @@ import {
 import {computed, toValue} from 'vue';
 
 /**
+ * Given a start and end data, returns a list of edges (or ticks) that can be used to draw a chart.
+ * For example, useDateScale('day', 'day', 0) might return [00:00, 01:00, ..., 23:00, 24:00],
+ * useDateScale('week', 'week', 0) would return [Mon, Tue, ..., Sun].
+ *
  * @param {import('vue').MaybeRefOrGetter<keyof useStartOf | string | number | Date>} start
  * @param {import('vue').MaybeRefOrGetter<keyof useStartOf | string | number | Date>} end
  * @param {import('vue').MaybeRefOrGetter<null | undefined | number | string>} offset

@@ -44,15 +44,10 @@
 </template>
 
 <script setup>
+import {useDateScale} from '@/components/charts/date.js';
+import {useExternalTooltip, useThemeColorPlugin, useVueLegendPlugin} from '@/components/charts/plugins.js';
 import {triggerDownload} from '@/components/download/download.js';
-import {
-  computeDatasets,
-  datasetSourceName,
-  useExternalTooltip,
-  useThemeColorPlugin,
-  useVueLegendPlugin
-} from '@/dynamic/widgets/energy/chart.js';
-import {useDateScale} from '@/dynamic/widgets/energy/date.js';
+import {computeDatasets, datasetSourceName} from '@/dynamic/widgets/energy/chart.js';
 import EnergyTooltip from '@/dynamic/widgets/energy/EnergyTooltip.vue';
 import PeriodChooserRows from '@/dynamic/widgets/energy/PeriodChooserRows.vue';
 import {useDescribeMeterReading} from '@/traits/meter/meter.js';
