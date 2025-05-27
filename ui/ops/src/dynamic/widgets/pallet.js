@@ -4,6 +4,7 @@ export const builtinWidgets = {
   'container/FlexRow': defineAsyncComponent(() => import('@/dynamic/widgets/container/FlexRow.vue')),
   'energy/EnergyHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/energy/EnergyHistoryCard.vue')),
   'environmental/EnvironmentalCard': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/EnvironmentalCard.vue')),
+  'general/CohortStatus': defineAsyncComponent(() => import('@/dynamic/widgets/general/CohortStatus.vue')),
   'graphic/LayeredGraphic': defineAsyncComponent(() => import('@/dynamic/widgets/graphic/LayeredGraphic.vue')),
   'notifications/ZoneNotifications': defineAsyncComponent(() => import('@/dynamic/widgets/notifications/ZoneNotifications.vue')),
   'occupancy/OccupancyCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/OccupancyCard.vue')),
