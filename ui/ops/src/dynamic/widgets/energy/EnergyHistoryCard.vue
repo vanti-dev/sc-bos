@@ -208,9 +208,10 @@ const chartOptions = computed(() => {
   };
 });
 
+const chartLabels = computed(() => edges.value.slice(0, -1));
 const chartData = computed(() => {
   return {
-    labels: edges.value,
+    labels: chartLabels.value,
     datasets: [
       ...computeDatasets('Consumption', totalConsumption, toRef(props, 'subConsumptionNames'), subConsumptions),
       ...computeDatasets('Production', totalProduction, toRef(props, 'subProductionNames'), subProductions, true),
