@@ -6,6 +6,7 @@ export const builtinWidgets = {
   'environmental/EnvironmentalCard': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/EnvironmentalCard.vue')),
   'general/CohortStatus': defineAsyncComponent(() => import('@/dynamic/widgets/general/CohortStatus.vue')),
   'general/DateAndTime': defineAsyncComponent(() => import('@/dynamic/widgets/general/DateAndTime.vue')),
+  'general/OpenWeatherMap': defineAsyncComponent(() => import('@/dynamic/widgets/general/OpenWeatherMap.vue')),
   'general/PlaceholderCard': defineAsyncComponent(() => import('@/dynamic/widgets/general/PlaceholderCard.vue')),
   'graphic/LayeredGraphic': defineAsyncComponent(() => import('@/dynamic/widgets/graphic/LayeredGraphic.vue')),
   'notifications/ZoneNotifications': defineAsyncComponent(() => import('@/dynamic/widgets/notifications/ZoneNotifications.vue')),
