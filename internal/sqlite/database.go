@@ -302,7 +302,7 @@ func (ft *Timestamp) Scan(v any) error {
 	if !ok {
 		return fmt.Errorf("cannot parse %T as timestamp", v)
 	}
-	t, err := time.Parse(dateTimeFormat, str)
+	t, err := time.Parse(DateTimeFormat, str)
 	if err != nil {
 		return err
 	}
@@ -317,7 +317,7 @@ func buildFileURI(path string, writer bool) string {
 	} else {
 		query.Add("mode", "ro")
 	}
-	query.Add("_timefmt", dateTimeFormat)
+	query.Add("_timefmt", DateTimeFormat)
 	query.Add("_pragma", "journal_mode(WAL)")
 	query.Add("_pragma", "synchronous(NORMAL)")
 	query.Add("_pragma", "foreign_keys(ON)")
@@ -337,7 +337,7 @@ func buildMemoryURI(name string, writer bool) string {
 	} else {
 		query.Add("mode", "ro")
 	}
-	query.Add("_timefmt", dateTimeFormat)
+	query.Add("_timefmt", DateTimeFormat)
 	query.Add("_pragma", "foreign_keys(ON)")
 	query.Add("vfs", "memdb")
 	uri := &url.URL{
@@ -348,4 +348,6 @@ func buildMemoryURI(name string, writer bool) string {
 	return uri.String()
 }
 
-const dateTimeFormat = string(sqlite3.TimeFormat4) // SQLite format with millisecconds
+// DateTimeFormat is the default format for encoding/decoding time.Time values in the database.
+// It uses the SQLite format with millisecond precision.
+const DateTimeFormat = string(sqlite3.TimeFormat4)
