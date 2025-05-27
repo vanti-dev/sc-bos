@@ -3,7 +3,7 @@
 
   <v-tooltip v-else location="left">
     <template #activator="{ props: _props }">
-      <v-icon :class="doorState.class" end size="20" v-bind="_props">{{ doorState.icon }}</v-icon>
+      <v-icon :class="doorState.class" size="20" v-bind="_props">{{ doorState.icon }}</v-icon>
     </template>
     <span class="text-capitalize">{{ doorState?.text }}</span>
   </v-tooltip>
