@@ -13,6 +13,7 @@ import "types/time/period.proto";
 service StatusApi {
   rpc GetCurrentStatus(GetCurrentStatusRequest) returns (StatusLog);
   rpc PullCurrentStatus(PullCurrentStatusRequest) returns (stream PullCurrentStatusResponse);
+  rpc UpdateCurrentStatus(UpdateCurrentStatusRequest) returns (UpdateCurrentStatusResponse);
 }
 
 message StatusLog {
@@ -127,4 +128,19 @@ message ListCurrentStatusHistoryResponse {
   // If non-zero this is the total number of records matched by the query.
   // This may be an estimate.
   int32 total_size = 3;
+}
+
+message UpdateCurrentStatusRequest {
+  // The device to update the status of.
+  string name = 1;
+  google.protobuf.FieldMask update_mask = 2;
+  // The new status to set.
+  StatusLog status = 3;
+}
+
+message UpdateCurrentStatusResponse {
+  // The updated status of the device.
+  StatusLog current_status = 1;
+  // The time the status was updated.
+  google.protobuf.Timestamp update_time = 2;
 }

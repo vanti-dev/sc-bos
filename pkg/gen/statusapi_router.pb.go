@@ -145,3 +145,12 @@ func (r *StatusApiRouter) PullCurrentStatus(request *PullCurrentStatusRequest, s
 		return err
 	}
 }
+
+func (r *StatusApiRouter) UpdateCurrentStatus(ctx context.Context, request *UpdateCurrentStatusRequest) (*UpdateCurrentStatusResponse, error) {
+	child, err := r.GetStatusApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.UpdateCurrentStatus(ctx, request)
+}
