@@ -6,16 +6,16 @@
       <air-quality-history-card end :name="name"/>
     </v-card-title>
     <v-list tile class="ma-0 pa-0">
-      <v-list-item v-for="(val, key) of tableData" :key="key" class="py-1">
+      <v-list-item v-for="(val, key) of presentMetrics" :key="key" class="py-1">
         <v-list-item-title class="text-body-small">{{ key }}</v-list-item-title>
         <template #append>
-          <v-list-item-subtitle class="font-weight-medium text-body-1">{{ val }}</v-list-item-subtitle>
+          <v-list-item-subtitle class="font-weight-medium text-body-1">{{ val.value }}</v-list-item-subtitle>
         </template>
       </v-list-item>
     </v-list>
     <v-progress-linear
-        v-if="hasScore"
-        :model-value="score"
+        v-if="score"
+        :model-value="score.value"
         height="34"
         class="mx-4 my-2"
         bg-color="neutral-lighten-1"
@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import {useAirQuality} from '@/traits/airQuality/airQuality.js';
+import {useAirQuality, useStatusColor} from '@/traits/airQuality/airQuality.js';
 import AirQualityHistoryCard from '@/traits/airQuality/AirQualityHistoryCard.vue';
 
 const props = defineProps({
@@ -43,7 +43,9 @@ const props = defineProps({
   }
 });
 
-const {hasScore, score, scoreColor, tableData} = useAirQuality(() => props.value);
+const {score, presentMetrics} = useAirQuality(() => props.value);
+const scoreColor = useStatusColor(score);
+
 </script>
 
 <style scoped>
