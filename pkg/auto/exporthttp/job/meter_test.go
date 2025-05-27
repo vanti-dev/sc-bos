@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -20,6 +21,8 @@ func Test_processMeter(t *testing.T) {
 		now        time.Time
 		filterTime time.Duration
 	}
+
+	logger := zap.NewNop()
 
 	start := time.Time{}.Add(time.Nanosecond)
 
@@ -74,7 +77,7 @@ func Test_processMeter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			earliest, latest, err := getRecordsByTime(context.Background(), tt.args.historyFn, tt.args.meter, tt.args.now, tt.args.filterTime)
+			earliest, latest, err := getRecordsByTime(context.Background(), logger, tt.args.historyFn, tt.args.meter, tt.args.now, tt.args.filterTime)
 
 			assert.Equal(t, tt.wantEarliest, earliest, tt.name)
 			assert.Equal(t, tt.wantLatest, latest, tt.name)
@@ -88,7 +91,7 @@ func Test_processMeter(t *testing.T) {
 }
 
 func twoMeterReadingPages(_ context.Context, start time.Time, in *gen.ListMeterReadingHistoryRequest, _ ...grpc.CallOption) (*gen.ListMeterReadingHistoryResponse, error) {
-	if in.GetPageToken() == "abc" {
+	if in.GetOrderBy() == "record_time DESC" {
 		return &gen.ListMeterReadingHistoryResponse{
 			MeterReadingRecords: []*gen.MeterReadingRecord{
 				{
@@ -99,24 +102,7 @@ func twoMeterReadingPages(_ context.Context, start time.Time, in *gen.ListMeterR
 					},
 					RecordTime: timestamppb.New(start.Add(30 * time.Minute)),
 				},
-				{
-					MeterReading: &gen.MeterReading{
-						Usage:     10,
-						StartTime: timestamppb.New(start),
-						EndTime:   timestamppb.New(start.Add(8 * time.Minute)),
-					},
-					RecordTime: timestamppb.New(start.Add(8 * time.Minute)),
-				},
-				{
-					MeterReading: &gen.MeterReading{
-						Usage:     20,
-						StartTime: timestamppb.New(start.Add(10 * time.Minute)),
-						EndTime:   timestamppb.New(start.Add(17 * time.Minute)),
-					},
-					RecordTime: timestamppb.New(start.Add(17 * time.Minute)),
-				},
 			},
-			NextPageToken: "",
 		}, nil
 	}
 	return &gen.ListMeterReadingHistoryResponse{
@@ -129,23 +115,6 @@ func twoMeterReadingPages(_ context.Context, start time.Time, in *gen.ListMeterR
 				},
 				RecordTime: timestamppb.New(start.Add(time.Minute)),
 			},
-			{
-				MeterReading: &gen.MeterReading{
-					Usage:     6,
-					StartTime: timestamppb.New(start.Add(6 * time.Minute)),
-					EndTime:   timestamppb.New(start.Add(7 * time.Minute)),
-				},
-				RecordTime: timestamppb.New(start.Add(7 * time.Minute)),
-			},
-			{
-				MeterReading: &gen.MeterReading{
-					Usage:     2,
-					StartTime: timestamppb.New(start.Add(2 * time.Minute)),
-					EndTime:   timestamppb.New(start.Add(5 * time.Minute)),
-				},
-				RecordTime: timestamppb.New(start.Add(5 * time.Minute)),
-			},
 		},
-		NextPageToken: "abc",
 	}, nil
 }
