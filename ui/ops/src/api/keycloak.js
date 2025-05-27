@@ -35,7 +35,11 @@ export function keycloak() {
  * @return {Promise<Keycloak>}
  */
 async function newKeycloak() {
-  const kc = new Keycloak(await constructorConfig());
+  const kcConfig = await constructorConfig();
+  if (!kcConfig) {
+    return null;
+  }
+  const kc = new Keycloak(kcConfig);
   // setup event handling
   kc.onReady = (authenticated) => {
     const e = new Event('ready');
