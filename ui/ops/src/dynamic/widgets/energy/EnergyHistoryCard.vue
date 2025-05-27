@@ -52,9 +52,10 @@ import EnergyTooltip from '@/dynamic/widgets/energy/EnergyTooltip.vue';
 import PeriodChooserRows from '@/dynamic/widgets/energy/PeriodChooserRows.vue';
 import {useDescribeMeterReading} from '@/traits/meter/meter.js';
 import {isNullOrUndef} from '@/util/types.js';
+import {useLocalProp} from '@/util/vue.js';
 import {BarElement, Chart as ChartJS, Legend, LinearScale, TimeScale, Title, Tooltip} from 'chart.js'
 import {startOfDay, startOfYear} from 'date-fns';
-import {computed, ref, toRef, toValue, watch} from 'vue';
+import {computed, ref, toRef} from 'vue';
 import {Bar} from 'vue-chartjs';
 import 'chartjs-adapter-date-fns';
 import {useMeterConsumption, useMetersConsumption} from './consumption.js';
@@ -112,18 +113,6 @@ const nameForDescribe = computed(() => {
 const {response: meterInfo} = useDescribeMeterReading(nameForDescribe);
 const unit = computed(() => meterInfo.value?.usageUnit);
 
-/**
- * @template T
- * @param {import('vue').MaybeRefOrGetter<T>} prop
- * @return {import('vue').Ref<T>}
- */
-const useLocalProp = (prop) => {
-  const local = ref(toValue(prop.value));
-  watch(() => toValue(prop), (value) => {
-    local.value = value;
-  });
-  return local;
-}
 const _start = useLocalProp(toRef(props, 'start'));
 const _end = useLocalProp(toRef(props, 'end'));
 const _offset = useLocalProp(toRef(props, 'offset'));

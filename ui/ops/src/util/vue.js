@@ -1,6 +1,21 @@
 import {ref, toValue, watch} from 'vue';
 
 /**
+ * Returns a ref that can be written but will be overridden by the prop value when it changes.
+ *
+ * @template T
+ * @param {import('vue').MaybeRefOrGetter<T>} prop
+ * @return {import('vue').Ref<T>}
+ */
+export function useLocalProp(prop) {
+  const local = ref(toValue(prop.value));
+  watch(() => toValue(prop), (value) => {
+    local.value = value;
+  });
+  return local;
+}
+
+/**
  * @typedef {Object} asyncWatchAction
  * @property {T} ov
  * @property {T} nv
