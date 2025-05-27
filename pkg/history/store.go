@@ -9,6 +9,7 @@ import (
 
 // Store defines an append-only collection of ordered records.
 // The store can be sliced, like a go slice, to query for a range of records which can then be read.
+// Store is safe for concurrent use, but the Slice returned by Slice() is not safe for concurrent use.
 type Store interface {
 	// Append adds the given payload to the store, returning the Record as recorded.
 	// The context can be used to abort the append operation if needed.
@@ -19,8 +20,8 @@ type Store interface {
 // Slice describes a read-only ordered segment of a Store.
 type Slice interface {
 	// Slice creates a new slice including records >= from and < to.
-	// If from is zero then it is treated as the first record available,
-	// if to is zero then it is the record immediately after the last record,
+	// If from is zero, then it is treated as the first record available,
+	// if it is zero, then it is the record immediately after the last record,
 	// just like with go slices.
 	// The record should have either ID and/or CreateTime set.
 	Slice(from, to Record) Slice

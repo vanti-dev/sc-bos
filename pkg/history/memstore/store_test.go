@@ -46,7 +46,7 @@ func TestStore_Append_gc(t *testing.T) {
 		name := fmt.Sprintf("maxAge=%v,maxCount=%d", tt.maxAge, tt.maxCount)
 		t.Run(name, func(t *testing.T) {
 			s := &Store{
-				slice:    all[: n-1 : n-1], // make sure slice has no spare capacity to avoid Append assigning to the underlying array of all
+				slice:    all[: n-1 : n-1], // make sure the slice has no spare capacity to avoid Append assigning to the underlying array of all
 				maxAge:   tt.maxAge,
 				maxCount: tt.maxCount,
 				now:      func() time.Time { return now },
