@@ -14,7 +14,7 @@ import (
 )
 
 type Store struct {
-	// mtx protects the slice during calls which read or modify the underlying slice
+	// mtx protects slice during calls which read or modify the underlying slice
 	mtx sync.Mutex
 	// slice is sorted by id, which is createTime+dedupe index
 	slice
