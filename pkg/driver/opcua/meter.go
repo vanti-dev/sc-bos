@@ -15,6 +15,7 @@ import (
 
 type Meter struct {
 	gen.UnimplementedMeterApiServer
+	gen.UnimplementedMeterInfoServer
 
 	energyValue *resource.Value // *gen.MeterReading
 	logger      *zap.Logger
@@ -41,23 +42,16 @@ func newMeter(n string, config config.RawTrait, l *zap.Logger) (*Meter, error) {
 }
 
 func (m *Meter) GetMeterReading(_ context.Context, _ *gen.GetMeterReadingRequest) (*gen.MeterReading, error) {
-
-	reading := &gen.MeterReading{
-		Usage: m.energyValue.Get().(*gen.MeterReading).Usage,
-	}
-	return reading, nil
+	return m.energyValue.Get().(*gen.MeterReading), nil
 }
 
 func (m *Meter) PullMeterReadings(_ *gen.PullMeterReadingsRequest, server gen.MeterApi_PullMeterReadingsServer) error {
 	for value := range m.energyValue.Pull(server.Context()) {
-		usage := value.Value.(*gen.MeterReading)
 		err := server.Send(&gen.PullMeterReadingsResponse{Changes: []*gen.PullMeterReadingsResponse_Change{
 			{
-				Name:       m.scName,
-				ChangeTime: timestamppb.New(value.ChangeTime),
-				MeterReading: &gen.MeterReading{
-					Usage: usage.Usage,
-				},
+				Name:         m.scName,
+				ChangeTime:   timestamppb.New(value.ChangeTime),
+				MeterReading: m.energyValue.Get().(*gen.MeterReading),
 			},
 		}})
 		if err != nil {
@@ -65,6 +59,12 @@ func (m *Meter) PullMeterReadings(_ *gen.PullMeterReadingsRequest, server gen.Me
 		}
 	}
 	return nil
+}
+
+func (m *Meter) DescribeMeterReading(context.Context, *gen.DescribeMeterReadingRequest) (*gen.MeterReadingSupport, error) {
+	return &gen.MeterReadingSupport{
+		UsageUnit: m.meterConfig.Unit,
+	}, nil
 }
 
 func (m *Meter) handleMeterEvent(node string, value any) {

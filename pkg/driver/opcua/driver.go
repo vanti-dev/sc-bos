@@ -33,6 +33,7 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 	}
 	d.Service = service.New(
 		service.MonoApply(d.applyConfig),
+		service.WithParser(config.ReadBytes),
 		service.WithRetry[config.Root](service.RetryWithLogger(func(logContext service.RetryContext) {
 			logContext.LogTo("applyConfig", logger)
 		}), service.RetryWithMinDelay(5*time.Second), service.RetryWithInitialDelay(5*time.Second)),
@@ -49,10 +50,9 @@ type Driver struct {
 
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
-	config.SetDefaults(&cfg)
-	a, undo := node.AnnounceScope(d.announcer)
+	a := node.NewReplaceAnnouncer(d.announcer).Replace(ctx)
 
-	opcClient, err := opcua.NewClient(cfg.OpcUaConfig.Endpoint)
+	opcClient, err := opcua.NewClient(cfg.Conn.Endpoint)
 	if err != nil {
 		d.logger.Warn("NewClient error", zap.String("error", err.Error()))
 		return err
@@ -64,7 +64,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		return err
 	}
 
-	client := NewClient(opcClient, d.logger, cfg.OpcUaConfig.SubscriptionInterval.Duration)
+	client := NewClient(opcClient, d.logger, cfg.Conn.SubscriptionInterval.Duration, cfg.Conn.ClientId)
 
 	if cfg.Meta != nil {
 		a.Announce(cfg.Name, node.HasMetadata(cfg.Meta))
@@ -83,14 +83,14 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				if err != nil {
 					errs = fmt.Errorf("failed to add trait for device %s: %w", dev.Name, err)
 				} else {
-					allFeatures = append(allFeatures, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(opcDev.meter))))
+					allFeatures = append(allFeatures, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(opcDev.meter), gen.WrapMeterInfo(opcDev.meter))))
 				}
 			case transport.TraitName:
 				opcDev.transport, err = newTransport(dev.Name, t, d.logger)
 				if err != nil {
 					errs = fmt.Errorf("failed to add trait for device %s: %w", dev.Name, err)
 				} else {
-					allFeatures = append(allFeatures, node.HasTrait(transport.TraitName, node.WithClients(gen.WrapTransportApi(opcDev.transport))))
+					allFeatures = append(allFeatures, node.HasTrait(transport.TraitName, node.WithClients(gen.WrapTransportApi(opcDev.transport), gen.WrapTransportInfo(opcDev.transport))))
 				}
 			case udmipb.TraitName:
 				opcDev.udmi, err = newUdmi(dev.Name, t, d.logger)
@@ -121,9 +121,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	go func() {
 		err := grp.Wait()
 		d.logger.Error("run error", zap.String("error", err.Error()))
-		// todo cleanup anything
 		_ = opcClient.Close(ctx)
-		undo()
 	}()
 	return nil
 }

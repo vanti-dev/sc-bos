@@ -12,24 +12,22 @@ import (
 )
 
 type Client struct {
-	client   *opcua.Client
-	logger   *zap.Logger
-	interval time.Duration
+	client       *opcua.Client
+	logger       *zap.Logger
+	interval     time.Duration
+	clientHandle uint32
 }
 
-func NewClient(client *opcua.Client, logger *zap.Logger, interval time.Duration) *Client {
+func NewClient(client *opcua.Client, logger *zap.Logger, interval time.Duration, handle uint32) *Client {
 	return &Client{
-		client:   client,
-		interval: interval,
-		logger:   logger,
+		client:       client,
+		clientHandle: handle,
+		interval:     interval,
+		logger:       logger,
 	}
 }
 
-func (c *Client) Subscribe(ctx context.Context, node string) (<-chan *opcua.PublishNotificationData, error) {
-	nodeId, err := ua.ParseNodeID(node)
-	if err != nil {
-		return nil, err
-	}
+func (c *Client) Subscribe(ctx context.Context, nodeId *ua.NodeID) (<-chan *opcua.PublishNotificationData, error) {
 	notifyCh := make(chan *opcua.PublishNotificationData)
 	sub, err := c.client.Subscribe(ctx, &opcua.SubscriptionParameters{
 		Interval: c.interval,
@@ -37,7 +35,7 @@ func (c *Client) Subscribe(ctx context.Context, node string) (<-chan *opcua.Publ
 	if err != nil {
 		return nil, err
 	}
-	valueReq := opcua.NewMonitoredItemCreateRequestWithDefaults(nodeId, ua.AttributeIDValue, 42)
+	valueReq := opcua.NewMonitoredItemCreateRequestWithDefaults(nodeId, ua.AttributeIDValue, c.clientHandle)
 	res, err := sub.Monitor(ctx, ua.TimestampsToReturnNeither, valueReq)
 	if err != nil {
 		return nil, err

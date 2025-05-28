@@ -42,9 +42,11 @@ func newTransport(n string, c config.RawTrait, l *zap.Logger) (*Transport, error
 		scName:    n,
 	}
 	// initialise the doors as we know these from the config
+	tp := &gen.Transport{}
 	for _, _ = range cfg.Doors {
-		t.transport.Get().(*gen.Transport).Doors = append(t.transport.Get().(*gen.Transport).Doors, &gen.Transport_Door{})
+		tp.Doors = append(tp.Doors, &gen.Transport_Door{})
 	}
+	_, _ = t.transport.Set(tp)
 	return t, nil
 }
 

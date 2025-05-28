@@ -45,10 +45,10 @@ func (d *Device) subscribe(ctx context.Context) error {
 
 	grp, ctx := errgroup.WithContext(ctx)
 	for _, point := range d.conf.Variables {
-		pointName := point.NodeId
-		c, err := d.client.Subscribe(ctx, pointName) // do we get all sub node events?
+		pointName := point.ParsedNodeId
+		c, err := d.client.Subscribe(ctx, pointName)
 		if err != nil {
-			d.logger.Error("failed to subscribe to point", zap.String("point", pointName), zap.Error(err))
+			d.logger.Error("failed to subscribe to point", zap.String("point", pointName.String()), zap.Error(err))
 			// if the client is connected but can't subscribe, it is bad config
 			// just log the error and move on
 			continue
@@ -62,7 +62,7 @@ func (d *Device) subscribe(ctx context.Context) error {
 					if event == nil {
 						continue
 					}
-					d.handleEvent(ctx, event, pointName)
+					d.handleEvent(ctx, event, pointName.String())
 				}
 			}
 		})

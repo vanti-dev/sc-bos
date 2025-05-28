@@ -45,6 +45,7 @@ type ValueSource struct {
 	// Optional. Enum is a generic map to convert the OPC UA point value to something else.
 	// For instance, converting the OCP UA value to an enum in a Smart Core trait which can be done by mapping the
 	// OPC UA value as the key and the element from the generated <EnumName>_value field in the trait pb file.
+	// The key needs to be an integer, it is defined as a string here for JSON marshaling.
 	Enum map[string]string `json:"enum,omitempty"`
 }
 
@@ -83,9 +84,11 @@ type Door struct {
 	Status *ValueSource `json:"status,omitempty"`
 }
 
+type LocationType string
+
 const (
 	// SingleFloor tells us that the OPC UA node represents a single floor.
-	SingleFloor = "SingleFloor"
+	SingleFloor LocationType = "SingleFloor"
 )
 
 type Location struct {
@@ -94,8 +97,8 @@ type Location struct {
 	// with other nodes telling us about the next location.
 	// Or it could contain an array that lists all the destinations. It is unclear what this needs to handle,
 	// so it needs to be flexible enough and extensible to handle future integrations.
-	Type   string      `json:"type,omitempty"`
-	Source ValueSource `json:"source,omitempty"`
+	Type   LocationType `json:"type,omitempty"`
+	Source ValueSource  `json:"source,omitempty"`
 }
 
 // TransportConfig is configured by a Device that wants to implement the Transport trait.
@@ -107,8 +110,10 @@ type TransportConfig struct {
 	LoadUnit        string       `json:"loadUnit,omitempty"`
 	MaxLoad         int32        `json:"maxLoad,omitempty"`
 	MovingDirection *ValueSource `json:"movingDirection,omitempty"`
-	// The OPC UA node which tells us the where the transport is going to stop at next.
-	// The array should be ordered so that it matches the order of the physical transport stops.
+	// The OPC UA node(s) which tells us the where the transport is going to stop at next.
+	// If the OPC UA server has more than one point which tells us about the next destinations,
+	// this array should be ordered so that it matches the order of the physical transport stops.
+	// i.e [0] = first stop, [1] = second stop, etc.
 	NextDestinations []*Location `json:"nextDestinations,omitempty"`
 	SpeedUnit        string      `json:"speedUnit,omitempty"`
 }
