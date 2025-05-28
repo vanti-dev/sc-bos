@@ -1,4 +1,5 @@
 import {builtinLayouts} from '@/dynamic/layout/pallet.js';
+import PlaceholderCard from '@/dynamic/widgets/general/PlaceholderCard.vue';
 import {builtinWidgets} from '@/dynamic/widgets/pallet.js';
 import useBuildingConfig from '@/routes/ops/overview/pages/buildingConfig.js';
 import useDashPage from '@/routes/ops/overview/pages/dashPage.js';
@@ -56,10 +57,22 @@ export default function usePageConfig(path) {
         if (o.startsWith('builtin:')) {
           const [, builtin] = o.split(':');
           switch (k) {
-            case 'layout':
-              return markRaw(builtinLayouts[builtin]);
-            case 'component':
-              return markRaw(builtinWidgets[builtin]);
+            case 'layout': {
+              const comp = builtinLayouts[builtin];
+              if (!comp) {
+                console.warn(`Unknown layout: ${builtin}`);
+                return PlaceholderCard;
+              }
+              return markRaw(comp);
+            }
+            case 'component': {
+              const comp = builtinWidgets[builtin];
+              if (!comp) {
+                console.warn(`Unknown widget: ${builtin}`);
+                return PlaceholderCard;
+              }
+              return markRaw(comp);
+            }
           }
         }
       }
