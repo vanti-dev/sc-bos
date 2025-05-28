@@ -9,7 +9,7 @@
     <v-spacer/>
 
     <router-view name="actions"/>
-    <smart-core-status-card/>
+    <smart-core-status-card class="text-title"/>
     <span
         v-if="!hideAccountBtn"
         class="d-flex flex-row">
