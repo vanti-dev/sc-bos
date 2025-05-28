@@ -53,6 +53,7 @@
     "pkijs": "^3.0.15",
     "vite": "^6.3.3",
     "vite-plugin-eslint": "^1.8.1",
-    "vite-plugin-vuetify": "^2.1.1"
+    "vite-plugin-vuetify": "^2.1.1",
+    "vite-svg-loader": "^5.1.0"
   }
 }
