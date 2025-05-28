@@ -48,7 +48,7 @@ func (d *Device) subscribe(ctx context.Context) error {
 		pointName := point.ParsedNodeId
 		c, err := d.client.Subscribe(ctx, pointName)
 		if err != nil {
-			d.logger.Error("failed to subscribe to point", zap.String("point", pointName.String()), zap.Error(err))
+			d.logger.Error("failed to subscribe to point", zap.Stringer("point", pointName), zap.Error(err))
 			// if the client is connected but can't subscribe, it is bad config
 			// just log the error and move on
 			continue
@@ -62,7 +62,7 @@ func (d *Device) subscribe(ctx context.Context) error {
 					if event == nil {
 						continue
 					}
-					d.handleEvent(ctx, event, pointName.String())
+					d.handleEvent(ctx, event, pointName)
 				}
 			}
 		})
@@ -70,7 +70,7 @@ func (d *Device) subscribe(ctx context.Context) error {
 	return grp.Wait()
 }
 
-func (d *Device) handleEvent(ctx context.Context, event *opcua.PublishNotificationData, node string) {
+func (d *Device) handleEvent(ctx context.Context, event *opcua.PublishNotificationData, node *ua.NodeID) {
 	switch x := event.Value.(type) {
 	case *ua.DataChangeNotification:
 		for _, item := range x.MonitoredItems {
@@ -81,9 +81,9 @@ func (d *Device) handleEvent(ctx context.Context, event *opcua.PublishNotificati
 
 			if errors.Is(item.Value.Status, ua.StatusOK) {
 				value := item.Value.Value.Value()
-				d.handleTraitEvent(ctx, node, value)
+				d.handleTraitEvent(ctx, node.String(), value)
 			} else {
-				d.logger.Warn("error monitoring node", zap.String("node", node), zap.String("code", item.Value.Status.Error()))
+				d.logger.Warn("error monitoring node", zap.Stringer("node", node), zap.String("code", item.Value.Status.Error()))
 			}
 		}
 
@@ -92,9 +92,9 @@ func (d *Device) handleEvent(ctx context.Context, event *opcua.PublishNotificati
 			for _, field := range item.EventFields {
 				if errors.Is(field.StatusCode(), ua.StatusOK) {
 					value := field.Value()
-					d.handleTraitEvent(ctx, node, value)
+					d.handleTraitEvent(ctx, node.String(), value)
 				} else {
-					d.logger.Warn("error monitoring node", zap.String("node", node), zap.String("code", field.StatusCode().Error()))
+					d.logger.Warn("error monitoring node", zap.Stringer("node", node), zap.String("code", field.StatusCode().Error()))
 				}
 			}
 		}

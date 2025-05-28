@@ -21,8 +21,9 @@ type Conn struct {
 	// Endpoint is the OPC UA server endpoint.
 	Endpoint string `json:"endpoint,omitempty"`
 	// SubscriptionInterval for OPC UA subscription, defaults to 5s if not set.
-	SubscriptionInterval *jsontypes.Duration `json:"subscriptionInterval,omitempty"`
+	SubscriptionInterval *jsontypes.Duration `json:"subscriptionInterval,omitempty,omitzero"`
 	// ClientId is the ID of the client that will be used to connect to the OPC UA server.
+	// Should be unique within the context of a server. If not set, a random ID will be generated.
 	ClientId uint32 `json:"clientId,omitempty,omitzero"`
 }
 
@@ -47,8 +48,8 @@ type Device struct {
 }
 
 type Timing struct {
-	Timeout      jsontypes.Duration `json:"timeout,omitempty"`
-	BackoffStart jsontypes.Duration `json:"backoffStart,omitempty"`
+	Timeout      jsontypes.Duration `json:"timeout,omitempty,omitzero"`
+	BackoffStart jsontypes.Duration `json:"backoffStart,omitempty,omitzero"`
 	BackoffMax   jsontypes.Duration `json:"backoffMax,omitempty,omitzero"`
 }
 
@@ -56,7 +57,7 @@ type Root struct {
 	driver.BaseConfig
 
 	Meta    *traits.Metadata `json:"meta,omitempty"`
-	Conn    Conn             `json:"opcUaConfig,omitempty"`
+	Conn    Conn             `json:"conn,omitempty"`
 	Devices []Device         `json:"devices,omitempty"`
 	Timing  Timing           `json:"Timing,omitempty"`
 }

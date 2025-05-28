@@ -28,8 +28,9 @@ type factory struct{}
 
 func (f factory) New(services driver.Services) service.Lifecycle {
 	logger := services.Logger.Named(DriverName)
+
 	d := &Driver{
-		announcer: services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 	}
 	d.Service = service.New(
 		service.MonoApply(d.applyConfig),
@@ -45,12 +46,12 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 type Driver struct {
 	*service.Service[config.Root]
 	logger    *zap.Logger
-	announcer node.Announcer
+	announcer *node.ReplaceAnnouncer
 }
 
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
-	a := node.NewReplaceAnnouncer(d.announcer).Replace(ctx)
+	a := d.announcer.Replace(ctx)
 
 	opcClient, err := opcua.NewClient(cfg.Conn.Endpoint)
 	if err != nil {
