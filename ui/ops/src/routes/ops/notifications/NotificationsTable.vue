@@ -1,32 +1,32 @@
 <template>
-  <div class="ml-2">
-    <v-row v-if="!props.overviewPage" class="mt-0 ml-0 pl-0">
-      <h3 class="text-h3 pt-2 pb-6">Notifications</h3>
-      <v-spacer/>
-      <v-btn class="mt-2 mr-3" color="neutral" @click="doDownloadCSV()">
-        Export CSV...
-      </v-btn>
-    </v-row>
+  <v-toolbar v-if="!props.overviewPage && !props.hideHeader" color="transparent" class="mb-6">
+    <v-toolbar-title class="text-h3 ml-0">{{ props.title }}</v-toolbar-title>
+    <v-btn color="neutral" @click="doDownloadCSV()" variant="flat">
+      Export CSV...
+    </v-btn>
+  </v-toolbar>
 
-    <content-card :class="['px-8', {'mt-8 px-4': !props.overviewPage}]">
-      <v-data-table-server
-          :headers="headers"
-          v-bind="tableAttrs"
-          disable-sort
-          :items-length="queryTotalCount"
-          :row-props="rowProps"
-          class="pt-4"
-          :class="{ 'hide-pagination': modifyFooter }"
-          @click:row="showNotification">
-        <template #top>
-          <v-row
-              :class="[
-                'd-flex flex-row align-center mb-2 mt-1 ml-0 pl-0 mr-1'
-              ]">
-            <h3 v-if="props.overviewPage" class="text-h4">
-              Notifications
-            </h3>
-            <v-spacer/>
+  <component :is="props.overviewPage ? 'div' : VCard" v-bind="tableWrapperProps">
+    <v-data-table-server
+        :headers="headers"
+        :hide-default-header="props.hideTableHeader"
+        v-bind="tableAttrs"
+        disable-sort
+        :items-length="queryTotalCount"
+        :row-props="rowProps"
+        :class="{ 'hide-pagination': modifyFooter }"
+        :hide-default-footer="props.hidePaging"
+        @click:row="showNotification">
+      <template #top>
+        <v-toolbar
+            v-if="!props.hideHeader"
+            color="transparent"
+            extension-height="auto">
+          <v-toolbar-title v-if="props.overviewPage" class="text-h4">
+            {{ props.title }}
+          </v-toolbar-title>
+          <v-spacer v-else/>
+          <template v-if="!props.hideHeaderActions">
             <filter-choice-chips
                 :ctx="filterCtx"
                 class="ml-2"/>
@@ -55,12 +55,13 @@
               </template>
               <span>Add New Entry</span>
             </v-tooltip>
-
+          </template>
+          <template #extension v-if="manualEntryPanel !== null">
             <v-expansion-panels v-if="!props.overviewPage" class="mb-3" flat v-model="manualEntryPanel">
               <v-expansion-panel>
                 <v-expansion-panel-text>
                   <div class="text-subtitle-2 pl-0 text-body-1 mb-4">Manual Notification Entry Form</div>
-                  <v-row class="align-center mr-2">
+                  <v-row class="align-center">
                     <v-col cols="self-align">
                       <v-text-field
                           v-model="manualEntryForm.description"
@@ -111,7 +112,11 @@
                           variant="outlined"/>
                     </v-col>
                     <v-col cols="auto">
-                      <v-btn @click="addManualEntry" :disabled="!manualEntryForm.description" color="primary">
+                      <v-btn
+                          @click="addManualEntry"
+                          :disabled="!manualEntryForm.description"
+                          color="primary"
+                          variant="flat">
                         Add
                       </v-btn>
                     </v-col>
@@ -119,51 +124,46 @@
                 </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
-          </v-row>
-        </template>
-        <template #item.createTime="{ item }">
-          {{ timestampToDate(item.createTime).toLocaleString() }}
-        </template>
-        <template #item.subsystem="{ item }">
-          <subsystem-icon size="20px" :subsystem="item.subsystem" no-default/>
-        </template>
-        <template #item.source="{ item }">
-          <v-tooltip location="bottom">
-            <template #activator="{ props: _props }">
-              <span v-bind="_props">{{ formatSource(item.source) }}</span>
-            </template>
-            <span>{{ item.source }}</span>
-          </v-tooltip>
-        </template>
-        <template #item.severity="{ item }">
-          <v-tooltip v-if="item.resolveTime" location="bottom">
-            <template #activator="{ props: _props }">
-              <span v-bind="_props">RESOLVED</span>
-            </template>
-            Was:
-            <span :class="severityData(item.severity).color">
-              {{ severityData(item.severity).text }}
-            </span>
-          </v-tooltip>
-          <span v-else :class="severityData(item.severity).color">
-            {{ severityData(item.severity).text }}
-          </span>
-        </template>
-        <template #item.acknowledged="{ item }">
-          <acknowledgement-btn
-              :ack="item.acknowledgement"
-              @acknowledge="setAcknowledged(true, item, name)"
-              @unacknowledge="setAcknowledged(false, item, name)"/>
-        </template>
-      </v-data-table-server>
-    </content-card>
-  </div>
+          </template>
+        </v-toolbar>
+      </template>
+      <template #item.createTime="{ item }">
+        {{ timestampToDate(item.createTime).toLocaleString() }}
+      </template>
+      <template #item.subsystem="{ item }">
+        <subsystem-icon size="20px" :subsystem="item.subsystem" no-default/>
+      </template>
+      <template #item.source="{ item }">
+        <v-tooltip location="bottom">
+          <template #activator="{ props: _props }">
+            <span v-bind="_props">{{ formatSource(item.source) }}</span>
+          </template>
+          <span>{{ item.source }}</span>
+        </v-tooltip>
+      </template>
+      <template #item.severity="{ item }">
+        <v-tooltip v-if="item.resolveTime" location="bottom">
+          <template #activator="{ props: _props }">
+            <span v-bind="_props">RESOLVED</span>
+          </template>
+          Was:
+          <span :class="severityData(item.severity).color">{{ severityData(item.severity).text }}</span>
+        </v-tooltip>
+        <span v-else :class="severityData(item.severity).color">{{ severityData(item.severity).text }}</span>
+      </template>
+      <template #item.acknowledged="{ item }">
+        <acknowledgement-btn
+            :ack="item.acknowledgement"
+            @acknowledge="setAcknowledged(true, item, name)"
+            @unacknowledge="setAcknowledged(false, item, name)"/>
+      </template>
+    </v-data-table-server>
+  </component>
 </template>
 <script setup>
 import {timestampToDate} from '@/api/convpb';
 import {newActionTracker} from '@/api/resource.js';
 import {createAlert} from '@/api/ui/alerts.js';
-import ContentCard from '@/components/ContentCard.vue';
 import FilterBtn from '@/components/filter/FilterBtn.vue';
 import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
 import useFilterCtx from '@/components/filter/filterCtx.js';
@@ -179,6 +179,7 @@ import {useSidebarStore} from '@/stores/sidebar';
 import {isNullOrUndef} from '@/util/types.js';
 import {Alert} from '@vanti-dev/sc-bos-ui-gen/proto/alerts_pb';
 import {computed, onUnmounted, reactive, ref} from 'vue';
+import {VCard} from 'vuetify/components';
 
 const props = defineProps({
   overviewPage: {
@@ -188,6 +189,34 @@ const props = defineProps({
   forceQuery: {
     type: Object, /** @type {import('@vanti-dev/sc-bos-ui-gen/proto/alerts_pb').Alert.Query.AsObject} */
     default: null
+  },
+  title: {
+    type: String,
+    default: 'Notifications'
+  },
+  itemPerPage: {
+    type: Number,
+    default: 20
+  },
+  hideHeader: {
+    type: Boolean,
+    default: false
+  },
+  hidePaging: {
+    type: Boolean,
+    default: false
+  },
+  hideTableHeader: {
+    type: Boolean,
+    default: false
+  },
+  hideHeaderActions: {
+    type: Boolean,
+    default: false
+  },
+  columns: {
+    type: Array,
+    default: () => []
   }
 });
 const btnStyles = ref({
@@ -372,6 +401,15 @@ const alertsOptions = computed(() => ({
 }));
 const alertsCollection = useAlertsCollection(alertsRequest, alertsOptions);
 const tableAttrs = useDataTableCollection(wantCount, alertsCollection);
+const tableWrapperProps = computed(() => {
+  if (!props.overviewPage) {
+    return {
+      class: ['px-7', 'py-4']
+    }
+  } else {
+    return {};
+  }
+});
 
 const queryFieldCount = computed(() => Object.values(query.value).filter((value) => value !== undefined).length);
 
@@ -469,22 +507,37 @@ const queryTotalCount = computed(() => {
 });
 
 const allHeaders = [
-  {title: 'Timestamp', value: 'createTime', width: '15em'},
+  {title: 'Timestamp', value: 'createTime', width: '12em'},
   {value: 'subsystem', width: '20px', class: 'pl-2 pr-0', cellClass: 'pl-2 pr-0'},
   {title: 'Source', value: 'source', width: '15em'},
   {title: 'Floor', value: 'floor', width: '10em'},
   {title: 'Zone', value: 'zone', width: '10em'},
-  {title: 'Severity', value: 'severity', width: '9em', align: 'center'},
+  {title: 'Severity', value: 'severity', width: '8em', align: 'center'},
   {title: 'Description', value: 'description', width: '100%'},
   {title: 'Acknowledged', value: 'acknowledged', align: 'center', width: '12em'}
 ];
+const propHeaders = computed(() => {
+  if (props.columns.length === 0) return allHeaders;
+  const byValue = allHeaders.reduce((acc, header) => {
+    acc[header.value] = header;
+    return acc;
+  }, {});
+  const headers = [];
+  for (const column of props.columns) {
+    const header = byValue[column];
+    if (header) {
+      headers.push(header);
+    }
+  }
+  return headers;
+});
 
 // We don't include _some_ headers we're filtering out to avoid repetition,
 // for example if we're filtering to show Floor1, then all rows would show Floor1 in that column which we don't need to
 // see over and over.
 const headers = computed(() => {
   const q = query.value;
-  return allHeaders.filter((header) => {
+  return propHeaders.value.filter((header) => {
     if (!['floor', 'zone', 'subsystem', 'source'].includes(header.value)) return true;
     return q[header.value] === undefined;
   });
@@ -543,5 +596,13 @@ onUnmounted(() => {
 .character-counter {
   font-size: 75%;
   color: rgb(var(--v-theme-primary)); /* Adjust color as needed */
+}
+
+.v-data-table {
+  :deep(.v-table__wrapper) {
+    // Toolbar titles have a leading margin of 20px, table cells have a leading padding of 16px.
+    // Correct for this and align the leading edge of text in the first column with the toolbar title.
+    padding: 0 4px;
+  }
 }
 </style>
