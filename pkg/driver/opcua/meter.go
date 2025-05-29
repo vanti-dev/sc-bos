@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/gopcua/opcua/ua"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -67,9 +68,9 @@ func (m *Meter) DescribeMeterReading(context.Context, *gen.DescribeMeterReadingR
 	}, nil
 }
 
-func (m *Meter) handleMeterEvent(node string, value any) {
+func (m *Meter) handleMeterEvent(node *ua.NodeID, value any) {
 
-	if m.meterConfig.Usage != nil && m.meterConfig.Usage.NodeId == node {
+	if m.meterConfig.Usage != nil && NodeIdsAreEqual(m.meterConfig.Usage.NodeId, node) {
 		v, err := conv.Float32Value(value)
 		if err != nil {
 			m.logger.Error("failed to convert value", zap.Error(err))

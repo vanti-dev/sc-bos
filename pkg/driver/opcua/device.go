@@ -81,7 +81,7 @@ func (d *Device) handleEvent(ctx context.Context, event *opcua.PublishNotificati
 
 			if errors.Is(item.Value.Status, ua.StatusOK) {
 				value := item.Value.Value.Value()
-				d.handleTraitEvent(ctx, node.String(), value)
+				d.handleTraitEvent(ctx, node, value)
 			} else {
 				d.logger.Warn("error monitoring node", zap.Stringer("node", node), zap.String("code", item.Value.Status.Error()))
 			}
@@ -92,7 +92,7 @@ func (d *Device) handleEvent(ctx context.Context, event *opcua.PublishNotificati
 			for _, field := range item.EventFields {
 				if errors.Is(field.StatusCode(), ua.StatusOK) {
 					value := field.Value()
-					d.handleTraitEvent(ctx, node.String(), value)
+					d.handleTraitEvent(ctx, node, value)
 				} else {
 					d.logger.Warn("error monitoring node", zap.Stringer("node", node), zap.String("code", field.StatusCode().Error()))
 				}
@@ -104,7 +104,7 @@ func (d *Device) handleEvent(ctx context.Context, event *opcua.PublishNotificati
 	}
 }
 
-func (d *Device) handleTraitEvent(ctx context.Context, node string, value any) {
+func (d *Device) handleTraitEvent(ctx context.Context, node *ua.NodeID, value any) {
 
 	if d.meter != nil {
 		d.meter.handleMeterEvent(node, value)
@@ -115,4 +115,8 @@ func (d *Device) handleTraitEvent(ctx context.Context, node string, value any) {
 	if d.udmi != nil {
 		d.udmi.sendUdmiMessage(ctx, node, value)
 	}
+}
+
+func NodeIdsAreEqual(nodeId string, n *ua.NodeID) bool {
+	return n != nil && nodeId == n.String()
 }

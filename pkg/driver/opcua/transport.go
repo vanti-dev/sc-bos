@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strconv"
 
+	"github.com/gopcua/opcua/ua"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -71,9 +72,9 @@ func (t *Transport) PullTransport(_ *gen.PullTransportRequest, server gen.Transp
 	return nil
 }
 
-func (t *Transport) handleTransportEvent(node string, value any) {
+func (t *Transport) handleTransportEvent(node *ua.NodeID, value any) {
 	old := t.transport.Get().(*gen.Transport)
-	if t.cfg.ActualPosition != nil && t.cfg.ActualPosition.NodeId == node {
+	if t.cfg.ActualPosition != nil && NodeIdsAreEqual(t.cfg.ActualPosition.NodeId, node) {
 		floor, err := conv.ToString(value)
 		if err != nil {
 			t.logger.Error("failed to convert ActualPosition event", zap.Error(err))
@@ -83,7 +84,7 @@ func (t *Transport) handleTransportEvent(node string, value any) {
 			Floor: floor,
 		}
 	}
-	if t.cfg.Load != nil && t.cfg.Load.NodeId == node {
+	if t.cfg.Load != nil && NodeIdsAreEqual(t.cfg.Load.NodeId, node) {
 		load, err := conv.Float32Value(value)
 		if err != nil {
 			t.logger.Error("failed to convert Load event", zap.Error(err))
@@ -91,7 +92,7 @@ func (t *Transport) handleTransportEvent(node string, value any) {
 		}
 		old.Load = &load
 	}
-	if t.cfg.MovingDirection != nil && t.cfg.MovingDirection.NodeId == node {
+	if t.cfg.MovingDirection != nil && NodeIdsAreEqual(t.cfg.MovingDirection.NodeId, node) {
 		direction, err := conv.ToTraitEnum[gen.Transport_Direction](value, t.cfg.MovingDirection.Enum, gen.Transport_Direction_value)
 		if err != nil {
 			t.logger.Error("failed to convert MovingDirection to trait enum", zap.Error(err))
@@ -101,7 +102,7 @@ func (t *Transport) handleTransportEvent(node string, value any) {
 	}
 	if t.cfg.NextDestinations != nil {
 		for i, dest := range t.cfg.NextDestinations {
-			if dest.Type == config.SingleFloor && dest.Source.NodeId == node {
+			if dest.Type == config.SingleFloor && NodeIdsAreEqual(dest.Source.NodeId, node) {
 				floor, err := conv.IntValue(value)
 				if err != nil {
 					t.logger.Error("failed to convert NextDestinations event", zap.Error(err))
@@ -121,7 +122,7 @@ func (t *Transport) handleTransportEvent(node string, value any) {
 	}
 	if t.cfg.Doors != nil {
 		for i, door := range t.cfg.Doors {
-			if door.Status != nil && door.Status.NodeId == node {
+			if door.Status != nil && NodeIdsAreEqual(door.Status.NodeId, node) {
 				status, err := conv.ToTraitEnum[gen.Transport_Door_DoorStatus](value, door.Status.Enum, gen.Transport_Door_DoorStatus_value)
 				if err != nil {
 					t.logger.Error("failed to convert Door Status to trait enum", zap.Error(err))

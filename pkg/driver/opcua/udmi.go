@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/gopcua/opcua/ua"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/opcua/config"
@@ -49,9 +50,9 @@ func newUdmi(n string, c config.RawTrait, l *zap.Logger) (*Udmi, error) {
 	return udmi, nil
 }
 
-func (u *Udmi) sendUdmiMessage(ctx context.Context, node string, value any) {
+func (u *Udmi) sendUdmiMessage(ctx context.Context, node *ua.NodeID, value any) {
 
-	if p, ok := u.monitoredPoints[node]; ok {
+	if p, ok := u.monitoredPoints[node.String()]; ok {
 
 		pointName := p.Name
 		u.pointEvents[pointName] = p.GetValueFromIntKey(value)
