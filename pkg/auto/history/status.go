@@ -2,14 +2,12 @@ package history
 
 import (
 	"context"
-	"errors"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 func (a *automation) collectCurrentStatusChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
@@ -18,6 +16,8 @@ func (a *automation) collectCurrentStatusChanges(ctx context.Context, source con
 		a.logger.Error("collection aborted", zap.Error(err))
 		return
 	}
+
+	last := newDeduper[*gen.StatusLog](nil)
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullCurrentStatus(ctx, &gen.PullCurrentStatusRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
@@ -30,10 +30,15 @@ func (a *automation) collectCurrentStatusChanges(ctx context.Context, source con
 				return err
 			}
 			for _, change := range msg.Changes {
-				payload, err := proto.Marshal(change.CurrentStatus)
+				if !last.Changed(change.GetCurrentStatus()) {
+					continue
+				}
+
+				payload, err := proto.Marshal(change.GetCurrentStatus())
 				if err != nil {
 					return err
 				}
+
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
@@ -43,14 +48,20 @@ func (a *automation) collectCurrentStatusChanges(ctx context.Context, source con
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetCurrentStatus(ctx, &gen.GetCurrentStatusRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
+		resp, err := client.GetCurrentStatus(ctx, &gen.GetCurrentStatusRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
-		payload, err := proto.Marshal(demand)
+
+		if !last.Changed(resp) {
+			return nil
+		}
+
+		payload, err := proto.Marshal(resp)
 		if err != nil {
 			return err
 		}
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -59,11 +70,7 @@ func (a *automation) collectCurrentStatusChanges(ctx context.Context, source con
 		return nil
 	}
 
-	err := pull.Changes(ctx, pull.NewFetcher(pullFn, pollFn), payloads, pull.WithLogger(a.logger))
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		return
-	}
-	if err != nil {
+	if err := collectChanges(ctx, source, pullFn, pollFn, payloads, a.logger); err != nil {
 		a.logger.Warn("collection aborted", zap.Error(err))
 	}
 }

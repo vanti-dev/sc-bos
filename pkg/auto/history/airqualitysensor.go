@@ -2,14 +2,13 @@ package history
 
 import (
 	"context"
-	"errors"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
-	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 func (a *automation) collectAirQualityChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
@@ -18,6 +17,8 @@ func (a *automation) collectAirQualityChanges(ctx context.Context, source config
 		a.logger.Error("collection aborted", zap.Error(err))
 		return
 	}
+
+	last := newDeduper[*traits.AirQuality](cmp.Equal(cmp.FloatValueApprox(0, 0.0001)))
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullAirQuality(ctx, &traits.PullAirQualityRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
@@ -30,10 +31,15 @@ func (a *automation) collectAirQualityChanges(ctx context.Context, source config
 				return err
 			}
 			for _, change := range msg.Changes {
-				payload, err := proto.Marshal(change.AirQuality)
+				if !last.Changed(change.GetAirQuality()) {
+					continue
+				}
+
+				payload, err := proto.Marshal(change.GetAirQuality())
 				if err != nil {
 					return err
 				}
+
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
@@ -43,14 +49,20 @@ func (a *automation) collectAirQualityChanges(ctx context.Context, source config
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetAirQuality(ctx, &traits.GetAirQualityRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
+		resp, err := client.GetAirQuality(ctx, &traits.GetAirQualityRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
-		payload, err := proto.Marshal(demand)
+
+		if !last.Changed(resp) {
+			return nil
+		}
+
+		payload, err := proto.Marshal(resp)
 		if err != nil {
 			return err
 		}
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -59,11 +71,7 @@ func (a *automation) collectAirQualityChanges(ctx context.Context, source config
 		return nil
 	}
 
-	err := pull.Changes(ctx, pull.NewFetcher(pullFn, pollFn), payloads, pull.WithLogger(a.logger))
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		return
-	}
-	if err != nil {
+	if err := collectChanges(ctx, source, pullFn, pollFn, payloads, a.logger); err != nil {
 		a.logger.Warn("collection aborted", zap.Error(err))
 	}
 }
