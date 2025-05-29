@@ -177,6 +177,7 @@ import {downloadCSV} from '@/routes/ops/notifications/export.js';
 import {useCohortStore} from '@/stores/cohort.js';
 import {useSidebarStore} from '@/stores/sidebar';
 import {isNullOrUndef} from '@/util/types.js';
+import {useLocalProp} from '@/util/vue.js';
 import {Alert} from '@vanti-dev/sc-bos-ui-gen/proto/alerts_pb';
 import {computed, onUnmounted, reactive, ref} from 'vue';
 import {VCard} from 'vuetify/components';
@@ -217,6 +218,10 @@ const props = defineProps({
   columns: {
     type: Array,
     default: () => []
+  },
+  fixedRowCount: {
+    type: Number,
+    default: null
   }
 });
 const btnStyles = ref({
@@ -395,12 +400,17 @@ const alertsRequest = computed(() => ({
   name: name.value,
   query: query.value
 }));
-const wantCount = ref(20);
+const wantCount = useLocalProp(computed(() => props.fixedRowCount || 20));
 const alertsOptions = computed(() => ({
   wantCount: wantCount.value
 }));
 const alertsCollection = useAlertsCollection(alertsRequest, alertsOptions);
-const tableAttrs = useDataTableCollection(wantCount, alertsCollection);
+const tableOptions = computed(() => {
+  return {
+    itemsPerPage: props.fixedRowCount || undefined,
+  }
+});
+const tableAttrs = useDataTableCollection(wantCount, alertsCollection, tableOptions);
 const tableWrapperProps = computed(() => {
   if (!props.overviewPage) {
     return {
