@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"go.uber.org/zap"
-	"golang.org/x/exp/rand"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
@@ -157,18 +156,8 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		model := airqualitysensorpb.NewModel(airqualitysensorpb.WithInitialAirQuality(auto.GetAirQualityState()))
 		return []wrap.ServiceUnwrapper{airqualitysensorpb.WrapApi(airqualitysensorpb.NewModelServer(model))}, auto.AirQualitySensorAuto(model)
 	case trait.AirTemperature:
-		h := rand.Float32() * 100
-		t := 15 + (rand.Float64() * 10)
-		initial := traits.AirTemperature{
-			Mode:               traits.AirTemperature_AUTO,
-			AmbientTemperature: &types.Temperature{ValueCelsius: t},
-			AmbientHumidity:    &h,
-			TemperatureGoal: &traits.AirTemperature_TemperatureSetPoint{
-				TemperatureSetPoint: &types.Temperature{ValueCelsius: t},
-			},
-		}
-		model := airtemperaturepb.NewModel(airtemperaturepb.WithInitialAirTemperature(&initial))
-		return []wrap.ServiceUnwrapper{airtemperaturepb.WrapApi(airtemperaturepb.NewModelServer(model))}, nil
+		model := airtemperaturepb.NewModel()
+		return []wrap.ServiceUnwrapper{airtemperaturepb.WrapApi(airtemperaturepb.NewModelServer(model))}, auto.AirTemperatureAuto(model)
 	case trait.Booking:
 		return []wrap.ServiceUnwrapper{bookingpb.WrapApi(bookingpb.NewModelServer(bookingpb.NewModel()))}, nil
 	case trait.BrightnessSensor:

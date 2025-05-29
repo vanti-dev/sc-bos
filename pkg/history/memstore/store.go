@@ -7,14 +7,18 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/vanti-dev/sc-bos/pkg/history"
 )
 
 type Store struct {
-	slice // sorted by id, which is createTime+dedupe index
-	now   func() time.Time
+	// mtx protects slice during calls which read or modify the underlying slice
+	mtx sync.Mutex
+	// slice is sorted by id, which is createTime+dedupe index
+	slice
+	now func() time.Time
 
 	maxAge   time.Duration
 	maxCount int64
@@ -37,6 +41,9 @@ func SetNow(s *Store, now func() time.Time) func() {
 }
 
 func (s *Store) Append(_ context.Context, payload []byte) (history.Record, error) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
 	now := s.now()
 	l := len(s.slice)
 	if l > 0 && s.slice[l-1].CreateTime.After(now) {
@@ -52,6 +59,34 @@ func (s *Store) Append(_ context.Context, payload []byte) (history.Record, error
 	s.slice = append(s.slice, r)
 	s.gc(now)
 	return r, nil
+}
+
+func (s *Store) Slice(from, to history.Record) history.Slice {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
+	return s.slice.Slice(from, to)
+}
+
+func (s *Store) Read(ctx context.Context, into []history.Record) (int, error) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
+	return s.slice.Read(ctx, into)
+}
+
+func (s *Store) ReadDesc(ctx context.Context, into []history.Record) (int, error) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
+	return s.slice.ReadDesc(ctx, into)
+}
+
+func (s *Store) Len(ctx context.Context) (int, error) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
+	return s.slice.Len(ctx)
 }
 
 func (s *Store) gc(now time.Time) {
