@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-n4">
+  <div>
     <bar-chart :chart-data="chartData" :chart-options="chartOptions"/>
   </div>
 </template>
@@ -18,7 +18,11 @@ const props = defineProps({
   span: { // how wide the bars of the histogram are / group interval
     type: Number,
     default: 15 * 60 * 1000 // in ms
-  }
+  },
+  showYAxisLabel: {
+    type: Boolean,
+    default: false
+  },
 });
 
 const pollDelay = computed(() => props.span / 10);
@@ -200,10 +204,18 @@ const chartOptions = {
           size: 12// Specify the desired font size
         }
       },
-      title: {
-        display: false,
-        text: ''
-      },
+      title: (() => {
+        if (props.showYAxisLabel) {
+          return {
+            display: true,
+            text: 'People Count'
+          };
+        }
+        return {
+          display: false,
+          text: ''
+        }
+      })(),
       min: 0
     },
     x: {
