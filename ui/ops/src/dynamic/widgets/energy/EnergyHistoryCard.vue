@@ -1,9 +1,7 @@
 <template>
-  <v-card class="px-6 py-4">
-    <v-toolbar class="chart-header" color="transparent">
-      <slot name="title">
-        <v-toolbar-title class="text-h4 pa-0 mr-auto">{{ props.title }}</v-toolbar-title>
-      </slot>
+  <v-card class="d-flex flex-column" :class="rootClasses">
+    <v-toolbar class="chart-header" color="transparent" v-if="!props.hideToolbar">
+      <v-toolbar-title class="text-h4">{{ props.title }}</v-toolbar-title>
       <v-btn
           icon="mdi-dots-vertical"
           size="small"
@@ -34,7 +32,7 @@
         </v-menu>
       </v-btn>
     </v-toolbar>
-    <v-card-text>
+    <v-card-text class="flex-1-1-100 pt-0">
       <div class="chart__container">
         <bar ref="chartRef" :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
       </div>
@@ -95,8 +93,26 @@ const props = defineProps({
   offset: {
     type: [Number, String],
     default: 0, // when start/End is 'month', 'day', etc. offset that value into the past, like 'last month'
+  },
+  density: {
+    type: String,
+    default: 'default' // 'comfortable', 'compact'
+  },
+  hideToolbar: {
+    type: Boolean,
+    default: false,
+  },
+  minChartHeight: {
+    type: [String, Number],
+    default: '500px',
   }
 });
+
+const rootClasses = computed(() => {
+  return {
+    [`density-${props.density}`]: true
+  }
+})
 
 // we assume here that all the meters share the same unit, so asking about any will be enough.
 const nameForDescribe = computed(() => {
@@ -257,16 +273,27 @@ const onDownloadClick = async () => {
       props.title?.toLowerCase()?.replace(' ', '-') ?? 'energy-usage',
       {conditionsList: [{field: 'name', stringIn: {stringsList: names}}]},
       {startTime: startDate.value, endTime: endDate.value},
-      {includeColsList: [
+      {
+        includeColsList: [
           {name: 'timestamp', title: 'Reading Time'},
           {name: 'md.name', title: 'Device Name'},
           {name: 'meter.usage', title: (props.title || 'Energy Usage') + (unit.value ? ` (${unit.value})` : '')},
-        ]}
+        ]
+      }
   )
 }
 </script>
 
 <style scoped lang="scss">
+.density-comfortable,
+.density-default {
+  padding: 16px 24px;
+
+  .v-toolbar {
+    margin-bottom: 14px;
+  }
+}
+
 .chart-header {
   align-items: center;
 
@@ -274,10 +301,14 @@ const onDownloadClick = async () => {
     justify-content: end;
     flex-wrap: wrap;
   }
+
+  :deep(.v-toolbar-title__placeholder) {
+    overflow: visible;
+  }
 }
 
 .chart__container {
-  min-height: 500px;
+  min-height: v-bind(minChartHeight);
   /* The chart seems to have a padding no mater what we do, this gets rid of it */
   margin: -6px;
 }
