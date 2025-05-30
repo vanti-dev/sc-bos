@@ -7,6 +7,7 @@ export const builtinWidgets = {
   'energy/EnergyHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/energy/EnergyHistoryCard.vue')),
   'energy/PowerCompareCard': defineAsyncComponent(() => import('@/dynamic/widgets/energy/PowerCompareCard.vue')),
   'energy/PowerCompareChart': defineAsyncComponent(() => import('@/dynamic/widgets/energy/PowerCompareChart.vue')),
+  'environmental/AirQualityCard': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/AirQualityCard.vue')),
   'environmental/AirQualityHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/AirQualityHistoryCard.vue')),
   'environmental/AirQualityHistoryChart': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/AirQualityHistoryChart.vue')),
   'environmental/EnvironmentalCard': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/EnvironmentalCard.vue')),
