@@ -33,6 +33,7 @@ dashboard: [docs/assets/dashboard/widgets](../assets/dashboard/widgets).
 <img src="../assets/dashboard/widgets/energy-history.png" alt="Energy History Widget" height="100">
 <img src="../assets/dashboard/widgets/graphic-fcu.png" alt="FCU Graphic Widget" height="100">
 <img src="../assets/dashboard/widgets/security-events.png" alt="Security Events Widget" height="100">
+<img src="../assets/dashboard/widgets/energy-power-compare.png" alt="Power Compare Widget" height="100">
 </p>
 
 ## How it Works
