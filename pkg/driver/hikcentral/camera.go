@@ -266,51 +266,62 @@ func (c *Camera) getEvents(ctx context.Context) {
 	end := start.Add(time.Hour)
 	logger := c.logger.With(zap.String("method", "getEvents"),
 		zap.String("startTime", formatTime(start)), zap.String("endTime", formatTime(end)))
-	res, err := c.client.ListEvents(&api.EventsRequest{
-		EventTypes: strings.Join([]string{
-			api.VideoLossAlarm,
-			api.VideoTamperingAlarm,
-			api.CameraRecordingExceptionAlarm,
-			api.CameraRecordingRecoveredAlarm,
-		}, ","),
-		SrcType:    "camera",
-		SrcIndexes: c.conf.IndexCode,
-		StartTime:  formatTime(start),
-		EndTime:    formatTime(end),
-		Request: api.Request{
-			PageNo:   1,
-			PageSize: 100,
-		},
-	})
-	if err != nil {
-		logger.Warn("response error", zap.String("error", err.Error()))
-	} else {
-		var videoLoss, videoTamper, recordingException, recordingRecovered bool
-		var events []api.EventRecord
-		for _, record := range res.List {
-			if record.StopTime != "" {
-				continue // this alarm is done
+
+	pageNum := 1
+	pageSize := 100
+	for {
+		res, err := c.client.ListEvents(&api.EventsRequest{
+			EventTypes: strings.Join([]string{
+				api.VideoLossAlarm,
+				api.VideoTamperingAlarm,
+				api.CameraRecordingExceptionAlarm,
+				api.CameraRecordingRecoveredAlarm,
+			}, ","),
+			SrcType:    "camera",
+			SrcIndexes: c.conf.IndexCode,
+			StartTime:  formatTime(start),
+			EndTime:    formatTime(end),
+			Request: api.Request{
+				PageNo:   pageNum,
+				PageSize: pageSize,
+			},
+		})
+		if err != nil {
+			logger.Warn("response error", zap.String("error", err.Error()))
+		} else {
+			var videoLoss, videoTamper, recordingException, recordingRecovered bool
+			var events []api.EventRecord
+			for _, record := range res.List {
+				if record.StopTime != "" {
+					continue // this alarm is done
+				}
+				if record.LinkCameraIndexCode != c.conf.IndexCode {
+					continue // not for this camera
+				}
+				switch record.EventType {
+				case api.VideoLossAlarm:
+					videoLoss = true
+					events = append(events, record)
+				case api.VideoTamperingAlarm:
+					videoTamper = true
+					events = append(events, record)
+				case api.CameraRecordingExceptionAlarm:
+					recordingException = true
+					events = append(events, record)
+				case api.CameraRecordingRecoveredAlarm:
+					recordingRecovered = true
+					events = append(events, record)
+				}
 			}
-			if record.LinkCameraIndexCode != c.conf.IndexCode {
-				continue // not for this camera
-			}
-			switch record.EventType {
-			case api.VideoLossAlarm:
-				videoLoss = true
-				events = append(events, record)
-			case api.VideoTamperingAlarm:
-				videoTamper = true
-				events = append(events, record)
-			case api.CameraRecordingExceptionAlarm:
-				recordingException = true
-				events = append(events, record)
-			case api.CameraRecordingRecoveredAlarm:
-				recordingRecovered = true
-				events = append(events, record)
+			fault := videoLoss || videoTamper || (recordingException && !recordingRecovered)
+			c.updateFault(ctx, fault)
+			if len(res.List) < pageSize {
+				// no more pages, exit
+				break
+			} else {
+				pageNum++
 			}
 		}
-		fault := videoLoss || videoTamper || (recordingException && !recordingRecovered)
-		c.updateFault(ctx, fault)
 	}
 }
 func (c *Camera) getOcc(ctx context.Context) {
@@ -321,25 +332,37 @@ func (c *Camera) getOcc(ctx context.Context) {
 		zap.String("method", "getOcc"),
 		zap.String("startTime", formatTime(start)), zap.String("endTime", formatTime(end)),
 	)
-	res, err := c.client.GetCameraPeopleStats(&api.StatsRequest{
-		CameraIndexCodes: c.conf.IndexCode,
-		StatisticsType:   api.StatisticsTypeByHour,
-		StartTime:        formatTime(start),
-		EndTime:          formatTime(end),
-		Request: api.Request{
-			PageNo:   1,
-			PageSize: 100,
-		},
-	})
-	if err != nil {
-		logger.Warn("response error", zap.String("error", err.Error()))
-	} else {
-		if len(res.List) == 0 {
-			logger.Warn("no people count data in response", zap.Any("res", res))
+	pageNum := 1
+	pageSize := 100
+	for {
+		res, err := c.client.GetCameraPeopleStats(&api.StatsRequest{
+			CameraIndexCodes: c.conf.IndexCode,
+			StatisticsType:   api.StatisticsTypeByHour,
+			StartTime:        formatTime(start),
+			EndTime:          formatTime(end),
+			Request: api.Request{
+				PageNo:   pageNum,
+				PageSize: pageSize,
+			},
+		})
+		if err != nil {
+			logger.Warn("response error", zap.String("error", err.Error()))
 		} else {
-			i := res.List[0]
-			count := i.EnterNum - i.ExitNum
-			c.updateCount(ctx, strconv.Itoa(count))
+			if len(res.List) == 0 {
+				logger.Warn("no people count data in response", zap.Any("res", res))
+			} else if res.List[0].CameraIndexCode != c.conf.IndexCode {
+				continue // not for this camera
+			} else {
+				i := res.List[0]
+				count := i.EnterNum - i.ExitNum
+				c.updateCount(ctx, strconv.Itoa(count))
+			}
+			if len(res.List) < pageSize {
+				// no more pages, exit
+				break
+			} else {
+				pageNum++
+			}
 		}
 	}
 }

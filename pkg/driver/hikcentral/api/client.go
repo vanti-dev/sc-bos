@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/hikcentral/config"
 )
@@ -62,7 +63,8 @@ func makeReq[R any, T any](client *Client, path string, r *R) (*T, error) {
 	if err != nil {
 		return nil, fmt.Errorf("marshal: %w", err)
 	}
-	req, err := http.NewRequest(http.MethodPost, client.address+path, bytes.NewReader(body))
+	u, err := url.JoinPath(client.address, path)
+	req, err := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("newRequest: %w", err)
 	}
