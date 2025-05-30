@@ -1,23 +1,21 @@
 <template>
-  <div>
-    <v-main>
-      <v-container fluid class="pa-6">
-        <router-view/>
-      </v-container>
-    </v-main>
-    <v-navigation-drawer
-        v-if="hasSidebar"
-        v-model="sidebar.visible"
-        class="resizable pa-0"
-        :class="{resizing}"
-        color="neutral"
-        floating
-        location="right"
-        :width="sideBarWidth">
-      <router-view name="sidebar"/>
-      <div class="resize--handle" ref="resizeHandleElement"/>
-    </v-navigation-drawer>
-  </div>
+  <v-main>
+    <v-container fluid class="pa-6">
+      <router-view/>
+    </v-container>
+  </v-main>
+  <v-navigation-drawer
+      v-if="hasSidebar"
+      v-model="sidebar.visible"
+      class="resizable pa-0"
+      :class="{resizing}"
+      color="neutral"
+      floating
+      location="right"
+      :width="sideBarWidth">
+    <router-view name="sidebar"/>
+    <div class="resize--handle" ref="resizeHandleElement"/>
+  </v-navigation-drawer>
 </template>
 
 <script setup>
