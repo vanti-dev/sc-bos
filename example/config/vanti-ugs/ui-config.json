@@ -812,7 +812,7 @@
               "id": "Weather",
               "component": "builtin:general/OpenWeatherMap",
               "props": {
-                "apiKey": "60c1764b0a81c222f4c22628fd0b3b36",
+                "apiKey": "TODO",
                 "city": "Birmingham",
                 "hideToolbar": true,
                 "color": "transparent"
