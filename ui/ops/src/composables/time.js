@@ -150,8 +150,12 @@ export const previousNamedPeriod = {
 
 /**
  * Tracks a period of time.
- * The start and end dates can be named periods like 'day' or 'week', in which case the period will represent the current period.
- * When using named dates, offset can be used to adjust the period in use.
+ * The start and end dates can be named periods like 'day' or 'week', in which case the period will represent the current period,
+ * i.e. between the start and end of this week.
+ * Named dates can have individual offsets using a format like 'day - 7',
+ * for example using start='day-30', end='day' will represent a period spanning the last 30 days including today.
+ *
+ * When using named dates, a universal offset can be used to adjust the period in use.
  * For example an offset of -1 with a period of 'day' will represent the previous day.
  *
  * @param {import('vue').MaybeRefOrGetter<keyof useStartOf | string | number | Date>} start
@@ -182,6 +186,8 @@ export function usePeriod(start, end, offset) {
     });
   }
 
+  // matches strings like 'day - 7', 'week+1.5'
+  const boundRe = /^(?<period>[a-z]+)(?:\s*(?<offset>[-+]\s*[\d.]+))?$/;
   /**
    * A helper composable that returns a ref to a date at the start of t + plus.
    *
@@ -189,25 +195,35 @@ export function usePeriod(start, end, offset) {
    * @param {number} [plus]
    * @return {import('vue').ComputedRef<null | Date>}
    */
-  const usePeriodBound = (t, plus = 0) => {
+  const useStartOfBound = (t, plus = 0) => {
     const res = reactive({value: /** @type {Date | null} */ null});
 
     let closeScope = () => {};
     onScopeDispose(() => closeScope());
 
-    watch(() => toValue(t), (t, oldT) => {
+    const parsedT = computed(() => {
+      const _t = toValue(t);
+      if (typeof _t === 'number') return {t: _t, o: 0}
+      if (typeof _t !== 'string') return {t: _t, o: 0};
+      if (_t instanceof Date) return {t: _t, o: 0}
+      const matches = boundRe.exec(_t);
+      if (!matches) return {t: _t, o: 0}; // assume it's a date string
+      return {t: matches.groups.period, o: parseFloat(matches.groups.offset) || 0};
+    })
+
+    watch(parsedT, (t, oldT) => {
       if (oldT === t) return;
       closeScope();
       if (isNullOrUndef(t)) {
         res.value = null;
         return;
       }
-      if (isNamedPeriod(t)) {
+      if (isNamedPeriod(t.t)) {
         const scope = effectScope();
         closeScope = () => scope.stop();
         scope.run(() => {
-          const d = useStartOf[t]();
-          res.value = useOffset(t, d, plus);
+          const d = useStartOf[t.t]();
+          res.value = useOffset(t.t, d, plus+t.o);
         });
         return;
       }
@@ -222,9 +238,9 @@ export function usePeriod(start, end, offset) {
       // To get around this we assign a ref to res.value which causes Vue to
       // replace res.value with the new ref instead of trying to write to the old ref.
       res.value = computed(() => {
-        if (typeof t === 'number') return new Date(t);
-        if (typeof t === 'string') return new Date(t);
-        if (t instanceof Date) return t;
+        if (typeof t === 'number') return new Date(t.t);
+        if (typeof t === 'string') return new Date(t.t);
+        if (t instanceof Date) return t.t;
         return null;
       });
     }, {immediate: true});
@@ -233,8 +249,8 @@ export function usePeriod(start, end, offset) {
   }
 
   return {
-    start: usePeriodBound(start),
-    end: usePeriodBound(end, 1)
+    start: useStartOfBound(start),
+    end: useStartOfBound(end, 1)
   }
 }
 
