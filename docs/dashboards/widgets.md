@@ -57,6 +57,12 @@ Shows temperature and humidity readings for one or two devices.
 
 Shows the current date and time.
 
+### General Smart Core Status Widget
+
+![General Smart Core Status Widget](../assets/dashboard/widgets/general-sc-status.png)
+
+Shows the status of the Smart Core cohort, just like on the app toolbar.
+
 ### General OpenWeather Map Widget
 
 ![General OpenWeather Map Widget](../assets/dashboard/widgets/general-open-weather-map.png)
