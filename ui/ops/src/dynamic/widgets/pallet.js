@@ -3,6 +3,8 @@ import {defineAsyncComponent} from 'vue';
 export const builtinWidgets = {
   'container/FlexRow': defineAsyncComponent(() => import('@/dynamic/widgets/container/FlexRow.vue')),
   'energy/EnergyHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/energy/EnergyHistoryCard.vue')),
+  'energy/PowerCompareCard': defineAsyncComponent(() => import('@/dynamic/widgets/energy/PowerCompareCard.vue')),
+  'energy/PowerCompareChart': defineAsyncComponent(() => import('@/dynamic/widgets/energy/PowerCompareChart.vue')),
   'environmental/EnvironmentalCard': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/EnvironmentalCard.vue')),
   'general/CohortStatus': defineAsyncComponent(() => import('@/dynamic/widgets/general/CohortStatus.vue')),
   'general/DateAndTime': defineAsyncComponent(() => import('@/dynamic/widgets/general/DateAndTime.vue')),
