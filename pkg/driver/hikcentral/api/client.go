@@ -64,6 +64,9 @@ func makeReq[R any, T any](client *Client, path string, r *R) (*T, error) {
 		return nil, fmt.Errorf("marshal: %w", err)
 	}
 	u, err := url.JoinPath(client.address, path)
+	if err != nil {
+		return nil, fmt.Errorf("joinPath: %w", err)
+	}
 	req, err := http.NewRequest(http.MethodPost, u, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("newRequest: %w", err)
