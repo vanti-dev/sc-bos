@@ -25,8 +25,8 @@ Some widgets have props passthrough enabled, so you need to also look for that.
 > Yeah, we know this isn't ideal. We do plan to add user-friendly dashboard editing in the future, but for now
 > you'll need to figure it out using the sources and edit the JSON file directly.
 
-There's a directly that contains screenshots of all the built-in widgets to help you make a choice when building your
-dashboard: [docs/assets/dashboard/widgets](../assets/dashboard/widgets).
+See the [widget list](./widgets.md) for information about most of the widgets available.
+Additional screen shots can be found in the [assets](../assets/dashboard/widgets) directory.
 
 <p>
 <img src="../assets/dashboard/widgets/occupancy-people-count.png" alt="Occupancy People Count Widget" height="100">
