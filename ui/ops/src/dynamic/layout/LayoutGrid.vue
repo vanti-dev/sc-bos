@@ -1,5 +1,5 @@
 <template>
-  <div class="grid--container">
+  <div class="grid--container" :class="{signage: signageEnabled}" :style="signageStyles">
     <component
         :is="cellComponent(cell)"
         v-for="(cell, index) in props.cells"
@@ -11,6 +11,7 @@
 </template>
 
 <script setup>
+import useSignage from '@/composables/signage.js';
 import PlaceholderCard from '@/dynamic/widgets/general/PlaceholderCard.vue';
 import {computed} from 'vue';
 
@@ -32,7 +33,9 @@ const countLines = (cells, inlineStartProp, inlineSpanProp) => {
 }
 // these have -1 because there's 1 less column/row than lines: | col1 | col2 | <- cols = 2, lines = 3
 const columnCount = computed(() => countLines(props.cells, 'x', 'w') - 1);
-// const rowCount = computed(() => countLines(props.cells, 'y', 'h') - 1);
+const rowCount = computed(() => countLines(props.cells, 'y', 'h') - 1);
+
+const {enabled: signageEnabled, styles: signageStyles} = useSignage();
 
 const cellStyles = (cell) => {
   return {
@@ -47,7 +50,7 @@ const cellComponent = (cell) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .grid--container {
   --gap: 10px;
   display: grid;
@@ -55,6 +58,17 @@ const cellComponent = (cell) => {
   align-content: stretch;
   gap: var(--gap);
   min-height: 100%;
+}
+
+.signage.grid--container {
+  grid-template-rows: repeat(v-bind(rowCount), 1fr);
+  padding: var(--gap);
+  // add scrollbar gutter to match the app one when needed
+  scrollbar-gutter: stable;
+
+  .grid--cell {
+    overflow: hidden;
+  }
 }
 
 .grid--cell {
