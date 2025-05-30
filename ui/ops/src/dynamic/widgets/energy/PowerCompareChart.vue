@@ -131,7 +131,9 @@ const chartData = computed(() => records.value);
   }
 
   // fix alignment issues caused by the donut chart not having an option to lay out as if it were a full circle.
-  overflow: hidden;
+  & {
+    overflow: hidden;
+  }
   .chart__parent {
     position: relative;
     left: 10%; // this should be ok as we have aspect-ratio 1
