@@ -17,6 +17,7 @@ type Device struct {
 	logger *zap.Logger
 	client *Client
 
+	electric  *Electric
 	meter     *Meter
 	transport *Transport
 	udmi      *Udmi
@@ -106,6 +107,9 @@ func (d *Device) handleEvent(ctx context.Context, event *opcua.PublishNotificati
 
 func (d *Device) handleTraitEvent(ctx context.Context, node *ua.NodeID, value any) {
 
+	if d.electric != nil {
+		d.electric.handleElectricEvent(node, value)
+	}
 	if d.meter != nil {
 		d.meter.handleMeterEvent(node, value)
 	}

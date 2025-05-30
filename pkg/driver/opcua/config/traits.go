@@ -117,3 +117,24 @@ type TransportConfig struct {
 	NextDestinations []*Location `json:"nextDestinations,omitempty"`
 	SpeedUnit        string      `json:"speedUnit,omitempty"`
 }
+
+type ElectricConfig struct {
+	Trait
+	Demand *ElectricDemandConfig `json:"demand,omitempty"`
+}
+
+type ElectricDemandConfig struct {
+	*ElectricPhaseConfig                        // single phase
+	Phases               [3]ElectricPhaseConfig `json:"phases,omitempty"`
+}
+
+type ElectricPhaseConfig struct {
+	Current *ValueSource `json:"current,omitempty"`
+	Voltage *ValueSource `json:"voltage,omitempty"`
+	Rating  *ValueSource `json:"rating,omitempty"`
+
+	PowerFactor   *ValueSource `json:"powerFactor,omitempty"`
+	RealPower     *ValueSource `json:"realPower,omitempty"`
+	ApparentPower *ValueSource `json:"apparentPower,omitempty"`
+	ReactivePower *ValueSource `json:"reactivePower,omitempty"`
+}

@@ -9,6 +9,8 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/smart-core-os/sc-golang/pkg/trait/electricpb"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
@@ -99,6 +101,13 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 					errs = fmt.Errorf("failed to add trait for device %s: %w", dev.Name, err)
 				} else {
 					allFeatures = append(allFeatures, node.HasTrait(udmipb.TraitName, node.WithClients(gen.WrapUdmiService(opcDev.udmi))))
+				}
+			case trait.Electric:
+				opcDev.electric, err = newElectric(dev.Name, t, d.logger)
+				if err != nil {
+					errs = fmt.Errorf("failed to add trait for device %s: %w", dev.Name, err)
+				} else {
+					allFeatures = append(allFeatures, node.HasTrait(trait.Electric, node.WithClients(electricpb.WrapApi(opcDev.electric))))
 				}
 			default:
 				d.logger.Error("unknown trait", zap.String("trait", t.Name))
