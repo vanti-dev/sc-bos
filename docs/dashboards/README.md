@@ -89,3 +89,13 @@ As an example, the `PeopleCountCard` widget config might look like this:
   }
 }
 ```
+
+## Advanced Usage
+
+### Signage Mode
+
+Some layouts support a _signage mode_ which allows the dashboard to be displayed in a full-screen, non-interactive mode.
+
+To activate this mode, add `?mode=signage` to the URL the signage device is using to access the dashboard.
+For layouts like the `LayoutGrid`, this will cause the dashboard to fill the screen (no app bar, nav bar, etc) and
+will cause all rows in the grid to get the same height.
