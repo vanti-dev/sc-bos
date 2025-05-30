@@ -91,6 +91,23 @@ As an example, the `PeopleCountCard` widget config might look like this:
 }
 ```
 
+## Layouts
+
+We provide a few built-in layouts that can be used in different situations to place the widgets on the page.
+
+The MainSide layout uses a column approach with a main column that takes up all available space and an after column of
+fixed size, which is useful for placing a sidebar of widgets.
+This layout is useful for interactive dashboards, where scrolling is available.
+
+![MainSide Layout](../assets/dashboard/widgets/layout-main-side.png)
+
+The Grid layout allows you to place widgets in a grid of configurable size.
+Each widget is placed using `{x, y, w, h}` into the grid allowing very flexible placement.
+This layout is useful for structured dashboards where you known how much information you want to display, for example
+on a signage screen or a control room.
+
+![Grid Layout](../assets/dashboard/widgets/layout-grid.png)
+
 ## Advanced Usage
 
 ### Signage Mode
