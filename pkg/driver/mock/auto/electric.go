@@ -4,20 +4,20 @@ import (
 	"context"
 	"time"
 
-	"golang.org/x/exp/rand"
-
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait/electricpb"
+	"github.com/vanti-dev/sc-bos/pkg/driver/mock/scale"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
 func Electric(model *electricpb.Model) service.Lifecycle {
 	s := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		go func() {
-			timer := time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)
+			timer := time.NewTimer(durationBetween(30*time.Second, 2*time.Minute))
 			for {
+				tod := float32(scale.NineToFive.Now())
 				state := &traits.ElectricDemand{
-					Current:     float32Between(0, 40),
+					Current:     float32Between(20, 40) * tod,
 					Voltage:     ptr(float32Between(238, 243)),
 					PowerFactor: ptr(float32Between(0.7, 1.3)),
 				}
@@ -30,7 +30,7 @@ func Electric(model *electricpb.Model) service.Lifecycle {
 				case <-ctx.Done():
 					return
 				case <-timer.C:
-					timer = time.NewTimer((30 * time.Second) + time.Duration(rand.Float32())*time.Minute)
+					timer = time.NewTimer(durationBetween(time.Minute, 30*time.Minute))
 				}
 			}
 		}()
