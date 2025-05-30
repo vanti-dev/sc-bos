@@ -1,6 +1,7 @@
 import {defineAsyncComponent} from 'vue';
 
 export const builtinWidgets = {
+  'building/BuildingFloors': defineAsyncComponent(() => import('@/dynamic/widgets/building/BuildingFloors.vue')),
   'container/FlexRow': defineAsyncComponent(() => import('@/dynamic/widgets/container/FlexRow.vue')),
   'energy/EnergyHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/energy/EnergyHistoryCard.vue')),
   'energy/PowerCompareCard': defineAsyncComponent(() => import('@/dynamic/widgets/energy/PowerCompareCard.vue')),
