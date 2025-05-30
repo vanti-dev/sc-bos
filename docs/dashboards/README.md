@@ -28,18 +28,20 @@ Some widgets have props passthrough enabled, so you need to also look for that.
 There's a directly that contains screenshots of all the built-in widgets to help you make a choice when building your
 dashboard: [docs/assets/dashboard/widgets](../assets/dashboard/widgets).
 
+<p>
 <img src="../assets/dashboard/widgets/occupancy-people-count.png" alt="Occupancy People Count Widget" height="100">
 <img src="../assets/dashboard/widgets/energy-history.png" alt="Energy History Widget" height="100">
 <img src="../assets/dashboard/widgets/graphic-fcu.png" alt="FCU Graphic Widget" height="100">
 <img src="../assets/dashboard/widgets/security-events.png" alt="Security Events Widget" height="100">
+</p>
 
 ## How it Works
 
 Each dashboard page is described by a `page` JSON object in the `ui-config.json` file.
 The objects are organised into a hierarchy using the `children` property, where each child is another page object.
 Each page object has properties to describe the page, such as `title`, `icon`, and `path`,
-page objects also specify the layout to use via their `layout` property, which then determines which other properties can
-be used to place the widgets into the layout.
+page objects also specify the layout to use via their `layout` property, which then determines which other properties
+can be used to place the widgets into the layout.
 
 The `LayoutMainSide` layout, for example, has a `main` column which takes up all available space, and an `after` column
 of fixed size.
