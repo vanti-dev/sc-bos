@@ -9,8 +9,8 @@ import (
 	"github.com/rs/cors"
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
 	"github.com/vanti-dev/sc-bos/internal/auth/keycloak"
-	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
@@ -69,9 +69,9 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 	s.deleteValidators()
 
 	var serveTokenEndpoint bool
-	tokenServerOpts := []tenant.TokenServerOption{
-		tenant.WithLogger(s.logger.Named("server")),
-		tenant.WithPermittedSignatureAlgorithms(keycloak.DefaultPermittedSignatureAlgorithms),
+	tokenServerOpts := []accesstoken.ServerOption{
+		accesstoken.WithLogger(s.logger.Named("server")),
+		accesstoken.WithPermittedSignatureAlgorithms(keycloak.DefaultPermittedSignatureAlgorithms),
 	}
 
 	if cfg.System != nil {
@@ -80,7 +80,7 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 			return err
 		}
 		serveTokenEndpoint = true
-		tokenServerOpts = append(tokenServerOpts, tenant.WithClientCredentialFlow(verifier, cfg.System.Validity.Or(15*time.Minute)))
+		tokenServerOpts = append(tokenServerOpts, accesstoken.WithClientCredentialFlow(verifier, cfg.System.Validity.Or(15*time.Minute)))
 	}
 
 	if cfg.User != nil {
@@ -96,7 +96,7 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 			}
 
 			serveTokenEndpoint = true
-			tokenServerOpts = append(tokenServerOpts, tenant.WithPasswordFlow(fileVerifier, cfg.User.Validity.Or(24*time.Hour)))
+			tokenServerOpts = append(tokenServerOpts, accesstoken.WithPasswordFlow(fileVerifier, cfg.User.Validity.Or(24*time.Hour)))
 		}
 
 		// Validate access tokens against a remote keycloak server.
@@ -114,7 +114,7 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 	}
 
 	if serveTokenEndpoint {
-		server, err := tenant.NewTokenServer("authn", tokenServerOpts...)
+		server, err := accesstoken.NewServer("authn", tokenServerOpts...)
 		if err != nil {
 			return fmt.Errorf("new token server: %w", err)
 		}
