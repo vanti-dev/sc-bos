@@ -7,6 +7,10 @@ WHERE id = :id;
 SELECT * FROM account_details
 WHERE id = :id;
 
+-- name: GetAccountByUsername :one
+SELECT * FROM user_accounts
+WHERE username = :username;
+
 -- name: ListAccounts :many
 SELECT *
 FROM accounts

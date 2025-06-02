@@ -9,8 +9,9 @@ import (
 	"github.com/rs/cors"
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/internal/account"
+	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
 	"github.com/vanti-dev/sc-bos/internal/auth/keycloak"
-	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
@@ -41,6 +42,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 		clienter:   services.Node,
 		logger:     services.Logger.Named("authn"),
 		validators: services.TokenValidators,
+		accounts:   services.Accounts,
 	}
 	s.Service = service.New(service.MonoApply(s.applyConfig),
 		service.WithParser(config.ReadConfig),
@@ -59,6 +61,7 @@ type System struct {
 	clienter      node.ClientConner
 	cohortManager node.Remote
 	logger        *zap.Logger
+	accounts      *account.Store // may be nil
 
 	validators      *token.ValidatorSet
 	addedValidators []token.Validator // the validators we setup in applyConfig, used to remove them again
@@ -69,23 +72,32 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 	s.deleteValidators()
 
 	var serveTokenEndpoint bool
-	tokenServerOpts := []tenant.TokenServerOption{
-		tenant.WithLogger(s.logger.Named("server")),
-		tenant.WithPermittedSignatureAlgorithms(keycloak.DefaultPermittedSignatureAlgorithms),
+	tokenServerOpts := []accesstoken.ServerOption{
+		accesstoken.WithLogger(s.logger.Named("server")),
+		accesstoken.WithPermittedSignatureAlgorithms(keycloak.DefaultPermittedSignatureAlgorithms),
 	}
 
 	if cfg.System != nil {
-		verifier, err := s.systemTenantVerifier(cfg)
+		validity := cfg.System.Validity.Or(15 * time.Minute)
+		if cfg.System.LocalAccounts && s.accounts != nil {
+			serveTokenEndpoint = true
+			verifier := newLocalServiceVerifier(s.accounts)
+			tokenServerOpts = append(tokenServerOpts, accesstoken.WithClientCredentialFlow(verifier, validity))
+		}
+
+		tenantVerifier, err := s.systemTenantVerifier(cfg)
 		if err != nil {
 			return err
 		}
 		serveTokenEndpoint = true
-		tokenServerOpts = append(tokenServerOpts, tenant.WithClientCredentialFlow(verifier, cfg.System.Validity.Or(15*time.Minute)))
+		tokenServerOpts = append(tokenServerOpts, accesstoken.WithClientCredentialFlow(tenantVerifier, cfg.System.Validity.Or(15*time.Minute)))
 	}
 
 	if cfg.User != nil {
 		// User accounts that are verified by external authorization servers don't need us to
 		// host the oauth/token endpoint, so don't
+
+		validity := cfg.User.Validity.Or(24 * time.Hour)
 
 		// Verify user credentials via the OAuth2 Password Flow using a local file containing accounts.
 		// Validate access tokens that were generated via this flow.
@@ -96,7 +108,7 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 			}
 
 			serveTokenEndpoint = true
-			tokenServerOpts = append(tokenServerOpts, tenant.WithPasswordFlow(fileVerifier, cfg.User.Validity.Or(24*time.Hour)))
+			tokenServerOpts = append(tokenServerOpts, accesstoken.WithPasswordFlow(fileVerifier, validity))
 		}
 
 		// Validate access tokens against a remote keycloak server.
@@ -111,10 +123,16 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 			s.addedValidators = append(s.addedValidators, validator)
 			s.validators.Append(validator)
 		}
+
+		if cfg.User.LocalAccounts && s.accounts != nil {
+			serveTokenEndpoint = true
+			verifier := newLocalUserVerifier(s.accounts)
+			tokenServerOpts = append(tokenServerOpts, accesstoken.WithPasswordFlow(verifier, validity))
+		}
 	}
 
 	if serveTokenEndpoint {
-		server, err := tenant.NewTokenServer("authn", tokenServerOpts...)
+		server, err := accesstoken.NewServer("authn", tokenServerOpts...)
 		if err != nil {
 			return fmt.Errorf("new token server: %w", err)
 		}
