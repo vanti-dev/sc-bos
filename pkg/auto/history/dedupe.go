@@ -12,6 +12,9 @@ type deduper[T proto.Message] struct {
 }
 
 func newDeduper[T proto.Message](message cmp.Message) *deduper[T] {
+	if message == nil {
+		message = cmp.Equal()
+	}
 	return &deduper[T]{equal: message}
 }
 
@@ -20,11 +23,6 @@ func newDeduper[T proto.Message](message cmp.Message) *deduper[T] {
 // If the messages are not equal, it returns true and updates the last message.
 // It uses the provided equal comparator to determine equality, or a default one if not provided.
 func (d *deduper[T]) Changed(m T) bool {
-	// set a default equal comparator if not provided
-	if d.equal == nil {
-		d.equal = cmp.Equal()
-	}
-
 	if d.equal(d.last, m) {
 		return false
 	}
