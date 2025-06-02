@@ -157,7 +157,7 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	// work out where we're getting the records from
 	var serverClient wrap.ServiceUnwrapper
 	payloads := make(chan []byte)
-	var collect func(context.Context, config.Source, chan<- []byte)
+	var collect collector
 	switch cfg.Source.Trait {
 	case trait.AirQualitySensor:
 		serverClient = gen.WrapAirQualitySensorHistory(historypb.NewAirQualitySensorServer(store))
@@ -184,6 +184,7 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	// each time the source emits, we append it to the store
 	go func() {
 		defer close(payloads)
+
 		for {
 			select {
 			case <-ctx.Done():
