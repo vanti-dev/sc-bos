@@ -21,11 +21,7 @@
     },
     "authn": {
       "user": {
-        "fileAccounts": true,
-        "keycloakAccounts": {
-          "url": "http://localhost:8888",
-          "realm": "Smart_Core"
-        }
+        "localAccounts": true
       },
       "system": {
         "tenantAccounts": true

@@ -92,9 +92,10 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	rootNode := node.New(cName)
 	rootNode.Logger = logger.Named("node")
 
+	var accountStore *account.Store
 	if config.Experimental != nil && config.Experimental.Accounts {
 		accountLogger := logger.Named("account")
-		accountStore, err := account.OpenStore(ctx, files.Path(config.DataDir, accountsFile), accountLogger)
+		accountStore, err = account.OpenStore(ctx, files.Path(config.DataDir, accountsFile), accountLogger)
 		if err != nil {
 			return nil, fmt.Errorf("load accounts: %w", err)
 		}
@@ -339,6 +340,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Tasks:            &task.Group{},
 		Database:         db,
 		Stores:           store,
+		Accounts:         accountStore,
 		TokenValidators:  tokenValidator,
 		GRPCCerts:        systemSource,
 		ReflectionServer: reflectionServer,
@@ -413,6 +415,7 @@ type Controller struct {
 	TokenValidators *token.ValidatorSet
 	GRPCCerts       *pki.SourceSet
 	Stores          *stores.Stores
+	Accounts        *account.Store
 
 	ReflectionServer *reflectionapi.Server
 

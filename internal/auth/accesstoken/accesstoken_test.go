@@ -1,4 +1,4 @@
-package tenant
+package accesstoken
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ func TestTokenSource_createAndVerify(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ts := &TokenSource{
+	ts := &Source{
 		Key:    key,
 		Issuer: "test",
 		Now:    time.Now,

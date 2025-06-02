@@ -9,15 +9,15 @@ import (
 
 	"go.uber.org/multierr"
 
-	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
+	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
 )
 
-// loadFileVerifier returns a tenant.Verifier that checks credentials against those found. Creds are loaded from the
+// loadFileVerifier returns a accesstoken.Verifier that checks credentials against those found. Creds are loaded from the
 // JSON files that match `defaultFilename` in the `dataDirs` directory list and combined. No checks are made for
-// duplicate IDs either within the same file or across multiple files. If no files are found then a tenant.NeverVerify
+// duplicate IDs either within the same file or across multiple files. If no files are found then a accesstoken.NeverVerify
 // verifier is returned.
-func loadFileVerifier(idConfig *config.Identities, dataDirs []string, defaultFilename string) (tenant.Verifier, error) {
+func loadFileVerifier(idConfig *config.Identities, dataDirs []string, defaultFilename string) (accesstoken.Verifier, error) {
 	ids := make([]config.Identity, 0)
 	for _, dataDir := range dataDirs {
 		_, err := os.Stat(path.Join(dataDir, defaultFilename))
@@ -36,13 +36,13 @@ func loadFileVerifier(idConfig *config.Identities, dataDirs []string, defaultFil
 	}
 	if len(ids) == 0 {
 		log.Printf("no local accounts found in %v", dataDirs)
-		return tenant.NeverVerify(errors.New("no local accounts")), nil
+		return accesstoken.NeverVerify(errors.New("no local accounts")), nil
 	}
 
-	verifier := &tenant.MemoryVerifier{}
+	verifier := &accesstoken.MemoryVerifier{}
 	var allErrs error
 	for _, t := range ids {
-		err := verifier.AddRecord(tenant.SecretData{Title: t.Title, TenantID: t.ID, Zones: t.Zones, Roles: t.Roles})
+		err := verifier.AddRecord(accesstoken.SecretData{Title: t.Title, TenantID: t.ID, Zones: t.Zones, Roles: t.Roles})
 		if err != nil {
 			allErrs = multierr.Append(allErrs, err)
 			continue

@@ -8,6 +8,7 @@ import (
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/internal/account"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
 	"github.com/vanti-dev/sc-bos/pkg/app/stores"
@@ -25,6 +26,7 @@ type Services struct {
 	CohortManager   node.Remote
 	Database        *bolthold.Store
 	Stores          *stores.Stores
+	Accounts        *account.Store
 	HTTPMux         *http.ServeMux      // to allow systems to serve http requests
 	TokenValidators *token.ValidatorSet // to allow systems to contribute towards client validation
 
