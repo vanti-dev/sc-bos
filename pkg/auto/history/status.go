@@ -13,11 +13,7 @@ import (
 )
 
 func (a *automation) collectCurrentStatusChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
-	var client gen.StatusApiClient
-	if err := a.clients.Client(&client); err != nil {
-		a.logger.Error("collection aborted", zap.Error(err))
-		return
-	}
+	client := gen.NewStatusApiClient(a.clients.ClientConn())
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullCurrentStatus(ctx, &gen.PullCurrentStatusRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})

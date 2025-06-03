@@ -31,7 +31,7 @@ type feature struct {
 	*service.Service[config.Root]
 	announcer *node.ReplaceAnnouncer
 	devices   *zone.Devices
-	clients   node.Clienter
+	clients   node.ClientConner
 	logger    *zap.Logger
 }
 
@@ -39,10 +39,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	if len(cfg.Electrics) == 0 && len(cfg.ElectricGroups) == 0 {
 		return nil
 	}
-	var client traits.ElectricApiClient
-	if err := f.clients.Client(&client); err != nil {
-		return err
-	}
+	client := traits.NewElectricApiClient(f.clients.ClientConn())
 
 	announce := f.announcer.Replace(ctx)
 	logger := f.logger

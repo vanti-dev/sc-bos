@@ -18,18 +18,18 @@ import (
 // BrightnessAutomation implements turning lights on or off based on occupancy readings from PIRs and other devices.
 type BrightnessAutomation struct {
 	logger  *zap.Logger
-	clients node.Clienter // clients are not got until Start
+	clients node.ClientConner // client conns are not got until Start
 
 	// bus emits "stop" and "config" events triggered by Stop and Configure.
 	bus *emitter.Emitter
 
-	makeActions   func(clienter node.Clienter) (actions, error)                // override for testing
+	makeActions   func(clientConn node.ClientConner) actions                   // override for testing
 	newTimer      func(duration time.Duration) (<-chan time.Time, func() bool) // override for testing
 	autoStartTime time.Time                                                    // override for testing
 }
 
 // PirsTurnLightsOn creates an automation that controls light brightness based on PIR occupancy status.
-func PirsTurnLightsOn(clients node.Clienter, logger *zap.Logger) *BrightnessAutomation {
+func PirsTurnLightsOn(clients node.ClientConner, logger *zap.Logger) *BrightnessAutomation {
 	return &BrightnessAutomation{
 		logger:      logger,
 		clients:     clients,
@@ -51,10 +51,7 @@ func (b *BrightnessAutomation) Start(_ context.Context) error {
 	}
 	// We make the actions impl here so that we can create the automation before clients are available,
 	// so long as they're available before Start is called.
-	actions, err := b.makeActions(b.clients)
-	if err != nil {
-		return err
-	}
+	actions := b.makeActions(b.clients)
 
 	ctx, stop := context.WithCancel(context.Background())
 	group, ctx := errgroup.WithContext(ctx)

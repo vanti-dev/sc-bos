@@ -13,11 +13,7 @@ import (
 )
 
 func (a *automation) collectAirQualityChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
-	var client traits.AirQualitySensorApiClient
-	if err := a.clients.Client(&client); err != nil {
-		a.logger.Error("collection aborted", zap.Error(err))
-		return
-	}
+	client := traits.NewAirQualitySensorApiClient(a.clients.ClientConn())
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullAirQuality(ctx, &traits.PullAirQualityRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})

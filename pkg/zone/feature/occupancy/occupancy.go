@@ -5,6 +5,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -29,7 +30,7 @@ type feature struct {
 	*service.Service[config.Root]
 	announcer *node.ReplaceAnnouncer
 	devices   *zone.Devices
-	clients   node.Clienter
+	clients   node.ClientConner
 	logger    *zap.Logger
 }
 
@@ -39,21 +40,18 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 
 	if len(cfg.OccupancySensors) > 0 || len(cfg.EnterLeaveOccupancySensors) > 0 {
 		group := &Group{logger: logger}
+		conn := f.clients.ClientConn()
 
 		if len(cfg.OccupancySensors) > 0 {
-			if err := f.clients.Client(&group.client); err != nil {
-				return err
-			}
+			group.client = traits.NewOccupancySensorApiClient(conn)
 			group.names = cfg.OccupancySensors
 		}
 		if len(cfg.EnterLeaveOccupancySensors) > 0 {
 			elServer := &enterLeave{
 				model:  occupancysensorpb.NewModel(),
+				client: traits.NewEnterLeaveSensorApiClient(conn),
 				names:  cfg.EnterLeaveOccupancySensors,
 				logger: logger,
-			}
-			if err := f.clients.Client(&elServer.client); err != nil {
-				return err
 			}
 			group.clients = append(group.clients, occupancysensorpb.WrapApi(elServer))
 		}

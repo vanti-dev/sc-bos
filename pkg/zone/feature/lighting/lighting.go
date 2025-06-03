@@ -33,26 +33,19 @@ type feature struct {
 	*service.Service[config.Root]
 	announcer *node.ReplaceAnnouncer
 	devices   *zone.Devices
-	clients   node.Clienter
+	clients   node.ClientConner
 	logger    *zap.Logger
 }
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := f.announcer.Replace(ctx)
 	logger := f.logger
+	conn := f.clients.ClientConn()
 
 	announceGroup := func(name string, lights []string, logger *zap.Logger) error {
-		var apiClient traits.LightApiClient
-		if err := f.clients.Client(&apiClient); err != nil {
-			return err
-		}
-		var infoClient traits.LightInfoClient
-		if err := f.clients.Client(&infoClient); err != nil {
-			// we don't support info api, Group can handle this so just continue
-		}
 		group := &Group{
-			client:   apiClient,
-			info:     infoClient,
+			client:   traits.NewLightApiClient(conn),
+			info:     traits.NewLightInfoClient(conn),
 			names:    lights,
 			readOnly: cfg.ReadOnlyLights,
 			logger:   logger,

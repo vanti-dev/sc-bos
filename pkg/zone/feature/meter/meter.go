@@ -30,7 +30,7 @@ type feature struct {
 	*service.Service[config.Root]
 	announcer *node.ReplaceAnnouncer
 	devices   *zone.Devices
-	clients   node.Clienter
+	clients   node.ClientConner
 	logger    *zap.Logger
 }
 
@@ -38,16 +38,9 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := f.announcer.Replace(ctx)
 	logger := f.logger
 
-	var apiClient gen.MeterApiClient
-	var infoClient gen.MeterInfoClient
-	if len(cfg.Meters) > 0 || len(cfg.MeterGroups) > 0 {
-		if err := f.clients.Client(&apiClient); err != nil {
-			return err
-		}
-		if err := f.clients.Client(&infoClient); err != nil {
-			return err
-		}
-	}
+	conn := f.clients.ClientConn()
+	apiClient := gen.NewMeterApiClient(conn)
+	infoClient := gen.NewMeterInfoClient(conn)
 	announceGroup := func(name string, devices []string) {
 		if len(devices) == 0 {
 			return

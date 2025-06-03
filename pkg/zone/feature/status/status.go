@@ -29,7 +29,7 @@ type feature struct {
 	*service.Service[config.Root]
 	announcer *node.ReplaceAnnouncer
 	devices   *zone.Devices
-	clients   node.Clienter
+	clients   node.ClientConner
 	logger    *zap.Logger
 }
 
@@ -38,10 +38,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := f.logger
 
 	if len(cfg.StatusLogs) > 0 || cfg.StatusLogAll {
-		var client gen.StatusApiClient
-		if err := f.clients.Client(&client); err != nil {
-			return err
-		}
+		client := gen.NewStatusApiClient(f.clients.ClientConn())
 
 		f.devices.Add(cfg.StatusLogs...)
 		if cfg.StatusLogAll {

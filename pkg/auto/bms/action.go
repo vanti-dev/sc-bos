@@ -20,16 +20,13 @@ type Actions interface {
 	UpdateModeValues(ctx context.Context, req *traits.UpdateModeValuesRequest, ws *WriteState) error
 }
 
-// ClientActions creates a new Actions backed by node.Clienter clients.
-func ClientActions(clients node.Clienter) (Actions, error) {
-	res := &clientActions{}
-	if err := clients.Client(&res.airTemperatureClient); err != nil {
-		return nil, err
+// ClientActions creates a new Actions backed by node.ClientConner clients.
+func ClientActions(clients node.ClientConner) Actions {
+	conn := clients.ClientConn()
+	return &clientActions{
+		airTemperatureClient: traits.NewAirTemperatureApiClient(conn),
+		modeClient:           traits.NewModeApiClient(conn),
 	}
-	if err := clients.Client(&res.modeClient); err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 type clientActions struct {
