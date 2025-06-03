@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/codes"
@@ -15,7 +14,6 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
-	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
 	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
@@ -33,17 +31,9 @@ type smartCore struct {
 }
 
 func (s *smartCore) applyConfig(ctx context.Context, cfg config.SmartCoreSource) error {
-	clients := s.services.Node
-
-	var (
-		parentClient           traits.ParentApiClient
-		lightClient            traits.LightApiClient
-		occupancySensorClient  traits.OccupancySensorApiClient
-		brightnessSensorClient traits.BrightnessSensorApiClient
-	)
-	if err := collectClients(clients, &parentClient, &lightClient, &occupancySensorClient, &brightnessSensorClient); err != nil {
-		return err
-	}
+	conn := s.services.Node.ClientConn()
+	parentClient := traits.NewParentApiClient(conn)
+	lightClient := traits.NewLightApiClient(conn)
 
 	sent := allowDuplicates()
 	if cfg.Duplicates.TrackDuplicates() {
@@ -124,16 +114,6 @@ func publishLightBrightness(ctx context.Context, name string, lightClient traits
 		return nil
 	})
 	return tasks.Wait()
-}
-
-func collectClients(clients node.Clienter, ptrs ...any) error {
-	var allErrs error
-	for _, ptr := range ptrs {
-		if err := clients.Client(ptr); err != nil {
-			allErrs = multierr.Append(allErrs, err)
-		}
-	}
-	return allErrs
 }
 
 type lightBrightnessPuller struct {

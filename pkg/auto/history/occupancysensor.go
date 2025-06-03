@@ -13,11 +13,7 @@ import (
 )
 
 func (a *automation) collectOccupancyChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
-	var client traits.OccupancySensorApiClient
-	if err := a.clients.Client(&client); err != nil {
-		a.logger.Error("collection aborted", zap.Error(err))
-		return
-	}
+	client := traits.NewOccupancySensorApiClient(a.clients.ClientConn())
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullOccupancy(ctx, &traits.PullOccupancyRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})

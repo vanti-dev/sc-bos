@@ -42,7 +42,7 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 type Auto struct {
 	*service.Service[config.Root]
 	logger  *zap.Logger
-	clients node.Clienter
+	clients node.ClientConner
 
 	setupOnce     sync.Once // reset on stop
 	setupErr      error
@@ -52,7 +52,7 @@ type Auto struct {
 
 	// test helpers
 	now           func() time.Time
-	clientActions func(clienter node.Clienter) (Actions, error)
+	clientActions func(clientConner node.ClientConner) Actions
 	newTimer      func(duration time.Duration) (<-chan time.Time, func() bool)
 	processDone   func(readState *ReadState, writeState *WriteState, ttl time.Duration, err error)
 }
@@ -60,10 +60,7 @@ type Auto struct {
 func (a *Auto) applyConfig(ctx context.Context, cfg config.Root) error {
 	a.setTestHelperFuncs()
 
-	actions, err := a.clientActions(a.clients)
-	if err != nil {
-		return err
-	}
+	actions := a.clientActions(a.clients)
 	cfgChanges, err := a.setup(actions)
 	if err != nil {
 		return err

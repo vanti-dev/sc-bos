@@ -55,7 +55,7 @@ func NewAutomation(services auto.Services) service.Lifecycle {
 
 type automation struct {
 	*service.Service[config.Root]
-	clients   node.Clienter
+	clients   node.ClientConner
 	announcer *node.ReplaceAnnouncer
 	logger    *zap.Logger
 
@@ -118,10 +118,7 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		if name == "" {
 			return errors.New("storage.name missing, must exist when storage.type is \"api\"")
 		}
-		var client gen.HistoryAdminApiClient
-		if err := a.clients.Client(&client); err != nil {
-			return err
-		}
+		client := gen.NewHistoryAdminApiClient(a.clients.ClientConn())
 		store = apistore.New(client, name, cfg.Source.SourceName())
 	case "hub":
 		if cfg.Storage.TTL != nil {

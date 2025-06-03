@@ -32,26 +32,7 @@ func (p PatchFunc) Patch(s *ReadState) {
 //
 // Blocks until ctx is done.
 func (a *Auto) setupPatchers(ctx context.Context, configChanged <-chan config.Root, changes chan<- Patcher) error {
-	// eagerly fetch the clients we might be using.
-	// While the config might mean we don't use them, better to have the system fail early just in case
-	var airTemperatureClient traits.AirTemperatureApiClient
-	if err := a.clients.Client(&airTemperatureClient); err != nil {
-		return fmt.Errorf("%w traits.AirTemperatureApiClient", err)
-	}
-	var airTemperatureHistoryClient gen.AirTemperatureHistoryClient
-	if err := a.clients.Client(&airTemperatureHistoryClient); err != nil {
-		// allow nil history clients
-		airTemperatureHistoryClient = nil
-	}
-	var modeClient traits.ModeApiClient
-	if err := a.clients.Client(&modeClient); err != nil {
-		return fmt.Errorf("%w traits.ModeApiClient", err)
-	}
-	var occupancySensorClient traits.OccupancySensorApiClient
-	if err := a.clients.Client(&occupancySensorClient); err != nil {
-		return fmt.Errorf("%w traits.OccupancySensorApiClient", err)
-	}
-
+	conn := a.clients.ClientConn()
 	// Setup the sources that we can pull patches from.
 	sources := []*source{
 		{
@@ -59,7 +40,7 @@ func (a *Auto) setupPatchers(ctx context.Context, configChanged <-chan config.Ro
 			new: func(name string, logger *zap.Logger) subscriber {
 				return &AirTemperaturePatches{
 					name:   name,
-					client: airTemperatureClient,
+					client: traits.NewAirTemperatureApiClient(conn),
 					logger: logger.Named("airTemperature"),
 				}
 			},
@@ -74,7 +55,7 @@ func (a *Auto) setupPatchers(ctx context.Context, configChanged <-chan config.Ro
 			new: func(name string, logger *zap.Logger) subscriber {
 				return &ModePatches{
 					name:   name,
-					client: modeClient,
+					client: traits.NewModeApiClient(conn),
 					logger: logger.Named("mode"),
 				}
 			},
@@ -84,7 +65,7 @@ func (a *Auto) setupPatchers(ctx context.Context, configChanged <-chan config.Ro
 			new: func(name string, logger *zap.Logger) subscriber {
 				return &OccupancySensorPatches{
 					name:   name,
-					client: occupancySensorClient,
+					client: traits.NewOccupancySensorApiClient(conn),
 					logger: logger.Named("occupancy"),
 				}
 			},
@@ -100,8 +81,8 @@ func (a *Auto) setupPatchers(ctx context.Context, configChanged <-chan config.Ro
 			new: func(name string, logger *zap.Logger) subscriber {
 				return &MeanOATempPatches{
 					name:          name,
-					apiClient:     airTemperatureClient,
-					historyClient: airTemperatureHistoryClient,
+					apiClient:     traits.NewAirTemperatureApiClient(conn),
+					historyClient: gen.NewAirTemperatureHistoryClient(conn),
 					logger:        logger.Named("meanOATemp"),
 				}
 			},

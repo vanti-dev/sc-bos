@@ -11,12 +11,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/trait/brightnesssensorpb"
-	"github.com/smart-core-os/sc-golang/pkg/trait/lightpb"
-	"github.com/smart-core-os/sc-golang/pkg/trait/modepb"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
@@ -27,34 +24,16 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// we update this to send messages to the automation
 	pir01 := occupancysensorpb.NewModel()
 	pir02 := occupancysensorpb.NewModel()
-
-	clients := node.ClientFunc(func(p any) error {
-		switch v := p.(type) {
-		case *traits.OccupancySensorApiClient:
-			r := occupancysensorpb.NewApiRouter()
-			r.Add("pir01", occupancysensorpb.WrapApi(occupancysensorpb.NewModelServer(pir01)))
-			r.Add("pir02", occupancysensorpb.WrapApi(occupancysensorpb.NewModelServer(pir02)))
-			*v = occupancysensorpb.WrapApi(r)
-		case *traits.LightApiClient:
-			*v = lightpb.WrapApi(lightpb.NewApiRouter())
-		case *traits.BrightnessSensorApiClient:
-			*v = brightnesssensorpb.WrapApi(brightnesssensorpb.NewApiRouter())
-		case *gen.ButtonApiClient:
-			*v = gen.WrapButtonApi(gen.NewButtonApiRouter())
-		case *traits.ModeApiClient:
-			*v = modepb.WrapApi(modepb.NewApiRouter())
-		default:
-			return errors.New("unsupported lightClient type")
-		}
-		return nil
-	})
+	rootNode := node.New("test")
+	rootNode.Announce("pir01", node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensorpb.WrapApi(occupancysensorpb.NewModelServer(pir01)))))
+	rootNode.Announce("pir02", node.HasTrait(trait.OccupancySensor, node.WithClients(occupancysensorpb.WrapApi(occupancysensorpb.NewModelServer(pir02)))))
 
 	testActions := newTestActions(t)
 
 	now := time.Unix(0, 0)
 
-	automation := PirsTurnLightsOn(clients, zap.NewNop())
-	automation.makeActions = func(_ node.Clienter) (actions, error) { return testActions, nil }
+	automation := PirsTurnLightsOn(rootNode, zap.NewNop())
+	automation.makeActions = func(_ node.ClientConner) actions { return testActions }
 	automation.autoStartTime = now
 
 	cfg := config.Default()

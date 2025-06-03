@@ -31,19 +31,15 @@ type feature struct {
 	*service.Service[config.Root]
 	announcer *node.ReplaceAnnouncer
 	devices   *zone.Devices
-	clients   node.Clienter
+	clients   node.ClientConner
 	logger    *zap.Logger
 }
 
 func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := f.announcer.Replace(ctx)
 	logger := f.logger
+	client := traits.NewAirTemperatureApiClient(f.clients.ClientConn())
 	publish := func(name string, t config.Thermostat) error {
-		var client traits.AirTemperatureApiClient
-		if err := f.clients.Client(&client); err != nil {
-			return err
-		}
-
 		group := &Group{
 			client:   client,
 			names:    t.Thermostats,

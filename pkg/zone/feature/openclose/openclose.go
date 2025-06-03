@@ -35,7 +35,7 @@ type feature struct {
 	*service.Service[config.Root]
 	announcer *node.ReplaceAnnouncer
 	devices   *zone.Devices
-	clients   node.Clienter
+	clients   node.ClientConner
 	logger    *zap.Logger
 }
 
@@ -43,12 +43,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	announce := f.announcer.Replace(ctx)
 	logger := f.logger
 
-	var apiClient traits.OpenCloseApiClient
-	if len(cfg.OpenClose) > 0 || len(cfg.OpenCloseGroups) > 0 {
-		if err := f.clients.Client(&apiClient); err != nil {
-			return err
-		}
-	}
+	apiClient := traits.NewOpenCloseApiClient(f.clients.ClientConn())
 	announceGroup := func(name string, devices []string) {
 		if len(devices) == 0 {
 			return

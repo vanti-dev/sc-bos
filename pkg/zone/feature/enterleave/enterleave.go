@@ -31,11 +31,9 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 
 		if len(cfg.EnterLeaveSensors) > 0 {
 			elServer := &enterLeave{
-				model: occupancysensorpb.NewModel(),
-				names: cfg.EnterLeaveSensors,
-			}
-			if err := f.clients.Client(&elServer.client); err != nil {
-				return err
+				model:  occupancysensorpb.NewModel(),
+				names:  cfg.EnterLeaveSensors,
+				client: traits.NewEnterLeaveSensorApiClient(f.clients.ClientConn()),
 			}
 			group.enterLeaveClients = append(group.enterLeaveClients, enterleavesensorpb.WrapApi(elServer))
 		}

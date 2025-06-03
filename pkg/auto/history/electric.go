@@ -13,11 +13,7 @@ import (
 )
 
 func (a *automation) collectElectricDemandChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
-	var client traits.ElectricApiClient
-	if err := a.clients.Client(&client); err != nil {
-		a.logger.Error("collection aborted", zap.Error(err))
-		return
-	}
+	client := traits.NewElectricApiClient(a.clients.ClientConn())
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullDemand(ctx, &traits.PullDemandRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
