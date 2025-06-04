@@ -21,32 +21,39 @@ fi
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 GIT_VERSION=$(git describe --tags --always --dirty)
+BASE_IMAGE="localhost/vanti-dev-sc-bos:demo-ugs-base"
 CR_TAG_PREFIX="ghcr.io/vanti-dev/sc-bos"
 PLATFORMS="linux/amd64,linux/arm64"
 
 cd $REPO_ROOT
+echo "Preparing $containerCmd for building the image..."
+$containerCmd manifest rm "$BASE_IMAGE" || true
+$containerCmd manifest rm "$CR_TAG_PREFIX/demo-ugs-sc-bos:latest" || true
+$containerCmd manifest rm "$CR_TAG_PREFIX/demo-ugs-seed-db:latest" || true
 
 # Build using the shared Dockerfile in the project root directory
 echo "Building the sc-bos base image with version: $GIT_VERSION"
 $containerCmd build \
-  --platform $PLATFORMS \
+  --platform=$PLATFORMS \
+  --jobs=2 \
   --build-arg GIT_VERSION=$GIT_VERSION \
   --secret=id=npmrc,src=$HOME/.npmrc \
-  --manifest "localhost/vanti-dev-sc-bos:demo-ugs-base" \
+  --manifest "$BASE_IMAGE" \
   -f $REPO_ROOT/Dockerfile \
   .
 
 # Add config to the sc-bos image
 echo "Building the sc-bos demo image with version: $GIT_VERSION"
 $containerCmd build \
+  --from="$BASE_IMAGE" \
   --pull=never \
-  --platform $PLATFORMS \
+  --all-platforms \
   --manifest "$CR_TAG_PREFIX/demo-ugs-sc-bos:latest" \
   -f demo/vanti-ugs/Dockerfile-Ugs .
 # Build the db seeder image
 echo "Building the sc-bos demo seed-db image"
 $containerCmd build \
-  --platform $PLATFORMS \
+  --platform=$PLATFORMS \
   --manifest "$CR_TAG_PREFIX/demo-ugs-seed-db:latest" \
   -f demo/vanti-ugs/Dockerfile-SeedDb .
 
