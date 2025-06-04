@@ -1,29 +1,14 @@
 # Dockerfile for sc-bos with the vanti ugs config
-# Run yarn run build in ui/ops first
-# Otherwise we have to mess around with access tokens to grab our NPM packages
-#
+# This is based on the image built by the Dockerfile in the root of the repository.
+# This dockerfile assumes it is being build using context from the root of the repository.
 
-FROM golang:1.23-alpine
+# Image built using the Dockerfile in the root of the repository
+FROM localhost/vanti-dev-sc-bos:demo-ugs-base
 
-COPY ui/ops/dist /static
-RUN mkdir /cfg
-COPY demo/vanti-ugs/app.conf.json /cfg
-COPY demo/vanti-ugs/system.conf.json /cfg
-COPY demo/vanti-ugs/ui-config.json /cfg
-COPY demo/vanti-ugs/assets /cfg/assets
-COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod download -x
-
-COPY cmd ./cmd/
-COPY internal ./internal/
-COPY pkg ./pkg/
-RUN mkdir -p /data/secrets
-RUN echo "" >> /data/secrets/postgres-password
-RUN go build -o /app/sc-bos ./cmd/bos
-
+# Files will be relative to the repository root
+COPY example/config/vanti-ugs/ /cfg/
+# Special system conf for the container env
+COPY demo/vanti-ugs/system.conf.json /cfg/system.conf.json
 EXPOSE 8443
-EXPOSE 23557
-EXPOSE 7000-7999
 
 ENTRYPOINT ["/app/sc-bos", "--policy-mode=check", "--appconf=/cfg/app.conf.json", "--sysconf=/cfg/system.conf.json", "--data=/data"]

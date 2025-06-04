@@ -15,6 +15,7 @@ ENV YARN_CACHE_FOLDER=/yarn-cache
 COPY ui/package.json ui/yarn.lock ui/.npmrc ./
 COPY ui/ops/package.json ./ops/
 COPY ui/panzoom-package/package.json ./panzoom-package/
+COPY ui/space/package.json ./space/
 COPY ui/ui-gen/package.json ./ui-gen/
 RUN --mount=type=cache,target=/yarn-cache \
     --mount=type=secret,id=npmrc,target=/root/.npmrc \
@@ -28,7 +29,7 @@ ENV GIT_VERSION=$GIT_VERSION
 WORKDIR ops
 RUN yarn run build
 
-FROM --platform=$BUILDPLATFORM golang:1.23-alpine3.20 AS build_go
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine3.22 AS build_go
 
 RUN apk add --no-cache git
 
