@@ -375,6 +375,12 @@ message Role {
   string description = 3;
   // The permissions granted by this role.
   repeated string permission_ids = 4;
+  // Output only. Optional.
+  // For roles which map to hardcoded roles in the legacy authentication system.
+  // Legacy roles cannot be used in scoped RoleAssignments.
+  string legacy_role_name = 5;
+  // Output only. If true, this role is necessary for the system to function, and cannot be modified or deleted.
+  bool protected = 7;
 }
 
 // A RoleAssignment is an assignment of a Role to an Account.

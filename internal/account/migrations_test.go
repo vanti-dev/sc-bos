@@ -97,6 +97,41 @@ func TestMigrations(t *testing.T) {
 					DisplayName:   "My Role",
 					PermissionIds: []string{"account:read", "account:write"},
 				},
+				{
+					Id:             "2",
+					DisplayName:    "Admin",
+					Description:    "Full system access (built-in role)",
+					LegacyRoleName: "admin",
+					Protected:      true,
+				},
+				{
+					Id:             "3",
+					DisplayName:    "Super Admin",
+					Description:    "Full system access (built-in role)",
+					LegacyRoleName: "super-admin",
+					Protected:      true,
+				},
+				{
+					Id:             "4",
+					DisplayName:    "Commissioner",
+					Description:    "Alter configurations (built-in role)",
+					LegacyRoleName: "commissioner",
+					Protected:      true,
+				},
+				{
+					Id:             "5",
+					DisplayName:    "Operator",
+					Description:    "View data and control devices (built-in role)",
+					LegacyRoleName: "operator",
+					Protected:      true,
+				},
+				{
+					Id:             "6",
+					DisplayName:    "Viewer",
+					Description:    "View data (built-in role)",
+					LegacyRoleName: "viewer",
+					Protected:      true,
+				},
 			},
 			expectAssigns: []*gen.RoleAssignment{
 				{

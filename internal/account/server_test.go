@@ -1435,11 +1435,24 @@ func TestServer_Role(t *testing.T) {
 	store := NewMemoryStore(logger)
 	server := NewServer(store, logger)
 
+	// collect the system-created roles
+	res, err := server.ListRoles(ctx, &gen.ListRolesRequest{
+		PageSize: 10, // shouldn't be more than this
+	})
+	checkNilIfErrored(t, res, err)
+	if err != nil {
+		t.Fatalf("failed to list roles: %v", err)
+	}
+	if len(res.Roles) >= 10 {
+		t.Fatalf("expected less than 10 system roles, got %d", len(res.Roles))
+	}
+	roles := res.Roles
+	numSystemRoles := int32(len(roles))
+
 	const numRoles = 200
 	const numPermissions = 10
 
 	const description = "A role for testing"
-	var roles []*gen.Role
 	t.Log("CreateRole:")
 	for i := range numRoles {
 		displayName := fmt.Sprintf("Role %d", i)
@@ -1483,7 +1496,7 @@ func TestServer_Role(t *testing.T) {
 				t.Fatalf("failed to list roles: %v", err)
 			}
 			t.Logf("fetched page with token %q, returned %d results", nextPageToken, len(res.Roles))
-			if res.TotalSize != numRoles {
+			if res.TotalSize != numRoles+numSystemRoles {
 				t.Errorf("expected total size %d, got %d", numRoles, res.TotalSize)
 			}
 
@@ -1504,7 +1517,7 @@ func TestServer_Role(t *testing.T) {
 
 	// test that roles can be updated
 	t.Log("UpdateRole:")
-	role := roles[0]
+	role := roles[len(roles)-1]                                           // pick the last role created, as this will definitely not be a protected system role
 	role.PermissionIds = append(role.PermissionIds, "000-new-permission") // should go at the beginning
 	role.DisplayName += " MODIFIED"
 	updated, err := server.UpdateRole(ctx, &gen.UpdateRoleRequest{
@@ -1966,6 +1979,55 @@ func TestServer_UpdateRole(t *testing.T) {
 				t.Errorf("unexpected retrieved role value (-want +got):\n%s", diff)
 			}
 		})
+	}
+}
+
+// tests that protected roles cannot be updated or deleted
+func TestRole_Protected(t *testing.T) {
+	ctx := context.Background()
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
+
+	findLegacyRole := func(legacyRole string) *gen.Role {
+		t.Helper()
+		res, err := server.ListRoles(ctx, &gen.ListRolesRequest{
+			PageSize: 100,
+		})
+		checkNilIfErrored(t, res, err)
+		if err != nil {
+			t.Fatalf("failed to list roles: %v", err)
+		}
+		for _, role := range res.Roles {
+			if role.Protected && role.LegacyRoleName == legacyRole {
+				return role
+			}
+		}
+		return nil
+	}
+	adminRole := findLegacyRole("admin")
+	if adminRole == nil {
+		t.Fatal("no admin role found")
+	}
+
+	res, err := server.UpdateRole(ctx, &gen.UpdateRoleRequest{
+		Role: &gen.Role{
+			Id:            adminRole.Id,
+			DisplayName:   "foo",
+			Description:   "bar",
+			PermissionIds: []string{"baz"},
+		},
+	})
+	if status.Code(err) != codes.FailedPrecondition {
+		t.Errorf("expected FailedPrecondition error when updating role with no ID, got %v", err)
+	}
+	if res != nil {
+		t.Errorf("expected nil response when updating role with no ID, got %v", res)
+	}
+
+	_, err = server.DeleteRole(ctx, &gen.DeleteRoleRequest{Id: adminRole.Id})
+	if status.Code(err) != codes.FailedPrecondition {
+		t.Errorf("expected FailedPrecondition error when deleting protected role, got %v", err)
 	}
 }
 
@@ -2458,6 +2520,72 @@ func TestServer_CreateRoleAssignment(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// check that a role assignment with a scope is forbidden if the role is a legacy role
+func TestServer_CreateRoleAssignment_ScopeWithLegacyRole(t *testing.T) {
+	ctx := context.Background()
+	logger := testLogger(t)
+	store := NewMemoryStore(logger)
+	server := NewServer(store, logger)
+
+	// find the admin role, which is a legacy role
+	var adminRole *gen.Role
+	res, err := server.ListRoles(ctx, &gen.ListRolesRequest{
+		PageSize: 100,
+	})
+	if err != nil {
+		t.Fatalf("failed to list roles: %v", err)
+	}
+	for _, role := range res.Roles {
+		if role.LegacyRoleName == "admin" {
+			adminRole = role
+			break
+		}
+	}
+	if adminRole == nil {
+		t.Fatal("no admin role found")
+	}
+
+	// create a user account
+	account, err := server.CreateAccount(ctx, &gen.CreateAccountRequest{
+		Account: &gen.Account{
+			Type:        gen.Account_USER_ACCOUNT,
+			DisplayName: "Test Account",
+			Details: &gen.Account_UserDetails{UserDetails: &gen.UserAccount{
+				Username: "test",
+			}},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create account: %v", err)
+	}
+
+	// try to create a role assignment with a scope - should fail
+	_, err = server.CreateRoleAssignment(ctx, &gen.CreateRoleAssignmentRequest{
+		RoleAssignment: &gen.RoleAssignment{
+			AccountId: account.Id,
+			RoleId:    adminRole.Id,
+			Scope: &gen.RoleAssignment_Scope{
+				ResourceType: gen.RoleAssignment_ZONE,
+				Resource:     "foo",
+			},
+		},
+	})
+	if status.Code(err) != codes.FailedPrecondition {
+		t.Errorf("expected FailedPrecondition error when creating role assignment with scope for legacy role, got %v", err)
+	}
+
+	// try to create a role assignment without a scope - should succeed
+	_, err = server.CreateRoleAssignment(ctx, &gen.CreateRoleAssignmentRequest{
+		RoleAssignment: &gen.RoleAssignment{
+			AccountId: account.Id,
+			RoleId:    adminRole.Id,
+		},
+	})
+	if err != nil {
+		t.Errorf("failed to create role assignment without scope for legacy role: %v", err)
 	}
 }
 
