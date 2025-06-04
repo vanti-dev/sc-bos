@@ -19,7 +19,9 @@
           :rules="[rules.required]"
           variant="outlined"
           v-model="password"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
+          :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+          @click:append-inner="showPassword = !showPassword"
           required/>
       <v-card-actions class="mx-2">
         <v-btn
@@ -43,6 +45,7 @@ import {computed, ref} from 'vue';
 
 const accountStore = useAccountStore();
 const password = ref('');
+const showPassword = ref(false);
 const username = ref('');
 const rules = {
   required: (value) => !!value || 'Required.'
