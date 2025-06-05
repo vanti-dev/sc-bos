@@ -34,6 +34,8 @@ type securityEventSource struct {
 	EventType *int32  `json:"eventType,omitempty"` // Optional. the type of event, must be one of gen.SecurityEvent_EventType
 	Priority  *int32  `json:"priority,omitempty"`  // Optional. Priority of the security event, lower is more important
 	Source    *string `json:"source,omitempty"`    // Optional. Source of the security event, e.g. "Door 1"
+
+	IsActive bool
 }
 
 type securityEventConfig struct {
@@ -180,31 +182,36 @@ func (cfg *securityEventSource) checkResponseForSecurityEvent(response any) (*ge
 
 	if value < *cfg.OkLowerBound ||
 		value > *cfg.OkUpperBound {
-		data.Description = cfg.Description
-		data.Id = uuid.New()
-		data.SecurityEventTime = timestamppb.Now() // not strictly true but as long as the bacnet poll is not too slow, this should be fine
+		// we only want to add a new security event if it wasn't active on the last poll
+		if !cfg.IsActive {
+			cfg.IsActive = true
+			data.Description = cfg.Description
+			data.Id = uuid.New()
+			data.SecurityEventTime = timestamppb.Now() // not strictly true but as long as the bacnet poll is not too slow, this should be fine
 
-		if cfg.Actor != nil {
-			data.Actor = &gen.Actor{
-				Name: *cfg.Actor,
+			if cfg.Actor != nil {
+				data.Actor = &gen.Actor{
+					Name: *cfg.Actor,
+				}
 			}
-		}
 
-		if cfg.EventType != nil {
-			data.EventType = gen.SecurityEvent_EventType(*cfg.EventType)
-		}
-
-		if cfg.Priority != nil {
-			data.Priority = *cfg.Priority
-		}
-
-		if cfg.Source != nil {
-			data.Source = &gen.SecurityEvent_Source{
-				Name: *cfg.Source,
+			if cfg.EventType != nil {
+				data.EventType = gen.SecurityEvent_EventType(*cfg.EventType)
 			}
-		}
 
-		return data, nil
+			if cfg.Priority != nil {
+				data.Priority = *cfg.Priority
+			}
+
+			if cfg.Source != nil {
+				data.Source = &gen.SecurityEvent_Source{
+					Name: *cfg.Source,
+				}
+			}
+			return data, nil
+		}
+	} else {
+		cfg.IsActive = false
 	}
 	return nil, nil
 }
