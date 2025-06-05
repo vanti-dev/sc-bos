@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -134,6 +135,17 @@ func (vs ValueSource) Scaled(v any) any {
 		return uint64(float64(v) * vs.Scale)
 	}
 	return v
+}
+
+func (vs ValueSource) String() string {
+	res := ""
+	if vs.Device != nil {
+		res += strconv.Itoa(int(vs.Device.id))
+	}
+	if vs.Object != nil {
+		res += ":" + vs.Object.id.String()
+	}
+	return res
 }
 
 type DeviceRef struct {
