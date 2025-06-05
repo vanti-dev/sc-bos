@@ -37,8 +37,7 @@ type System struct {
 	// FileAccounts, when non-nil, causes the system to validate system tokens using a local
 	// file of identities and secrets.
 	// See Identities for how this field can be represented/configured in JSON.
-	FileAccounts  *Identities `json:"fileAccounts,omitempty"`
-	LocalAccounts bool        `json:"localAccounts,omitempty"`
+	FileAccounts *Identities `json:"fileAccounts,omitempty"`
 	// TenantAccounts causes the system to validate system tokens using the legacy tenants system.
 	// All tokens are deemed invalid if the tenants system is not available.
 	TenantAccounts bool `json:"tenantAccounts,omitempty"`
