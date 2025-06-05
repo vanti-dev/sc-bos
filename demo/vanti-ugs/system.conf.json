@@ -7,7 +7,7 @@
   },
   "staticHosting": [
     {"path": "/", "filePath": "/app/ops-ui"},
-    {"path": "/__/scos/", "filePath": "/app/ui-config"}
+    {"path": "/__/scos/", "filePath": "/cfg/"}
   ],
   "stores": {
     "postgres": {
