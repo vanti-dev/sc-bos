@@ -142,8 +142,12 @@ func (s *securityEventImpl) pollPeer(ctx context.Context) error {
 		requestNames = append(requestNames, se.ValueSource.String())
 		readValues = append(readValues, *se.ValueSource)
 		resProcessors = append(resProcessors, func(response any) error {
-			if e, _ := se.checkResponseForSecurityEvent(response); e != nil {
-				data = append(data, e)
+			event, err := se.checkResponseForSecurityEvent(response)
+			if err != nil {
+				return err
+			}
+			if event != nil {
+				data = append(data, event)
 			}
 			return nil
 		})
