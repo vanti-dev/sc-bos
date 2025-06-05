@@ -28,7 +28,7 @@ services:
       - "8881:80"
 
   sc-ugs:
-    image: ghcr.io/vanti-dev/sc-bos/demo-ugs-sc-bos:v0.2024.5.3-761-gddcdfedc
+    image: ghcr.io/vanti-dev/sc-bos/demo-ugs-sc-bos:v0.2024.5.3-764-gea4cd03c
     restart: always
     ports:
       - "8443:8443"
@@ -38,7 +38,7 @@ services:
         condition: service_healthy
 
   seed-db:
-    image: ghcr.io/vanti-dev/sc-bos/demo-ugs-seed-db:v0.2024.5.3-761-gddcdfedc
+    image: ghcr.io/vanti-dev/sc-bos/demo-ugs-seed-db:v0.2024.5.3-764-gea4cd03c
     restart: no
     depends_on:
       db:
