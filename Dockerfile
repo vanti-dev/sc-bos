@@ -51,7 +51,7 @@ ENV GOARCH=$TARGETARCH
 RUN --mount=type=cache,target=/go/pkg/mod \
     go build -o sc-bos ./cmd/bos
 
-FROM alpine:3.20
+FROM alpine:3.22
 LABEL vendor="Vanti Ltd"
 
 COPY --from=build_go /src/sc-bos /app/
