@@ -461,6 +461,38 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 	return items, nil
 }
 
+const listLegacyRolesForAccount = `-- name: ListLegacyRolesForAccount :many
+SELECT DISTINCT r.legacy_role
+FROM role_assignments ra
+INNER JOIN roles r ON ra.role_id = r.id
+WHERE ra.account_id = ?1
+  AND r.legacy_role IS NOT NULL
+ORDER BY r.legacy_role
+`
+
+func (q *Queries) ListLegacyRolesForAccount(ctx context.Context, accountID int64) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, listLegacyRolesForAccount, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []sql.NullString
+	for rows.Next() {
+		var legacy_role sql.NullString
+		if err := rows.Scan(&legacy_role); err != nil {
+			return nil, err
+		}
+		items = append(items, legacy_role)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listRoleAssignments = `-- name: ListRoleAssignments :many
 SELECT id, account_id, role_id, scope_type, scope_resource
 FROM role_assignments

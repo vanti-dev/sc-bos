@@ -168,6 +168,14 @@ WHERE account_id = :account_id
 ORDER BY id
 LIMIT :limit;
 
+-- name: ListLegacyRolesForAccount :many
+SELECT DISTINCT r.legacy_role
+FROM role_assignments ra
+INNER JOIN roles r ON ra.role_id = r.id
+WHERE ra.account_id = :account_id
+  AND r.legacy_role IS NOT NULL
+ORDER BY r.legacy_role;
+
 -- name: CountRoleAssignmentsForAccount :one
 SELECT COUNT(*) AS count
 FROM role_assignments
