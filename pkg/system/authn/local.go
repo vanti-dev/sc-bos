@@ -14,7 +14,10 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
 )
 
-var errUsernamePassword = status.Error(codes.Unauthenticated, "invalid username or password")
+var (
+	errUsernamePassword = status.Error(codes.Unauthenticated, "invalid username or password")
+	errNoRoles          = status.Error(codes.Unauthenticated, "cannot login because user has no roles assigned")
+)
 
 type localUserVerifier struct {
 	accounts *account.Store
@@ -48,9 +51,21 @@ func (l *localUserVerifier) Verify(ctx context.Context, username, password strin
 			return err
 		}
 
+		legacyRoles, err := tx.ListLegacyRolesForAccount(ctx, userAccount.AccountID)
+		if err != nil {
+			return err
+		}
+		for _, role := range legacyRoles {
+			if role.Valid {
+				data.Roles = append(data.Roles, role.String)
+			}
+		}
 		data.Title = details.DisplayName
 		data.TenantID = strconv.FormatInt(userAccount.AccountID, 10)
-		data.Roles = []string{"admin"}
+		if len(data.Roles) == 0 {
+			// no point issuing a token because the user has no roles so they cannot access anything
+			return errNoRoles
+		}
 		return nil
 	})
 	if err != nil {
@@ -58,19 +73,4 @@ func (l *localUserVerifier) Verify(ctx context.Context, username, password strin
 	}
 
 	return data, nil
-}
-
-type localServiceVerifier struct {
-	accounts *account.Store
-}
-
-func newLocalServiceVerifier(accounts *account.Store) *localServiceVerifier {
-	return &localServiceVerifier{
-		accounts: accounts,
-	}
-}
-
-func (l *localServiceVerifier) Verify(ctx context.Context, clientID, secret string) (accesstoken.SecretData, error) {
-	// TODO implement me
-	panic("implement me")
 }
