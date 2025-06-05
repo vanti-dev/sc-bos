@@ -79,18 +79,12 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 
 	if cfg.System != nil {
 		validity := cfg.System.Validity.Or(15 * time.Minute)
-		if cfg.System.LocalAccounts && s.accounts != nil {
-			serveTokenEndpoint = true
-			verifier := newLocalServiceVerifier(s.accounts)
-			tokenServerOpts = append(tokenServerOpts, accesstoken.WithClientCredentialFlow(verifier, validity))
-		}
-
 		tenantVerifier, err := s.systemTenantVerifier(cfg)
 		if err != nil {
 			return err
 		}
 		serveTokenEndpoint = true
-		tokenServerOpts = append(tokenServerOpts, accesstoken.WithClientCredentialFlow(tenantVerifier, cfg.System.Validity.Or(15*time.Minute)))
+		tokenServerOpts = append(tokenServerOpts, accesstoken.WithClientCredentialFlow(tenantVerifier, validity))
 	}
 
 	if cfg.User != nil {
