@@ -12,7 +12,7 @@ Each folder has a `build.sh` script that builds the demo in that folder, the out
 container images.
 The demos do not need to be built all the time, only when a new release of the demo is required.
 The demos also contain a compose file that pulls all the infrastructure needed to run the demo into one place.
-The images are then pushed to a Docker registry, so they can be accessed from anywhere the demo needs to be set up.
+The images are then pushed to a container registry, so they can be accessed from anywhere the demo needs to be set up.
 
 The demo images are built for multiple platforms, so they can run on both x86 and ARM architectures.
 To enable this in Docker Desktop,
