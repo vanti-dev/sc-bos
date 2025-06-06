@@ -3,21 +3,20 @@
   "listenHTTPS": ":8443",
   "cors": {
     "debugMode": true,
-    "corsOrigins": ["https://host.docker.internal:8443", "http://host.docker.internal:5173", "http://host.docker.internal:4173"]
+    "corsOrigins": ["*"]
   },
   "staticHosting": [
-    {"path": "/", "filePath": "/static"},
-    {"path": "/__/scos/", "filePath": "/cfg"}
+    {"path": "/", "filePath": "/app/ops-ui"},
+    {"path": "/__/scos/", "filePath": "/cfg/"}
   ],
+  "stores": {
+    "postgres": {
+      "uri": "postgres://postgres@host.docker.internal:5432/smart_core",
+      "passwordFile": "/data/secrets/postgres-password"
+    }
+  },
   "systems": {
-    "alerts": {
-      "disabled": false,
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@host.docker.internal:5432/smart_core",
-        "passwordFile": "/data/secrets/postgres-password"
-      }
-    },
+    "alerts": {"storage": {"type": "postgres"}},
     "authn": {
       "user": {
         "fileAccounts": true,
@@ -30,29 +29,6 @@
         "tenantAccounts": true
       }
     },
-    "hub": {
-      "disabled": true,
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@host.docker.internal:5432/smart_core",
-        "passwordFile": "/data/secrets/postgres-password"
-      }
-    },
-    "publications": {
-      "disabled": true,
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@host.docker.internal:5432/smart_core",
-        "passwordFile": "/data/secrets/postgres-password"
-      }
-    },
-    "tenants": {
-      "disabled": false,
-      "storage": {
-        "type": "postgres",
-        "uri": "postgres://postgres@host.docker.internal:5432/smart_core",
-        "passwordFile": "/data/secrets/postgres-password"
-      }
-    }
+    "tenants": {"storage": {"type": "postgres"}}
   }
 }

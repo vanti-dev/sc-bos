@@ -8,3 +8,4 @@ results_*.csv
 .secrets/
 .build/
 .vscode
+podman-build-secret*
