@@ -67,7 +67,7 @@ type System struct {
 	addedValidators []token.Validator // the validators we setup in applyConfig, used to remove them again
 }
 
-func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
+func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	// other cleanup is done as part of service.WithOnStop in New
 	s.deleteValidators()
 
@@ -85,6 +85,7 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 		}
 		serveTokenEndpoint = true
 		tokenServerOpts = append(tokenServerOpts, accesstoken.WithClientCredentialFlow(tenantVerifier, validity))
+		s.logger.Debug("using system tenant verifier", zap.Duration("validity", validity))
 	}
 
 	if cfg.User != nil {
@@ -93,16 +94,38 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 
 		validity := cfg.User.Validity.Or(24 * time.Hour)
 
+		var localAccountsAvailable bool
+		if cfg.User.LocalAccounts && s.accounts != nil {
+			localAccountsAvailable = true
+			serveTokenEndpoint = true
+			verifier := newLocalUserVerifier(s.accounts)
+			tokenServerOpts = append(tokenServerOpts, accesstoken.WithPasswordFlow(verifier, validity))
+			s.logger.Debug("using local user database verifier", zap.Duration("validity", validity))
+		}
+
 		// Verify user credentials via the OAuth2 Password Flow using a local file containing accounts.
 		// Validate access tokens that were generated via this flow.
 		if cfg.User.FileAccounts != nil {
-			fileVerifier, err := loadFileVerifier(cfg.User.FileAccounts, s.configDirs, "users.json")
+			identities, err := loadFileIdentities(cfg.User.FileAccounts, s.configDirs, "users.json")
 			if err != nil {
 				return fmt.Errorf("user %w", err)
 			}
+			s.logger.Debug("loaded user accounts from file", zap.Int("count", len(identities)))
 
-			serveTokenEndpoint = true
-			tokenServerOpts = append(tokenServerOpts, accesstoken.WithPasswordFlow(fileVerifier, validity))
+			// if we are importing accounts, they will all be available through the local accounts verifier,
+			// so no need to add the static verifier as well
+			if cfg.User.ImportFileAccounts && localAccountsAvailable {
+				s.logger.Debug("importing user accounts from file into database", zap.Int("count", len(identities)))
+				err = importIdentities(ctx, s.accounts, identities, s.logger.Named("import"))
+			} else {
+				s.logger.Debug("using static file verifier for user accounts")
+				fileVerifier, err := newStaticVerifier(identities)
+				if err != nil {
+					return fmt.Errorf("user %w", err)
+				}
+				tokenServerOpts = append(tokenServerOpts, accesstoken.WithPasswordFlow(fileVerifier, validity))
+				serveTokenEndpoint = true
+			}
 		}
 
 		// Validate access tokens against a remote keycloak server.
@@ -116,13 +139,9 @@ func (s *System) applyConfig(_ context.Context, cfg config.Root) error {
 
 			s.addedValidators = append(s.addedValidators, validator)
 			s.validators.Append(validator)
+			s.logger.Debug("using keycloak OIDC token validator")
 		}
 
-		if cfg.User.LocalAccounts && s.accounts != nil {
-			serveTokenEndpoint = true
-			verifier := newLocalUserVerifier(s.accounts)
-			tokenServerOpts = append(tokenServerOpts, accesstoken.WithPasswordFlow(verifier, validity))
-		}
 	}
 
 	if serveTokenEndpoint {

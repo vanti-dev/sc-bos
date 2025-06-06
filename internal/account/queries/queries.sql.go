@@ -745,6 +745,42 @@ func (q *Queries) ListRolesAndPermissions(ctx context.Context, arg ListRolesAndP
 	return items, nil
 }
 
+const listRolesWithLegacyRole = `-- name: ListRolesWithLegacyRole :many
+SELECT id, display_name, description, legacy_role, protected
+FROM roles
+WHERE legacy_role = ?1
+ORDER BY id
+`
+
+func (q *Queries) ListRolesWithLegacyRole(ctx context.Context, legacyRole sql.NullString) ([]Role, error) {
+	rows, err := q.db.QueryContext(ctx, listRolesWithLegacyRole, legacyRole)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.DisplayName,
+			&i.Description,
+			&i.LegacyRole,
+			&i.Protected,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const rotateServiceAccountSecret = `-- name: RotateServiceAccountSecret :exec
 UPDATE service_accounts
 SET primary_secret_hash = ?1,

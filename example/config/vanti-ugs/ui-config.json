@@ -18,6 +18,7 @@
     "hub": true,
     "auth": {
       "disabled": true,
+      "providers": ["localAuth", "keycloak"],
       "keycloak": {
         "realm": "Smart_Core",
         "url": "http://localhost:8888/",
