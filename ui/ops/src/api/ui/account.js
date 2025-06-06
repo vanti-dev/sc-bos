@@ -7,27 +7,25 @@ import {
   CreateAccountRequest,
   CreateRoleAssignmentRequest,
   CreateRoleRequest,
-  CreateServiceCredentialRequest,
   DeleteAccountRequest,
   DeleteRoleRequest,
-  DeleteServiceCredentialRequest,
   GetAccountLimitsRequest,
   GetAccountRequest,
   GetPermissionRequest,
   GetRoleAssignmentRequest,
   GetRoleRequest,
-  GetServiceCredentialRequest,
   ListAccountsRequest,
   ListPermissionsRequest,
   ListRoleAssignmentsRequest,
   ListRolesRequest,
-  ListServiceCredentialsRequest,
   Role,
   RoleAssignment,
-  ServiceCredential,
+  RotateAccountClientSecretRequest,
+  ServiceAccount,
   UpdateAccountPasswordRequest,
   UpdateAccountRequest,
-  UpdateRoleRequest
+  UpdateRoleRequest,
+  UserAccount
 } from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
 
 /**
@@ -103,50 +101,14 @@ export function updateAccountPassword(request, tracker = {}) {
 }
 
 /**
- * @param {Partial<GetServiceCredentialRequest.AsObject>} request
- * @param {ActionTracker<ServiceCredential.AsObject>} [tracker]
- * @return {Promise<ServiceCredential.AsObject>}
+ * @param {Partial<RotateAccountClientSecretRequest.AsObject>} request
+ * @param {ActionTracker<RotateAccountClientSecretResponse.AsObject>} [tracker]
+ * @return {Promise<RotateAccountClientSecretResponse.AsObject>}
  */
-export function getServiceCredential(request, tracker = {}) {
-  return trackAction('Account.getServiceCredential', tracker, endpoint => {
+export function rotateAccountClientSecret(request, tracker = {}) {
+  return trackAction('Account.rotateAccountClientSecret', tracker, endpoint => {
     const api = apiClient(endpoint);
-    return api.getServiceCredential(getServiceCredentialRequestFromObject(request));
-  });
-}
-
-/**
- * @param {Partial<ListServiceCredentialsRequest.AsObject>} request
- * @param {ActionTracker<ListServiceCredentialsResponse.AsObject>} [tracker]
- * @return {Promise<ListServiceCredentialsResponse.AsObject>}
- */
-export function listServiceCredentials(request, tracker = {}) {
-  return trackAction('Account.listServiceCredentials', tracker, endpoint => {
-    const api = apiClient(endpoint);
-    return api.listServiceCredentials(listServiceCredentialsRequestFromObject(request));
-  });
-}
-
-/**
- * @param {Partial<CreateServiceCredentialRequest.AsObject>} request
- * @param {ActionTracker<ServiceCredential.AsObject>} [tracker]
- * @return {Promise<ServiceCredential.AsObject>}
- */
-export function createServiceCredential(request, tracker = {}) {
-  return trackAction('Account.createServiceCredential', tracker, endpoint => {
-    const api = apiClient(endpoint);
-    return api.createServiceCredential(createServiceCredentialRequestFromObject(request));
-  });
-}
-
-/**
- * @param {Partial<DeleteServiceCredentialRequest.AsObject>} request
- * @param {ActionTracker<DeleteServiceCredentialResponse.AsObject>} [tracker]
- * @return {Promise<DeleteServiceCredentialResponse.AsObject>}
- */
-export function deleteServiceCredential(request, tracker = {}) {
-  return trackAction('Account.deleteServiceCredential', tracker, endpoint => {
-    const api = apiClient(endpoint);
-    return api.deleteServiceCredential(deleteServiceCredentialRequestFromObject(request));
+    return api.rotateAccountClientSecret(rotateAccountClientSecretRequestFromObject(request));
   });
 }
 
@@ -247,9 +209,9 @@ export function createRoleAssignment(request, tracker = {}) {
 }
 
 /**
- * @param {Partial<DeleteRoleRequest.AsObject>} request
- * @param {ActionTracker<DeleteRoleResponse.AsObject>} [tracker]
- * @return {Promise<DeleteRoleResponse.AsObject>}
+ * @param {Partial<DeleteRoleAssignmentRequest.AsObject>} request
+ * @param {ActionTracker<DeleteRoleAssignmentResponse.AsObject>} [tracker]
+ * @return {Promise<DeleteRoleAssignmentResponse.AsObject>}
  */
 export function deleteRoleAssignment(request, tracker = {}) {
   return trackAction('Account.deleteRoleAssignment', tracker, endpoint => {
@@ -380,71 +342,51 @@ function updateAccountPasswordRequestFromObject(obj) {
 }
 
 /**
+ * @param {Partial<RotateAccountClientSecretRequest.AsObject>} obj
+ * @return {undefined|RotateAccountClientSecretRequest}
+ */
+function rotateAccountClientSecretRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new RotateAccountClientSecretRequest();
+  setProperties(dst, obj, 'name', 'id');
+  convertProperties(dst, obj, timestampFromObject, 'previousSecretExpireTime');
+  return dst;
+}
+
+/**
  * @param {Partial<Account.AsObject>} obj
  * @return {undefined|Account}
  */
 function accountFromObject(obj) {
   if (!obj) return undefined;
   const dst = new Account();
-  setProperties(dst, obj, 'id', 'type', 'displayName', 'description', 'username');
+  setProperties(dst, obj, 'id', 'type', 'displayName', 'description');
   convertProperties(dst, obj, timestampFromObject, 'createTime');
+  dst.setUserDetails(userAccountFromObject(obj.userDetails));
+  dst.setServiceDetails(serviceAccountFromObject(obj.serviceDetails));
   return dst;
 }
 
 /**
- * @param {Partial<GetServiceCredentialRequest.AsObject>} obj
- * @return {undefined|GetServiceCredentialRequest}
+ * @param {Partial<UserAccount.AsObject>} obj
+ * @return {undefined|UserAccount}
  */
-function getServiceCredentialRequestFromObject(obj) {
+function userAccountFromObject(obj) {
   if (!obj) return undefined;
-  const dst = new GetServiceCredentialRequest();
-  setProperties(dst, obj, 'name', 'id');
+  const dst = new UserAccount();
+  setProperties(dst, obj, 'username', 'has_password');
   return dst;
 }
 
 /**
- * @param {Partial<ListServiceCredentialsRequest.AsObject>} obj
- * @return {undefined|ListServiceCredentialsRequest}
+ * @param {Partial<ServiceAccount.AsObject>} obj
+ * @return {undefined|ServiceAccount}
  */
-function listServiceCredentialsRequestFromObject(obj) {
+function serviceAccountFromObject(obj) {
   if (!obj) return undefined;
-  const dst = new ListServiceCredentialsRequest();
-  setProperties(dst, obj, 'name', 'accountId');
-  return dst;
-}
-
-/**
- * @param {Partial<CreateServiceCredentialRequest.AsObject>} obj
- * @return {undefined|CreateServiceCredentialRequest}
- */
-function createServiceCredentialRequestFromObject(obj) {
-  if (!obj) return undefined;
-  const dst = new CreateServiceCredentialRequest();
-  setProperties(dst, obj, 'name');
-  dst.setServiceCredential(serviceCredentialFromObject(obj.serviceCredential));
-  return dst;
-}
-
-/**
- * @param {Partial<DeleteServiceCredentialRequest.AsObject>} obj
- * @return {undefined|DeleteServiceCredentialRequest}
- */
-function deleteServiceCredentialRequestFromObject(obj) {
-  if (!obj) return undefined;
-  const dst = new DeleteServiceCredentialRequest();
-  setProperties(dst, obj, 'name', 'id', 'allowMissing');
-  return dst;
-}
-
-/**
- * @param {Partial<ServiceCredential.AsObject>} obj
- * @return {undefined|ServiceCredential}
- */
-function serviceCredentialFromObject(obj) {
-  if (!obj) return undefined;
-  const dst = new ServiceCredential();
-  setProperties(dst, obj, 'id', 'accountId', 'displayName', 'description', 'secret');
-  convertProperties(dst, obj, timestampFromObject, 'createTime', 'expireTime');
+  const dst = new ServiceAccount();
+  setProperties(dst, obj, 'clientId', 'clientSecret');
+  convertProperties(dst, obj, timestampFromObject, 'previousSecretExpireTime');
   return dst;
 }
 
@@ -618,3 +560,14 @@ function getAccountLimitsRequestFromObject(obj) {
   setProperties(dst, obj, 'name');
   return dst;
 }
+
+/**
+ * A map from RoleAssignment.ResourceType to the enum name, the inverse of RoleAssignment.ResourceType.
+ *
+ * @type {Record<number, keyof RoleAssignment.ResourceType>}
+ */
+export const ResourceTypeById =
+    Object.entries(RoleAssignment.ResourceType).reduce((acc, [k, v]) => {
+      acc[v] = k;
+      return acc;
+    }, {});
