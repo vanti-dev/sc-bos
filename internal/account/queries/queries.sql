@@ -7,6 +7,10 @@ WHERE id = :id;
 SELECT * FROM account_details
 WHERE id = :id;
 
+-- name: GetAccountByUsername :one
+SELECT * FROM user_accounts
+WHERE username = :username;
+
 -- name: ListAccounts :many
 SELECT *
 FROM accounts
@@ -86,6 +90,12 @@ WHERE id > :after_id
 ORDER BY id
 LIMIT :limit;
 
+-- name: ListRolesWithLegacyRole :many
+SELECT *
+FROM roles
+WHERE legacy_role = :legacy_role
+ORDER BY id;
+
 -- name: CountRoles :one
 SELECT COUNT(*) AS count
 FROM roles;
@@ -105,18 +115,21 @@ VALUES (:display_name, :description)
 RETURNING *;
 
 -- name: UpdateRoleDisplayName :execrows
+-- refuse to update a role which is protected
 UPDATE roles
 SET display_name = :display_name
-WHERE id = :id;
+WHERE id = :id AND NOT protected;
 
 -- name: UpdateRoleDescription :execrows
+-- refuse to update a role which is protected
 UPDATE roles
 SET description = :description
-WHERE id = :id;
+WHERE id = :id AND NOT protected;
 
 -- name: DeleteRole :execrows
+-- refuse to update a role which is protected
 DELETE FROM roles
-WHERE id = :id;
+WHERE id = :id AND NOT protected;
 
 -- name: ListRolePermissions :many
 SELECT permission
@@ -160,6 +173,14 @@ WHERE account_id = :account_id
   AND id > :after_id
 ORDER BY id
 LIMIT :limit;
+
+-- name: ListLegacyRolesForAccount :many
+SELECT DISTINCT r.legacy_role
+FROM role_assignments ra
+INNER JOIN roles r ON ra.role_id = r.id
+WHERE ra.account_id = :account_id
+  AND r.legacy_role IS NOT NULL
+ORDER BY r.legacy_role;
 
 -- name: CountRoleAssignmentsForAccount :one
 SELECT COUNT(*) AS count

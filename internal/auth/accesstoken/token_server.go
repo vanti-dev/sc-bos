@@ -1,4 +1,4 @@
-package tenant
+package accesstoken
 
 import (
 	"context"
@@ -15,8 +15,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
-type TokenServer struct {
-	tokens *TokenSource
+type Server struct {
+	tokens *Source
 	logger *zap.Logger
 
 	clientCredentialVerifier Verifier
@@ -26,18 +26,18 @@ type TokenServer struct {
 	passwordValidity time.Duration
 }
 
-func NewTokenServer(name string, opts ...TokenServerOption) (*TokenServer, error) {
+func NewServer(name string, opts ...ServerOption) (*Server, error) {
 	key, err := generateKey()
 	if err != nil {
 		return nil, err
 	}
-	tokens := &TokenSource{
+	tokens := &Source{
 		Key:    key,
 		Issuer: name,
 		Now:    time.Now,
 	}
 
-	s := &TokenServer{tokens: tokens}
+	s := &Server{tokens: tokens}
 	for _, opt := range opts {
 		opt(s)
 	}
@@ -45,35 +45,35 @@ func NewTokenServer(name string, opts ...TokenServerOption) (*TokenServer, error
 	return s, nil
 }
 
-type TokenServerOption func(ts *TokenServer)
+type ServerOption func(ts *Server)
 
-func WithLogger(logger *zap.Logger) TokenServerOption {
-	return func(ts *TokenServer) {
+func WithLogger(logger *zap.Logger) ServerOption {
+	return func(ts *Server) {
 		ts.logger = logger
 	}
 }
 
-func WithClientCredentialFlow(v Verifier, validity time.Duration) TokenServerOption {
-	return func(ts *TokenServer) {
+func WithClientCredentialFlow(v Verifier, validity time.Duration) ServerOption {
+	return func(ts *Server) {
 		ts.clientCredentialVerifier = v
 		ts.clientCredentialValidity = validity
 	}
 }
 
-func WithPasswordFlow(v Verifier, validity time.Duration) TokenServerOption {
-	return func(ts *TokenServer) {
+func WithPasswordFlow(v Verifier, validity time.Duration) ServerOption {
+	return func(ts *Server) {
 		ts.passwordVerifier = v
 		ts.passwordValidity = validity
 	}
 }
 
-func WithPermittedSignatureAlgorithms(algs []string) TokenServerOption {
-	return func(ts *TokenServer) {
+func WithPermittedSignatureAlgorithms(algs []string) ServerOption {
+	return func(ts *Server) {
 		ts.tokens.SignatureAlgorithms = algs
 	}
 }
 
-func (s *TokenServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	// time out operations after one minute
 	ctx, cancel := context.WithTimeout(request.Context(), time.Minute)
 	defer cancel()
@@ -130,7 +130,7 @@ func parsePostForm(request *http.Request) error {
 	}
 }
 
-func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
+func (s *Server) clientCredentialsFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
 	if s.clientCredentialVerifier == nil {
 		return errUnsupportedGrantType
 	}
@@ -170,7 +170,7 @@ func (s *TokenServer) clientCredentialsFlow(ctx context.Context, writer http.Res
 	return nil
 }
 
-func (s *TokenServer) passwordFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
+func (s *Server) passwordFlow(ctx context.Context, writer http.ResponseWriter, request *http.Request) error {
 	if s.passwordVerifier == nil {
 		return errUnsupportedGrantType
 	}
@@ -210,7 +210,7 @@ func (s *TokenServer) passwordFlow(ctx context.Context, writer http.ResponseWrit
 	return nil
 }
 
-func (s *TokenServer) clientCreds(request *http.Request) (clientID string, clientSecret string, err error) {
+func (s *Server) clientCreds(request *http.Request) (clientID string, clientSecret string, err error) {
 	if !request.PostForm.Has("client_id") || !request.PostForm.Has("client_secret") {
 		return "", "", errInvalidRequest
 	}
@@ -219,7 +219,7 @@ func (s *TokenServer) clientCreds(request *http.Request) (clientID string, clien
 	return clientID, clientSecret, nil
 }
 
-func (s *TokenServer) userCreds(request *http.Request) (username string, password string, err error) {
+func (s *Server) userCreds(request *http.Request) (username string, password string, err error) {
 	if !request.PostForm.Has("username") || !request.PostForm.Has("password") {
 		return "", "", errInvalidRequest
 	}
@@ -228,7 +228,7 @@ func (s *TokenServer) userCreds(request *http.Request) (username string, passwor
 	return username, password, nil
 }
 
-func (s *TokenServer) TokenValidator() token.Validator {
+func (s *Server) TokenValidator() token.Validator {
 	return s.tokens
 }
 

@@ -58,9 +58,13 @@ func roleToProto(role queries.Role, permissions []string) *gen.Role {
 		Id:            formatID(role.ID),
 		DisplayName:   role.DisplayName,
 		PermissionIds: permissions,
+		Protected:     role.Protected,
 	}
 	if role.Description.Valid {
 		protoRole.Description = role.Description.String
+	}
+	if role.LegacyRole.Valid {
+		protoRole.LegacyRoleName = role.LegacyRole.String
 	}
 	return protoRole
 }
