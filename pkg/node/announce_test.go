@@ -9,6 +9,20 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func ExampleAnnounceScope() {
+	rootAnnouncer := New("test")
+
+	announcer, undo := AnnounceScope(rootAnnouncer)
+	// announce names in the new scope
+	announcer.Announce("a")
+
+	// undo must be called in the same goroutine as the new scope,
+	// ideally just before the new scope is created.
+	undo()
+	announcer, undo = AnnounceScope(rootAnnouncer)
+	announcer.Announce("b")
+}
+
 func TestAnnounceScope(t *testing.T) {
 	var names []string
 	var m sync.Mutex
