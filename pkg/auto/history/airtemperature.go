@@ -2,18 +2,19 @@ package history
 
 import (
 	"context"
-	"errors"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
-	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 func (a *automation) collectAirTemperatureChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
 	client := traits.NewAirTemperatureApiClient(a.clients.ClientConn())
+
+	last := newDeduper[*traits.AirTemperature](cmp.Equal(cmp.FloatValueApprox(0, 0.0001)))
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullAirTemperature(ctx, &traits.PullAirTemperatureRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
@@ -26,7 +27,10 @@ func (a *automation) collectAirTemperatureChanges(ctx context.Context, source co
 				return err
 			}
 			for _, change := range msg.Changes {
-				payload, err := proto.Marshal(change.AirTemperature)
+				if !last.Changed(change.GetAirTemperature()) {
+					continue
+				}
+				payload, err := proto.Marshal(change.GetAirTemperature())
 				if err != nil {
 					return err
 				}
@@ -39,14 +43,20 @@ func (a *automation) collectAirTemperatureChanges(ctx context.Context, source co
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
+		resp, err := client.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
-		payload, err := proto.Marshal(demand)
+
+		if !last.Changed(resp) {
+			return nil
+		}
+
+		payload, err := proto.Marshal(resp)
 		if err != nil {
 			return err
 		}
+
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -55,11 +65,7 @@ func (a *automation) collectAirTemperatureChanges(ctx context.Context, source co
 		return nil
 	}
 
-	err := pull.Changes(ctx, pull.NewFetcher(pullFn, pollFn), payloads, pull.WithLogger(a.logger))
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		return
-	}
-	if err != nil {
+	if err := collectChanges(ctx, source, pullFn, pollFn, payloads, a.logger); err != nil {
 		a.logger.Warn("collection aborted", zap.Error(err))
 	}
 }

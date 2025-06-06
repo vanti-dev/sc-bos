@@ -23,6 +23,11 @@ type Source struct {
 	Trait trait.Name `json:"trait,omitempty"`
 	// ReadMask instructs the history service to only read the specified fields
 	ReadMask *FieldMask `json:"readMask,omitempty"`
+	// PollingSchedule, when present, configures the auto to poll the source updates even if the source supports pull.
+	// A new poll will be executed each time the given schedule triggers, but only changes will be recorded.
+	// Polling is useful when it is not critical to collect every change to a device,
+	// and excessive storage of historical records is a concern.
+	PollingSchedule *jsontypes.Schedule `json:"pollingSchedule,omitempty"`
 }
 
 func (s Source) SourceName() string {

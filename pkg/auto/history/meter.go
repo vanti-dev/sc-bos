@@ -2,18 +2,20 @@ package history
 
 import (
 	"context"
-	"errors"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 )
 
 func (a *automation) collectMeterReadingChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
 	client := gen.NewMeterApiClient(a.clients.ClientConn())
+
+	last := newDeduper[*gen.MeterReading](cmp.Equal(cmp.FloatValueApprox(0, 0.0001), cmp.TimeValueWithin(time.Second)))
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullMeterReadings(ctx, &gen.PullMeterReadingsRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
@@ -26,7 +28,11 @@ func (a *automation) collectMeterReadingChanges(ctx context.Context, source conf
 				return err
 			}
 			for _, change := range msg.Changes {
-				payload, err := proto.Marshal(change.MeterReading)
+				if !last.Changed(change.GetMeterReading()) {
+					continue
+				}
+
+				payload, err := proto.Marshal(change.GetMeterReading())
 				if err != nil {
 					return err
 				}
@@ -39,11 +45,16 @@ func (a *automation) collectMeterReadingChanges(ctx context.Context, source conf
 		}
 	}
 	pollFn := func(ctx context.Context, changes chan<- []byte) error {
-		demand, err := client.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
+		resp, err := client.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: source.Name, ReadMask: source.ReadMask.PB()})
 		if err != nil {
 			return err
 		}
-		payload, err := proto.Marshal(demand)
+
+		if !last.Changed(resp) {
+			return nil
+		}
+
+		payload, err := proto.Marshal(resp)
 		if err != nil {
 			return err
 		}
@@ -55,11 +66,7 @@ func (a *automation) collectMeterReadingChanges(ctx context.Context, source conf
 		return nil
 	}
 
-	err := pull.Changes(ctx, pull.NewFetcher(pullFn, pollFn), payloads, pull.WithLogger(a.logger))
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		return
-	}
-	if err != nil {
+	if err := collectChanges(ctx, source, pullFn, pollFn, payloads, a.logger); err != nil {
 		a.logger.Warn("collection aborted", zap.Error(err))
 	}
 }
