@@ -19,7 +19,7 @@ PLATFORMS="linux/amd64,linux/arm64"
 
 cd $REPO_ROOT
 echo "Preparing $containerCmd for building the image..."
-for name in "localhost/demo-ugs-sc-bos:$GIT_VERSION" "localhost/demo-ugs-seed-db:$GIT_VERSION"; do
+for name in "localhost/demo-ugs-sc-bos" "localhost/demo-ugs-seed-db"; do
   if $containerCmd manifest exists "$name"; then
     $containerCmd manifest rm "$name"
   fi
@@ -41,17 +41,17 @@ echo "Building the sc-bos demo image with version: $GIT_VERSION"
 $containerCmd build \
   --build-arg GIT_VERSION=$GIT_VERSION \
   --platform=$PLATFORMS \
-  --manifest "demo-ugs-sc-bos:$GIT_VERSION" \
+  --manifest "demo-ugs-sc-bos" \
   -f demo/vanti-ugs/Dockerfile-Ugs .
 # Build the db seeder image
 echo "Building the sc-bos demo seed-db image with version: $GIT_VERSION"
 $containerCmd build \
   --platform=$PLATFORMS \
-  --manifest "demo-ugs-seed-db:$GIT_VERSION" \
+  --manifest "demo-ugs-seed-db" \
   -f demo/vanti-ugs/Dockerfile-SeedDb .
 
 echo "Push the images to the container registry using:"
-echo "  $containerCmd manifest push --all demo-ugs-sc-bos:$GIT_VERSION docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-sc-bos:$GIT_VERSION"
-echo "  $containerCmd manifest push --all demo-ugs-seed-db:$GIT_VERSION docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-seed-db:$GIT_VERSION"
+echo "  $containerCmd manifest push --all demo-ugs-sc-bos docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-sc-bos:$GIT_VERSION"
+echo "  $containerCmd manifest push --all demo-ugs-seed-db docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-seed-db:$GIT_VERSION"
 
 
