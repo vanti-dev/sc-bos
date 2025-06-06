@@ -12,6 +12,13 @@ if ! command -v $containerCmd &> /dev/null; then
   exit 1
 fi
 
+# The sc-bos build requires secrets that are usually in the users home .npmrc file,
+# so make sure it exists.
+if [ ! -f "$HOME/.npmrc" ]; then
+  echo "Error: $HOME/.npmrc file not found. Please create it with your npm credentials."
+  exit 1
+fi
+
 REPO_ROOT=$(git rev-parse --show-toplevel)
 GIT_VERSION=$(git describe --tags --always)
 BASE_IMAGE="localhost/vanti-dev-sc-bos:demo-ugs-base"
