@@ -90,6 +90,12 @@ WHERE id > :after_id
 ORDER BY id
 LIMIT :limit;
 
+-- name: ListRolesWithLegacyRole :many
+SELECT *
+FROM roles
+WHERE legacy_role = :legacy_role
+ORDER BY id;
+
 -- name: CountRoles :one
 SELECT COUNT(*) AS count
 FROM roles;

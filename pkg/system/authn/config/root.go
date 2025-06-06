@@ -24,6 +24,9 @@ type User struct {
 
 	// FileAccounts enumerates a list of identities that incoming credentials are validated against.
 	FileAccounts *Identities `json:"fileAccounts,omitempty"`
+	// If true, when the system starts, all accounts from FileAccounts that do not already exist in the local accounts database will be imported.
+	// Login will only use the local accounts database, as all accounts will be in there.
+	ImportFileAccounts bool `json:"importFileAccounts,omitempty"`
 	// Enable user login using user accounts stored in the local database.
 	LocalAccounts bool `json:"localAccounts,omitempty"`
 	// Keycloak configures access token validation against a KeyCloak server using OIDC.

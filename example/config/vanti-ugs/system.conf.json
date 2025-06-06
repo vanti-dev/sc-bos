@@ -21,7 +21,9 @@
     },
     "authn": {
       "user": {
-        "localAccounts": true
+        "localAccounts": true,
+        "importFileAccounts": true,
+        "fileAccounts": true
       },
       "system": {
         "tenantAccounts": true
