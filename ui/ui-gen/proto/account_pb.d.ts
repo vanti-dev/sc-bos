@@ -803,6 +803,12 @@ export class Role extends jspb.Message {
   clearPermissionIdsList(): Role;
   addPermissionIds(value: string, index?: number): Role;
 
+  getLegacyRoleName(): string;
+  setLegacyRoleName(value: string): Role;
+
+  getProtected(): boolean;
+  setProtected(value: boolean): Role;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Role.AsObject;
   static toObject(includeInstance: boolean, msg: Role): Role.AsObject;
@@ -817,6 +823,8 @@ export namespace Role {
     displayName: string,
     description: string,
     permissionIdsList: Array<string>,
+    legacyRoleName: string,
+    pb_protected: boolean,
   }
 }
 

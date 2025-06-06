@@ -105,18 +105,21 @@ VALUES (:display_name, :description)
 RETURNING *;
 
 -- name: UpdateRoleDisplayName :execrows
+-- refuse to update a role which is protected
 UPDATE roles
 SET display_name = :display_name
-WHERE id = :id;
+WHERE id = :id AND NOT protected;
 
 -- name: UpdateRoleDescription :execrows
+-- refuse to update a role which is protected
 UPDATE roles
 SET description = :description
-WHERE id = :id;
+WHERE id = :id AND NOT protected;
 
 -- name: DeleteRole :execrows
+-- refuse to update a role which is protected
 DELETE FROM roles
-WHERE id = :id;
+WHERE id = :id AND NOT protected;
 
 -- name: ListRolePermissions :many
 SELECT permission
