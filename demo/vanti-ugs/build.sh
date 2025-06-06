@@ -47,6 +47,7 @@ done
 echo "Building the sc-bos demo image with version: $GIT_VERSION"
 $containerCmd build \
   --build-arg GIT_VERSION=$GIT_VERSION \
+  --secret=id=npmrc,src=$HOME/.npmrc \
   --platform=$PLATFORMS \
   --manifest "demo-ugs-sc-bos" \
   -f demo/vanti-ugs/Dockerfile-Ugs .
