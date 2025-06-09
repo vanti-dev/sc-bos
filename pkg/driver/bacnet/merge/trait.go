@@ -31,10 +31,10 @@ func IntoTrait(client *gobacnet.Client, devices known.Context, statuses *statusp
 		return newFanSpeed(client, devices, statuses, traitConfig, logger)
 	case meter.TraitName:
 		return newMeter(client, devices, statuses, traitConfig, logger)
-	case securityevent.TraitName:
-		return newSecurityEvent(client, devices, statuses, traitConfig, logger)
 	case trait.Mode:
 		return newMode(client, devices, statuses, traitConfig, logger)
+	case securityevent.TraitName:
+		return newSecurityEvent(client, devices, statuses, traitConfig, logger)
 	case statuspb.TraitName:
 		return newStatus(client, devices, statuses, traitConfig, logger)
 	case UdmiMergeName, udmipb.TraitName:
