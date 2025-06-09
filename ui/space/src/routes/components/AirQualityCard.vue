@@ -62,6 +62,7 @@ const hasScore = computed(() => !!score.value);
   display: grid;
   grid-template-columns: 1fr 50px;
   grid-template-rows: repeat(2, auto);
+  padding-right: 90px;
 }
 
 .v-card-title {
@@ -83,6 +84,5 @@ const hasScore = computed(() => !!score.value);
   row-gap: 2em;
   flex-wrap: wrap;
   max-height: 3.7em;
-  overflow: hidden;
 }
 </style>

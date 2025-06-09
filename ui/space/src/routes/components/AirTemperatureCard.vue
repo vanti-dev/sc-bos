@@ -29,7 +29,7 @@
         </template>
         <template #append>
           <div class="values d-flex mr-1 align-center">
-            <span class="text-h5" style="opacity: .5">{{ currentTemp }}</span>
+            <span class="text-h5" style="opacity: .5">{{ currentTemp.toFixed(1) }}</span>
             <v-icon class="mx-1" style="opacity: .5" size="20">mdi-menu-right</v-icon>
             <span class="text-h5">{{ setPoint.toFixed(1) }}&deg;C</span>
           </div>
@@ -83,12 +83,12 @@ onUnmounted(() => {
  *
  * @return {number}
  */
-const currentTemp = computed(() => airTempValue.value?.ambientTemperature?.valueCelsius?.toFixed(1) ?? 0);
+const currentTemp = computed(() => airTempValue.value?.ambientTemperature?.valueCelsius ?? 0);
 const {localValue, value} = useRoundTrip(toRef(airTempValue, 'value'));
 const setPoint = computed({
   get() {
     if (value.value) {
-      return value.value.temperatureSetPoint.valueCelsius;
+      return value.value.temperatureSetPoint?.valueCelsius ?? 0;
     }
     return 0;
   },
