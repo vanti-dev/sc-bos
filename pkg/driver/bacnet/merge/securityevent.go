@@ -30,10 +30,10 @@ type securityEventSource struct {
 	OkLowerBound *float64 `json:"okLowerBound,omitempty"` // if the point is equal to or greater than this value, it is ok.
 	OkUpperBound *float64 `json:"okUpperBound,omitempty"` // if the point is equal to or less than this value, it is ok.
 
-	Actor     *string `json:"actor,omitempty"`     // Optional. Actor of the security event, e.g. "John Doe"
-	EventType *int32  `json:"eventType,omitempty"` // Optional. the type of event, must be one of gen.SecurityEvent_EventType
-	Priority  *int32  `json:"priority,omitempty"`  // Optional. Priority of the security event, lower is more important
-	Source    *string `json:"source,omitempty"`    // Optional. Source of the security event, e.g. "Door 1"
+	Actor     *string                      `json:"actor,omitempty"`     // Optional. Actor of the security event, e.g. "John Doe"
+	EventType *gen.SecurityEvent_EventType `json:"eventType,omitempty"` // Optional. the type of event, must be one of gen.SecurityEvent_EventType
+	Priority  *int32                       `json:"priority,omitempty"`  // Optional. Priority of the security event, lower is more important
+	Source    *string                      `json:"source,omitempty"`    // Optional. Source of the security event, e.g. "Door 1"
 
 	IsActive bool
 }
