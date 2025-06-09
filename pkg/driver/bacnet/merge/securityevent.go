@@ -35,6 +35,10 @@ type securityEventSource struct {
 	Priority  *int32                       `json:"priority,omitempty"`  // Optional. Priority of the security event, lower is more important
 	Source    *string                      `json:"source,omitempty"`    // Optional. Source of the security event, e.g. "Door 1"
 
+}
+
+type securityEvent struct {
+	cfg      securityEventSource
 	IsActive bool
 }
 
@@ -85,6 +89,7 @@ type securityEventImpl struct {
 	model *securityevent.Model
 	*securityevent.ModelServer
 	config   securityEventConfig
+	events   []*securityEvent
 	pollTask *task.Intermittent
 }
 
@@ -94,6 +99,14 @@ func newSecurityEvent(client *gobacnet.Client, devices known.Context, statuses *
 		return nil, err
 	}
 	model := securityevent.NewModel()
+	var events []*securityEvent
+	for _, se := range cfg.SecurityEventSources {
+		e := &securityEvent{
+			cfg:      *se,
+			IsActive: false,
+		}
+		events = append(events, e)
+	}
 	t := &securityEventImpl{
 		client:      client,
 		known:       devices,
@@ -102,6 +115,7 @@ func newSecurityEvent(client *gobacnet.Client, devices known.Context, statuses *
 		model:       model,
 		ModelServer: securityevent.NewModelServer(model),
 		config:      cfg,
+		events:      events,
 	}
 	t.pollTask = task.NewIntermittent(t.startPoll)
 	initTraitStatus(statuses, cfg.Name, "SecurityEvent")
@@ -137,10 +151,10 @@ func (s *securityEventImpl) pollPeer(ctx context.Context) error {
 	var readValues []config.ValueSource
 	var requestNames []string
 
-	for _, se := range s.config.SecurityEventSources {
+	for _, se := range s.events {
 		se := se
-		requestNames = append(requestNames, se.ValueSource.String())
-		readValues = append(readValues, *se.ValueSource)
+		requestNames = append(requestNames, se.cfg.ValueSource.String())
+		readValues = append(readValues, *se.cfg.ValueSource)
 		resProcessors = append(resProcessors, func(response any) error {
 			event, err := se.checkResponseForSecurityEvent(response)
 			if err != nil {
@@ -176,7 +190,7 @@ func (s *securityEventImpl) pollPeer(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
-func (cfg *securityEventSource) checkResponseForSecurityEvent(response any) (*gen.SecurityEvent, error) {
+func (se *securityEvent) checkResponseForSecurityEvent(response any) (*gen.SecurityEvent, error) {
 	data := &gen.SecurityEvent{}
 
 	value, err := comm.Float64Value(response)
@@ -184,38 +198,38 @@ func (cfg *securityEventSource) checkResponseForSecurityEvent(response any) (*ge
 		return nil, comm.ErrReadProperty{Prop: "securityEvent", Cause: err}
 	}
 
-	if value < *cfg.OkLowerBound ||
-		value > *cfg.OkUpperBound {
+	if value < *se.cfg.OkLowerBound ||
+		value > *se.cfg.OkUpperBound {
 		// we only want to add a new security event if it wasn't active on the last poll
-		if !cfg.IsActive {
-			cfg.IsActive = true
-			data.Description = cfg.Description
+		if !se.IsActive {
+			se.IsActive = true
+			data.Description = se.cfg.Description
 			data.Id = uuid.New()
 			data.SecurityEventTime = timestamppb.Now() // not strictly true but as long as the bacnet poll is not too slow, this should be fine
 
-			if cfg.Actor != nil {
+			if se.cfg.Actor != nil {
 				data.Actor = &gen.Actor{
-					Name: *cfg.Actor,
+					Name: *se.cfg.Actor,
 				}
 			}
 
-			if cfg.EventType != nil {
-				data.EventType = gen.SecurityEvent_EventType(*cfg.EventType)
+			if se.cfg.EventType != nil {
+				data.EventType = gen.SecurityEvent_EventType(*se.cfg.EventType)
 			}
 
-			if cfg.Priority != nil {
-				data.Priority = *cfg.Priority
+			if se.cfg.Priority != nil {
+				data.Priority = *se.cfg.Priority
 			}
 
-			if cfg.Source != nil {
+			if se.cfg.Source != nil {
 				data.Source = &gen.SecurityEvent_Source{
-					Name: *cfg.Source,
+					Name: *se.cfg.Source,
 				}
 			}
 			return data, nil
 		}
 	} else {
-		cfg.IsActive = false
+		se.IsActive = false
 	}
 	return nil, nil
 }
