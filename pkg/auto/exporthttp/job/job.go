@@ -72,9 +72,9 @@ func Multiplex(ctx context.Context, jobs ...Job) *Mulpx {
 			current := time.Now().UTC()
 			for {
 				select {
-				case currentExecTime := <-j.GetExecutionAfter(current):
+				case <-j.GetExecutionAfter(current):
 					out.C <- j
-					current = currentExecTime
+					current = time.Now().UTC()
 				case <-ctx.Done():
 					return ctx.Err()
 				}
