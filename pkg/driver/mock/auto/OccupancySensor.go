@@ -2,13 +2,13 @@ package auto
 
 import (
 	"context"
+	"math"
 	"time"
-
-	"golang.org/x/exp/rand"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
+	"github.com/vanti-dev/sc-bos/pkg/driver/mock/scale"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
@@ -18,10 +18,13 @@ func OccupancySensorAuto(model *occupancysensorpb.Model) *service.Service[string
 			ticker := time.NewTicker(30 * time.Second)
 			defer ticker.Stop()
 			for {
-				state := traits.Occupancy_State(rand.Intn(3) + 1)
-				occupancy := &traits.Occupancy{State: state}
-				if state == traits.Occupancy_OCCUPIED {
-					occupancy.PeopleCount = int32(rand.Intn(10) + 1)
+				tod := scale.NineToFive.Now()
+				peopleCount := int32(math.Round(tod * float64Between(0, 10)))
+				occupancy := &traits.Occupancy{PeopleCount: peopleCount}
+				if peopleCount == 0 {
+					occupancy.State = oneOf(traits.Occupancy_UNOCCUPIED, traits.Occupancy_IDLE)
+				} else {
+					occupancy.State = traits.Occupancy_OCCUPIED
 				}
 				_, _ = model.SetOccupancy(occupancy, resource.WithUpdatePaths("state", "people_count"))
 				select {

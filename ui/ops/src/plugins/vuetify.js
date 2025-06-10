@@ -87,6 +87,12 @@ export default createVuetify({
     }
   },
   defaults: {
+    VContainer: {
+      VCard: {
+        elevation: 0,
+        class: 'rounded-lg'
+      },
+    },
     VDataTable: {
       hover: true,
       sortAscIcon: 'mdi-arrow-up-drop-circle-outline',

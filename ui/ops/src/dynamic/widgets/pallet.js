@@ -1,19 +1,31 @@
 import {defineAsyncComponent} from 'vue';
 
 export const builtinWidgets = {
+  'building/BuildingFloors': defineAsyncComponent(() => import('@/dynamic/widgets/building/BuildingFloors.vue')),
+  'building/FloorTraitCells': defineAsyncComponent(() => import('@/dynamic/widgets/building/FloorTraitCells.vue')),
+  'container/FlexRow': defineAsyncComponent(() => import('@/dynamic/widgets/container/FlexRow.vue')),
   'energy/EnergyHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/energy/EnergyHistoryCard.vue')),
-  'environmental/EnvironmentalCard': defineAsyncComponent(
-      () => import('@/dynamic/widgets/environmental/EnvironmentalCard.vue')),
+  'energy/PowerCompareCard': defineAsyncComponent(() => import('@/dynamic/widgets/energy/PowerCompareCard.vue')),
+  'energy/PowerCompareChart': defineAsyncComponent(() => import('@/dynamic/widgets/energy/PowerCompareChart.vue')),
+  'environmental/AirQualityCard': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/AirQualityCard.vue')),
+  'environmental/AirQualityHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/AirQualityHistoryCard.vue')),
+  'environmental/AirQualityHistoryChart': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/AirQualityHistoryChart.vue')),
+  'environmental/EnvironmentalCard': defineAsyncComponent(() => import('@/dynamic/widgets/environmental/EnvironmentalCard.vue')),
+  'general/CohortStatus': defineAsyncComponent(() => import('@/dynamic/widgets/general/CohortStatus.vue')),
+  'general/DateAndTime': defineAsyncComponent(() => import('@/dynamic/widgets/general/DateAndTime.vue')),
+  'general/OpenWeatherMap': defineAsyncComponent(() => import('@/dynamic/widgets/general/OpenWeatherMap.vue')),
+  'general/PlaceholderCard': defineAsyncComponent(() => import('@/dynamic/widgets/general/PlaceholderCard.vue')),
   'graphic/LayeredGraphic': defineAsyncComponent(() => import('@/dynamic/widgets/graphic/LayeredGraphic.vue')),
-  'occupancy/OccupancyCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/OccupancyCard.vue')),
-  'power-history/PowerHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/power-history/PowerHistoryCard.vue')),
-  'occupancy/PresenceCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/PresenceCard.vue')),
   'notifications/ZoneNotifications': defineAsyncComponent(() => import('@/dynamic/widgets/notifications/ZoneNotifications.vue')),
+  'occupancy/OccupancyCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/OccupancyCard.vue')),
+  'occupancy/PeopleCountCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/PeopleCountCard.vue')),
+  'occupancy/PeopleCountHistoryChart': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/PeopleCountHistoryChart.vue')),
+  'occupancy/PresenceCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/PresenceCard.vue')),
+  'power-history/PowerHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/power-history/PowerHistoryCard.vue')),
+  'security/SecurityEventsCard': defineAsyncComponent(() => import('@/dynamic/widgets/security/SecurityEventsCard.vue')),
   // from elsewhere in our codebase
+  'devices/DeviceTable': defineAsyncComponent(() => import('@/routes/devices/components/DeviceTable.vue')),
+  'environmental/AirTemperatureChip': defineAsyncComponent(() => import('@/traits/airTemperature/AirTemperatureChip.vue')),
   'lighting/LightIcon': defineAsyncComponent(() => import('@/traits/light/LightIcon.vue')),
   'meter/ConsumptionCard': defineAsyncComponent(() => import('@/traits/meter/ConsumptionCard.vue')),
-  'environmental/AirTemperatureChip': defineAsyncComponent(() => import('@/traits/airTemperature/AirTemperatureChip.vue')),
-  'devices/DeviceTable': defineAsyncComponent(() => import('@/routes/devices/components/DeviceTable.vue')),
-  // containers
-  'container/FlexRow': defineAsyncComponent(() => import('@/dynamic/widgets/container/FlexRow.vue')),
 };

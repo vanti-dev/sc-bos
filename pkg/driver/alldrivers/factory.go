@@ -5,7 +5,9 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/airthings"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/gallagher"
+	"github.com/vanti-dev/sc-bos/pkg/driver/hikcentral"
 	"github.com/vanti-dev/sc-bos/pkg/driver/mock"
+	"github.com/vanti-dev/sc-bos/pkg/driver/opcua"
 	"github.com/vanti-dev/sc-bos/pkg/driver/pestsense"
 	"github.com/vanti-dev/sc-bos/pkg/driver/proxy"
 	seWiserKnx "github.com/vanti-dev/sc-bos/pkg/driver/se/wiser-knx"
@@ -20,7 +22,9 @@ func Factories() map[string]driver.Factory {
 		airthings.DriverName:  airthings.Factory,
 		bacnet.DriverName:     bacnet.Factory,
 		gallagher.DriverName:  gallagher.Factory,
+		hikcentral.DriverName: hikcentral.Factory,
 		mock.DriverName:       mock.Factory,
+		opcua.DriverName:      opcua.Factory,
 		pestsense.DriverName:  pestsense.Factory,
 		proxy.DriverName:      proxy.Factory,
 		seWiserKnx.DriverName: seWiserKnx.Factory,

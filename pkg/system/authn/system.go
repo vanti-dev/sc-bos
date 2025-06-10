@@ -26,14 +26,10 @@ func (s *System) systemTenantVerifier(cfg config.Root) (tenant.Verifier, error) 
 	// verify system accounts using the local systems/tenants package, via TenantApi
 	nodeVerifier := tenant.NeverVerify(errors.New("tenant system verification not enabled"))
 	if cfg.System.TenantAccounts {
-		nodeVerifier = tenant.NeverVerify(errors.New("tenant system not available"))
-		var tenantApiClient gen.TenantApiClient
-		err := s.clienter.Client(&tenantApiClient)
-		if err == nil {
-			nodeVerifier = tenant.VerifierFunc(func(ctx context.Context, id, secret string) (tenant.SecretData, error) {
-				return tenant.RemoteVerify(ctx, id, secret, tenantApiClient)
-			})
-		}
+		client := gen.NewTenantApiClient(s.clienter.ClientConn())
+		nodeVerifier = tenant.VerifierFunc(func(ctx context.Context, id, secret string) (tenant.SecretData, error) {
+			return tenant.RemoteVerify(ctx, id, secret, client)
+		})
 	}
 
 	// verify system accounts using the cohort manager, via TenantApi

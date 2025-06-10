@@ -704,6 +704,187 @@
               }
             }
           ]
+        },
+        {
+          "title": "Dashboards",
+          "icon": "mdi-view-dashboard",
+          "path": "dashboards",
+          "layout": "builtin:LayoutGrid",
+          "cells": [
+            {
+              "loc": {"x": 1, "y": 1, "w": 3, "h": 3},
+              "id": "CurrentAirQuality",
+              "component": "builtin:environmental/AirQualityCard",
+              "props": {
+                "title": "Building Air Quality",
+                "name": "van/uk/brum/ugs/zones/building"
+              }
+            },
+            {
+              "loc": {"x": 4, "y": 1, "w": 3, "h": 3},
+              "id": "AirQualityHistory",
+              "component": "builtin:environmental/AirQualityHistoryCard",
+              "props": {
+                "title": "Weekly Air Quality",
+                "source": "van/uk/brum/ugs/zones/building",
+                "metric": "score",
+                "start": "day-7",
+                "end": "day-1"
+              }
+            },
+            {
+              "loc": {"x": 1, "y": 4, "w": 2, "h": 3},
+              "id": "CurrentPowerUse",
+              "component": "builtin:energy/PowerCompareCard",
+              "props": {
+                "title": "System Power Use",
+                "sources": [
+                  "van/uk/brum/ugs/zones/areas/comms-room",
+                  "van/uk/brum/ugs/zones/areas/lab",
+                  "van/uk/brum/ugs/zones/floors/ground",
+                  "van/uk/brum/ugs/zones/floors/basement"
+                ]
+              }
+            },
+            {
+              "loc": {"x": 3, "y": 4, "w": 4, "h": 3},
+              "id": "EnergyHistory",
+              "component": "builtin:energy/EnergyHistoryCard",
+              "props": {
+                "title": "Weekly Energy Use",
+                "totalConsumptionName": "van/uk/brum/ugs/zones/building",
+                "totalProductionName": "van/uk/brum/ugs/zones/building/generated",
+                "start": "day-7",
+                "end": "day-1",
+                "minChartHeight": "100%",
+                "density": "compact"
+              }
+            },
+            {
+              "loc": {"x": 1, "y": 7, "w": 4, "h": 2},
+              "id": "PeopleCountHistory",
+              "component": "builtin:occupancy/PeopleCountHistoryChart",
+              "props": {
+                "totalOccupancyName": "van/uk/brum/ugs/zones/building",
+                "start": "day-7",
+                "end": "day-1"
+              }
+            },
+            {
+              "loc": {"x": 5, "y": 7, "w": 2, "h": 2},
+              "id": "CurrentPeopleCount",
+              "component": "builtin:occupancy/PeopleCountCard",
+              "props": {
+                "source": "van/uk/brum/ugs/zones/building",
+                "maxOccupancy": 1250
+              }
+            },
+            {
+              "loc": {"x": 1, "y": 9, "w": 4, "h": 4},
+              "id": "SecurityEvents",
+              "component": "builtin:security/SecurityEventsCard",
+              "props": {
+                "variant": "card",
+                "title": "Access Control Log",
+                "name": "van/uk/brum/ugs/devices/security-events",
+                "hideTableHeader": true,
+                "fixedRowCount": 5
+              }
+            },
+            {
+              "loc": {"x": 5, "y": 9, "w": 2, "h": 4},
+              "id": "Visitors",
+              "props": {
+                "title": "Visitors"
+              }
+            },
+            {
+              "loc": {"x": 7, "y": 1, "w": 2, "h": 1},
+              "id": "SCStatus",
+              "component": "builtin:general/CohortStatus",
+              "props": {
+                "size": "xx-large",
+                "class": "text-h4"
+              }
+            },
+            {
+              "loc": {"x": 9, "y": 1, "w": 2, "h": 1},
+              "id": "Weather",
+              "component": "builtin:general/OpenWeatherMap",
+              "props": {
+                "apiKey": "TODO",
+                "city": "Birmingham",
+                "hideToolbar": true,
+                "color": "transparent"
+              }
+            },
+            {
+              "loc": {"x": 11, "y": 1, "w": 2, "h": 1},
+              "id": "DateAndTime",
+              "component": "builtin:general/DateAndTime",
+              "props": {
+                "class": "text-h4"
+              }
+            },
+            {
+              "loc": {"x": 7, "y": 2, "w": 3, "h": 7},
+              "id": "FloorInfo",
+              "component": "builtin:building/FloorTraitCells",
+              "props": {
+                "floors": [
+                  {"level": 7},
+                  {"level": 6, "zoneName": "van/uk/brum/ugs/zones/rooms/bank"},
+                  {"level": 5, "zoneName": "van/uk/brum/ugs/zones/areas/loading-bay"},
+                  {"level": 4, "zoneName": "van/uk/brum/ugs/zones/areas/comms-room"},
+                  {"level": 3, "zoneName": "van/uk/brum/ugs/zones/areas/lab"},
+                  {"level": 2, "zoneName": "van/uk/brum/ugs/zones/areas/reception"},
+                  {"level": 1, "zoneName": "van/uk/brum/ugs/zones/floors/first"},
+                  {"level": 0, "zoneName": "van/uk/brum/ugs/zones/floors/ground"},
+                  {"level": -1, "zoneName": "van/uk/brum/ugs/zones/floors/basement"},
+                  {"level": -2}
+                ]
+              }
+            },
+            {
+              "loc": {"x": 10, "y": 2, "w": 1, "h": 7},
+              "id": "Floors",
+              "component": "builtin:building/BuildingFloors",
+              "props": {
+                "floors": [
+                  {"level": 7, "title": "Roof"},
+                  {"level": 6, "title": "Floor 6"},
+                  {"level": 5, "title": "Floor 5"},
+                  {"level": 4, "title": "Floor 4"},
+                  {"level": 3, "title": "Floor 3"},
+                  {"level": 2, "title": "Floor 2"},
+                  {"level": 1, "title": "Floor 1"},
+                  {"level": 0, "title": "Ground Floor"},
+                  {"level": -1, "title": "Basement 1"},
+                  {"level": -2, "title": "Basement 2"}
+                ]
+              }
+            },
+            {
+              "loc": {"x": 11, "y": 2, "w": 2, "h": 7},
+              "id": "Lifts",
+              "props": {
+                "title": "Lifts"
+              }
+            },
+            {
+              "loc": {"x": 7, "y": 9, "w": 6, "h": 4},
+              "id": "Notifications",
+              "component": "builtin:notifications/ZoneNotifications",
+              "props": {
+                "title": "Device Notifications",
+                "hidePaging": true,
+                "hideTableHeader": true,
+                "hideHeaderActions": true,
+                "columns": ["createTime", "severity", "source", "description"],
+                "fixedRowCount": 5
+              }
+            }
+          ]
         }
       ],
       "waste" : {
@@ -711,6 +892,7 @@
         "unit" : "kg"
       }
     },
+    "securityEventsSource": "van/uk/brum/ugs/devices/security-events",
     "proxy": true,
     "siteFloorPlans": [
       {"name": "Ground Floor", "svgPath": "./assets/floor0-bg.svg"},

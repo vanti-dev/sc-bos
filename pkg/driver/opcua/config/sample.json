@@ -1,0 +1,58 @@
+{
+  "name": "dev/opcua",
+  "drivers": [
+    {
+      "name": "opcua",
+      "type" : "opcua",
+      "opcUaConfig": {
+        "endpoint": "opc.tcp://748tn73:62640/IntegrationObjects/ServerSimulator",
+        "subscriptionInterval": "5s"
+      },
+      "devices" : [
+        {
+          "name": "test/vanti/area-controller-01/tag01",
+          "variables": [
+            {
+              "nodeId": "ns=2;s=Tag1"
+            },
+            {
+              "nodeId": "ns=2;s=Tag2"
+            }
+          ],
+          "traits": [
+            {
+              "name": "smartcore.bos.Meter",
+              "kind": "smartcore.bos.Meter",
+              "unit": "kWh",
+              "usage": {
+                "nodeId": "ns=2;s=Tag1",
+                "scale": 1000
+              }
+            },
+            {
+              "name": "smartcore.bos.UDMI",
+              "kind": "smartcore.bos.UDMI",
+              "topicPrefix": "test/vanti/area-controller-01/lifts",
+              "points": {
+                "kWh meter" : {
+                  "nodeId" : "ns=2;s=Tag1",
+                  "name": "kWh meter",
+                  "enum" : {
+                    "0" : "Door is open",
+                    "1" : "Door is opening",
+                    "2" : "Door is closed",
+                    "4" : "Door is closing"
+                  }
+                },
+                "lift position" : {
+                  "nodeId" : "ns=2;s=Tag15",
+                  "name": "lift position"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

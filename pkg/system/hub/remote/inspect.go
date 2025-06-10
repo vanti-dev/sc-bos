@@ -21,19 +21,22 @@ func Inspect(ctx context.Context, address string) (*gen.HubNodeInspection, error
 
 	// capture the server cert which we'll eventually return to the caller
 	creds := &certInterceptor{TransportCredentials: credentials.NewTLS(tlsConfig)}
-	conn, err := grpc.DialContext(ctx, address,
+	conn, err := grpc.NewClient(address,
 		// capture the tls cert
 		grpc.WithTransportCredentials(creds),
-		// block so we know if we've got the cert or not
-		grpc.WithBlock(),
-		grpc.FailOnNonTempDialError(true),
-		grpc.WithReturnConnectionError(),
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	out := &gen.HubNodeInspection{}
+	// do the API call first, to force the connection to be established (or fail)
+	client := traits.NewMetadataApiClient(conn)
+	md, err := client.GetMetadata(ctx, &traits.GetMetadataRequest{})
+	if err != nil {
+		return nil, err
+	}
+	out.Metadata = md
 
 	// if the remote has certs then encode them as PEM in the response
 	if certs, ok := creds.PeerCertificates(); ok && len(certs) > 0 {
@@ -42,13 +45,6 @@ func Inspect(ctx context.Context, address string) (*gen.HubNodeInspection, error
 			out.PublicCerts = append(out.PublicCerts, string(pemBytes))
 		}
 	}
-
-	client := traits.NewMetadataApiClient(conn)
-	md, err := client.GetMetadata(ctx, &traits.GetMetadataRequest{})
-	if err != nil {
-		return nil, err
-	}
-	out.Metadata = md
 
 	return out, nil
 }

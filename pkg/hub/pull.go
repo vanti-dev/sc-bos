@@ -63,7 +63,7 @@ func PullNodes(ctx context.Context, conn *grpc.ClientConn) <-chan Change[Node] {
 
 // PullChildren returns a channel of changes to the children of all nodes enrolled in the hub conn.
 // The conn argument should be a connection to the hub.
-// For each node a new connection (via grpc.Dial) will be made using the nodes address and the given dialOpts.
+// For each node a new connection (via grpc.NewClient) will be made using the nodes address and the given dialOpts.
 // Children sent via the returned channel will have their Conn field set to the new connection which can be used so long
 // as that child is still a member of the hub cohort.
 func PullChildren(ctx context.Context, conn *grpc.ClientConn, dialOpts ...grpc.DialOption) <-chan Change[Child] {

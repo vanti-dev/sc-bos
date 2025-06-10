@@ -1,46 +1,101 @@
 <template>
-  <div class="ml-2">
-    <v-row class="mt-0 ml-0 pl-0">
-      <h3 class="text-h3 pt-2 pb-6">Security Events</h3>
-      <v-spacer/>
-    </v-row>
+  <v-toolbar v-if="showExternalHeader" color="transparent" class="mb-6" density="compact">
+    <h3 class="text-h3">{{ props.title }}</h3>
+  </v-toolbar>
 
-    <content-card class="px-8 mt-8">
-      <v-data-table-server
-          :headers="allHeaders"
-          v-bind="tableAttrs"
-          disable-sort
-          :items-length="queryTotalCount"
-          class="pt-4">
-        <template #item.createTime="{ item }">
-          {{ timestampToDate(item.securityEventTime).toLocaleString() }}
-        </template>
-      </v-data-table-server>
-    </content-card>
-  </div>
+  <component :is="showExternalHeader ? VCard : 'div'" v-bind="tableWrapperProps">
+    <v-data-table-server
+        :headers="allHeaders"
+        :hide-default-header="props.hideTableHeader"
+        :hide-default-footer="_hidePaging"
+        v-bind="tableAttrs"
+        disable-sort
+        :items-length="queryTotalCount">
+      <template #top v-if="showCardHeader">
+        <v-toolbar color="transparent">
+          <v-toolbar-title v-if="showCardHeader" class="text-h4">{{ props.title }}</v-toolbar-title>
+        </v-toolbar>
+      </template>
+      <template #item.createTime="{ item }">
+        {{ timestampToDate(item.securityEventTime).toLocaleString() }}
+      </template>
+    </v-data-table-server>
+  </component>
 </template>
 <script setup>
 import {timestampToDate} from '@/api/convpb';
-import ContentCard from '@/components/ContentCard.vue';
 import {useSecurityEventsCollection} from '@/composables/securityevents.js';
 import {useDataTableCollection} from '@/composables/table.js';
 import {useCohortStore} from '@/stores/cohort.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
-import {computed, ref} from 'vue';
+import {useLocalProp} from '@/util/vue.js';
+import {computed} from 'vue';
+import {VCard} from 'vuetify/components';
+
+const props = defineProps({
+  name: {
+    type: String,
+    default: null
+  },
+  title: {
+    type: String,
+    default: 'Security Events'
+  },
+  variant: {
+    type: String,
+    default: 'default'
+  },
+  hideTableHeader: {
+    type: Boolean,
+    default: false
+  },
+  hidePaging: {
+    type: Boolean,
+    default: false
+  },
+  // when present, paging is disabled and only this many rows are shown
+  fixedRowCount: {
+    type: Number,
+    default: null
+  }
+});
 
 const uiConfig = useUiConfigStore();
 const cohort = useCohortStore();
-const name = computed(() => uiConfig.config.securityEventsSource ?? cohort.hubNode?.name ?? '');
+const name = computed(() => props.name ?? uiConfig.config.securityEventsSource ?? cohort.hubNode?.name ?? '');
+
+const _variant = computed(() => {
+  if (props.variant === 'default') return 'page';
+  return props.variant;
+})
+const showExternalHeader = computed(() => _variant.value === 'page');
+const showCardHeader = computed(() => _variant.value === 'card');
+const _hidePaging = computed(() => Boolean(props.hidePaging || props.fixedRowCount));
+
+const tableWrapperProps = computed(() => {
+  if (showExternalHeader.value) {
+    return {
+      class: ['px-7', 'py-4']
+    }
+  } else {
+    return {};
+  }
+});
 
 const securityEventsRequest = computed(() => ({
   name: name.value
 }));
-const wantCount = ref(20);
+const wantCount = useLocalProp(computed(() => props.fixedRowCount || 20));
 const securityEventsOptions = computed(() => ({
   wantCount: wantCount.value
 }));
 const securityEventsCollection = useSecurityEventsCollection(securityEventsRequest, securityEventsOptions);
-const tableAttrs = useDataTableCollection(wantCount, securityEventsCollection);
+const tableOptions = computed(() => {
+  return {
+    itemsPerPage: props.fixedRowCount || undefined,
+  }
+})
+const tableAttrs = useDataTableCollection(wantCount, securityEventsCollection, tableOptions);
 
 // Calculate the total number of items in the query
 const queryTotalCount = computed(() => {
@@ -48,7 +103,7 @@ const queryTotalCount = computed(() => {
 });
 
 const allHeaders = [
-  {title: 'Timestamp', value: 'createTime', width: '15em'},
+  {title: 'Timestamp', value: 'createTime', width: '13em'},
   {title: 'Description', value: 'description', width: '60%'},
   {title: 'Priority', value: 'priority', width: '10em', align: 'end'},
   {title: 'Source', value: 'source.name', width: '30%'}
@@ -69,6 +124,14 @@ const allHeaders = [
 
   :deep(.v-pagination__first) {
     margin-left: 16px;
+  }
+}
+
+.v-data-table {
+  :deep(.v-table__wrapper) {
+    // Toolbar titles have a leading margin of 20px, table cells have a leading padding of 16px.
+    // Correct for this and align the leading edge of text in the first column with the toolbar title.
+    padding: 0 4px;
   }
 }
 </style>

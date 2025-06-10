@@ -56,7 +56,7 @@ type System struct {
 	server *nextOrNotFound
 
 	configDirs    []string
-	clienter      node.Clienter
+	clienter      node.ClientConner
 	cohortManager node.Remote
 	logger        *zap.Logger
 

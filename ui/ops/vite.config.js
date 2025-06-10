@@ -2,11 +2,12 @@ import vue from '@vitejs/plugin-vue';
 import {execSync} from 'child_process';
 import {globSync} from 'glob';
 import {createRequire} from 'module';
-import {dirname, relative, sep, posix} from 'path';
+import {dirname, posix, relative, sep} from 'path';
 import {fileURLToPath, URL} from 'url';
 import {defineConfig, loadEnv} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
 import vuetify from 'vite-plugin-vuetify';
+import svgLoader from 'vite-svg-loader';
 
 const _require = createRequire(import.meta.url);
 
@@ -56,6 +57,7 @@ export default defineConfig(({mode}) => {
           configFile: 'src/sass/settings.scss'
         }
       }),
+      svgLoader(),
       eslintPlugin()
     ],
     resolve: {

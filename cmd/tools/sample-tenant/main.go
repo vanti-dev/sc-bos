@@ -62,7 +62,7 @@ func main() {
 	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, httpClient)
 
 	name := "light-1"
-	conn, err := grpc.Dial(flagGRPCAddr,
+	conn, err := grpc.NewClient(flagGRPCAddr,
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
 		grpc.WithPerRPCCredentials(oauth.TokenSource{TokenSource: ccConfig.TokenSource(ctx)}),
 	)

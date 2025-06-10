@@ -1,9 +1,7 @@
 <template>
-  <v-card class="px-6 py-4">
-    <v-toolbar class="chart-header" color="transparent">
-      <slot name="title">
-        <v-toolbar-title class="text-h4 pa-0 mr-auto">{{ props.title }}</v-toolbar-title>
-      </slot>
+  <v-card class="d-flex flex-column" :class="rootClasses">
+    <v-toolbar class="chart-header" color="transparent" v-if="!props.hideToolbar">
+      <v-toolbar-title class="text-h4">{{ props.title }}</v-toolbar-title>
       <v-btn
           icon="mdi-dots-vertical"
           size="small"
@@ -34,7 +32,7 @@
         </v-menu>
       </v-btn>
     </v-toolbar>
-    <v-card-text>
+    <v-card-text class="flex-1-1-100 pt-0">
       <div class="chart__container">
         <bar ref="chartRef" :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
       </div>
@@ -44,22 +42,18 @@
 </template>
 
 <script setup>
+import {useDateScale} from '@/components/charts/date.js';
+import {useExternalTooltip, useThemeColorPlugin, useVueLegendPlugin} from '@/components/charts/plugins.js';
 import {triggerDownload} from '@/components/download/download.js';
-import {
-  computeDatasets,
-  datasetSourceName,
-  useExternalTooltip,
-  useThemeColorPlugin,
-  useVueLegendPlugin
-} from '@/dynamic/widgets/energy/chart.js';
-import {useDateScale} from '@/dynamic/widgets/energy/date.js';
+import {computeDatasets, datasetSourceName} from '@/dynamic/widgets/energy/chart.js';
 import EnergyTooltip from '@/dynamic/widgets/energy/EnergyTooltip.vue';
 import PeriodChooserRows from '@/dynamic/widgets/energy/PeriodChooserRows.vue';
 import {useDescribeMeterReading} from '@/traits/meter/meter.js';
 import {isNullOrUndef} from '@/util/types.js';
+import {useLocalProp} from '@/util/vue.js';
 import {BarElement, Chart as ChartJS, Legend, LinearScale, TimeScale, Title, Tooltip} from 'chart.js'
 import {startOfDay, startOfYear} from 'date-fns';
-import {computed, ref, toRef, toValue, watch} from 'vue';
+import {computed, ref, toRef} from 'vue';
 import {Bar} from 'vue-chartjs';
 import 'chartjs-adapter-date-fns';
 import {useMeterConsumption, useMetersConsumption} from './consumption.js';
@@ -99,8 +93,26 @@ const props = defineProps({
   offset: {
     type: [Number, String],
     default: 0, // when start/End is 'month', 'day', etc. offset that value into the past, like 'last month'
+  },
+  density: {
+    type: String,
+    default: 'default' // 'comfortable', 'compact'
+  },
+  hideToolbar: {
+    type: Boolean,
+    default: false,
+  },
+  minChartHeight: {
+    type: [String, Number],
+    default: '500px',
   }
 });
+
+const rootClasses = computed(() => {
+  return {
+    [`density-${props.density}`]: true
+  }
+})
 
 // we assume here that all the meters share the same unit, so asking about any will be enough.
 const nameForDescribe = computed(() => {
@@ -115,20 +127,8 @@ const nameForDescribe = computed(() => {
   return undefined;
 })
 const {response: meterInfo} = useDescribeMeterReading(nameForDescribe);
-const unit = computed(() => meterInfo.value?.unit);
+const unit = computed(() => meterInfo.value?.usageUnit);
 
-/**
- * @template T
- * @param {import('vue').MaybeRefOrGetter<T>} prop
- * @return {import('vue').Ref<T>}
- */
-const useLocalProp = (prop) => {
-  const local = ref(toValue(prop.value));
-  watch(() => toValue(prop), (value) => {
-    local.value = value;
-  });
-  return local;
-}
 const _start = useLocalProp(toRef(props, 'start'));
 const _end = useLocalProp(toRef(props, 'end'));
 const _offset = useLocalProp(toRef(props, 'offset'));
@@ -224,9 +224,10 @@ const chartOptions = computed(() => {
   };
 });
 
+const chartLabels = computed(() => edges.value.slice(0, -1));
 const chartData = computed(() => {
   return {
-    labels: edges.value,
+    labels: chartLabels.value,
     datasets: [
       ...computeDatasets('Consumption', totalConsumption, toRef(props, 'subConsumptionNames'), subConsumptions),
       ...computeDatasets('Production', totalProduction, toRef(props, 'subProductionNames'), subProductions, true),
@@ -272,16 +273,27 @@ const onDownloadClick = async () => {
       props.title?.toLowerCase()?.replace(' ', '-') ?? 'energy-usage',
       {conditionsList: [{field: 'name', stringIn: {stringsList: names}}]},
       {startTime: startDate.value, endTime: endDate.value},
-      {includeColsList: [
+      {
+        includeColsList: [
           {name: 'timestamp', title: 'Reading Time'},
           {name: 'md.name', title: 'Device Name'},
           {name: 'meter.usage', title: (props.title || 'Energy Usage') + (unit.value ? ` (${unit.value})` : '')},
-        ]}
+        ]
+      }
   )
 }
 </script>
 
 <style scoped lang="scss">
+.density-comfortable,
+.density-default {
+  padding: 16px 24px;
+
+  .v-toolbar {
+    margin-bottom: 14px;
+  }
+}
+
 .chart-header {
   align-items: center;
 
@@ -289,10 +301,14 @@ const onDownloadClick = async () => {
     justify-content: end;
     flex-wrap: wrap;
   }
+
+  :deep(.v-toolbar-title__placeholder) {
+    overflow: visible;
+  }
 }
 
 .chart__container {
-  min-height: 500px;
+  min-height: v-bind(minChartHeight);
   /* The chart seems to have a padding no mater what we do, this gets rid of it */
   margin: -6px;
 }

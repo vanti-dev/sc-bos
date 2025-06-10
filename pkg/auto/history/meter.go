@@ -13,11 +13,7 @@ import (
 )
 
 func (a *automation) collectMeterReadingChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
-	var client gen.MeterApiClient
-	if err := a.clients.Client(&client); err != nil {
-		a.logger.Error("collection aborted", zap.Error(err))
-		return
-	}
+	client := gen.NewMeterApiClient(a.clients.ClientConn())
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullMeterReadings(ctx, &gen.PullMeterReadingsRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})

@@ -13,6 +13,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 // Patcher represents a single patch that adjusts ReadState.
@@ -35,37 +36,19 @@ type subscriber interface {
 //
 // Blocks until fatal errors in the subscriptions or ctx is done.
 func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChanged <-chan emitter.Event, changes chan<- Patcher) error {
-	// eagerly fetch the clients we might be using.
-	// While the config might mean we don't use them, better to have the system fail early just in case
-	var occupancySensorClient traits.OccupancySensorApiClient
-	if err := b.clients.Client(&occupancySensorClient); err != nil {
-		return fmt.Errorf("%w traits.OccupancySensorApiClient", err)
-	}
-	var brightnessSensorClient traits.BrightnessSensorApiClient
-	if err := b.clients.Client(&brightnessSensorClient); err != nil {
-		return fmt.Errorf("%w traits.BrightnessSensorApiClient", err)
-	}
-	var buttonClient gen.ButtonApiClient
-	if err := b.clients.Client(&buttonClient); err != nil {
-		return fmt.Errorf("%w gen.ButtonApiClient", err)
-	}
-	var modeClient traits.ModeApiClient
-	if err := b.clients.Client(&modeClient); err != nil {
-		return fmt.Errorf("%w traits.ModeApiClient", err)
-	}
-
+	conn := b.clients.ClientConn()
 	// Setup the sources that we can pull patches from.
 	sources := []*source{
 		{
 			names: func(cfg config.Root) []deviceName { return cfg.OccupancySensors },
 			new: func(name deviceName, logger *zap.Logger) subscriber {
-				return &OccupancySensorPatches{name: name, client: occupancySensorClient, logger: logger}
+				return &OccupancySensorPatches{name: name, client: traits.NewOccupancySensorApiClient(conn), logger: logger}
 			},
 		},
 		{
 			names: func(cfg config.Root) []deviceName { return cfg.BrightnessSensors },
 			new: func(name deviceName, logger *zap.Logger) subscriber {
-				return &BrightnessSensorPatches{name: name, client: brightnessSensorClient, logger: logger}
+				return &BrightnessSensorPatches{name: name, client: traits.NewBrightnessSensorApiClient(conn), logger: logger}
 			},
 		},
 		{
@@ -75,7 +58,7 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &ButtonPatches{
 					name:   name,
-					client: buttonClient,
+					client: gen.NewButtonApiClient(conn),
 					logger: logger,
 				}
 			},
@@ -87,7 +70,7 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &ButtonPatches{
 					name:   name,
-					client: buttonClient,
+					client: gen.NewButtonApiClient(conn),
 					logger: logger,
 				}
 			},
@@ -99,7 +82,7 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &ButtonPatches{
 					name:   name,
-					client: buttonClient,
+					client: gen.NewButtonApiClient(conn),
 					logger: logger,
 				}
 			},
@@ -114,7 +97,7 @@ func (b *BrightnessAutomation) setupReadSources(ctx context.Context, configChang
 			new: func(name deviceName, logger *zap.Logger) subscriber {
 				return &ModePatches{
 					name:   name,
-					client: modeClient,
+					client: traits.NewModeApiClient(conn),
 					logger: logger,
 				}
 			},
@@ -156,14 +139,17 @@ type source struct {
 }
 
 func (b *BrightnessAutomation) processConfig(ctx context.Context, cfg config.Root, sources []*source, changes chan<- Patcher) (sourceCount int) {
-	if cfg.OnProcessError.BackOffMultiplier.Duration.Nanoseconds() <= 0 {
-		cfg.OnProcessError.BackOffMultiplier.Duration = config.DefaultBackOffMultiplier
+	if cfg.OnProcessError == nil {
+		cfg.OnProcessError = &config.OnProcessError{}
+	}
+	if cfg.OnProcessError.BackOffMultiplier == nil || cfg.OnProcessError.BackOffMultiplier.Duration.Nanoseconds() <= 0 {
+		cfg.OnProcessError.BackOffMultiplier = &jsontypes.Duration{Duration: config.DefaultBackOffMultiplier}
 	}
 	if cfg.OnProcessError.MaxRetries < 0 {
 		cfg.OnProcessError.MaxRetries = config.DefaultMaxRetries
 	}
-	if cfg.RefreshEvery.Duration.Nanoseconds() <= 0 {
-		cfg.RefreshEvery.Duration = config.DefaultRefreshEvery
+	if cfg.RefreshEvery == nil || cfg.RefreshEvery.Duration.Nanoseconds() <= 0 {
+		cfg.RefreshEvery = &jsontypes.Duration{Duration: config.DefaultRefreshEvery}
 	}
 
 	for _, source := range sources {

@@ -58,9 +58,10 @@ func (bc *ConfigForFloor) addHistoryForTraits(traits []map[string]any) []map[str
 // dirForFloor is a map of floor name to the directory for that floor. They keys are the same as configPerFloor and
 // there must be a directory value defined for each floor. This allows you to put 2 floor configs in the same directory.
 // configRoot is the root directory for the config, defaults to "config" if empty
-// scPrefix is the prefix for the driver's Name. The bacnet driver name will become <sc-prefix>/floor-xx/drivers/bms
+// scPrefix is the prefix for the driver's Name. The bacnet driver name will become <sc-prefix>/floor-xx/drivers/<subsystem>
+// subsystem is the name of the subsystem, e.g. "bms", "fire-alarm", etc. which gets used as the file prefix for the output files.
 func WriteBacnetConfig(configPerFloor map[string]*ConfigForFloor, dirForFloor map[string]string, configRoot string,
-	scPrefix string) error {
+	scPrefix string, subsystem string) error {
 	if configRoot == "" {
 		configRoot = "config"
 	}
@@ -81,7 +82,7 @@ func WriteBacnetConfig(configPerFloor map[string]*ConfigForFloor, dirForFloor ma
 		}
 		configDir = path.Join(configRoot, configDir)
 
-		err := writeToDir(configDir, floor, scPrefix, cfg)
+		err := writeToDir(configDir, floor, scPrefix, cfg, subsystem)
 		if err != nil {
 			return err
 		}
@@ -89,15 +90,15 @@ func WriteBacnetConfig(configPerFloor map[string]*ConfigForFloor, dirForFloor ma
 	return nil
 }
 
-func writeToDir(dir string, floor string, scPrefix string, bacnetCfg *ConfigForFloor) error {
+func writeToDir(dir string, floor string, scPrefix string, bacnetCfg *ConfigForFloor, subsystem string) error {
 	var errs error
-	outFile := filepath.Join(dir, fmt.Sprintf("%s.bms.part.json", floor))
+	outFile := filepath.Join(dir, fmt.Sprintf("%s.%s.part.json", floor, subsystem))
 	cfg := appconf.Config{}
 	driverCfg := config.Defaults()
 	// copy over any customisations we have made
 	driverCfg = bacnetCfg.Root
 	driverCfg.BaseConfig = driver.BaseConfig{
-		Name: path.Join(scPrefix, fmt.Sprintf("floor-%s", floor), "drivers", "bms"),
+		Name: path.Join(scPrefix, fmt.Sprintf("floor-%s", floor), "drivers", subsystem),
 		Type: DriverName,
 	}
 	driverCfg.Devices = bacnetCfg.Devices

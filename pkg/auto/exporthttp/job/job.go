@@ -36,6 +36,7 @@ type Job interface {
 	GetUrl() string
 	GetSite() string
 	GetExecutionAfter(t time.Time) <-chan time.Time
+	SetPreviousExecution(t time.Time)
 
 	Do(ctx context.Context, sendFn sender) error
 }
@@ -103,6 +104,10 @@ func (b *BaseJob) GetExecutionAfter(t time.Time) <-chan time.Time {
 		t = time.Now().UTC()
 	}
 	return time.After(time.Until(b.Schedule.Next(t)))
+}
+
+func (b *BaseJob) SetPreviousExecution(t time.Time) {
+	b.PreviousExecution = t
 }
 
 func (b *BaseJob) GetSite() string {

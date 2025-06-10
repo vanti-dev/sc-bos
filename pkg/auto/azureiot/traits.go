@@ -366,7 +366,7 @@ func grpcClient[T any](a *Auto, c *T, f func(connInterface grpc.ClientConnInterf
 	if tlsConfig != nil {
 		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	}
-	conn, err := grpc.Dial(rn.Host, opts...)
+	conn, err := grpc.NewClient(rn.Host, opts...)
 	if err != nil {
 		return err
 	}

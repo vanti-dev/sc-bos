@@ -1,5 +1,6 @@
 import {newActionTracker} from '@/api/resource.js';
-import {reactive, ref, toRefs, toValue, watch} from 'vue';
+import {asyncWatch} from '@/util/vue.js';
+import {reactive, toRefs, toValue} from 'vue';
 
 /**
  * @typedef {import('@/api/resource.js').ActionTracker<Res>} UseActionResponse
@@ -20,45 +21,18 @@ import {reactive, ref, toRefs, toValue, watch} from 'vue';
  */
 export function useAction(request, action) {
   const tracker = reactive(/** @type {ActionTracker<Res>} */ newActionTracker());
-
-  // What follows is a race safe way to perform requests whenever request changes.
-  // We queue up tasks (calls to action) and only process the latest one.
-  const activeTask = ref(null); // the task we are awaiting
-  const nextTask = ref(null); // our queue, except we only care about the tip
-  watch(() => toValue(request), (request) => {
-    nextTask.value = {request};
-  }, {immediate: true});
-  watch(nextTask, (task) => {
-    if (!task) return; // break the loop
-    if (activeTask.value) {
-      // todo: cancel active request, grpc doesn't let us do this yet
+  const {refresh} = asyncWatch(() => toValue(request), async (request) => {
+    if (!request) {
+      tracker.response = null;
       return;
     }
-    activeTask.value = task;
-    nextTask.value = null;
-  }, {immediate: true});
-  watch(activeTask, async (task) => {
-    if (!task) return; // break the loop
-    try {
-      const {request} = task;
-      if (!request) {
-        tracker.response = null;
-        activeTask.value = null;
-        return;
-      }
-
-      await action(request, tracker);
-    } finally {
-      const next = nextTask.value;
-      nextTask.value = null;
-      activeTask.value = next;
-    }
+    await action(request, tracker);
+    // todo: cancel active request, grpc doesn't let us do this yet
+    // onCleanup(() => {});
   }, {immediate: true});
 
   return {
     ...toRefs(tracker),
-    refresh() {
-      nextTask.value = {request: toValue(request)};
-    }
+    refresh,
   };
 }

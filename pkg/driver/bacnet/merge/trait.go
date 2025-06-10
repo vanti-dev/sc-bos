@@ -8,6 +8,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -24,12 +25,16 @@ func IntoTrait(client *gobacnet.Client, devices known.Context, statuses *statusp
 		return newElectric(client, devices, statuses, traitConfig, logger)
 	case trait.Emergency:
 		return newEmergency(client, devices, statuses, traitConfig, logger)
+	case trait.EnergyStorage:
+		return newEnergyStorage(client, devices, statuses, traitConfig, logger)
 	case trait.FanSpeed:
 		return newFanSpeed(client, devices, statuses, traitConfig, logger)
 	case meter.TraitName:
 		return newMeter(client, devices, statuses, traitConfig, logger)
 	case trait.Mode:
 		return newMode(client, devices, statuses, traitConfig, logger)
+	case securityevent.TraitName:
+		return newSecurityEvent(client, devices, statuses, traitConfig, logger)
 	case statuspb.TraitName:
 		return newStatus(client, devices, statuses, traitConfig, logger)
 	case UdmiMergeName, udmipb.TraitName:

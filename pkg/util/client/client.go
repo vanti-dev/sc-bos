@@ -20,5 +20,5 @@ func NewConnection(conf Config) (*grpc.ClientConn, error) {
 		}
 	}
 
-	return grpc.Dial(conf.Endpoint, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+	return grpc.NewClient(conf.Endpoint, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 }

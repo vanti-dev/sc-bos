@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -14,45 +15,49 @@ import (
 
 type listMeterReadingFn func(ctx context.Context, in *gen.ListMeterReadingHistoryRequest, opts ...grpc.CallOption) (*gen.ListMeterReadingHistoryResponse, error)
 
-func getRecordsByTime(ctx context.Context, historyFn listMeterReadingFn, meter string, now time.Time, filterTime time.Duration) (earliest, latest *gen.MeterReadingRecord, err error) {
-	var (
-		pageToken string
-		resp      *gen.ListMeterReadingHistoryResponse
-	)
+func getRecordsByTime(ctx context.Context, logger *zap.Logger, historyFn listMeterReadingFn, meter string, now time.Time, filterTime time.Duration) (earliest, latest *gen.MeterReadingRecord, err error) {
+	var resp *gen.ListMeterReadingHistoryResponse
 
-	latest = &gen.MeterReadingRecord{RecordTime: timestamppb.New(time.Time{})}
-	earliest = &gen.MeterReadingRecord{RecordTime: timestamppb.New(now)}
+	start := now.Add(-filterTime)
 
-	for {
-		resp, err = historyFn(ctx, &gen.ListMeterReadingHistoryRequest{
-			Name: meter,
-			Period: &sctime.Period{
-				StartTime: timestamppb.New(now.Add(-filterTime)),
-				EndTime:   timestamppb.New(now),
-			},
-			PageToken: pageToken,
-		})
+	resp, err = historyFn(ctx, &gen.ListMeterReadingHistoryRequest{
+		Name: meter,
+		Period: &sctime.Period{
+			StartTime: timestamppb.New(start),
+		},
+		PageSize: 1,
+	})
 
-		if err != nil {
-			return nil, nil, err
-		}
-
-		for _, record := range resp.GetMeterReadingRecords() {
-			if record.GetRecordTime().AsTime().Before(earliest.GetRecordTime().AsTime()) {
-				earliest = record
-			}
-
-			if record.GetRecordTime().AsTime().After(latest.GetRecordTime().AsTime()) {
-				latest = record
-			}
-		}
-
-		if resp.GetNextPageToken() == "" {
-			break
-		}
-
-		pageToken = resp.GetNextPageToken()
+	if err != nil {
+		return nil, nil, err
 	}
+
+	if len(resp.GetMeterReadingRecords()) == 0 {
+		logger.Error("no records found in earliest", zap.String("meter", meter), zap.Time("start", start))
+		return earliest, latest, nil
+	}
+
+	earliest = resp.GetMeterReadingRecords()[0]
+
+	resp, err = historyFn(ctx, &gen.ListMeterReadingHistoryRequest{
+		Name: meter,
+		Period: &sctime.Period{
+			EndTime: timestamppb.New(now),
+		},
+		PageSize: 1,
+		OrderBy:  "record_time DESC",
+	})
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(resp.GetMeterReadingRecords()) == 0 {
+		logger.Error("no records found in latest", zap.String("meter", meter), zap.Time("end", now))
+		return earliest, earliest, nil // make sure this resolves consumption to 0 by returning < earliest, earliest, nil >
+	}
+
+	latest = resp.GetMeterReadingRecords()[0]
 
 	return earliest, latest, nil
 }

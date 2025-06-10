@@ -1,10 +1,9 @@
 <template>
-  <content-card class="zone-notifications">
-    <notifications-table overview-page :force-query="forceQuery"/>
-  </content-card>
+  <v-card class="zone-notifications" :style="props.style" :class="props.class">
+    <notifications-table overview-page :force-query="forceQuery" v-bind="$attrs"/>
+  </v-card>
 </template>
 <script setup>
-import ContentCard from '@/components/ContentCard.vue';
 import NotificationsTable from '@/routes/ops/notifications/NotificationsTable.vue';
 import {computed} from 'vue';
 
@@ -17,7 +16,18 @@ const props = defineProps({
   zone: {
     type: String,
     default: ''
+  },
+  style: {
+    type: [String, Object, Array],
+    default: ''
+  },
+  class: {
+    type: [String, Object, Array],
+    default: ''
   }
+});
+defineOptions({
+  inheritAttrs: false
 });
 
 const forceQuery = computed(() => {

@@ -24,7 +24,7 @@ func main() {
 		tlsConfig := &tls.Config{
 			InsecureSkipVerify: true,
 		}
-		conn, err := grpc.Dial("localhost:23557", grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+		conn, err := grpc.NewClient("localhost:23557", grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 		if err != nil {
 			return 0, err
 		}

@@ -24,7 +24,6 @@ type factory struct{}
 func (f factory) New(services driver.Services) service.Lifecycle {
 	d := &Driver{
 		services:  services,
-		clients:   services.Node,
 		announcer: node.NewReplaceAnnouncer(services.Node),
 		logger:    services.Logger.Named("settings"),
 	}
@@ -35,7 +34,6 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 type Driver struct {
 	*service.Service[config.Root]
 	services  driver.Services
-	clients   node.Clienter
 	announcer *node.ReplaceAnnouncer
 
 	logger *zap.Logger

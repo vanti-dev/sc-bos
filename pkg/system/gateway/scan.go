@@ -233,9 +233,9 @@ func (s *System) pullEnrolledNodes(ctx context.Context, hubClient gen.HubApiClie
 			nodeCtx, stop := context.WithCancel(ctx)
 			stops = append(stops, stop)
 
-			conn, err := grpc.DialContext(nodeCtx, node.Address, grpc.WithTransportCredentials(credentials.NewTLS(s.tlsConfig)))
+			conn, err := grpc.NewClient(node.Address, grpc.WithTransportCredentials(credentials.NewTLS(s.tlsConfig)))
 			if err != nil {
-				// An error here means there's something wrong with the params we passed to grpc.DialContext.
+				// An error here means there's something wrong with the params we passed to grpc.NewClient.
 				// It's unlikely that retrying will help, so skip this node and log an error.
 				s.logger.Error("failed to dial remote node", zap.String("address", node.Address), zap.Error(err))
 				stopAll()

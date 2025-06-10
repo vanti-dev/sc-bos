@@ -17,21 +17,43 @@ import (
 
 //go:generate protomod protoc -- -I . -I ../../../proto --go_out=paths=source_relative:. historypb_page.proto
 
-func newPageReader[R proto.Message](decodePayload func(r history.Record) (R, error)) pageReader[R] {
-	return pageReader[R]{
+// NewPageReader returns a new PageReader capable of reading pages from a history.Store.
+func NewPageReader[R proto.Message](decodePayload func(r history.Record) (R, error)) PageReader[R] {
+	return PageReader[R]{
 		DefaultPageSize: 50,
 		MaxPageSize:     1000,
 		DecodePayload:   decodePayload,
 	}
 }
 
-type pageReader[R proto.Message] struct {
+// PageReader reads and decodes pages from a history.Store.
+// The PageReader handles pagination, page tokens, and ordering.
+type PageReader[R proto.Message] struct {
 	DefaultPageSize, MaxPageSize int
 
 	DecodePayload func(r history.Record) (R, error)
+	OrderByParser func(s string) OrderBy // defaults to parseOrderBy
 }
 
-func (pr pageReader[R]) listRecords(ctx context.Context, store history.Store, period *timepb.Period, pageSize int, pageToken, orderBy string) (page []R, totalSize int, nextPageToken string, err error) {
+type OrderBy string
+
+const (
+	OrderByTimeAsc  OrderBy = "time asc"
+	OrderByTimeDesc OrderBy = "time desc"
+)
+
+// ListRecords returns a page of records from the store between the given period.
+// See ListRecordsBetween for more details.
+func (pr PageReader[R]) ListRecords(ctx context.Context, store history.Store, period *timepb.Period, pageSize int, pageToken, orderBy string) (page []R, totalSize int, nextPageToken string, err error) {
+	from, to := periodToRecords(period)
+	return pr.ListRecordsBetween(ctx, store, from, to, pageSize, pageToken, orderBy)
+}
+
+// ListRecordsBetween returns a page of records from the store between the given from and to records.
+// The page size and ordering will be honoured.
+// Retrieve subsequent pages by passing a previously returned page token.
+// The orderBy string must be parsable by the OrderByParser function, typically a parser for strings like "record_time asc".
+func (pr PageReader[R]) ListRecordsBetween(ctx context.Context, store history.Store, from, to history.Record, pageSize int, pageToken, orderBy string) (page []R, totalSize int, nextPageToken string, err error) {
 	if pageSize == 0 {
 		pageSize = pr.DefaultPageSize
 	}
@@ -44,7 +66,6 @@ func (pr pageReader[R]) listRecords(ctx context.Context, store history.Store, pe
 		return nil, 0, "", status.Error(codes.InvalidArgument, "invalid page token")
 	}
 
-	from, to := periodToRecords(period)
 	slice := store.Slice(from, to)
 	totalSize = int(tokenPb.TotalSize)
 	if totalSize == 0 {
@@ -55,7 +76,11 @@ func (pr pageReader[R]) listRecords(ctx context.Context, store history.Store, pe
 		}
 	}
 
-	reader, pager, nexter, err := parseOrderBy(orderBy)
+	parseOrderBy := parseOrderBy
+	if pr.OrderByParser != nil {
+		parseOrderBy = pr.OrderByParser
+	}
+	reader, pager, nexter, err := orderByFuncs(parseOrderBy(orderBy))
 	if err != nil {
 		return nil, 0, "", err
 	}
@@ -138,17 +163,27 @@ type (
 	sliceNextFunc  = func(all []history.Record) history.Record
 )
 
-func parseOrderBy(orderBy string) (sliceReadFunc, slicePagerFunc, sliceNextFunc, error) {
-	// very simple parsing for now as we only support one field
-	orderBy = strings.ToLower(orderBy)
-	orderBy = strings.Join(strings.Fields(orderBy), " ") // normalize spaces
-	switch orderBy {
+func parseOrderBy(s string) OrderBy {
+	sn := strings.ToLower(s)
+	sn = strings.Join(strings.Fields(sn), " ") // normalize spaces
+	switch sn {
 	case "", "recordtime", "recordtime asc", "record_time", "record_time asc":
-		return history.Slice.Read, ascPager, ascNext, nil
+		return OrderByTimeAsc
 	case "recordtime desc", "record_time desc":
+		return OrderByTimeDesc
+	default:
+		return OrderBy(s)
+	}
+}
+
+func orderByFuncs(orderBy OrderBy) (sliceReadFunc, slicePagerFunc, sliceNextFunc, error) {
+	switch orderBy {
+	case OrderByTimeAsc:
+		return history.Slice.Read, ascPager, ascNext, nil
+	case OrderByTimeDesc:
 		return history.Slice.ReadDesc, descPager, descNext, nil
 	default:
-		return nil, nil, nil, status.Error(codes.InvalidArgument, "invalid order by")
+		return nil, nil, nil, status.Errorf(codes.InvalidArgument, "invalid order by %q", orderBy)
 	}
 }
 

@@ -12,7 +12,7 @@ import {nextTick} from 'vue';
 import {createRouter, createWebHistory} from 'vue-router';
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/login',
@@ -114,8 +114,19 @@ if (window) {
     if (nt === ot) {
       return;
     }
-
-    const title = nt ? `${nt} - Smart Core` : `Smart Core`;
+    const titleParts = [];
+    const prefix = import.meta.env.VITE_PAGE_TITLE_PREFIX || '';
+    if (prefix) {
+      titleParts.push(prefix);
+    }
+    if (nt) {
+      titleParts.push(nt);
+    }
+    const suffix = import.meta.env.VITE_PAGE_TITLE_SUFFIX || 'Smart Core';
+    if (suffix) {
+      titleParts.push(suffix);
+    }
+    const title = titleParts.join(' - ');
     // noinspection JSIgnoredPromiseFromCall
     nextTick(() => window.document.title = title);
   });

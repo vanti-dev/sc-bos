@@ -1,69 +1,67 @@
 <template>
-  <v-menu
-      location="bottom left"
-      :close-on-content-click="false"
-      content-class="elevation-0"
-      max-height="600px"
-      max-width="550px"
-      min-width="400px">
-    <template #activator="{props}">
-      <v-btn
-          class="py-1 px-3 mr-0"
-          variant="text"
-          v-bind="props">
-        <span class="text-title mr-1">Smart Core OS:</span>
-        <span :class="`text-title-bold text-uppercase text-${overallStatus.color}`">
-          {{ overallStatus.text }}
-        </span>
-      </v-btn>
-    </template>
+  <v-btn
+      class="py-1 px-3 mr-0"
+      variant="text">
+    <span class="mr-1">Smart Core OS:</span>
+    <span class="font-weight-bold" :class="`text-${overallStatus.color}`">
+      {{ overallStatus.text }}
+    </span>
 
-    <v-card class="elevation-0 mt-4 py-1" min-width="400px">
-      <v-card-title class="text-subtitle-1 d-flex align-center">
-        Smart Core OS Status
-        <span
-            class="ml-2 font-weight-light"
-            style="font-size: 10px; cursor: pointer"
-            @click="showLastCheckTime = !showLastCheckTime">
-          {{ checkStatusStr }}
-        </span>
-        <v-spacer/>
-        <v-tooltip location="left">
-          <template #activator="{ props }">
-            <v-btn
-                v-bind="props"
-                :class="['mb-0', {'rotate-icon': rotateCheckIcon}]"
-                icon="mdi-reload"
-                variant="flat"
-                size="x-small"
-                style="padding-left: 1px; font-size: 12px"
-                @click="checkHealthNow"/>
-          </template>
-          <div class="d-flex flex-column">
-            <span>Check Now</span>
-          </div>
-        </v-tooltip>
-      </v-card-title>
-      <v-card-text class="d-flex align-center justify-center">
-        <v-defaults-provider :defaults="{
-          VChip: {variant: 'flat', size: 'small'},
-          VDivider: {class: 'mx-2', style: 'width: 10px; max-width: 10px;'},
-          VProgressCircular: {size: 22, indeterminate: true}
-        }">
-          <v-chip color="neutral-lighten-1">UI</v-chip>
-          <template v-for="link in chain" :key="link.node.name">
-            <v-divider/>
-            <v-progress-circular v-if="link.health.pending"/>
-            <status-alert
-                v-else
-                v-bind="link.statusAttrs"/>
-            <v-divider/>
-            <v-chip v-bind="link.chipAttrs"/>
-          </template>
-        </v-defaults-provider>
-      </v-card-text>
-    </v-card>
-  </v-menu>
+    <v-menu
+        activator="parent"
+        location="bottom left"
+        :close-on-content-click="false"
+        content-class="elevation-0"
+        max-height="600px"
+        max-width="550px"
+        min-width="400px">
+      <v-card class="elevation-0 mt-4 py-1" min-width="400px">
+        <v-card-title class="text-subtitle-1 d-flex align-center">
+          Smart Core OS Status
+          <span
+              class="ml-2 font-weight-light"
+              style="font-size: 10px; cursor: pointer"
+              @click="showLastCheckTime = !showLastCheckTime">
+            {{ checkStatusStr }}
+          </span>
+          <v-spacer/>
+          <v-tooltip location="left">
+            <template #activator="{ props }">
+              <v-btn
+                  v-bind="props"
+                  :class="['mb-0', {'rotate-icon': rotateCheckIcon}]"
+                  icon="mdi-reload"
+                  variant="flat"
+                  size="x-small"
+                  style="padding-left: 1px; font-size: 12px"
+                  @click="checkHealthNow"/>
+            </template>
+            <div class="d-flex flex-column">
+              <span>Check Now</span>
+            </div>
+          </v-tooltip>
+        </v-card-title>
+        <v-card-text class="d-flex align-center justify-center">
+          <v-defaults-provider :defaults="{
+            VChip: {variant: 'flat', size: 'small'},
+            VDivider: {class: 'mx-2', style: 'width: 10px; max-width: 10px;'},
+            VProgressCircular: {size: 22, indeterminate: true}
+          }">
+            <v-chip color="neutral-lighten-1">UI</v-chip>
+            <template v-for="link in chain" :key="link.node.name">
+              <v-divider/>
+              <v-progress-circular v-if="link.health.pending"/>
+              <status-alert
+                  v-else
+                  v-bind="link.statusAttrs"/>
+              <v-divider/>
+              <v-chip v-bind="link.chipAttrs"/>
+            </template>
+          </v-defaults-provider>
+        </v-card-text>
+      </v-card>
+    </v-menu>
+  </v-btn>
 </template>
 
 <script setup>

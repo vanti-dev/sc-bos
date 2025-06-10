@@ -1,7 +1,7 @@
 import {SECOND} from '@/components/now';
 import {useUiConfigStore} from '@/stores/ui-config';
 import {loadFromBrowserStorage, saveToBrowserStorage} from '@/util/browserStorage';
-import jwtDecode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import {computed, ref, toValue, watch} from 'vue';
 
 

@@ -10,10 +10,12 @@
         </v-tooltip>
       </template>
       <span v-else class="value">{{ props.peopleCount }}</span>
-      <span class="div">/</span>
-      <span class="total">{{ props.maxOccupancy }}</span>
+      <template v-if="maxOccupancy > 0">
+        <span class="div">/</span>
+        <span class="total">{{ props.maxOccupancy }}</span>
+      </template>
     </span>
-    <span class="ml-5 text-right" style="min-width: 2.5em">
+    <span v-if="maxOccupancy > 0" class="ml-5 text-right" style="min-width: 2.5em">
       <span class="value">{{ occupancyPercentageDisplay }}</span>
       <span class="unit">%</span>
     </span>

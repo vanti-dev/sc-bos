@@ -6675,7 +6675,9 @@ proto.smartcore.bos.Role.toObject = function(includeInstance, msg) {
 id: jspb.Message.getFieldWithDefault(msg, 1, ""),
 displayName: jspb.Message.getFieldWithDefault(msg, 2, ""),
 description: jspb.Message.getFieldWithDefault(msg, 3, ""),
-permissionIdsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
+permissionIdsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
+legacyRoleName: jspb.Message.getFieldWithDefault(msg, 5, ""),
+pb_protected: jspb.Message.getBooleanFieldWithDefault(msg, 7, false)
   };
 
   if (includeInstance) {
@@ -6727,6 +6729,14 @@ proto.smartcore.bos.Role.deserializeBinaryFromReader = function(msg, reader) {
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.addPermissionIds(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setLegacyRoleName(value);
+      break;
+    case 7:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setProtected(value);
       break;
     default:
       reader.skipField();
@@ -6782,6 +6792,20 @@ proto.smartcore.bos.Role.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeRepeatedString(
       4,
+      f
+    );
+  }
+  f = message.getLegacyRoleName();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
+      f
+    );
+  }
+  f = message.getProtected();
+  if (f) {
+    writer.writeBool(
+      7,
       f
     );
   }
@@ -6876,6 +6900,42 @@ proto.smartcore.bos.Role.prototype.addPermissionIds = function(value, opt_index)
  */
 proto.smartcore.bos.Role.prototype.clearPermissionIdsList = function() {
   return this.setPermissionIdsList([]);
+};
+
+
+/**
+ * optional string legacy_role_name = 5;
+ * @return {string}
+ */
+proto.smartcore.bos.Role.prototype.getLegacyRoleName = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Role} returns this
+ */
+proto.smartcore.bos.Role.prototype.setLegacyRoleName = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional bool protected = 7;
+ * @return {boolean}
+ */
+proto.smartcore.bos.Role.prototype.getProtected = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 7, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.smartcore.bos.Role} returns this
+ */
+proto.smartcore.bos.Role.prototype.setProtected = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 7, value);
 };
 
 

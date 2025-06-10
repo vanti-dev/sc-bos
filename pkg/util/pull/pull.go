@@ -148,8 +148,6 @@ func runBlocking(ctx context.Context, name string, task Getter, conf changeOpts,
 	// These are used to track successful pulls.
 	// The task method itself blocks until error so we have to track separately for success,
 	// mostly for peace of mind and logging.
-	var taskDuration time.Duration
-	const successfulMultiplier = 10
 	successTimer := conf.clock.AfterFunc(math.MaxInt64, func() {
 		attempts := resetErr()
 		if attempts > 5 { // we only log failure after 5 attempts
@@ -160,9 +158,8 @@ func runBlocking(ctx context.Context, name string, task Getter, conf changeOpts,
 	defer successTimer.Stop()
 
 	for {
-		t0 := conf.clock.Now()
-		err := task(ctx) // blocks
-		taskDuration = conf.clock.Since(t0)
+		successTimer.Reset(15 * time.Second) // arbitrary, but it's for logging only. Tasks should fail quicker than this.
+		err := task(ctx)                     // blocks
 		successTimer.Stop()
 
 		if shouldReturn(err) || fatal(err) {
@@ -170,9 +167,8 @@ func runBlocking(ctx context.Context, name string, task Getter, conf changeOpts,
 		}
 		if err != nil {
 			errCount := incErr()
-			successTimer.Reset(taskDuration * successfulMultiplier)
 			if errCount == 5 {
-				conf.logger.Warn(name+" are failing, will keep retrying", zap.Error(err), zap.Duration("duration", taskDuration))
+				conf.logger.Warn(name+" are failing, will keep retrying", zap.Error(err))
 			}
 		} else {
 			// A nil error means the task stopped successfully, this is unusual as it should block forever, but not technically an error.

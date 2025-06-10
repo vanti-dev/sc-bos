@@ -27,7 +27,7 @@ func main() {
 	defer realServer.Stop()
 
 	log.Printf("Real server hosted on %v", realLis.Addr())
-	realConn, err := grpc.Dial(realLis.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	realConn, err := grpc.NewClient(realLis.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -48,7 +48,7 @@ func main() {
 	defer proxyServer.Stop()
 
 	log.Printf("Proxy server hosted on %v", proxyLis.Addr())
-	proxyConn, err := grpc.Dial(proxyLis.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	proxyConn, err := grpc.NewClient(proxyLis.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	client := traits.NewOnOffApiClient(proxyConn)
 	test, err := client.GetOnOff(context.Background(), &traits.GetOnOffRequest{})
 	if err != nil {

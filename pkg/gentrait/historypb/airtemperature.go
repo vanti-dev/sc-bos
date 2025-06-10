@@ -29,7 +29,7 @@ func (m *AirTemperatureServer) Unwrap() any {
 	return m.store
 }
 
-var airTemperatureReadingPager = newPageReader(func(r history.Record) (*gen.AirTemperatureRecord, error) {
+var airTemperatureReadingPager = NewPageReader(func(r history.Record) (*gen.AirTemperatureRecord, error) {
 	v := &traits.AirTemperature{}
 	err := proto.Unmarshal(r.Payload, v)
 	if err != nil {
@@ -42,7 +42,7 @@ var airTemperatureReadingPager = newPageReader(func(r history.Record) (*gen.AirT
 })
 
 func (m *AirTemperatureServer) ListAirTemperatureHistory(ctx context.Context, request *gen.ListAirTemperatureHistoryRequest) (*gen.ListAirTemperatureHistoryResponse, error) {
-	page, size, nextToken, err := airTemperatureReadingPager.listRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
+	page, size, nextToken, err := airTemperatureReadingPager.ListRecords(ctx, m.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
 	}

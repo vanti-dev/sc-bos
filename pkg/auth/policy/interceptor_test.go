@@ -45,7 +45,7 @@ func TestInterceptor_GRPC(t *testing.T) {
 	})
 
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, "",
+	conn, err := grpc.NewClient("localhost:0",
 		grpc.WithContextDialer(func(ctx context.Context, s string) (net.Conn, error) {
 			return lis.DialContext(ctx)
 		}),
