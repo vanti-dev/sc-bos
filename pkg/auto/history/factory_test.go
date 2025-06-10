@@ -105,7 +105,7 @@ func Test_automation_applyConfig(t *testing.T) {
 	}
 
 	// many events to each model server
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		if _, err := occupancy.SetOccupancy(&traits.Occupancy{
 			State:       traits.Occupancy_OCCUPIED,
 			PeopleCount: int32(rand.Intn(10)),

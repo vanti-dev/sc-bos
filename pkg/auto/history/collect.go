@@ -16,14 +16,11 @@ type getter func(context.Context, chan<- []byte) error
 
 func collectChanges(ctx context.Context, cfg config.Source, pullFn, pollFn getter, changes chan<- []byte, logger *zap.Logger) error {
 	if cfg.PollingSchedule != nil {
-		var t time.Time
-
 		for {
-			t = time.Now()
 			select {
 			case <-ctx.Done():
 				return nil
-			case <-time.After(time.Until(cfg.PollingSchedule.Schedule.Next(t))):
+			case <-time.After(time.Until(cfg.PollingSchedule.Schedule.Next(time.Now()))):
 				err := pollFn(ctx, changes)
 				if err != nil {
 					logger.Warn("poll aborted", zap.Error(err))
