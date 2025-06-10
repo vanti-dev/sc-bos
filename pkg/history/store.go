@@ -12,6 +12,7 @@ import (
 type Store interface {
 	// Append adds the given payload to the store, returning the Record as recorded.
 	// The context can be used to abort the append operation if needed.
+	// If the payload is nil, an error is returned and nothing is inserted.
 	Append(ctx context.Context, payload []byte) (Record, error)
 	Slice
 }
