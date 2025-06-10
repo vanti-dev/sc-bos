@@ -1,16 +1,50 @@
 # Dockerfile for sc-bos with the vanti ugs config
-# Run yarn run build in ui/ops first
-# Otherwise we have to mess around with access tokens to grab our NPM packages
+# This is based on the image built by the Dockerfile in the root of the repository.
+# This dockerfile assumes it is being build using context from the root of the repository.
+
+# The next bit is copied from the Dockerfile in the root of the repository.
+# We'd like to reuse it and base our changes on the original image,
+# but a bug in podman prevents us from doing that.
+# See https://github.com/containers/podman/issues/25913
+
+# START COPIED SECTION
+# Dockerfile for sc-bos
+# This dockerfile performs the entire build itself.
+# To enable fetching of private dependencies, an npmrc file must be be injected using a secret.
 #
+# To build, assuming your .npmrc is set up on your machine, run:
+#     docker/podman build --secret=id=npmrc,src=$HOME/.npmrc .
 
-FROM golang:1.23-alpine
+FROM --platform=$BUILDPLATFORM node:22 AS build_ui
 
-COPY ui/ops/dist /static
-RUN mkdir /cfg
-COPY demo/vanti-ugs/app.conf.json /cfg
-COPY demo/vanti-ugs/system.conf.json /cfg
-COPY demo/vanti-ugs/ui-config.json /cfg
-COPY demo/vanti-ugs/assets /cfg/assets
+WORKDIR /src
+
+ENV YARN_CACHE_FOLDER=/yarn-cache
+
+# All we need to run the install command
+COPY ui/package.json ui/yarn.lock ui/.npmrc ./
+COPY ui/ops/package.json ./ops/
+COPY ui/panzoom-package/package.json ./panzoom-package/
+COPY ui/space/package.json ./space/
+COPY ui/ui-gen/package.json ./ui-gen/
+RUN --mount=type=cache,target=/yarn-cache \
+    --mount=type=secret,id=npmrc,required=true,target=$HOME/.npmrc \
+    yarn install --frozen-lockfile --check-files
+
+COPY ui/ops ./ops/
+COPY ui/panzoom-package ./panzoom-package/
+COPY ui/ui-gen ./ui-gen/
+ARG GIT_VERSION="(unknown)"
+ENV GIT_VERSION=$GIT_VERSION
+WORKDIR ops
+RUN yarn run build
+
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine3.22 AS build_go
+
+RUN apk add --no-cache git
+
+WORKDIR /src
+
 COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download -x
@@ -18,12 +52,43 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 COPY cmd ./cmd/
 COPY internal ./internal/
 COPY pkg ./pkg/
-RUN mkdir -p /data/secrets
-RUN echo "" >> /data/secrets/postgres-password
-RUN go build -o /app/sc-bos ./cmd/bos
 
-EXPOSE 8443
+# set by the build engine
+ARG TARGETARCH
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+ENV GOARCH=$TARGETARCH
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go build -o sc-bos ./cmd/bos
+
+FROM alpine:3.22
+LABEL vendor="Vanti Ltd"
+
+COPY --from=build_go /src/sc-bos /app/
+COPY --from=build_ui /src/ops/dist /app/ops-ui/
+COPY default/cfg/ /cfg/
+COPY default/ui-config/ /app/ui-config/
+
+EXPOSE 443
 EXPOSE 23557
 EXPOSE 7000-7999
+
+VOLUME ["/cfg", "/data"]
+
+ENTRYPOINT ["/app/sc-bos", "--appconf=/cfg/app.conf.json", "--sysconf=/cfg/system.conf.json", "--data=/data"]
+
+# END COPIED SECTION
+
+# Image built using the Dockerfile in the root of the repository
+# FROM localhost/vanti-dev-sc-bos:demo-ugs-base
+
+# The demo db is unauthenticated, so we don't need a password. Still need the file though.
+RUN mkdir -p /data/secrets
+RUN echo "" >> /data/secrets/postgres-password
+# Files will be relative to the repository root
+COPY example/config/vanti-ugs/ /cfg/
+# Special system conf for the container env
+COPY demo/vanti-ugs/system.conf.json /cfg/system.conf.json
+EXPOSE 8443
 
 ENTRYPOINT ["/app/sc-bos", "--policy-mode=check", "--appconf=/cfg/app.conf.json", "--sysconf=/cfg/system.conf.json", "--data=/data"]
