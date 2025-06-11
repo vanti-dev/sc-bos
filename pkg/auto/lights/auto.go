@@ -239,16 +239,16 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			retryReason = "ttl"
 		}
 
-		if b.processComplete != nil {
-			b.processComplete(ttl, err, readState, writeState) // used only for testing
-		}
-
 		// Setup ttl for the transformed model.
 		// After this time it should be recalculated.
 		retry, cancelRetry = b.newTimer(ttl)
 
 		// log side effects and why they were made
 		logProcessComplete(b.logger, readState, writeState, actionCounts, duration, ttl, err)
+
+		if b.processComplete != nil {
+			b.processComplete(ttl, err, readState, writeState) // used only for testing
+		}
 
 		return nil
 	}

@@ -991,7 +991,7 @@ type testActions struct {
 	calls    []any
 	nextCall int // updated via assertNextCall
 
-	err error // intercept this to force return an error
+	err map[string]error
 
 	brightnessCalls []*traits.UpdateBrightnessRequest
 }
@@ -1026,10 +1026,34 @@ func (ta *testActions) assertNextCall(req any) {
 	}
 }
 
-func (ta *testActions) nextCallReturnsError(err error) {
+func (ta *testActions) assertNextBrightnessUpdates(level float32, names ...string) {
+	ta.t.Helper()
+	if len(names) == 0 {
+		ta.t.Fatal("assertNextBrightnessUpdates called with no names")
+	}
+
+	for _, name := range names {
+		ta.assertNextCall(&traits.UpdateBrightnessRequest{
+			Name:       name,
+			Brightness: &traits.Brightness{LevelPercent: level},
+		})
+	}
+}
+
+func (ta *testActions) nextCallReturnsError(err error, names ...string) {
+	ta.t.Helper()
+	if len(names) == 0 {
+		ta.t.Fatal("nextCallReturnsError called with no names")
+	}
+
 	ta.m.Lock()
 	defer ta.m.Unlock()
-	ta.err = err
+	if ta.err == nil {
+		ta.err = make(map[string]error)
+	}
+	for _, name := range names {
+		ta.err[name] = err
+	}
 }
 
 func (ta *testActions) UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error {
@@ -1037,10 +1061,9 @@ func (ta *testActions) UpdateBrightness(ctx context.Context, now time.Time, req 
 	defer ta.m.Unlock()
 	ta.calls = append(ta.calls, req)
 	ta.brightnessCalls = append(ta.brightnessCalls, req)
-	var err error
-	if ta.err != nil {
-		err = ta.err
-		ta.err = nil
+	err := ta.err[req.Name]
+	if err != nil {
+		delete(ta.err, req.Name)
 
 		return err
 	}
