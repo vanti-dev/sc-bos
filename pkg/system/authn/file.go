@@ -51,10 +51,8 @@ func loadFileIdentities(idConfig *config.Identities, dataDirs []string, defaultF
 	return ids, nil
 }
 
-// newStaticVerifier returns a accesstoken.Verifier that checks credentials against those found. Creds are loaded from the
-// JSON files that match `defaultFilename` in the `dataDirs` directory list and combined. No checks are made for
-// duplicate IDs either within the same file or across multiple files. If no files are found then a accesstoken.NeverVerify
-// verifier is returned.
+// newStaticVerifier returns a accesstoken.Verifier that checks credentials against the identities provided. No checks
+// are made to prevent duplicate IDs. If ids is empty, a accesstoken.NeverVerify verifier is returned.
 func newStaticVerifier(ids []config.Identity) (accesstoken.Verifier, error) {
 	if len(ids) == 0 {
 		return accesstoken.NeverVerify(errors.New("no local accounts")), nil
