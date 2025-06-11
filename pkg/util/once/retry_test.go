@@ -29,10 +29,10 @@ func TestRetryError(t *testing.T) {
 		once := new(RetryError)
 		c := make(chan bool)
 		const N = 10
-		for i := 0; i < N; i++ {
+		for range N {
 			go run(t, once, o, c)
 		}
-		for i := 0; i < N; i++ {
+		for range N {
 			<-c
 		}
 		if *o != 1 {

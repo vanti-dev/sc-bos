@@ -14,7 +14,7 @@ func TestCompare(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			for i := 0; i < 5; i++ {
+			for range 5 {
 				hash, err := Hash([]byte(tt.secret))
 				if err != nil {
 					t.Errorf("hash failed %v", err)

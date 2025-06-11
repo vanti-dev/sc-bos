@@ -215,7 +215,7 @@ func readAllObjectProps(ctx context.Context, client *gobacnet.Client, dev bactyp
 	resultsChan := make(chan *result, len(cfgObjects))
 	var jobsComplete sync.WaitGroup
 	jobsComplete.Add(concurrency)
-	for i := 0; i < concurrency; i++ {
+	for range concurrency {
 		go func() {
 			defer jobsComplete.Done()
 			worker(jobs, resultsChan)
