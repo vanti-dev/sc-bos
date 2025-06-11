@@ -85,17 +85,19 @@ func importIdentities(ctx context.Context, accounts *account.Store, ids []config
 	err := accounts.Write(ctx, func(tx *account.Tx) error {
 		legacyRoleIDs := make(map[string]int64)
 
+		skipCount := 0
+		importCount := 0
 		for _, id := range ids {
 			logger := logger.With(zap.String("username", id.ID))
 			_, err := tx.GetAccountByUsername(ctx, id.ID)
 			if err == nil {
 				// skip import if the account already exists
-				logger.Debug("skipping import of existing user account")
+				skipCount++
 				continue
 			} else if !errors.Is(err, sql.ErrNoRows) {
+				// any other error implies a problem with the database
 				return fmt.Errorf("failed to check if account %q exists: %w", id.ID, err)
 			}
-			logger.Info("importing user account from file into database")
 
 			// create a new user account
 			created, err := tx.CreateAccount(ctx, queries.CreateAccountParams{
@@ -108,8 +110,6 @@ func importIdentities(ctx context.Context, accounts *account.Store, ids []config
 
 			var passwordHash []byte
 			switch len(id.Secrets) {
-			case 0:
-				logger.Debug("importing user account with no password")
 			case 1:
 				passwordHash = []byte(id.Secrets[0].Hash)
 			default:
@@ -150,6 +150,13 @@ func importIdentities(ctx context.Context, accounts *account.Store, ids []config
 					return fmt.Errorf("failed to add legacy role %q to user account %q: %w", legacyRole, id.ID, err)
 				}
 			}
+			importCount++
+		}
+		if importCount > 0 {
+			logger.Info("imported user accounts from file into database",
+				zap.Int("imported", importCount),
+				zap.Int("skipped", skipCount),
+			)
 		}
 		return nil
 	})
