@@ -110,6 +110,8 @@ func importIdentities(ctx context.Context, accounts *account.Store, ids []config
 
 			var passwordHash []byte
 			switch len(id.Secrets) {
+			case 0:
+				// no hash to import, user will not be able to log in until a password is set
 			case 1:
 				passwordHash = []byte(id.Secrets[0].Hash)
 			default:
