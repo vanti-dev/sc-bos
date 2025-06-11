@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/olebedev/emitter"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -32,7 +31,8 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	now := time.Unix(0, 0)
 
-	automation := PirsTurnLightsOn(rootNode, zap.NewNop())
+	logger, _ := zap.NewDevelopment() // the test is sometimes failing, this might help with debugging
+	automation := PirsTurnLightsOn(rootNode, logger)
 	automation.makeActions = func(_ node.ClientConner) actions { return testActions }
 	automation.autoStartTime = now
 
@@ -48,6 +48,38 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		return tickChan, func() bool { return true }
 	}
 
+	type processCompleteEvent struct {
+		ttl        time.Duration
+		err        error
+		readState  *ReadState
+		writeState *WriteState
+	}
+	processCompleteC := make(chan processCompleteEvent)
+	automation.processComplete = func(ttl time.Duration, err error, readState *ReadState, writeState *WriteState) {
+		processCompleteC <- processCompleteEvent{
+			ttl:        ttl,
+			err:        err,
+			readState:  readState,
+			writeState: writeState,
+		}
+	}
+	const stateWaitTime = 10 * time.Second
+	waitForState := func(test func(state *ReadState) bool) (time.Duration, error) {
+		t.Helper()
+		timeout := time.NewTimer(stateWaitTime)
+		for {
+			select {
+			case <-timeout.C:
+				t.Fatalf("timeout waiting for state")
+				return 0, nil
+			case e := <-processCompleteC:
+				if test(e.readState) {
+					return e.ttl, e.err
+				}
+			}
+		}
+	}
+
 	if err := automation.Start(context.Background()); err != nil {
 		t.Fatalf("Start: %v", err)
 	}
@@ -56,33 +88,11 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		t.Fatalf("Configure: %v", err)
 	}
 
-	processComplete := automation.bus.On("process-complete", emitter.Sync)
-	const stateWaitTime = time.Second
-	waitForState := func(wait time.Duration, test func(state *ReadState) bool) (time.Duration, error) {
-		t.Helper()
-		timeout := time.NewTimer(wait)
-		for {
-			select {
-			case <-timeout.C:
-				t.Fatalf("timeout waiting for state")
-				return 0, nil
-			case e := <-processComplete:
-				state := e.Args[2].(*ReadState)
-				if test(state) {
-					if e.Args[1] == nil {
-						return e.Args[0].(time.Duration), nil
-					}
-					return e.Args[0].(time.Duration), e.Args[1].(error)
-				}
-			}
-		}
-	}
-
 	// check setting occupied on one PIR causes the lights to come on
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
 	// DEAR FUTURE DEV, if you get test failures here it's probably because you're missing a case in the
 	// clients switch statement above
-	ttl, err := waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err := waitForState(func(state *ReadState) bool {
 		o, ok := state.Occupancy["pir01"]
 		if !ok {
 			return false
@@ -106,7 +116,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	// check that setting occupied on the other PIR does nothing
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o, ok := state.Occupancy["pir02"]
 		if !ok {
 			return false
@@ -119,7 +129,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// check that making both PIRs unoccupied doesn't do anything, but then does
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-3 * time.Minute))})
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-8 * time.Minute))})
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		o02, ok02 := state.Occupancy["pir02"]
 		if !ok01 || !ok02 {
@@ -136,7 +146,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// trigger the timer
 	now = now.Add(7 * time.Minute)
 	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		return true // no state change, only time change
 	})
 	assertNoErrAndTtl(t, ttl, err, cfg.RefreshEvery.Duration)
@@ -154,9 +164,9 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	})
 
 	// test 1 retry
-	testActions.err = errFailedBrightnessUpdate
+	testActions.nextCallReturnsError(errFailedBrightnessUpdate)
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -181,7 +191,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// since newTimer is intercepted by this test, we force a replay here
 	now = now.Add(time.Millisecond * 500)
 	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -202,7 +212,7 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
 	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		o02, ok02 := state.Occupancy["pir02"]
 		if !ok01 || !ok02 {
@@ -224,9 +234,9 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		},
 	})
 
-	testActions.err = errFailedBrightnessUpdate
+	testActions.nextCallReturnsError(errFailedBrightnessUpdate)
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -249,16 +259,12 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	})
 
 	// second try
-	testActions.err = errFailedBrightnessUpdate
+	testActions.nextCallReturnsError(errFailedBrightnessUpdate)
 	// since newTimer is intercepted by this test, we force a replay here
 	now = now.Add(time.Millisecond * 500)
 	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
-		o01, ok01 := state.Occupancy["pir01"]
-		if !ok01 {
-			return false
-		}
-		return o01.State == traits.Occupancy_OCCUPIED
+	ttl, err = waitForState(func(state *ReadState) bool {
+		return true // no state change, only time change
 	})
 	assertErrorAndTtl(t, ttl, err, 2*cfg.OnProcessError.BackOffMultiplier.Duration*(8/10), errFailedBrightnessUpdate)
 	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
@@ -270,16 +276,12 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	// light02 was caught by the cache
 
 	// third try and is cancelled
-	testActions.err = errFailedBrightnessUpdate
+	testActions.nextCallReturnsError(errFailedBrightnessUpdate)
 	// since newTimer is intercepted by this test, we force a replay here
 	now = now.Add(time.Millisecond * 500)
 	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
-		o01, ok01 := state.Occupancy["pir01"]
-		if !ok01 {
-			return false
-		}
-		return o01.State == traits.Occupancy_OCCUPIED
+	ttl, err = waitForState(func(state *ReadState) bool {
+		return true // no state change, only time change
 	})
 	assertErrorAndTtl(t, ttl, err, -time.Nanosecond, errFailedBrightnessUpdate)
 	testActions.assertNextCall(&traits.UpdateBrightnessRequest{

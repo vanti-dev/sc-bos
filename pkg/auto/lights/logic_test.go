@@ -1026,6 +1026,12 @@ func (ta *testActions) assertNextCall(req any) {
 	}
 }
 
+func (ta *testActions) nextCallReturnsError(err error) {
+	ta.m.Lock()
+	defer ta.m.Unlock()
+	ta.err = err
+}
+
 func (ta *testActions) UpdateBrightness(ctx context.Context, now time.Time, req *traits.UpdateBrightnessRequest, state *WriteState) error {
 	ta.m.Lock()
 	defer ta.m.Unlock()

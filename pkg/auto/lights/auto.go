@@ -23,9 +23,10 @@ type BrightnessAutomation struct {
 	// bus emits "stop" and "config" events triggered by Stop and Configure.
 	bus *emitter.Emitter
 
-	makeActions   func(clientConn node.ClientConner) actions                   // override for testing
-	newTimer      func(duration time.Duration) (<-chan time.Time, func() bool) // override for testing
-	autoStartTime time.Time                                                    // override for testing
+	makeActions     func(clientConn node.ClientConner) actions                                       // override for testing
+	newTimer        func(duration time.Duration) (<-chan time.Time, func() bool)                     // override for testing
+	autoStartTime   time.Time                                                                        // override for testing
+	processComplete func(ttl time.Duration, err error, readState *ReadState, writeState *WriteState) // override for testing
 }
 
 // PirsTurnLightsOn creates an automation that controls light brightness based on PIR occupancy status.
@@ -238,7 +239,9 @@ func (b *BrightnessAutomation) processStateChanges(ctx context.Context, readStat
 			retryReason = "ttl"
 		}
 
-		b.bus.Emit("process-complete", ttl, err, readState, writeState) // used only for testing, notify that processing has completed
+		if b.processComplete != nil {
+			b.processComplete(ttl, err, readState, writeState) // used only for testing
+		}
 
 		// Setup ttl for the transformed model.
 		// After this time it should be recalculated.
