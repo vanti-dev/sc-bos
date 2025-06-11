@@ -104,7 +104,7 @@ func (t *TurnOffScreensOutsideWorkingHours) setScreenPower(ctx context.Context, 
 	}
 
 	var err error
-	for completed := 0; completed < count; completed++ {
+	for range count {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

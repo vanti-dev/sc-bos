@@ -28,7 +28,7 @@ func addDummyAlerts(m *alert.Model, t *time.Time) {
 
 	zones := []string{"East", "West"}
 
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		m.AddAlert(&gen.Alert{
 			Id:          fmt.Sprintf("alert Id : %d", i),
 			Severity:    sevs[i%5],

@@ -103,7 +103,7 @@ var (
 	})
 	IdIsUUID = IdFunc(func(kind string, exists func(id string) bool) (string, error) {
 		max := 10
-		for i := 0; i < max; i++ {
+		for range max {
 			id := uuid.New()
 			if exists(id) {
 				continue

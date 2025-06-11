@@ -28,7 +28,7 @@ func (n *Node) PullAllMetadata(ctx context.Context, opts ...resource.ReadOption)
 }
 
 func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		_, err := n.allMetadata.MergeMetadata(name, md, resource.WithCreateIfAbsent())
 		if isConcurrentUpdateDetectedError(err) && i < 4 {
 			n.Logger.Debug("writing metadata, will try again", zap.Int("attempt", i), zap.String("name", name))

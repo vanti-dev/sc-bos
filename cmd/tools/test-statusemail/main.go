@@ -26,7 +26,7 @@ func main() {
 
 	var models []*statuspb.Model
 	deviceCount := 100
-	for i := 0; i < deviceCount; i++ {
+	for i := range deviceCount {
 		m := statuspb.NewModel()
 		m.UpdateProblem(&gen.StatusLog_Problem{Name: "test", Level: gen.StatusLog_OFFLINE})
 		models = append(models, m)
@@ -78,7 +78,7 @@ func main() {
 		gen.StatusLog_NON_FUNCTIONAL,
 		gen.StatusLog_OFFLINE,
 	}
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		mi := rand.Int31n(int32(len(models)))
 		m := models[mi]
 		l := levels[rand.Int31n(int32(len(levels)))]

@@ -15,14 +15,14 @@ func TestBus_OneToMany(t *testing.T) {
 	// start the listeners
 	const numListeners = 10
 	var listenChs []<-chan int
-	for i := 0; i < numListeners; i++ {
+	for range numListeners {
 		listenChs = append(listenChs, bus.Listen(listenCtx))
 	}
 
 	// one goroutine sends
 	go func() {
 		defer stopListen()
-		for i := 0; i < 100; i++ {
+		for i := range 100 {
 			sent := bus.Send(context.Background(), i)
 			if sent != numListeners {
 				t.Logf("Sent != expected, want %v, got %v", numListeners, sent)
@@ -42,7 +42,7 @@ func TestBus_OneToMany(t *testing.T) {
 				t.Errorf("{%d} expected to collect 100 items but got %d", listenIndex, len(collected))
 				return
 			}
-			for i := 0; i < 100; i++ {
+			for i := range 100 {
 				if collected[i] != i {
 					t.Errorf("{%d} collected[%d] = %d", listenIndex, i, collected[i])
 				}

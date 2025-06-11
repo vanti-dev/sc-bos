@@ -63,7 +63,7 @@ func ReadPropertiesChunked(ctx context.Context, client *gobacnet.Client, known k
 
 	results := make([]any, len(values))
 
-	for i := 0; i < chunkCount; i++ {
+	for i := range chunkCount {
 		from, to := i*n, (i+1)*n
 		if to > len(values) {
 			to = len(values)

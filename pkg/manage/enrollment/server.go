@@ -222,7 +222,7 @@ func (es *Server) DeleteEnrollment(ctx context.Context, request *gen.DeleteEnrol
 		es.enrollment = en
 		// try our best to save the enrollment again
 		var saveErr error
-		for i := 0; i < 5; i++ {
+		for range 5 {
 			saveErr = SaveEnrollment(es.dir, en)
 			if saveErr == nil {
 				break

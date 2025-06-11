@@ -58,7 +58,7 @@ func StreamHandler(r MethodResolver) grpc.StreamHandler {
 		go func() { c2sErr <- streamClientToServer(serverStream, clientStream, target.Desc.Output()) }()
 		go func() { s2cErr <- streamServerToClient(clientStream, serverStream, resolver, target.Desc.Input()) }()
 
-		for i := 0; i < 2; i++ {
+		for range 2 {
 			select {
 			case err := <-c2sErr:
 				// trailers are only available from the client once it's done (has returned an error)

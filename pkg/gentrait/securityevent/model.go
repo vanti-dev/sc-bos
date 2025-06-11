@@ -35,7 +35,7 @@ func NewModel(opts ...resource.Option) *Model {
 
 	// let's add some events to start with so we can test the list method without waiting
 	startTime := time.Now().Add(-100 * time.Minute)
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		_, _ = m.GenerateSecurityEvent(timestamppb.New(startTime))
 		startTime = startTime.Add(time.Minute)
 	}

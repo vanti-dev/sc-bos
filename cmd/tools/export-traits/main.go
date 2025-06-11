@@ -104,7 +104,7 @@ func main() {
 	jobs := make(chan *gen.Device, concurrency)
 	var jobsComplete sync.WaitGroup
 	jobsComplete.Add(concurrency)
-	for i := 0; i < concurrency; i++ {
+	for range concurrency {
 		go func() {
 			defer jobsComplete.Done()
 			worker(ctx, conn, jobs, results)

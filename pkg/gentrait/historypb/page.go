@@ -102,7 +102,7 @@ func (pr PageReader[R]) ListRecordsBetween(ctx context.Context, store history.St
 	page = make([]R, readRecords)
 
 	var allErrs error
-	for i := 0; i < readRecords; i++ {
+	for i := range readRecords {
 		r, err := pr.DecodePayload(dst[i])
 		if err != nil {
 			allErrs = multierr.Append(allErrs, fmt.Errorf("%s %w", dst[i].ID, err))

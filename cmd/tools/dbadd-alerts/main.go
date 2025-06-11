@@ -92,7 +92,7 @@ func run(ctx context.Context) error {
 	if alertsNeeded > 0 {
 		fmt.Println("Seeding alerts:", alertsNeeded)
 	}
-	for i := 0; i < alertsNeeded; i++ {
+	for range alertsNeeded {
 		if _, _, err := writeAlert(); err != nil {
 			return fmt.Errorf("seed: %w", err)
 		}

@@ -18,7 +18,7 @@ func InParallel(ctx context.Context, concurrency int, fns ...func()) error {
 	// setup workers
 	var running sync.WaitGroup
 	running.Add(len(fns))
-	for i := 0; i < concurrency; i++ {
+	for range concurrency {
 		go func() {
 			defer func() {
 				done <- struct{}{}
@@ -41,7 +41,7 @@ loop:
 	close(jobs) // no more jobs to submit
 
 	// wait for workers to finish
-	for doneCount := 0; doneCount < concurrency; doneCount++ {
+	for range concurrency {
 		select {
 		case <-done:
 		case <-ctx.Done():
