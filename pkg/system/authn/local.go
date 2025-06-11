@@ -65,13 +65,13 @@ func (l *localUserVerifier) Verify(ctx context.Context, username, password strin
 				data.Roles = append(data.Roles, role.String)
 			}
 		}
-		slices.Sort(data.Roles) // deterministic order for legacy roles
-		data.Title = details.DisplayName
-		data.TenantID = strconv.FormatInt(userAccount.AccountID, 10)
 		if len(data.Roles) == 0 {
 			// no point issuing a token because the user has no roles so they cannot access anything
 			return errNoRoles
 		}
+		slices.Sort(data.Roles) // deterministic order for legacy roles
+		data.Title = details.DisplayName
+		data.TenantID = strconv.FormatInt(userAccount.AccountID, 10)
 		return nil
 	})
 	if err != nil {
