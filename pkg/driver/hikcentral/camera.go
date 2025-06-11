@@ -278,7 +278,7 @@ func (c *Camera) getEvents(ctx context.Context) {
 				api.CameraRecordingRecoveredAlarm,
 			}, ","),
 			SrcType:    "camera",
-			SrcIndexes: c.conf.IndexCode,
+			SrcIndexes: c.conf.IndexCode + ",", // if passing a single index code, it must end with a comma due to a dodgy API (undocumented but proven)
 			StartTime:  formatTime(start),
 			EndTime:    formatTime(end),
 			Request: api.Request{
