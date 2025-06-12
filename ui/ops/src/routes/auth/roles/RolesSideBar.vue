@@ -7,16 +7,30 @@
       <p class="px-4 my-4" v-if="role?.description">{{ role.description }}</p>
     </template>
     <template v-else>
-      <v-textarea
-          class="ma-4"
-          v-model="editDescriptionModel"
-          label="Description"
-          :counter="250"
-          autocomplete="off"/>
-      <div class="d-flex ga-2 ma-4">
-        <v-btn @click="onSaveClick" variant="flat" color="primary">Save</v-btn>
-        <v-btn @click="onCancelClick" variant="flat">Cancel</v-btn>
-      </div>
+      <v-form @submit.prevent="onSaveClick" v-model="formValid">
+        <v-text-field
+            class="ma-4"
+            v-model="editDisplayNameModel"
+            :rules="editDisplayNameRules"
+            :counter="100"
+            label="Name"
+            autocomplete="off"/>
+        <v-textarea
+            class="ma-4"
+            v-model="editDescriptionModel"
+            label="Description"
+            :counter="250"
+            autocomplete="off"/>
+        <div class="d-flex ga-2 ma-4">
+          <v-btn type="submit" variant="flat" color="primary">Save</v-btn>
+          <v-btn @click="onCancelClick" variant="flat">Cancel</v-btn>
+        </div>
+      </v-form>
+      <v-expand-transition>
+        <div v-if="saveError">
+          <v-alert type="error" tile :text="saveErrorStr"/>
+        </div>
+      </v-expand-transition>
     </template>
     <v-list density="compact">
       <v-list-subheader>{{ permissionsListTitle }}</v-list-subheader>
@@ -93,14 +107,22 @@ const onPermissionClick = async (perm) => {
 }
 
 const editMode = ref(false);
+const formValid = ref(false);
 const saving = ref(false);
 const saveError = ref(null);
+const saveErrorStr = computed(() => {
+  const err = saveError.value;
+  if (!err) return null;
+  const msg = `${err.error?.message ?? err.message ?? err}`;
+  return 'Error saving role: ' + msg;
+});
 
 const router = useRouter();
 const onCloseClick = () => {
   router.push({name: 'roles'});
 }
 const onEditClick = () => {
+  editDisplayNameModel.value = role.value?.displayName ?? '';
   editDescriptionModel.value = role.value?.description ?? '';
   editMode.value = true;
 };
@@ -112,9 +134,10 @@ const onSaveClick = async () => {
     saving.value = true;
     const newRole = {
       ...role.value,
+      displayName: editDisplayNameModel.value,
       description: editDescriptionModel.value
     }
-    await sidebar.data.updateRole({role: newRole, updateMask: ['description']});
+    await sidebar.data.updateRole({role: newRole, updateMask: ['display_name', 'description']});
     saveError.value = null;
   } catch (e) {
     saveError.value = e;
@@ -124,6 +147,14 @@ const onSaveClick = async () => {
   editMode.value = false;
 };
 
+const editDisplayNameModel = ref(null);
+const editDisplayNameRules = computed(() => {
+  return [
+    (v) => !!v || 'Name is required',
+    (v) => v.length >= 3 || 'Name must be at least 3 characters',
+    (v) => v.length <= 100 || 'Name must be less than 100 characters',
+  ];
+})
 const editDescriptionModel = ref(null);
 </script>
 
