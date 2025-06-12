@@ -11,13 +11,30 @@
               item-value="id"
               return-object
               label="Role"
-              hide-details/>
+              hide-details>
+            <template #item="{ props: _props, item }">
+              <v-list-item v-bind="_props">
+                <template #append v-if="item.raw.pb_protected">
+                  <v-chip text="Built-in" size="small" class="ml-2"/>
+                </template>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
         </v-card-text>
         <v-card-text>
           <scope-autocomplete v-model="selectedScopes" :disabled="scopeDisabled"/>
+          <v-expand-transition>
+            <v-alert v-if="selectedRoleIsProtected"
+                     type="info"
+                     tile
+                     variant="text"
+                     text="Built-in roles cannot be scoped."/>
+          </v-expand-transition>
         </v-card-text>
         <v-card-actions>
-          <v-btn @click="onGrantClick" color="primary" :disabled="!selectedRole || selectedScopes.length === 0">Grant</v-btn>
+          <v-btn @click="onGrantClick" color="primary" :disabled="grantBtnDisabled">
+            Grant
+          </v-btn>
           <v-btn @click="onCancelClick">Cancel</v-btn>
         </v-card-actions>
         <v-expand-transition>
@@ -51,8 +68,15 @@ const emit = defineEmits(['save', 'cancel']);
 const selectedRole = ref(null);
 const selectedScopes = ref([]);
 
+const selectedRoleIsProtected = computed(() => selectedRole.value?.pb_protected ?? false);
+
 const menuModel = ref(false);
 
+const grantBtnDisabled = computed(() => {
+  if (!selectedRole.value) return true;
+  if (selectedRoleIsProtected.value) return false; // Protected roles can be granted without scopes.
+  return selectedScopes.value.length === 0;
+});
 const grantLoading = ref(false);
 const grantError = ref(null);
 const grantErrorStr = computed(() => {
@@ -73,6 +97,17 @@ const onGrantClick = async () => {
   const ras = [];
   try {
     for (const accountId of _accountIds.value) {
+      if (selectedScopes.value.length === 0) {
+        // global scope assignment
+        const res = await createRoleAssignment({
+          name: props.name,
+          roleAssignment: {
+            accountId: accountId,
+            roleId: selectedRole.value.id,
+          }
+        });
+        ras.push(res);
+      }
       for (const scope of selectedScopes.value) {
         const res = await createRoleAssignment({
           name: props.name,
@@ -121,7 +156,7 @@ const {items: rolesCollection} = useRolesCollection(() => ({name: props.name}), 
   wantCount: rolesWantCount.value
 }));
 
-const scopeDisabled = computed(() => !selectedRole.value);
+const scopeDisabled = computed(() => !selectedRole.value || selectedRoleIsProtected.value);
 </script>
 
 <style scoped>
