@@ -9,7 +9,7 @@
       label="Scope"
       hide-details>
     <template #chip="{props: chipProps, item}">
-      <grant-chip :title="item.raw.title" :value="item.raw.value" :type="item.raw.type" v-bind="chipProps"/>
+      <scope-chip :title="item.raw.title" :value="item.raw.value" :type="item.raw.type" v-bind="chipProps"/>
     </template>
     <template #item="{props: itemProps, item, index}">
       <v-list-subheader v-if="item.raw.header" :title="item.title" :class="{'mt-4': index !== 0}"/>
@@ -32,7 +32,7 @@
 
 <script setup>
 import {useDevicesCollection, usePullDevicesMetadata} from '@/composables/devices.js';
-import GrantChip from '@/routes/auth/accounts/GrantChip.vue';
+import ScopeChip from '@/routes/auth/accounts/ScopeChip.vue';
 import {useCohortStore} from '@/stores/cohort.js';
 import {RoleAssignment} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
 import {omit} from 'lodash';

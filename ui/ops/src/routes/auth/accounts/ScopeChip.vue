@@ -49,11 +49,18 @@ const tooltipStr = computed(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.v-chip {
+  // This calc is taken from VChip/_mixins.scss in Vuetify and is used
+  // by Vuetify to calculate the padding for chips at different sizes.
+  // Vuetify does this is SCSS so we can't reuse it directly.
+  --pad-start: calc(var(--v-chip-height, 32px) / (2 + 2 / 3));
+  padding: 0 var(--pad-start)
+}
 :deep(.v-chip__prepend) {
   height: 100%;
-  margin-left: -10px;
-  padding-left: 10px;
+  margin-left: calc(var(--pad-start)*-1);
+  padding-left: calc(var(--pad-start));
   margin-right: .5em;
   padding-right: .5em;
   background: rgba(var(--v-theme-primary), 0.4);
