@@ -18,6 +18,7 @@
           disable-sort
           return-object
           show-select
+          :item-selectable="itemSelectable"
           v-model="selectedRoles"
           :row-props="tableRowProps"
           @click:row="onRowClick">
@@ -153,16 +154,21 @@ const onRoleUpdate = async ({role, updateMask}) => {
 }
 
 const selectedRoles = ref([]);
+const itemSelectable = (item) => {
+  // only allow selection of roles that are not protected
+  return !item.pb_protected;
+}
+const deletableRoles = computed(() => selectedRoles.value.filter((role) => !role.pb_protected));
 
-const showDeleteRolesBtn = computed(() => selectedRoles.value.length > 0);
+const showDeleteRolesBtn = computed(() => deletableRoles.value.length > 0);
 const onDelete = () => {
   if (pullRolesResource) {
-    for (const role of selectedRoles.value) {
+    for (const role of deletableRoles.value) {
       pullRolesResource.lastResponse = toRemoveChange(role);
     }
   }
   const _latest = latestRole.value;
-  for (const role of selectedRoles.value) {
+  for (const role of deletableRoles.value) {
     if (_latest && role.id === _latest.id) {
       latestRole.value = null;
     }
