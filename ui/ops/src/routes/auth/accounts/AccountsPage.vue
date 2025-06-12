@@ -44,7 +44,7 @@
         </template>
         <template #item.displayName="{item}">
           <span>{{ item.displayName }}</span>
-          <span class="opacity-50 ml-2" v-if="item.description">{{ item.description }}</span>
+          <span class="text-medium-emphasis ml-2" v-if="item.description">{{ item.description }}</span>
         </template>
         <template #item.username="{item}">
           {{ item.userDetails?.username ?? item.serviceDetails?.clientId }}
