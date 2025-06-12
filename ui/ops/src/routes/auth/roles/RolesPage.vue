@@ -32,7 +32,7 @@
         <template #header.data-table-select/>
         <template #item.displayName="{item}">
           <span>{{ item.displayName }}</span>
-          <span class="opacity-50 ml-2" v-if="item.description">{{ item.description }}</span>
+          <span class="text-medium-emphasis ml-2" v-if="item.description">{{ item.description }}</span>
         </template>
         <template #item.permissions="{item}">
           {{ (item.permissionIdsList ?? []).length.toLocaleString() }}
