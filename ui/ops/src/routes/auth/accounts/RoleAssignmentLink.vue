@@ -1,5 +1,21 @@
 <template>
-  <router-link :to="toAttr" v-tooltip:bottom="tooltipStr">{{ textStr }}</router-link>
+  <span>
+    <template v-for="(part, i) in textParts" :key="i">
+      <template v-if="i > 0"> {{ ' ' }}</template>
+      <template v-if="part.to">
+        <router-link :to="part.to" v-bind="part.props ?? {}">
+          <v-tooltip v-if="part.tooltip" activator="parent" location="bottom">{{ part.tooltip }}</v-tooltip>
+          {{ part.text }}
+        </router-link>
+      </template>
+      <template v-else>
+        <span v-bind="part.props ?? {}">
+          <v-tooltip v-if="part.tooltip" activator="parent" location="bottom">{{ part.tooltip }}</v-tooltip>
+          {{ part.text ?? part }}
+        </span>
+      </template>
+    </template>
+  </span>
 </template>
 
 <script setup>
@@ -14,50 +30,46 @@ const props = defineProps({
   }
 });
 
-const toAttr = computed(() => {
-  const roleAssignment = props.roleAssignment;
-  if (!roleAssignment) return null;
-  return {
-    name: 'roles',
-    params: {
-      roleId: roleAssignment.roleId,
-    }
-  };
-});
-const textStr = computed(() => {
-  let str = '';
+const textParts = computed(() => {
+  const parts = [];
   const scope = props.roleAssignment.scope;
   if (!scope) {
-    str += 'Global';
+    parts.push('Global');
   } else {
     const typeStr = (() => {
       const base = (() => {
         const resourceType = scope.resourceType;
         switch (resourceType) {
           case RoleAssignment.ResourceType.NAMED_RESOURCE:
-            return 'Device'
+            return 'Device';
           case RoleAssignment.ResourceType.NAMED_RESOURCE_PATH_PREFIX:
-            return 'Device+'
+            return 'Device+';
           default:
             return ResourceTypeById[scope.resourceType];
         }
       })();
       return base[0] + base.slice(1).toLowerCase();
     })();
+    parts.push({text: typeStr, props: {class: 'text-medium-emphasis'}});
     if (props.roleAssignment.device?.metadata?.appearance?.title) {
-      str += `${typeStr} ${props.roleAssignment.device.metadata.appearance.title}`;
+      parts.push({
+        text: props.roleAssignment.device.metadata.appearance.title,
+        tooltip: props.roleAssignment.scope?.resource,
+      });
     } else {
-      str += `${typeStr} ${scope.resource}`;
+      parts.push(scope.resource);
     }
   }
-  str += ` ${props.roleAssignment.role?.displayName ?? '...'}`;
-  return str;
-});
-const tooltipStr = computed(() => {
-  if (props.roleAssignment.device?.metadata?.appearance?.title) {
-    return props.roleAssignment.scope?.resource;
-  }
-  return undefined;
+  parts.push({
+    text: props.roleAssignment.role?.displayName ?? '...',
+    to: {
+      name: 'roles',
+      params: {
+        roleId: props.roleAssignment.roleId,
+      }
+    }
+  });
+  return parts;
 })
 </script>
 
