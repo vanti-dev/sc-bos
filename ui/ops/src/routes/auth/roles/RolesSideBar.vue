@@ -1,7 +1,7 @@
 <template>
   <side-bar @close="onCloseClick">
     <template #actions>
-      <v-btn v-if="!editMode" @click="onEditClick" icon="mdi-pencil" variant="plain" size="small"/>
+      <v-btn v-if="editable && !editMode" @click="onEditClick" icon="mdi-pencil" variant="plain" size="small"/>
     </template>
     <template v-if="!editMode">
       <p class="px-4 my-4" v-if="role?.description">{{ role.description }}</p>
@@ -32,7 +32,10 @@
         </div>
       </v-expand-transition>
     </template>
-    <v-list density="compact">
+    <template v-if="roleIsProtected">
+      <v-alert type="info" tile variant="text" text="Built-in roles cannot be modified."/>
+    </template>
+    <v-list v-else density="compact">
       <v-list-subheader>{{ permissionsListTitle }}</v-list-subheader>
       <v-expand-transition group>
         <v-list-item
@@ -77,6 +80,9 @@ import {useRouter} from 'vue-router';
 
 const sidebar = useSidebarStore();
 const role = computed(() => sidebar.data?.role);
+
+const roleIsProtected = computed(() => role.value?.pb_protected ?? false);
+
 const permissionsList = computed(() => role.value?.permissionIdsList ?? []);
 const permissionsListTitle = computed(() => {
   const len = permissionsList.value.length;
@@ -106,6 +112,7 @@ const onPermissionClick = async (perm) => {
   await sidebar.data.updateRole({role: newRole, updateMask: ['permission_ids']});
 }
 
+const editable = computed(() => !roleIsProtected.value)
 const editMode = ref(false);
 const formValid = ref(false);
 const saving = ref(false);
