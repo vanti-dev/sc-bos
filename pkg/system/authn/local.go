@@ -9,19 +9,12 @@ import (
 	"strconv"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/account"
 	"github.com/vanti-dev/sc-bos/internal/account/queries"
 	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
-)
-
-var (
-	errUsernamePassword = status.Error(codes.Unauthenticated, "invalid username or password")
-	errNoRoles          = status.Error(codes.Unauthenticated, "cannot login because user has no roles assigned")
 )
 
 type localUserVerifier struct {
@@ -39,14 +32,14 @@ func (l *localUserVerifier) Verify(ctx context.Context, username, password strin
 	err := l.accounts.Read(ctx, func(tx *account.Tx) error {
 		userAccount, err := tx.GetAccountByUsername(ctx, username)
 		if errors.Is(err, sql.ErrNoRows) {
-			return errUsernamePassword
+			return accesstoken.ErrInvalidCredentials
 		} else if err != nil {
 			return err
 		}
 
 		err = tx.CheckAccountPassword(ctx, userAccount.AccountID, password)
 		if errors.Is(err, account.ErrIncorrectPassword) {
-			return errUsernamePassword
+			return accesstoken.ErrInvalidCredentials
 		} else if err != nil {
 			return err
 		}
@@ -70,7 +63,7 @@ func (l *localUserVerifier) Verify(ctx context.Context, username, password strin
 		data.TenantID = strconv.FormatInt(userAccount.AccountID, 10)
 		if len(data.Roles) == 0 {
 			// no point issuing a token because the user has no roles so they cannot access anything
-			return errNoRoles
+			return accesstoken.ErrNoRolesAssigned
 		}
 		slices.Sort(data.Roles) // deterministic order for legacy roles
 		data.Title = details.DisplayName
