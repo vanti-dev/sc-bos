@@ -9,7 +9,7 @@
       <v-list-item v-for="(val, key) of presentMetrics" :key="key" class="py-1">
         <v-list-item-title class="text-body-small">{{ key }}</v-list-item-title>
         <template #append>
-          <v-list-item-subtitle class="font-weight-medium text-body-1">{{ val.value }}</v-list-item-subtitle>
+          <v-list-item-subtitle class="font-weight-medium text-body-1">{{ intlNumbers.format(val.value ?? 0) }}</v-list-item-subtitle>
         </template>
       </v-list-item>
     </v-list>
@@ -42,6 +42,8 @@ const props = defineProps({
     required: true
   }
 });
+
+const intlNumbers = new Intl.NumberFormat();
 
 const {score, presentMetrics} = useAirQuality(() => props.value);
 const scoreColor = useStatusColor(score);
