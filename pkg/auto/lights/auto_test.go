@@ -3,10 +3,12 @@ package lights
 import (
 	"context"
 	"errors"
+	"fmt"
+	"math/rand"
+	"sync"
 	"testing"
 	"time"
 
-	"github.com/olebedev/emitter"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -30,22 +32,56 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	testActions := newTestActions(t)
 
-	now := time.Unix(0, 0)
+	clock := newTestClock(t)
 
-	automation := PirsTurnLightsOn(rootNode, zap.NewNop())
+	loggerConfig := zap.NewDevelopmentConfig()
+	loggerConfig.DisableStacktrace = true
+	logger, _ := loggerConfig.Build()                       // the test is sometimes failing, this might help with debugging
+	logger = logger.Named(fmt.Sprintf("%x", rand.Uint64())) // helps with --count>1 tests
+	automation := PirsTurnLightsOn(rootNode, logger)
 	automation.makeActions = func(_ node.ClientConner) actions { return testActions }
-	automation.autoStartTime = now
+	automation.autoStartTime = clock.now
+	automation.newTimer = clock.newTimer
 
 	cfg := config.Default()
-	cfg.Now = func() time.Time { return now }
+	cfg.Now = clock.nowFunc
 	cfg.OccupancySensors = []deviceName{"pir01", "pir02"}
 	cfg.Lights = []deviceName{"light01", "light02"}
 	cfg.UnoccupiedOffDelay = jsontypes.Duration{Duration: 10 * time.Minute}
 	cfg.RefreshEvery = &jsontypes.Duration{Duration: 8 * time.Minute}
+	cfg.LogTriggers = true
+	cfg.LogEmptyChanges = true
 
-	tickChan := make(chan time.Time, 1)
-	automation.newTimer = func(d time.Duration) (<-chan time.Time, func() bool) {
-		return tickChan, func() bool { return true }
+	type processCompleteEvent struct {
+		ttl        time.Duration
+		err        error
+		readState  *ReadState
+		writeState *WriteState
+	}
+	processCompleteC := make(chan processCompleteEvent)
+	automation.processComplete = func(ttl time.Duration, err error, readState *ReadState, writeState *WriteState) {
+		processCompleteC <- processCompleteEvent{
+			ttl:        ttl,
+			err:        err,
+			readState:  readState,
+			writeState: writeState,
+		}
+	}
+	const stateWaitTime = 10 * time.Second
+	waitForState := func(test func(state *ReadState) bool) (time.Duration, error) {
+		t.Helper()
+		timeout := time.NewTimer(stateWaitTime)
+		for {
+			select {
+			case <-timeout.C:
+				t.Fatalf("timeout waiting for state")
+				return 0, nil
+			case e := <-processCompleteC:
+				if test(e.readState) {
+					return e.ttl, e.err
+				}
+			}
+		}
 	}
 
 	if err := automation.Start(context.Background()); err != nil {
@@ -56,33 +92,9 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		t.Fatalf("Configure: %v", err)
 	}
 
-	processComplete := automation.bus.On("process-complete", emitter.Sync)
-	const stateWaitTime = time.Second
-	waitForState := func(wait time.Duration, test func(state *ReadState) bool) (time.Duration, error) {
-		t.Helper()
-		timeout := time.NewTimer(wait)
-		for {
-			select {
-			case <-timeout.C:
-				t.Fatalf("timeout waiting for state")
-				return 0, nil
-			case e := <-processComplete:
-				state := e.Args[2].(*ReadState)
-				if test(state) {
-					if e.Args[1] == nil {
-						return e.Args[0].(time.Duration), nil
-					}
-					return e.Args[0].(time.Duration), e.Args[1].(error)
-				}
-			}
-		}
-	}
-
 	// check setting occupied on one PIR causes the lights to come on
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	// DEAR FUTURE DEV, if you get test failures here it's probably because you're missing a case in the
-	// clients switch statement above
-	ttl, err := waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err := waitForState(func(state *ReadState) bool {
 		o, ok := state.Occupancy["pir01"]
 		if !ok {
 			return false
@@ -91,22 +103,11 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	})
 	assertNoErrAndTtl(t, ttl, err, cfg.RefreshEvery.Duration)
 
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light01",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light02",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
+	testActions.assertNextBrightnessUpdates(100, "light01", "light02")
 
 	// check that setting occupied on the other PIR does nothing
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o, ok := state.Occupancy["pir02"]
 		if !ok {
 			return false
@@ -117,9 +118,9 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	testActions.assertNoMoreCalls()
 
 	// check that making both PIRs unoccupied doesn't do anything, but then does
-	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-3 * time.Minute))})
-	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(now.Add(-8 * time.Minute))})
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
+	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-8 * time.Minute))})
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		o02, ok02 := state.Occupancy["pir02"]
 		if !ok01 || !ok02 {
@@ -134,29 +135,17 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		t.Fatalf("Got error %v", err)
 	}
 	// trigger the timer
-	now = now.Add(7 * time.Minute)
-	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	clock.advance(7 * time.Minute)
+	ttl, err = waitForState(func(state *ReadState) bool {
 		return true // no state change, only time change
 	})
 	assertNoErrAndTtl(t, ttl, err, cfg.RefreshEvery.Duration)
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light01",
-		Brightness: &traits.Brightness{
-			LevelPercent: 0,
-		},
-	})
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light02",
-		Brightness: &traits.Brightness{
-			LevelPercent: 0,
-		},
-	})
+	testActions.assertNextBrightnessUpdates(0, "light01", "light02")
 
 	// test 1 retry
-	testActions.err = errFailedBrightnessUpdate
+	testActions.nextCallReturnsError(errFailedBrightnessUpdate, "light01")
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -165,23 +154,11 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	})
 	// jitter is set to ±0.2
 	assertErrorAndTtl(t, ttl, err, cfg.OnProcessError.BackOffMultiplier.Duration*8/10, errFailedBrightnessUpdate)
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light01",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
-	// should be called even when the first light call failed
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light02",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
+	testActions.assertNextBrightnessUpdates(100, "light01", "light02")
+
 	// since newTimer is intercepted by this test, we force a replay here
-	now = now.Add(time.Millisecond * 500)
-	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	clock.advance(500 * time.Millisecond)
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -190,19 +167,12 @@ func TestPirsTurnLightsOn(t *testing.T) {
 	})
 	assertNoErrAndTtl(t, ttl, err, cfg.RefreshEvery.Duration)
 	// it works after the retry
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light01",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
-	// setting light02 was caught by the cache
+	testActions.assertNextBrightnessUpdates(100, "light01") // light02 is cached, so no update
 
 	// testing retries getting cancelled after max attempts
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
 	_, _ = pir02.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_UNOCCUPIED, StateChangeTime: timestamppb.New(time.Unix(0, 0).Add(-3 * time.Minute))})
-	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		o02, ok02 := state.Occupancy["pir02"]
 		if !ok01 || !ok02 {
@@ -211,22 +181,11 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		return o01.State == traits.Occupancy_UNOCCUPIED && o02.State == traits.Occupancy_UNOCCUPIED
 	})
 	assertNoErrAndTtl(t, ttl, err, cfg.RefreshEvery.Duration)
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light01",
-		Brightness: &traits.Brightness{
-			LevelPercent: 0,
-		},
-	})
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light02",
-		Brightness: &traits.Brightness{
-			LevelPercent: 0,
-		},
-	})
+	testActions.assertNextBrightnessUpdates(0, "light01", "light02")
 
-	testActions.err = errFailedBrightnessUpdate
+	testActions.nextCallReturnsError(fmt.Errorf("attempt 1: %w", errFailedBrightnessUpdate), "light01", "light02")
 	_, _ = pir01.SetOccupancy(&traits.Occupancy{State: traits.Occupancy_OCCUPIED})
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
+	ttl, err = waitForState(func(state *ReadState) bool {
 		o01, ok01 := state.Occupancy["pir01"]
 		if !ok01 {
 			return false
@@ -234,60 +193,85 @@ func TestPirsTurnLightsOn(t *testing.T) {
 		return o01.State == traits.Occupancy_OCCUPIED
 	})
 	assertErrorAndTtl(t, ttl, err, cfg.OnProcessError.BackOffMultiplier.Duration*8/10, errFailedBrightnessUpdate)
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light01",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
-	// should be called even when light01 errors
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light02",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
+	testActions.assertNextBrightnessUpdates(100, "light01", "light02")
 
 	// second try
-	testActions.err = errFailedBrightnessUpdate
+	testActions.nextCallReturnsError(fmt.Errorf("attempt 2: %w", errFailedBrightnessUpdate), "light01", "light02")
 	// since newTimer is intercepted by this test, we force a replay here
-	now = now.Add(time.Millisecond * 500)
-	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
-		o01, ok01 := state.Occupancy["pir01"]
-		if !ok01 {
-			return false
-		}
-		return o01.State == traits.Occupancy_OCCUPIED
+	clock.advance(500 * time.Millisecond)
+	ttl, err = waitForState(func(state *ReadState) bool {
+		return true // no state change, only time change
 	})
 	assertErrorAndTtl(t, ttl, err, 2*cfg.OnProcessError.BackOffMultiplier.Duration*(8/10), errFailedBrightnessUpdate)
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light01",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
-	// light02 was caught by the cache
+	testActions.assertNextBrightnessUpdates(100, "light01", "light02")
 
 	// third try and is cancelled
-	testActions.err = errFailedBrightnessUpdate
+	testActions.nextCallReturnsError(fmt.Errorf("attempt 3: %w", errFailedBrightnessUpdate), "light01", "light02")
 	// since newTimer is intercepted by this test, we force a replay here
-	now = now.Add(time.Millisecond * 500)
-	tickChan <- now
-	ttl, err = waitForState(stateWaitTime, func(state *ReadState) bool {
-		o01, ok01 := state.Occupancy["pir01"]
-		if !ok01 {
-			return false
-		}
-		return o01.State == traits.Occupancy_OCCUPIED
+	clock.advance(500 * time.Millisecond)
+	ttl, err = waitForState(func(state *ReadState) bool {
+		return true // no state change, only time change
 	})
 	assertErrorAndTtl(t, ttl, err, -time.Nanosecond, errFailedBrightnessUpdate)
-	testActions.assertNextCall(&traits.UpdateBrightnessRequest{
-		Name: "light01",
-		Brightness: &traits.Brightness{
-			LevelPercent: 100,
-		},
-	})
+	testActions.assertNextBrightnessUpdates(100, "light01", "light02")
 	// ensure we have effectively cancelled reprocessing
 	testActions.assertNoMoreCalls()
+}
+
+type testClock struct {
+	t   *testing.T
+	mu  sync.Mutex
+	now time.Time
+	c   chan time.Time
+}
+
+func newTestClock(t *testing.T) *testClock {
+	t.Helper()
+	return &testClock{
+		t:   t,
+		now: time.Unix(0, 0),
+	}
+}
+
+func (tc *testClock) nowFunc() time.Time {
+	tc.t.Helper()
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+	return tc.now
+}
+
+func (tc *testClock) newTimer(_ time.Duration) (<-chan time.Time, func() bool) {
+	tc.t.Helper()
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+	if tc.c != nil {
+		tc.t.Fatalf("newTimer called multiple times without Stop being called")
+	}
+	c := make(chan time.Time, 1)
+	tc.c = c
+	return c, func() bool {
+		tc.t.Helper()
+		tc.mu.Lock()
+		defer tc.mu.Unlock()
+		if tc.c != c {
+			return true
+		}
+		tc.c = nil
+		return true
+	}
+}
+
+func (tc *testClock) advance(d time.Duration) {
+	tc.t.Helper()
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
+	if tc.c == nil {
+		tc.t.Fatalf("advance called without newTimer being called")
+	}
+	tc.now = tc.now.Add(d)
+	select {
+	case tc.c <- tc.now:
+	default:
+		tc.t.Fatalf("advance called but no goroutine is waiting for the timer")
+	}
 }
