@@ -3,22 +3,36 @@ package authn
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path"
 
 	"go.uber.org/multierr"
 
-	"github.com/vanti-dev/sc-bos/internal/auth/tenant"
+	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
 )
 
-// loadFileVerifier returns a tenant.Verifier that checks credentials against those found. Creds are loaded from the
-// JSON files that match `defaultFilename` in the `dataDirs` directory list and combined. No checks are made for
-// duplicate IDs either within the same file or across multiple files. If no files are found then a tenant.NeverVerify
-// verifier is returned.
-func loadFileVerifier(idConfig *config.Identities, dataDirs []string, defaultFilename string) (tenant.Verifier, error) {
-	ids := make([]config.Identity, 0)
+func loadFileVerifier(idConfig *config.Identities, dataDirs []string, defaultFilename string) (accesstoken.Verifier, error) {
+	// load identities from files in dataDirs
+	ids, err := loadFileIdentities(idConfig, dataDirs, defaultFilename)
+	if err != nil {
+		return nil, fmt.Errorf("local accounts: %w", err)
+	}
+
+	// create a verifier from the loaded identities
+	verifier, err := newStaticVerifier(ids)
+	if err != nil {
+		return nil, fmt.Errorf("local accounts: %w", err)
+	}
+
+	return verifier, nil
+}
+
+// loadFileIdentities loads identities from zero or more files in dataDirs.
+// Creds are loaded from the JSON files that match `defaultFilename` in the `dataDirs` directory list and combined.
+// No checks are made for duplicate IDs either within the same file or across multiple files.
+func loadFileIdentities(idConfig *config.Identities, dataDirs []string, defaultFilename string) ([]config.Identity, error) {
+	var ids []config.Identity
 	for _, dataDir := range dataDirs {
 		_, err := os.Stat(path.Join(dataDir, defaultFilename))
 		if err != nil {
@@ -34,15 +48,20 @@ func loadFileVerifier(idConfig *config.Identities, dataDirs []string, defaultFil
 		}
 		ids = append(ids, i...)
 	}
+	return ids, nil
+}
+
+// newStaticVerifier returns a accesstoken.Verifier that checks credentials against the identities provided. No checks
+// are made to prevent duplicate IDs. If ids is empty, a accesstoken.NeverVerify verifier is returned.
+func newStaticVerifier(ids []config.Identity) (accesstoken.Verifier, error) {
 	if len(ids) == 0 {
-		log.Printf("no local accounts found in %v", dataDirs)
-		return tenant.NeverVerify(errors.New("no local accounts")), nil
+		return accesstoken.NeverVerify(errors.New("no local accounts")), nil
 	}
 
-	verifier := &tenant.MemoryVerifier{}
+	verifier := &accesstoken.MemoryVerifier{}
 	var allErrs error
 	for _, t := range ids {
-		err := verifier.AddRecord(tenant.SecretData{Title: t.Title, TenantID: t.ID, Zones: t.Zones, Roles: t.Roles})
+		err := verifier.AddRecord(accesstoken.SecretData{Title: t.Title, TenantID: t.ID, Zones: t.Zones, Roles: t.Roles})
 		if err != nil {
 			allErrs = multierr.Append(allErrs, err)
 			continue

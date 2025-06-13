@@ -91,6 +91,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		GRPCEndpoint:     grpcEndpoint,
 		Database:         c.Database,
 		Stores:           c.Stores,
+		Accounts:         c.Accounts,
 		HTTPMux:          c.Mux,
 		TokenValidators:  c.TokenValidators,
 		ReflectionServer: c.ReflectionServer,

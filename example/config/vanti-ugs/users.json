@@ -1,0 +1,50 @@
+[
+  {
+    "id": "admin",
+    "title": "Admin User",
+    "roles": ["admin"],
+    "secrets": [
+      {"hash": "$2a$10$6c.HvXGgpxe5XuI0c.D1s.5klgEEmPl.XN6oiQQBoCI1kCxCYl2fa", "plaintext": "admin"}
+    ]
+  },
+  {
+    "id": "operator",
+    "title": "Operator User",
+    "roles": ["operator"],
+    "secrets": [
+      {"hash": "$2a$10$83SmZaqeKQ387u7o44eMZO9.AJF6n4sNFym/tRp1gBYBzKTwEPQl2", "plaintext": "operator"}
+    ]
+  },
+  {
+    "id": "viewer",
+    "title": "Viewer User",
+    "roles": ["viewer"],
+    "secrets": [
+      {"hash": "$2a$10$AsBs0QFbN/HGSbBEaARyzOAx/v5GU1BXiPayajsPiCrN0HhiaMbE2", "plaintext": "viewer"}
+    ]
+  },
+  {
+    "id": "none",
+    "title": "None User",
+    "roles": [],
+    "secrets": [
+      {"hash": "$2a$10$Zvy4p2qQNZOMNim2B0oXg.0CAZj/FSuvdNExmVNalz3jbh/cJOh6W", "plaintext": "none"}
+    ]
+  },
+  {
+    "id": "room1",
+    "title": "Room 1 User",
+    "zones": ["Room 1"],
+    "secrets": [
+      {"hash": "$2a$10$nA3g9oyEo83GECK5DdRnaeblz8d/H8e5IdSLzAkhS/wrV7Uv7SUmK", "plaintext": "room1"}
+    ]
+  },
+  {
+    "id": "rooms",
+    "title": "Rooms User",
+    "zones": ["Room 1", "Room 2"],
+    "secrets": [
+      {"hash": "$2a$10$Rvk5nnuhBYVyespRPqR1/OpnJgYuZsRJ8FnULpjtmKp7DAW0IKvh6", "plaintext": "rooms"}
+    ]
+  }
+]

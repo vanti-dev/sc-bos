@@ -300,6 +300,18 @@ func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 	return i, err
 }
 
+const getAccountByUsername = `-- name: GetAccountByUsername :one
+SELECT account_id, username, password_hash FROM user_accounts
+WHERE username = ?1
+`
+
+func (q *Queries) GetAccountByUsername(ctx context.Context, username string) (UserAccount, error) {
+	row := q.db.QueryRowContext(ctx, getAccountByUsername, username)
+	var i UserAccount
+	err := row.Scan(&i.AccountID, &i.Username, &i.PasswordHash)
+	return i, err
+}
+
 const getAccountDetails = `-- name: GetAccountDetails :one
 SELECT id, display_name, description, type, create_time, username, password_hash, primary_secret_hash, secondary_secret_hash, secondary_secret_expire_time FROM account_details
 WHERE id = ?1
@@ -439,6 +451,38 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listLegacyRolesForAccount = `-- name: ListLegacyRolesForAccount :many
+SELECT DISTINCT r.legacy_role
+FROM role_assignments ra
+INNER JOIN roles r ON ra.role_id = r.id
+WHERE ra.account_id = ?1
+  AND r.legacy_role IS NOT NULL
+ORDER BY r.legacy_role
+`
+
+func (q *Queries) ListLegacyRolesForAccount(ctx context.Context, accountID int64) ([]sql.NullString, error) {
+	rows, err := q.db.QueryContext(ctx, listLegacyRolesForAccount, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []sql.NullString
+	for rows.Next() {
+		var legacy_role sql.NullString
+		if err := rows.Scan(&legacy_role); err != nil {
+			return nil, err
+		}
+		items = append(items, legacy_role)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -687,6 +731,42 @@ func (q *Queries) ListRolesAndPermissions(ctx context.Context, arg ListRolesAndP
 			&i.Role.LegacyRole,
 			&i.Role.Protected,
 			&i.Permissions,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRolesWithLegacyRole = `-- name: ListRolesWithLegacyRole :many
+SELECT id, display_name, description, legacy_role, protected
+FROM roles
+WHERE legacy_role = ?1
+ORDER BY id
+`
+
+func (q *Queries) ListRolesWithLegacyRole(ctx context.Context, legacyRole sql.NullString) ([]Role, error) {
+	rows, err := q.db.QueryContext(ctx, listRolesWithLegacyRole, legacyRole)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.DisplayName,
+			&i.Description,
+			&i.LegacyRole,
+			&i.Protected,
 		); err != nil {
 			return nil, err
 		}

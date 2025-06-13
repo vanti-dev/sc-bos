@@ -1,4 +1,4 @@
-package tenant
+package accesstoken
 
 import (
 	"context"
@@ -13,20 +13,20 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
-type tokenClaims struct {
+type claims struct {
 	Name  string   `json:"name,omitempty"`
 	Zones []string `json:"zones,omitempty"`
 	Roles []string `json:"roles,omitempty"`
 }
 
-type TokenSource struct {
+type Source struct {
 	Key                 jose.SigningKey
 	Issuer              string
 	Now                 func() time.Time
 	SignatureAlgorithms []string
 }
 
-func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Duration) (token string, err error) {
+func (ts *Source) GenerateAccessToken(data SecretData, validity time.Duration) (token string, err error) {
 	signer, err := jose.NewSigner(ts.Key, nil)
 	if err != nil {
 		return "", err
@@ -49,20 +49,20 @@ func (ts *TokenSource) GenerateAccessToken(data SecretData, validity time.Durati
 		NotBefore: jwt.NewNumericDate(now),
 		IssuedAt:  jwt.NewNumericDate(now),
 	}
-	customClaims := tokenClaims{Name: data.Title, Zones: data.Zones, Roles: data.Roles}
+	customClaims := claims{Name: data.Title, Zones: data.Zones, Roles: data.Roles}
 	return jwt.Signed(signer).
 		Claims(jwtClaims).
 		Claims(customClaims).
 		Serialize()
 }
 
-func (ts *TokenSource) ValidateAccessToken(_ context.Context, tokenStr string) (*token.Claims, error) {
+func (ts *Source) ValidateAccessToken(_ context.Context, tokenStr string) (*token.Claims, error) {
 	tok, err := jwt.ParseSigned(tokenStr, jose_utils.ConvertToNativeJose(ts.SignatureAlgorithms))
 	if err != nil {
 		return nil, err
 	}
 	var jwtClaims jwt.Claims
-	var customClaims tokenClaims
+	var customClaims claims
 	err = tok.Claims(ts.Key.Key, &jwtClaims, &customClaims)
 	if err != nil {
 		return nil, err
