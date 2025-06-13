@@ -66,8 +66,8 @@ func TestInterceptor_GRPC(t *testing.T) {
 	if err == nil {
 		t.Error("expected error")
 	}
-	if c := status.Code(err); c != codes.PermissionDenied {
-		t.Errorf("expected PermissionDenied, got %v", err)
+	if c := status.Code(err); c != codes.Unauthenticated {
+		t.Errorf("expected Unauthenticated, got %v", err)
 	}
 
 	// check action based auth, specific to this trait
@@ -79,8 +79,8 @@ func TestInterceptor_GRPC(t *testing.T) {
 	if err == nil {
 		t.Error("expected error")
 	}
-	if c := status.Code(err); c != codes.PermissionDenied {
-		t.Errorf("expected PermissionDenied, got %v", err)
+	if c := status.Code(err); c != codes.Unauthenticated {
+		t.Errorf("expected Unauthenticated, got %v", err)
 	}
 }
 
@@ -117,7 +117,7 @@ func TestInterceptor_HTTP(t *testing.T) {
 	check(http.MethodGet, "/bar", http.StatusOK)
 	// POST requests are only allowed for /foo
 	check(http.MethodPost, "/foo", http.StatusOK)
-	check(http.MethodPost, "/bar", http.StatusForbidden)
+	check(http.MethodPost, "/bar", http.StatusUnauthorized)
 }
 
 var regoFiles = map[string]string{
