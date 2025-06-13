@@ -111,12 +111,12 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 		"wrong_password": {
 			username:      "user1",
 			password:      "wrong-password",
-			expectedError: errUsernamePassword,
+			expectedError: accesstoken.ErrInvalidCredentials,
 		},
 		"non_existent_user": {
 			username:      "nonexistent",
 			password:      "anything",
-			expectedError: errUsernamePassword,
+			expectedError: accesstoken.ErrInvalidCredentials,
 		},
 		"multiple_valid_roles": {
 			username: "multi-role-user",
@@ -129,17 +129,17 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 		"no_roles_assigned": {
 			username:      "no-role-user",
 			password:      "password",
-			expectedError: errNoRoles,
+			expectedError: accesstoken.ErrNoRolesAssigned,
 		},
 		"invalid_role_missing": {
 			username:      "invalid-role-user",
 			password:      "pass789",
-			expectedError: errNoRoles, // Since the role wasn't imported, user will have no valid roles
+			expectedError: accesstoken.ErrNoRolesAssigned, // Since the role wasn't imported, user will have no valid roles
 		},
 		"no_password": {
 			username:      "no-password-user",
 			password:      "", // Try with empty password
-			expectedError: errUsernamePassword,
+			expectedError: accesstoken.ErrInvalidCredentials,
 		},
 		"multiple_passwords_first_works": {
 			username: "multi-password-user",
@@ -152,7 +152,7 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 		"multiple_passwords_second_fails": {
 			username:      "multi-password-user",
 			password:      "secondpass", // System only imports first password
-			expectedError: errUsernamePassword,
+			expectedError: accesstoken.ErrInvalidCredentials,
 		},
 		"super_admin_role": {
 			username: "super-admin",
