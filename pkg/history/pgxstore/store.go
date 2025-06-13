@@ -91,6 +91,10 @@ func (s *Store) Insert(ctx context.Context, at time.Time, payload []byte) (histo
 }
 
 func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, error) {
+	if payload == nil {
+		return history.Record{}, fmt.Errorf("payload cannot be nil")
+	}
+
 	now := s.now()
 	r := history.Record{
 		CreateTime: now,

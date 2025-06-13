@@ -4,6 +4,7 @@ package boltstore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 	"time"
@@ -62,6 +63,9 @@ func NewFromDb(ctx context.Context, db *bolthold.Store, source string, opts ...O
 }
 
 func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, error) {
+	if payload == nil {
+		return history.Record{}, fmt.Errorf("payload cannot be nil")
+	}
 	now := s.now()
 	r := history.Record{
 		ID:         createTimeToID(now),
