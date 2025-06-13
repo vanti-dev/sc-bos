@@ -4,13 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
+	"math/rand"
 	"sync"
 	"testing"
 	"time"
 
 	"go.uber.org/zap"
-	"golang.org/x/exp/rand"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -37,8 +36,8 @@ func TestPirsTurnLightsOn(t *testing.T) {
 
 	loggerConfig := zap.NewDevelopmentConfig()
 	loggerConfig.DisableStacktrace = true
-	logger, _ := loggerConfig.Build()                                          // the test is sometimes failing, this might help with debugging
-	logger = logger.Named(fmt.Sprintf("%x", math.Float64bits(rand.Float64()))) // helps with --count>1 tests
+	logger, _ := loggerConfig.Build()                       // the test is sometimes failing, this might help with debugging
+	logger = logger.Named(fmt.Sprintf("%x", rand.Uint64())) // helps with --count>1 tests
 	automation := PirsTurnLightsOn(rootNode, logger)
 	automation.makeActions = func(_ node.ClientConner) actions { return testActions }
 	automation.autoStartTime = clock.now
