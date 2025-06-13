@@ -267,13 +267,17 @@ export const useAccountStore = defineStore('accountStore', () => {
     return ctx;
   };
 
+  const isLoggingIn = computed(() => {
+    return router.currentRoute.value.path === '/login'
+  })
+
   /**
    * Redirect to the login page if the user is not already there.
    *
    * @return {Promise<void>}
    */
   const redirectToLogin = async () => {
-    if (router.currentRoute.path !== '/login') {
+    if (!isLoggingIn.value) {
       await router.push('/login');
     }
   };
@@ -307,23 +311,25 @@ export const useAccountStore = defineStore('accountStore', () => {
    */
   const logout = async (reason) => {
     await initComplete;
-    if (activeAuthProvider.value === 'keyCloakAuth') {
+    const provider = activeAuthProvider.value;
+    if (provider === 'keyCloakAuth') {
       await keyCloak.logout();
-    } else if (activeAuthProvider.value === 'localAuth') {
+    } else if (provider === 'localAuth') {
       await localAuth.logout();
-    } else if (activeAuthProvider.value === 'deviceFlow') {
+    } else if (provider === 'deviceFlow') {
       await deviceFlow.logout();
     }
 
-    if (reason) {
-      snackbar.value = {
-        message: 'Logged out: ' + reason,
-        visible: true
-      };
-    }
-
     resetStoreToDefaults();
-    await redirectToLogin();
+    if (!isLoggingIn.value) {
+      if (reason && provider) {
+        snackbar.value = {
+          message: 'Logged out: ' + reason,
+          visible: true
+        };
+      }
+      await redirectToLogin();
+    }
   };
 
   /**
