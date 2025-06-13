@@ -27,6 +27,11 @@
       </v-list-item>
       <v-list-item v-else v-bind="itemProps" density="compact"/>
     </template>
+    <template #append-item v-if="$slots.appendSticky">
+      <v-card-actions class="sticky-actions">
+        <slot name="appendSticky"/>
+      </v-card-actions>
+    </template>
   </v-autocomplete>
 </template>
 
@@ -158,5 +163,14 @@ const items = computed(() => {
 <style scoped>
 :deep(.v-menu .v-list-item + .v-list-subheader) {
   margin-top: 16px;
+}
+
+.sticky-actions {
+  position: sticky;
+  bottom: -8px;
+  background-color: rgb(var(--v-theme-surface));
+  z-index: 1;
+  border-top: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  margin-top: 8px;
 }
 </style>

@@ -22,7 +22,14 @@
           </v-autocomplete>
         </v-card-text>
         <v-card-text>
-          <scope-autocomplete v-model="selectedScopes" :disabled="scopeDisabled"/>
+          <scope-autocomplete v-model="selectedScopes" :disabled="scopeDisabled">
+            <template #appendSticky>
+              <v-btn @click="onGrantClick" color="primary" :disabled="grantBtnDisabled">
+                Grant
+              </v-btn>
+              <v-btn @click="onCancelClick">Cancel</v-btn>
+            </template>
+          </scope-autocomplete>
           <v-expand-transition>
             <v-alert v-if="selectedRoleIsProtected"
                      type="info"
