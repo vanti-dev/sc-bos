@@ -182,17 +182,34 @@ func (s *streamRequestInterceptor) RecvMsg(m any) error {
 }
 
 func testDownstream(t *testing.T, ctx context.Context, client traits.OnOffApiClient, name string) {
-	t.Helper()
-
 	ctx, stop := context.WithTimeout(ctx, time.Second)
 	defer stop() // also cancels the stream
 
-	stream, err := client.PullOnOff(ctx, &traits.PullOnOffRequest{Name: name, UpdatesOnly: true})
+	stream, err := client.PullOnOff(ctx, &traits.PullOnOffRequest{Name: name})
 	if err != nil {
 		t.Fatalf("client.PullOnOff(%s) = %v", name, err)
 	}
+	assertNextEvent := func(s *traits.OnOff) {
+		event, err := stream.Recv()
+		if err != nil {
+			t.Fatalf("stream.Recv(%s) = %v", name, err)
+		}
+		// clear timestamps to make comparison easier
+		for i := range event.Changes {
+			event.Changes[i].ChangeTime = nil
+		}
+		wantEvent := &traits.PullOnOffResponse{Changes: []*traits.PullOnOffResponse_Change{
+			{Name: name, OnOff: s},
+		}}
+		if diff := cmp.Diff(event, wantEvent, protocmp.Transform()); diff != "" {
+			t.Fatalf("stream.Recv(%s) mismatch (-want +got):\n%s", name, diff)
+		}
+	}
 
-	// check initial state
+	// ensure the stream is open
+	// note: we must Recv on the stream before calling update, otherwise we race with the server invocation.
+	assertNextEvent(&traits.OnOff{State: traits.OnOff_OFF})
+	// and matches initial state
 	res, err := client.GetOnOff(ctx, &traits.GetOnOffRequest{Name: name})
 	if err != nil {
 		t.Fatalf("client.GetOnOff(%s) = %v", name, err)
@@ -210,24 +227,8 @@ func testDownstream(t *testing.T, ctx context.Context, client traits.OnOffApiCli
 		t.Fatalf("client.UpdateOnOff(%s) mismatch (-want +got):\n%s", name, diff)
 	}
 
-	// check stream
-	event, err := stream.Recv()
-	if err != nil {
-		t.Fatalf("stream.Recv(%s) = %v", name, err)
-	}
-	// clear timestamps to make comparison easier
-	for i := range event.Changes {
-		event.Changes[i].ChangeTime = nil
-	}
-	wantEvent := &traits.PullOnOffResponse{Changes: []*traits.PullOnOffResponse_Change{
-		{
-			Name:  name,
-			OnOff: &traits.OnOff{State: traits.OnOff_ON},
-		},
-	}}
-	if diff := cmp.Diff(event, wantEvent, protocmp.Transform()); diff != "" {
-		t.Fatalf("stream.Recv(%s) mismatch (-want +got):\n%s", name, diff)
-	}
+	// check stream emitted the update
+	assertNextEvent(&traits.OnOff{State: traits.OnOff_ON})
 }
 
 func registerService(reg *Router, service string, clients ...*grpc.ClientConn) {
