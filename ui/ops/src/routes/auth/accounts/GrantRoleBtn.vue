@@ -109,17 +109,17 @@ const onGrantClick = async () => {
         ras.push(res);
       }
       for (const scope of selectedScopes.value) {
-        const res = await createRoleAssignment({
-          name: props.name,
-          roleAssignment: {
-            accountId: accountId,
-            roleId: selectedRole.value.id,
-            scope: {
-              resource: scope.value,
-              resourceType: scope.type,
-            }
-          }
-        });
+        const roleAssignment = {
+          accountId: accountId,
+          roleId: selectedRole.value.id,
+        };
+        if (scope.type && scope.value) {
+          roleAssignment.scope = {
+            resource: scope.value,
+            resourceType: scope.type,
+          };
+        }
+        const res = await createRoleAssignment({name: props.name, roleAssignment});
         ras.push(res);
       }
     }

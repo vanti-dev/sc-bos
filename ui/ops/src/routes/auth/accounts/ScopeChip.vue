@@ -1,6 +1,6 @@
 <template>
   <v-chip v-tooltip:bottom="tooltipStr">
-    <template #prepend>{{ prependStr }}</template>
+    <template #prepend v-if="prependStr">{{ prependStr }}</template>
     {{ valueStr }}
   </v-chip>
 </template>
@@ -37,6 +37,8 @@ const prependStr = computed(() => {
       return 'System';
     case RoleAssignment.ResourceType.ZONE:
       return 'Zone';
+    case RoleAssignment.ResourceType.RESOURCE_TYPE_UNSPECIFIED:
+      return '';
     default:
       return ResourceTypeById[props.type] ?? 'Unknown';
   }

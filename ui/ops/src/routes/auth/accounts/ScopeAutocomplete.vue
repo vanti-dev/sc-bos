@@ -90,6 +90,8 @@ const cohortStore = useCohortStore();
 const items = computed(() => {
   const items = [];
 
+  items.push({title: 'Global', props: {subtitle: 'All devices and resources', lines: '2'}})
+
   items.push({title: 'Device', header: true, loading: searchDevicesLoading.value});
   if (!hasSearchText.value) {
     items.push({title: 'Search to find specific devices', props: {disabled: true}});
