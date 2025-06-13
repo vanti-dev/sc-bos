@@ -91,8 +91,9 @@ export default function() {
         }
       } else {
         existingLocalAuth.value = null;
+        const payload = await res.json();
         await clearStorage();
-        return Promise.reject(new Error('Failed to sign in, please try again.'));
+        return Promise.reject(payload);
       }
     } catch {
       existingLocalAuth.value = null;
