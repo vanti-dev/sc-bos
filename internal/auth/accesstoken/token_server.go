@@ -15,6 +15,17 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
+// Server implements an OAuth 2.0 token server that supports client credentials and password grant types.
+//
+// When WithClientCredentialFlow is set, the server will accept requests with grant_type=client_credentials.
+// When WithPasswordFlow is set, the server will accept requests with grant_type=password. It is possible to use
+// both on the same server.
+//
+// Error scenarios:
+//   - Wrong credentials: error code "invalid_grant".
+//   - Unsupported grant type: error code "unsupported_grant_type".
+//   - Malformed request: error code "invalid_request".
+//   - Authentication successful, but identity has no resource access: error code "unauthorized_client".
 type Server struct {
 	tokens *Source
 	logger *zap.Logger
@@ -141,7 +152,9 @@ func (s *Server) clientCredentialsFlow(ctx context.Context, writer http.Response
 
 	// lookup secret, and ensure it's for the matching client
 	secretData, err := s.clientCredentialVerifier.Verify(ctx, clientId, clientSecret)
-	if err != nil {
+	if tokenErr := (tokenError{}); errors.As(err, &tokenErr) {
+		return tokenErr
+	} else if err != nil {
 		return errInvalidClient
 	}
 
@@ -181,7 +194,9 @@ func (s *Server) passwordFlow(ctx context.Context, writer http.ResponseWriter, r
 
 	// lookup secret, and ensure it's for the matching client
 	secretData, err := s.passwordVerifier.Verify(ctx, username, password)
-	if err != nil {
+	if tokenErr := (tokenError{}); errors.As(err, &tokenErr) {
+		return tokenErr
+	} else if err != nil {
 		return errInvalidClient
 	}
 

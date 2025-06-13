@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/http"
 	"sync"
 
 	"go.uber.org/multierr"
@@ -16,8 +17,26 @@ import (
 
 // Verifier verifies that an id is associated with a given secret.
 type Verifier interface {
+	// Verify will check that the provided id+secret pair is correct, and return SecretData describing the
+	// authenticated identity if so.
+	// Implementations are encouraged to return one of the sentinel errors ErrInvalidCredentials or ErrNoRolesAssigned
+	// so that appropriate error codes can be returned to the client. Otherwise, the client will be unable to
+	// determine the reason for the failure.
 	Verify(ctx context.Context, id, secret string) (SecretData, error)
 }
+
+var (
+	ErrInvalidCredentials = tokenError{
+		Code:             http.StatusBadRequest,
+		ErrorName:        "invalid_grant",
+		ErrorDescription: "provided credentials are incorrect",
+	}
+	ErrNoRolesAssigned = tokenError{
+		Code:             http.StatusBadRequest,
+		ErrorName:        "unauthorized_client",
+		ErrorDescription: "no roles assigned that allow access to this resource",
+	}
+)
 
 // VerifierFunc adapts an ordinary func to implement Verifier.
 type VerifierFunc func(ctx context.Context, id, secret string) (SecretData, error)
@@ -169,7 +188,10 @@ func (m *memoryRecord) getSecretId(secret string) (string, bool) {
 func (m *memoryRecord) validateLocked(secret string) error {
 	_, ok := m.getSecretId(secret)
 	if !ok {
-		return errors.New("no matching secret")
+		return ErrInvalidCredentials
+	}
+	if len(m.data.Roles) == 0 && len(m.data.Zones) == 0 {
+		return ErrNoRolesAssigned
 	}
 	return nil
 }
@@ -188,7 +210,7 @@ func (v *MemoryVerifier) Verify(_ context.Context, id, secret string) (SecretDat
 
 	r, ok := v.store[id]
 	if !ok {
-		return SecretData{}, errors.New("id not recognised")
+		return SecretData{}, ErrInvalidCredentials
 	}
 
 	r.m.RLock()
