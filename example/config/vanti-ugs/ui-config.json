@@ -3,7 +3,8 @@
     "auth": {
       "third-party": true,
       "accounts": false,
-      "roles": false
+      "roles": false,
+      "users": true
     },
     "device": true,
     "devices": true,
