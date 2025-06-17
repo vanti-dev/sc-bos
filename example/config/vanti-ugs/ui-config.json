@@ -1,7 +1,10 @@
 {
   "features": {
     "auth": {
-      "third-party": true
+      "third-party": true,
+      "accounts": false,
+      "roles": false,
+      "users": true
     },
     "device": true,
     "devices": true,
