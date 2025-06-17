@@ -4,14 +4,16 @@
             v-model="formValid"
             ref="formRef"
             :disabled="formDisabled">
-      <v-card-title>New Account</v-card-title>
+      <v-card-title>{{ titleText }}</v-card-title>
       <v-card-text class="ga-2 d-flex flex-column">
-        <v-btn-toggle v-model="accountType"
-                      variant="outlined"
-                      divided
-                      mandatory
-                      density="comfortable"
-                      class="mb-2">
+        <v-btn-toggle
+            v-if="props.accountTypes.length > 1"
+            v-model="accountType"
+            variant="outlined"
+            divided
+            mandatory
+            density="comfortable"
+            class="mb-2">
           <v-btn :value="Account.Type.USER_ACCOUNT" text="User" v-tooltip:bottom="'User account'"/>
           <v-btn :value="Account.Type.SERVICE_ACCOUNT" text="Service" v-tooltip:bottom="'Service account'"/>
         </v-btn-toggle>
@@ -69,6 +71,7 @@
 
 <script setup>
 import {createAccount} from '@/api/ui/account.js';
+import {useLocalProp} from '@/util/vue.js';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
 import {computed, ref, watch} from 'vue';
 
@@ -76,14 +79,32 @@ const props = defineProps({
   name: {
     type: String,
     default: undefined,
-  }
+  },
+  accountTypes: {
+    type: Array,
+    default: () => [Account.Type.USER_ACCOUNT, Account.Type.SERVICE_ACCOUNT],
+  },
 });
 
 const emit = defineEmits(['save', 'cancel', 'error']);
 
 const formRef = ref(null);
 const formValid = ref(false);
-const accountType = ref(Account.Type.USER_ACCOUNT);
+
+const titleText = computed(() => {
+  if (!props.accountTypes || props.accountTypes.length > 1) return 'New Account';
+  switch (props.accountTypes[0]) {
+    case Account.Type.USER_ACCOUNT:
+      return 'New User'
+    case Account.Type.SERVICE_ACCOUNT:
+      return 'New Service Account'
+    default:
+      return 'New Account';
+  }
+})
+const accountType = useLocalProp(computed(() => {
+  return props.accountTypes?.[0] ?? Account.Type.USER_ACCOUNT;
+}));
 const fullName = ref('');
 const fullNameRules = computed(() => {
   return [

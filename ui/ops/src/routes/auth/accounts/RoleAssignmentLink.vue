@@ -2,7 +2,7 @@
   <span>
     <template v-for="(part, i) in textParts" :key="i">
       <template v-if="i > 0"> {{ ' ' }}</template>
-      <template v-if="part.to">
+      <template v-if="part.to && !props.noNav">
         <router-link :to="part.to" v-bind="part.props ?? {}">
           <v-tooltip v-if="part.tooltip" activator="parent" location="bottom">{{ part.tooltip }}</v-tooltip>
           {{ part.text }}
@@ -27,6 +27,10 @@ const props = defineProps({
   roleAssignment: {
     type: Object, // type of RoleAssignment.AsObject & {role: Role.AsObject} & {device: Device.AsObject}
     required: true,
+  },
+  noNav: {
+    type: Boolean,
+    default: false,
   }
 });
 

@@ -21,7 +21,7 @@
             </template>
           </v-autocomplete>
         </v-card-text>
-        <v-card-text>
+        <v-card-text v-if="!props.globalOnly">
           <scope-autocomplete v-model="selectedScopes" :disabled="scopeDisabled">
             <template #appendSticky>
               <v-btn @click="onGrantClick" color="primary" :disabled="grantBtnDisabled">
@@ -68,6 +68,10 @@ const props = defineProps({
   accounts: {
     type: [String, Object, Array], // String is the id, Object is an account, Array is of string or object.
     required: true,
+  },
+  globalOnly: {
+    type: Boolean,
+    default: false, // If true, only global scope assignments are allowed.
   }
 });
 const emit = defineEmits(['save', 'cancel']);
@@ -82,6 +86,7 @@ const menuModel = ref(false);
 const grantBtnDisabled = computed(() => {
   if (!selectedRole.value) return true;
   if (selectedRoleIsProtected.value) return false; // Protected roles can be granted without scopes.
+  if (props.globalOnly) return false; // Only a role is needed for global scope assignments.
   return selectedScopes.value.length === 0;
 });
 const grantLoading = ref(false);
