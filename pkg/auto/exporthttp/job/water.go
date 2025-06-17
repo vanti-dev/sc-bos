@@ -49,6 +49,11 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 		consumption += processMeterRecords(multiplier, earliest, latest)
 	}
 
+	if consumption <= 0 {
+		w.Logger.Debug("no water consumption found, skipping post")
+		return nil
+	}
+
 	body := &types.WaterConsumption{
 		Meta: types.Meta{
 			Timestamp: now,

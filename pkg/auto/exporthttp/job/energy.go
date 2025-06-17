@@ -52,13 +52,20 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 		consumption += processMeterRecords(multiplier, earliest, latest)
 	}
 
+	roundedConsumption := float32(math.Floor(float64(consumption)))
+
+	if roundedConsumption <= 0 {
+		e.Logger.Debug("no energy consumption found, skipping post")
+		return nil
+	}
+
 	body := &types.EnergyConsumption{
 		Meta: types.Meta{
 			Timestamp: now,
 			Site:      e.GetSite(),
 		},
 		TodaysEnergyConsumption: types.Float32Measure{
-			Value: float32(math.Floor(float64(consumption))),
+			Value: roundedConsumption,
 			Units: "kWh",
 		},
 	}
