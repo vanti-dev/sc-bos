@@ -30,6 +30,7 @@ import {computed, onScopeDispose, reactive, ref, toValue, watch} from 'vue';
  * @property {number=} pageSize - how many items to fetch per request, defaults to cap(missing, 10, 500)
  * @property {boolean=} paused - suspend requests
  * @property {(item: T) => string=} idFn - a function to get the id of an item, defaults to item.id or item.name
+ * @property {(item: T) => boolean=} filterFn - a function that filters items from the list.
  * @property {(item: T) => T} transform - a function that transforms items before they are added to the list.
  *   Useful for converting proto Timestamps.
  * @property {(a: T, b: T) => number} cmp - a function that compares two items. Any new item we receive from the
@@ -95,7 +96,10 @@ export default function useCollection(request, client, options) {
     return targetListCount.value === -1 || items.value.length < targetListCount.value;
   });
   // A guess at how many total items there are, either from the server or calculated locally based on fetched items.
-  const totalItems = computed(() => lastListResponse.value?.totalSize ?? items.value.length);
+  const totalItems = computed(() => {
+    if (toValue(options)?.filterFn) return items.value.length; // can't use server total if we filter items locally
+    return lastListResponse.value?.totalSize ?? items.value.length;
+  });
   // Is totalItems a value returned by the server or calculated locally.
   const hasServerTotalItems = computed(() => Boolean(lastListResponse.value?.totalSize));
 
@@ -165,6 +169,51 @@ export default function useCollection(request, client, options) {
     lastListResponse.value = null;
     unprocessedChanges.value = [];
     refreshList();
+  }
+
+  /**
+   * Applies filterFn to changes, adjusting their type accordingly.
+   *
+   * - If a change is an add but filterFn returns false, it is omitted.
+   * - If a change is a delete and filterFn returns false, it is omitted.
+   * - If a change is an update
+   *   - If filterFn returns false for both old and new values, it is omitted.
+   *   - If filterFn returns false for the old value but true for the new value, it is converted to an add.
+   *   - If filterFn returns true for the old value but false for the new value, it is converted to a delete.
+   * - All other changes are kept as is.
+   *
+   * @param {PullChange<T>[]} changes
+   * @param {(T) => boolean} filterFn
+   * @return {PullChange<T>[]}
+   */
+  const filterChanges = (changes, filterFn) => {
+    if (!filterFn) return changes; // no filter, return as is
+    return changes.map(change => {
+      if (change.newValue && !change.oldValue) {
+        // add
+        if (filterFn(change.newValue)) return change; // keep
+        return null; // omit
+      } else if (!change.newValue && change.oldValue) {
+        // delete
+        if (filterFn(change.oldValue)) return change; // keep
+        return null; // omit
+      } else if (change.newValue && change.oldValue) {
+        // update
+        const oldValid = filterFn(change.oldValue);
+        const newValid = filterFn(change.newValue);
+        if (oldValid && newValid) return change; // keep as is
+        if (!oldValid && newValid) {
+          // convert to add
+          return {newValue: change.newValue, oldValue: null};
+        }
+        if (oldValid && !newValid) {
+          // convert to delete
+          return {newValue: null, oldValue: change.oldValue};
+        }
+        return null; // omit both
+      }
+      return change; // keep as is, should not happen
+    }).filter(v => v !== null); // remove nulls
   }
 
   /**
@@ -241,6 +290,7 @@ export default function useCollection(request, client, options) {
     if (!_changes.length) return; // no changes, nothing to do
     const opts = toValue(options);
     const transform = opts?.transform ?? (v => v);
+    const filterFn = opts?.filterFn;
     const idFn = opts?.idFn;
 
     // optimise the lookup of items by id if we're going to do it a bunch
@@ -260,7 +310,9 @@ export default function useCollection(request, client, options) {
     // delay mutating the items until later so the indexes remain accurate
     const toDeleteIndexes = [];
     const toAddItems = [];
-    const changes = removeDuplicateChanges(unprocessedChanges.value, idFn);
+    let changes = unprocessedChanges.value;
+    changes = filterChanges(changes, filterFn);
+    changes = removeDuplicateChanges(changes, idFn);
     for (const change of changes) {
       const index = getIndex(getId(change.newValue ?? change.oldValue, idFn));
       if (change.oldValue && !change.newValue) {
