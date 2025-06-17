@@ -94,7 +94,7 @@
       </v-list-subheader>
       <v-list-item v-for="roleAssignment in roleAssignments" :key="roleAssignment.id" min-height="0px">
         <v-list-item-title>
-          <role-assignment-link :role-assignment="roleAssignment"/>
+          <role-assignment-link :role-assignment="roleAssignment" no-nav/>
         </v-list-item-title>
         <template #append>
           <v-list-item-action>
