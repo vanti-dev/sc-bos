@@ -165,7 +165,7 @@ func (l *light) pollPeer(ctx context.Context) (*traits.Brightness, error) {
 			scene, err := l.findSceneByValue(int(value))
 
 			if err != nil {
-				return comm.ErrPropNotFound
+				return err
 			}
 
 			data.Preset.Name = scene.Name
