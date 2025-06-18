@@ -15,7 +15,6 @@ user_request(service, method, request, roles) := input {
     "token_valid": true,
     "token_claims": {
       "roles": roles,
-      "scopes": null,
       "zones": null,
       "is_service": true
     }
@@ -78,7 +77,6 @@ tenant_request(service, method, request, zones) := input {
     "token_valid": true,
     "token_claims": {
       "roles": null,
-      "scopes": null,
       "zones": zones,
       "is_service": true
     }
