@@ -38,13 +38,25 @@ func TestPollErr(t *testing.T) {
 		}
 		ctx, stop := context.WithCancel(context.Background())
 		defer stop()
-		err := PollErr(action, WithPollInterval(time.Millisecond/10)).Attach(ctx)
+
+		runner := PollErr(action, WithPollInterval(time.Millisecond/10))
+		err := runner.Attach(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
 
+		// override the stop function to signal when it is called
+		stopCalled := make(chan struct{})
+		stopFn := runner.stop
+		runner.stop = func() {
+			stopFn()
+			close(stopCalled)
+		}
+
 		time.Sleep(10 * time.Millisecond)
 		stop()
+
+		<-stopCalled // wait for the stop to be called as this is a short-running task
 
 		runCount2 := runCount.Load()
 
