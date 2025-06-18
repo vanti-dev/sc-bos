@@ -61,7 +61,7 @@ func TestPollErr(t *testing.T) {
 		runCount2 := runCount.Load()
 
 		time.Sleep(10 * time.Millisecond)
-		if delta := runCount.Load() - runCount2; delta > 1 {
+		if delta := runCount.Load() - runCount2; delta > 0 {
 			t.Errorf("expected no more runs, got %d extra", delta)
 		}
 	})
