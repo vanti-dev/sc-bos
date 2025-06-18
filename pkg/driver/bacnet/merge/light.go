@@ -48,9 +48,6 @@ func readLightConfig(raw []byte) (cfg lightCfg, err error) {
 }
 
 type light struct {
-	traits.UnimplementedLightApiServer
-	traits.UnimplementedLightInfoServer
-
 	client   *gobacnet.Client
 	known    known.Context
 	statuses *statuspb.Map
