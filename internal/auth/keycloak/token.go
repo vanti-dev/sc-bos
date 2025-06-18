@@ -119,7 +119,6 @@ func (v *tokenValidator) ValidateAccessToken(ctx context.Context, tokenStr strin
 
 	return &token.Claims{
 		Roles:     payload.allRoles(),
-		Scopes:    payload.Scopes,
 		IsService: payload.isAppOnly(),
 		Zones:     payload.Zones,
 	}, nil
