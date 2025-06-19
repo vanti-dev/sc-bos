@@ -32,13 +32,13 @@ token_has_role(role) {
   claims.system_roles[_] == role
 }
 
-token_has_permission(permission) {
+token_has_permission_direct(permission) {
   some assignment in token_permission_assignments
   assignment.permission == permission
   not assignment.scoped
 }
 
-token_has_permission(permission) {
+token_has_permission_direct(permission) {
   some assignment in token_permission_assignments
   assignment.permission == permission
   assignment.scoped
@@ -46,10 +46,25 @@ token_has_permission(permission) {
   startswith(input.request.name, concat("/", [assignment.resource, ""]))
 }
 
-token_has_permission(permission) {
+token_has_permission_direct(permission) {
   some assignment in token_permission_assignments
   assignment.permission == permission
   assignment.scoped
   assignment.resource_type in ["NAMED_RESOURCE", "NAMED_RESOURCE_PATH_PREFIX"]
   input.request.name == assignment.resource
+}
+
+token_has_permission(permission) {
+  token_has_permission_direct(permission)
+}
+
+token_has_permission(permission) {
+  some parent_permission
+  permission in inherit_permissions[parent_permission]
+  token_has_permission_direct(parent_permission)
+}
+
+inherit_permissions := {
+  "trait:*": {"trait:read", "trait:write"},
+  "trait:write": {"trait:read"},
 }

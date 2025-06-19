@@ -37,8 +37,3 @@ allow {
   trait_request
   token_has_permission("trait:write")
 }
-
-allow {
-  trait_request
-  token_has_permission("trait:*")
-}
