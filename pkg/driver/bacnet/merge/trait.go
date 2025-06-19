@@ -29,6 +29,8 @@ func IntoTrait(client *gobacnet.Client, devices known.Context, statuses *statusp
 		return newEnergyStorage(client, devices, statuses, traitConfig, logger)
 	case trait.FanSpeed:
 		return newFanSpeed(client, devices, statuses, traitConfig, logger)
+	case trait.Light:
+		return newLight(client, devices, statuses, traitConfig, logger)
 	case meter.TraitName:
 		return newMeter(client, devices, statuses, traitConfig, logger)
 	case trait.Mode:
