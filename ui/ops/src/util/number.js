@@ -38,6 +38,10 @@ export function roundTo(num, decimals) {
     return num;
   }
 
+  if (decimals === 0) {
+    return Math.round(num);
+  }
+
   const factor = Math.pow(10, decimals);
   return Math.round(num * factor) / factor;
 }
