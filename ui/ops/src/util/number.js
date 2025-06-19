@@ -25,3 +25,19 @@ export function cap(value, min, max) {
 export function scale(value, fromMin, fromMax, toMin, toMax) {
   return toMin + (toMax - toMin) * ((value - fromMin) / (fromMax - fromMin));
 }
+
+/**
+ * Round a number to a specified number of decimal places.
+ *
+ * @param {number} num
+ * @param {number} decimals
+ * @return {number}
+ */
+export function roundTo(num, decimals) {
+  if (decimals < 0) {
+    return num;
+  }
+
+  const factor = Math.pow(10, decimals);
+  return Math.round(num * factor) / factor;
+}
