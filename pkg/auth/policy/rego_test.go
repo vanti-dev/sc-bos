@@ -15,7 +15,7 @@ func BenchmarkPolicy(b *testing.B) {
 		Request:    json.RawMessage(`{"name":"test","onOff":{"state":"ON"}}`),
 		TokenValid: true,
 		TokenClaims: token.Claims{
-			Roles: []string{"admin"},
+			SystemRoles: []string{"admin"},
 		},
 	}
 	run := func(b *testing.B, policy Policy) {

@@ -11,6 +11,7 @@ import (
 
 	jose_utils "github.com/vanti-dev/sc-bos/internal/util/jose"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 type claims struct {
@@ -74,10 +75,14 @@ func (ts *Source) ValidateAccessToken(_ context.Context, tokenStr string) (*toke
 	if err != nil {
 		return nil, err
 	}
+	permissionAssignments := make([]token.PermissionAssignment, 0, len(customClaims.Zones))
+	for _, zone := range customClaims.Zones {
+		permissionAssignments = append(permissionAssignments, legacyZonePermission(zone))
+	}
 	return &token.Claims{
-		Roles:     customClaims.Roles,
-		Zones:     customClaims.Zones,
-		IsService: true,
+		SystemRoles: customClaims.Roles,
+		IsService:   true,
+		Permissions: permissionAssignments,
 	}, nil
 }
 
@@ -92,4 +97,16 @@ func generateKey() (jose.SigningKey, error) {
 		Algorithm: jose.HS256,
 		Key:       key,
 	}, nil
+}
+
+// legacyZonePermission returns a PermissionAssignment that grants full trait access to names beginning with the given prefix.
+// Despite the name, this returns a NAMED_RESOURCE_PATH_PREFIX resource type, to maintain compatibility with the old
+// way of assigning tenant tokens to zones.
+func legacyZonePermission(zone string) token.PermissionAssignment {
+	return token.PermissionAssignment{
+		Permission:   token.TraitWriteAll,
+		Scoped:       true,
+		ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+		Resource:     zone,
+	}
 }
