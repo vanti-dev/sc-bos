@@ -14,8 +14,7 @@ user_request(service, method, request, roles) := input {
     "token_present": true,
     "token_valid": true,
     "token_claims": {
-      "roles": roles,
-      "zones": null,
+      "system_roles": roles,
       "is_service": true
     }
   }
@@ -76,18 +75,26 @@ tenant_request(service, method, request, zones) := input {
     "token_present": true,
     "token_valid": true,
     "token_claims": {
-      "roles": null,
-      "zones": zones,
-      "is_service": true
+      "system_roles": null,
+      "is_service": true,
+      "permissions": [ permission |
+        zone := zones[_]
+        permission := {
+          "permission": "trait:*",
+          "scoped": true,
+          "resource_type": "NAMED_RESOURCE_PATH_PREFIX",
+          "resource": zone
+        }
+      ],
     }
   }
 }
 
 test_zone_exact {
-  data.smartcore.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/1"}, ["zone/1"])
+  data.smartcore.traits.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/1"}, ["zone/1"])
 }
 test_zone_parent {
-  data.smartcore.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/1/child"}, ["zone/1"])
+  data.smartcore.traits.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/1/child"}, ["zone/1"])
 }
 test_zone_mismatch {
   not data.smartcore.traits.LightApi.allow with input as tenant_request("smartcore.traits.LightApi", "GetBrightness", {"name": "zone/2"}, ["zone/1"])
