@@ -13,7 +13,3 @@ allow {
 allow {
   token_has_permission("trait:write")
 }
-
-allow {
-  token_has_permission("trait:*")
-}
