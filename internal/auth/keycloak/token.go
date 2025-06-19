@@ -20,7 +20,6 @@ type accessTokenPayload struct {
 	jwt.Claims
 	Roles          []string                  `json:"roles"`
 	Scopes         auth.JWTScopes            `json:"scope"`
-	Zones          []string                  `json:"zones"` // The zones that this token is authorized for, for tenant tokens
 	ResourceAccess map[string]resourceAccess `json:"resource_access"`
 }
 
@@ -31,10 +30,6 @@ func (a *accessTokenPayload) allRoles() []string {
 		roles = append(roles, res.Roles...)
 	}
 	return roles
-}
-
-func (a *accessTokenPayload) isAppOnly() bool {
-	return false
 }
 
 type resourceAccess struct {
@@ -118,8 +113,7 @@ func (v *tokenValidator) ValidateAccessToken(ctx context.Context, tokenStr strin
 	}
 
 	return &token.Claims{
-		Roles:     payload.allRoles(),
-		IsService: payload.isAppOnly(),
-		Zones:     payload.Zones,
+		SystemRoles: payload.allRoles(),
+		IsService:   false,
 	}, nil
 }

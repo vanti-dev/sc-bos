@@ -21,22 +21,35 @@ token_roles = roles {
   roles := claims.roles
 }
 
-token_zones = zones {
+token_permission_assignments = assignments {
   claims := valid_claims
-  zones := claims.zones
+  assignments := claims.permissions
 }
 
 token_has_role(role) {
   role in roles
   claims := valid_claims
-  claims.roles[_] == role
+  claims.system_roles[_] == role
 }
 
-# match if the current request name is equal to or a sub-name of one of the tokens zones
-token_matches_zone {
-  some zone in token_zones
-  startswith(input.request.name, concat("/", [zone, ""]))
+token_has_permission(permission) {
+  some assignment in token_permission_assignments
+  assignment.permission == permission
+  not assignment.scoped
 }
-token_matches_zone {
-  token_zones[_] == input.request.name
+
+token_has_permission(permission) {
+  some assignment in token_permission_assignments
+  assignment.permission == permission
+  assignment.scoped
+  assignment.resource_type == "NAMED_RESOURCE_PATH_PREFIX"
+  startswith(input.request.name, concat("/", [assignment.resource, ""]))
+}
+
+token_has_permission(permission) {
+  some assignment in token_permission_assignments
+  assignment.permission == permission
+  assignment.scoped
+  assignment.resource_type in ["NAMED_RESOURCE", "NAMED_RESOURCE_PATH_PREFIX"]
+  input.request.name == assignment.resource
 }
