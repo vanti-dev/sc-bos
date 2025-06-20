@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/pborman/uuid"
@@ -24,8 +25,9 @@ import (
 
 type securityEventSource struct {
 	*config.ValueSource
-
-	Description string `json:"description"` // description of the security event, must be set to make sense of the event
+	// description of the security event, must be set to make sense of the event
+	// if IsString is true, this description acts as a prefix to the value source.
+	Description string `json:"description"`
 	// You want to set at least 1 of these OkBound values, else a security event will never get raised.
 	OkLowerBound *float64 `json:"okLowerBound,omitempty"` // if the point is equal to or greater than this value, it is ok.
 	OkUpperBound *float64 `json:"okUpperBound,omitempty"` // if the point is equal to or less than this value, it is ok.
@@ -35,6 +37,7 @@ type securityEventSource struct {
 	Priority  *int32                       `json:"priority,omitempty"`  // Optional. Priority of the security event, lower is more important
 	Source    *string                      `json:"source,omitempty"`    // Optional. Source of the security event, e.g. "Door 1"
 
+	IsString bool `json:"isString,omitempty"` // Optional. If true, the value source is a string, otherwise it is a float64.
 }
 
 type securityEvent struct {
@@ -193,6 +196,27 @@ func (s *securityEventImpl) pollPeer(ctx context.Context) error {
 func (se *securityEvent) checkResponseForSecurityEvent(response any) (*gen.SecurityEvent, error) {
 	data := &gen.SecurityEvent{}
 
+	if se.cfg.IsString {
+		value, err := comm.StringValue(response)
+		if err != nil {
+			return nil, comm.ErrReadProperty{Prop: "securityEvent", Cause: err}
+		}
+
+		if value == "" {
+			return nil, nil // no event if the value is empty
+		}
+
+		se.cfgDefaults(data)
+
+		if se.cfg.Description != "" {
+			data.Description = fmt.Sprintf("%s: %s", se.cfg.Description, value)
+		} else {
+			data.Description = value
+		}
+
+		return data, nil
+	}
+
 	value, err := comm.Float64Value(response)
 	if err != nil {
 		return nil, comm.ErrReadProperty{Prop: "securityEvent", Cause: err}
@@ -203,33 +227,37 @@ func (se *securityEvent) checkResponseForSecurityEvent(response any) (*gen.Secur
 		// we only want to add a new security event if it wasn't active on the last poll
 		if !se.IsActive {
 			se.IsActive = true
+			se.cfgDefaults(data)
 			data.Description = se.cfg.Description
-			data.Id = uuid.New()
-			data.SecurityEventTime = timestamppb.Now() // not strictly true but as long as the bacnet poll is not too slow, this should be fine
-
-			if se.cfg.Actor != nil {
-				data.Actor = &gen.Actor{
-					Name: *se.cfg.Actor,
-				}
-			}
-
-			if se.cfg.EventType != nil {
-				data.EventType = gen.SecurityEvent_EventType(*se.cfg.EventType)
-			}
-
-			if se.cfg.Priority != nil {
-				data.Priority = *se.cfg.Priority
-			}
-
-			if se.cfg.Source != nil {
-				data.Source = &gen.SecurityEvent_Source{
-					Name: *se.cfg.Source,
-				}
-			}
 			return data, nil
 		}
 	} else {
 		se.IsActive = false
 	}
 	return nil, nil
+}
+
+func (se *securityEvent) cfgDefaults(data *gen.SecurityEvent) {
+	data.Id = uuid.New()
+	data.SecurityEventTime = timestamppb.Now() // not strictly true but as long as the bacnet poll is not too slow, this should be fine
+
+	if se.cfg.Actor != nil {
+		data.Actor = &gen.Actor{
+			Name: *se.cfg.Actor,
+		}
+	}
+
+	if se.cfg.EventType != nil {
+		data.EventType = *se.cfg.EventType
+	}
+
+	if se.cfg.Priority != nil {
+		data.Priority = *se.cfg.Priority
+	}
+
+	if se.cfg.Source != nil {
+		data.Source = &gen.SecurityEvent_Source{
+			Name: *se.cfg.Source,
+		}
+	}
 }
