@@ -104,8 +104,8 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 			username: "user1",
 			password: "password123",
 			expect: accesstoken.SecretData{
-				Title: "User 1 - Basic",
-				Roles: []string{"admin"},
+				Title:       "User 1 - Basic",
+				SystemRoles: []string{"admin"},
 			},
 		},
 		"wrong_password": {
@@ -122,8 +122,8 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 			username: "multi-role-user",
 			password: "secure456",
 			expect: accesstoken.SecretData{
-				Title: "User with Multiple Roles",
-				Roles: []string{"admin", "commissioner", "operator"},
+				Title:       "User with Multiple Roles",
+				SystemRoles: []string{"admin", "commissioner", "operator"},
 			},
 		},
 		"no_roles_assigned": {
@@ -145,8 +145,8 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 			username: "multi-password-user",
 			password: "firstpass",
 			expect: accesstoken.SecretData{
-				Title: "User with Multiple Passwords",
-				Roles: []string{"operator", "viewer"},
+				Title:       "User with Multiple Passwords",
+				SystemRoles: []string{"operator", "viewer"},
 			},
 		},
 		"multiple_passwords_second_fails": {
@@ -158,8 +158,8 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 			username: "super-admin",
 			password: "superadmin!",
 			expect: accesstoken.SecretData{
-				Title: "Super Admin User",
-				Roles: []string{"super-admin"},
+				Title:       "Super Admin User",
+				SystemRoles: []string{"super-admin"},
 			},
 		},
 	}
