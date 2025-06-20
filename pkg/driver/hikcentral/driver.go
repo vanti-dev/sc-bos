@@ -69,7 +69,6 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		cam := NewCamera(client, logger, camera)
 		announcer.Announce(camera.Name,
 			node.HasMetadata(camera.Metadata),
-			node.HasMetadata(camera.Metadata),
 			node.HasClient(gen.WrapMqttService(cam)),
 			node.HasTrait(statuspb.TraitName, node.WithClients(gen.WrapStatusApi(cam))),
 			node.HasTrait(trait.Ptz, node.WithClients(ptzpb.WrapApi(cam))),
@@ -78,7 +77,16 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		cameras = append(cameras, cam)
 	}
 
-	run(ctx, cameras, cfg, grp)
+	var ctrl *ANPRController
+	if cfg.ANPR != nil {
+		ctrl = NewANPRController(client, logger, &cfg)
+		announcer.Announce(cfg.ANPR.Name,
+			node.HasMetadata(cfg.ANPR.Metadata),
+			node.HasTrait(trait.Access, node.WithClients(gen.WrapAccessApi(ctrl))),
+		)
+	}
+
+	run(ctx, ctrl, cameras, cfg, grp, logger)
 
 	go func() {
 		err := grp.Wait()
@@ -88,8 +96,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 	return nil
 }
 
-func run(ctx context.Context, cameras []*Camera, cfg config.Root, grp *errgroup.Group) {
-
+func run(ctx context.Context, ctrl *ANPRController, cameras []*Camera, cfg config.Root, grp *errgroup.Group, logger *zap.Logger) {
 	if cfg.Settings.InfoPoll != nil {
 		grp.Go(func() error {
 			t := newTickerWithCtx(ctx, cfg.Settings.InfoPoll.Duration)
@@ -135,6 +142,20 @@ func run(ctx context.Context, cameras []*Camera, cfg config.Root, grp *errgroup.
 				}
 			}
 			return ctx.Err()
+		})
+	}
+
+	if cfg.ANPR != nil && ctrl != nil {
+		grp.Go(func() error {
+			t := newTickerWithCtx(ctx, cfg.Settings.ANPREventsPoll.Or(5*time.Minute))
+
+			for range t {
+				if err := ctrl.poll(ctx); err != nil {
+					logger.Error("failed to poll anpr controller", zap.Error(err))
+					continue
+				}
+			}
+			return nil
 		})
 	}
 }

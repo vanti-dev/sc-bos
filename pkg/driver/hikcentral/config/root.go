@@ -20,6 +20,11 @@ type Root struct {
 	// Metadata applied to all cameras
 	Metadata *traits.Metadata `json:"metadata,omitempty"`
 	Cameras  []*Camera        `json:"cameras,omitempty"`
+
+	// ANPR contains the configuration for access API server
+	// to create, update and delete access grants
+	// and for monitoring the ANPR cameras at entrances and exits for access attempts
+	ANPR *ANPR `json:"anpr,omitempty"`
 }
 
 type API struct {
@@ -35,6 +40,22 @@ type Settings struct {
 	OccupancyPoll *jsontypes.Duration `json:"occupancyPoll,omitempty"`
 	EventsPoll    *jsontypes.Duration `json:"eventsPoll,omitempty"`
 	StreamPoll    *jsontypes.Duration `json:"streamPoll,omitempty"`
+	// ANPREventsPoll is the poll interval for ANPR events from HikCentral
+	ANPREventsPoll *jsontypes.Duration `json:"anprEventsPoll,omitempty"`
+}
+
+type ANPR struct {
+	// smart core name of the access API server
+	Name     string           `json:"name,omitempty"`
+	Metadata *traits.Metadata `json:"metadata,omitempty"`
+
+	// EnableSmartCoreApproval indicates whether the SmartCore access API server should automatically approve access grants
+	// if the HikCentral service is configured to require manual approval
+	EnableSmartCoreApproval bool `json:"enableManualApproval,omitempty"`
+	// EntranceCameraIndexCodes is the list of cameras that are used to detect entrances
+	EntranceCameraIndexCodes []string `json:"entranceCameraIndexCodes,omitempty"`
+	// ExitCameraIndexCodes is the list of cameras that are used to detect exits
+	ExitCameraIndexCodes []string `json:"exitCameraIndexCodes,omitempty"`
 }
 
 type Camera struct {

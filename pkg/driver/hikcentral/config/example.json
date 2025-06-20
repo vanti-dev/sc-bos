@@ -25,7 +25,10 @@
           },
           "ipAddress": "172.16.1.3"
         }
-      ]
+      ],
+      "anpr": {
+        "entranceCameraIndexCodes": ["1"]
+      }
     }
   ]
 }
