@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 )
 
 func TestTokenServer(t *testing.T) {
@@ -17,10 +19,15 @@ func TestTokenServer(t *testing.T) {
 		users    testMemoryVerifier
 		services testMemoryVerifier
 	)
-	users.add(t, SecretData{TenantID: "user1", Roles: []string{"admin"}}, "password123")
+	users.add(t, SecretData{TenantID: "user1", SystemRoles: []string{"admin"}}, "password123")
 	users.add(t, SecretData{TenantID: "user2"}, "password456")
-	services.add(t, SecretData{TenantID: "service1", Roles: []string{"admin"}}, "secret1", "secret2")
-	services.add(t, SecretData{TenantID: "service2", Zones: []string{"foo"}}, "secret3")
+	services.add(t, SecretData{TenantID: "service1", SystemRoles: []string{"admin"}}, "secret1", "secret2")
+	services.add(t, SecretData{
+		TenantID: "service2",
+		Permissions: []token.PermissionAssignment{
+			LegacyZonePermission("foo"),
+		},
+	}, "secret3")
 	services.add(t, SecretData{TenantID: "service3"}, "secret4")
 
 	server, err := NewServer("test",

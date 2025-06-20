@@ -3,6 +3,7 @@ package accesstoken
 import (
 	"context"
 
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
@@ -49,9 +50,13 @@ func RemoteVerify(ctx context.Context, id, secret string, client gen.TenantApiCl
 		if r.e != nil {
 			return fail(r.e)
 		}
+		permissions := make([]token.PermissionAssignment, 0, len(r.t.ZoneNames))
+		for _, zone := range r.t.ZoneNames {
+			permissions = append(permissions, LegacyZonePermission(zone))
+		}
 		return SecretData{
-			TenantID: id,
-			Zones:    r.t.ZoneNames,
+			TenantID:    id,
+			Permissions: permissions,
 		}, nil
 	case <-ctx.Done():
 		return fail(ctx.Err())

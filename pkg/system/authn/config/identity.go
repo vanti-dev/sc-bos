@@ -84,8 +84,8 @@ type Identity struct {
 	Title   string   `json:"title,omitempty"`
 	ID      string   `json:"id,omitempty"`
 	Secrets []Secret `json:"secrets,omitempty"`
-	Zones   []string `json:"zones,omitempty"`
-	Roles   []string `json:"roles,omitempty"`
+	Zones   []string `json:"zones,omitempty"` // Identity will get full permissions for trait access in these zones
+	Roles   []string `json:"roles,omitempty"` // System roles this identity can use
 }
 
 type Secret struct {
