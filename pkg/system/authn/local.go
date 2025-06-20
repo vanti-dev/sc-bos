@@ -55,17 +55,17 @@ func (l *localUserVerifier) Verify(ctx context.Context, username, password strin
 		}
 		for _, role := range legacyRoles {
 			if role.Valid {
-				data.Roles = append(data.Roles, role.String)
+				data.SystemRoles = append(data.SystemRoles, role.String)
 			}
 		}
-		slices.Sort(data.Roles) // deterministic order for legacy roles
+		slices.Sort(data.SystemRoles) // deterministic order for legacy roles
 		data.Title = details.DisplayName
 		data.TenantID = strconv.FormatInt(userAccount.AccountID, 10)
-		if len(data.Roles) == 0 {
+		if len(data.SystemRoles) == 0 {
 			// no point issuing a token because the user has no roles so they cannot access anything
 			return accesstoken.ErrNoRolesAssigned
 		}
-		slices.Sort(data.Roles) // deterministic order for legacy roles
+		slices.Sort(data.SystemRoles) // deterministic order for legacy roles
 		data.Title = details.DisplayName
 		data.TenantID = strconv.FormatInt(userAccount.AccountID, 10)
 		return nil

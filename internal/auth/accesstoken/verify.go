@@ -13,6 +13,8 @@ import (
 	"go.uber.org/multierr"
 
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // Verifier verifies that an id is associated with a given secret.
@@ -190,7 +192,7 @@ func (m *memoryRecord) validateLocked(secret string) error {
 	if !ok {
 		return ErrInvalidCredentials
 	}
-	if len(m.data.Roles) == 0 && len(m.data.Zones) == 0 {
+	if len(m.data.SystemRoles) == 0 && len(m.data.Permissions) == 0 {
 		return ErrNoRolesAssigned
 	}
 	return nil
@@ -353,11 +355,22 @@ func (v *MemoryVerifier) ensureInitialised() {
 }
 
 type SecretData struct {
-	Title     string
-	TenantID  string
-	Zones     []string
-	Roles     []string
-	IsService bool
+	Title       string
+	TenantID    string
+	SystemRoles []string
+	IsService   bool
+	Permissions []token.PermissionAssignment
+}
+
+// LegacyZonePermission returns a PermissionAssignment that grants write access to names beginning with the given zone prefix.
+// This does not use a ZONE resource type, in order to maintain compatibility.
+func LegacyZonePermission(zone string) token.PermissionAssignment {
+	return token.PermissionAssignment{
+		Permission:   token.TraitWriteAll,
+		Scoped:       true,
+		ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+		Resource:     zone,
+	}
 }
 
 func genId() string {
