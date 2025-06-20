@@ -103,6 +103,8 @@ func validateCreateRequest(request *gen.CreateHistoryRecordRequest) error {
 		return status.Error(codes.InvalidArgument, "source must be set")
 	case request.GetRecord().GetCreateTime() != nil:
 		return status.Error(codes.InvalidArgument, "create_time must not be set")
+	case request.GetRecord().Payload == nil:
+		return status.Error(codes.InvalidArgument, "payload must be set")
 	}
 	return nil
 }

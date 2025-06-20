@@ -2,6 +2,7 @@ package apistore
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -31,6 +32,9 @@ type Store struct {
 var _ history.Store = (*Store)(nil)
 
 func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, error) {
+	if payload == nil {
+		return history.Record{}, fmt.Errorf("payload cannot be nil")
+	}
 	pbRecord, err := s.client.CreateHistoryRecord(ctx, &gen.CreateHistoryRecordRequest{
 		Name: s.name,
 		Record: &gen.HistoryRecord{
