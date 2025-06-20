@@ -1,24 +1,45 @@
 <template>
   <v-btn>
-    New Account...
+    {{ btnText }}
     <v-menu v-model="menuVisible" activator="parent" :close-on-content-click="false">
-      <new-account-card :name="props.name" @save="onSave" @cancel="onCancel" ref="cardRef"/>
+      <new-account-card
+          :name="props.name"
+          :account-types="props.accountTypes"
+          @save="onSave"
+          @cancel="onCancel"
+          ref="cardRef"/>
     </v-menu>
   </v-btn>
 </template>
 
 <script setup>
 import NewAccountCard from '@/routes/auth/accounts/NewAccountCard.vue';
-import {ref, watch} from 'vue';
+import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
+import {computed, ref, watch} from 'vue';
 
 const props = defineProps({
   name: {
     type: String,
     default: undefined
+  },
+  accountTypes: {
+    type: Array,
+    default: () => undefined
   }
 });
 const emit = defineEmits(['save', 'cancel']);
 
+const btnText = computed(() => {
+  if (!props.accountTypes || props.accountTypes.length > 1) return 'New Account...';
+  switch (props.accountTypes[0]) {
+    case Account.Type.USER_ACCOUNT:
+      return 'New User...'
+    case Account.Type.SERVICE_ACCOUNT:
+      return 'New Service Account...'
+    default:
+      return 'New Account...';
+  }
+})
 const menuVisible = ref(false);
 
 const onSave = (e) => {
