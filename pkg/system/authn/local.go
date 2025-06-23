@@ -13,6 +13,8 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/account"
 	"github.com/vanti-dev/sc-bos/internal/account/queries"
 	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
+	"github.com/vanti-dev/sc-bos/internal/auth/permission"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
 )
@@ -44,37 +46,97 @@ func (l *localUserVerifier) Verify(ctx context.Context, username, password strin
 			return err
 		}
 
-		details, err := tx.GetAccountDetails(ctx, userAccount.AccountID)
-		if err != nil {
-			return err
-		}
-
-		legacyRoles, err := tx.ListLegacyRolesForAccount(ctx, userAccount.AccountID)
-		if err != nil {
-			return err
-		}
-		for _, role := range legacyRoles {
-			if role.Valid {
-				data.SystemRoles = append(data.SystemRoles, role.String)
-			}
-		}
-		slices.Sort(data.SystemRoles) // deterministic order for legacy roles
-		data.Title = details.DisplayName
-		data.TenantID = strconv.FormatInt(userAccount.AccountID, 10)
-		if len(data.SystemRoles) == 0 {
-			// no point issuing a token because the user has no roles so they cannot access anything
-			return accesstoken.ErrNoRolesAssigned
-		}
-		slices.Sort(data.SystemRoles) // deterministic order for legacy roles
-		data.Title = details.DisplayName
-		data.TenantID = strconv.FormatInt(userAccount.AccountID, 10)
-		return nil
+		data, err = accountTokenData(ctx, tx, userAccount.AccountID, false)
+		return err
 	})
 	if err != nil {
 		return accesstoken.SecretData{}, err
 	}
 
 	return data, nil
+}
+
+type localServiceVerifier struct {
+	accounts *account.Store
+}
+
+func newLocalServiceVerifier(accounts *account.Store) *localServiceVerifier {
+	return &localServiceVerifier{
+		accounts: accounts,
+	}
+}
+
+func (l *localServiceVerifier) Verify(ctx context.Context, clientID, secret string) (accesstoken.SecretData, error) {
+	var data accesstoken.SecretData
+	err := l.accounts.Read(ctx, func(tx *account.Tx) error {
+		accountID, ok := account.ParseAccountID(clientID)
+		if !ok {
+			return accesstoken.ErrInvalidCredentials
+		}
+
+		err := tx.CheckClientSecret(ctx, accountID, secret)
+		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, account.ErrIncorrectSecret) {
+			return accesstoken.ErrInvalidCredentials
+		} else if err != nil {
+			return err
+		}
+
+		data, err = accountTokenData(ctx, tx, accountID, true)
+		return err
+	})
+	if err != nil {
+		return accesstoken.SecretData{}, err
+	}
+	return data, nil
+}
+
+func accountTokenData(ctx context.Context, tx *account.Tx, accountID int64, isService bool) (accesstoken.SecretData, error) {
+	details, err := tx.GetAccountDetails(ctx, accountID)
+	if err != nil {
+		return accesstoken.SecretData{}, err
+	}
+
+	legacyRoles, err := tx.ListLegacyRolesForAccount(ctx, accountID)
+	systemRoles := make([]string, 0, len(legacyRoles))
+	if err != nil {
+		return accesstoken.SecretData{}, err
+	}
+	for _, role := range legacyRoles {
+		if role.Valid {
+			systemRoles = append(systemRoles, role.String)
+		}
+	}
+	slices.Sort(systemRoles) // deterministic order for legacy roles
+
+	// resolve all the permissions
+	dbPerms, err := tx.ListPermissionsForAccount(ctx, accountID)
+	if err != nil {
+		return accesstoken.SecretData{}, err
+	}
+	permissions := make([]token.PermissionAssignment, 0, len(dbPerms))
+	for _, dbPerm := range dbPerms {
+		perm := token.PermissionAssignment{
+			Permission: permission.ID(dbPerm.Permission),
+			Scoped:     dbPerm.ScopeType.Valid && dbPerm.ScopeResource.Valid,
+		}
+		if perm.Scoped {
+			scopeType, ok := token.ParseResourceType(dbPerm.ScopeType.String)
+			if !ok {
+				continue
+			}
+			perm.ResourceType = scopeType
+			perm.Resource = dbPerm.ScopeResource.String
+		}
+		permissions = append(permissions, perm)
+	}
+
+	return accesstoken.SecretData{
+		Title:       details.DisplayName,
+		TenantID:    strconv.FormatInt(accountID, 10),
+		SystemRoles: systemRoles,
+		IsService:   isService,
+		Permissions: permissions,
+	}, nil
 }
 
 func importIdentities(ctx context.Context, accounts *account.Store, ids []config.Identity, logger *zap.Logger) error {

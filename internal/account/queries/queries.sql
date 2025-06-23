@@ -174,6 +174,14 @@ WHERE account_id = :account_id
 ORDER BY id
 LIMIT :limit;
 
+-- name: ListPermissionsForAccount :many
+SELECT DISTINCT rp.permission, ra.scope_type, ra.scope_resource
+FROM role_assignments ra
+INNER JOIN role_permissions rp ON ra.role_id = rp.role_id
+WHERE ra.account_id = :account_id
+  AND rp.permission IS NOT NULL
+ORDER BY rp.permission, ra.scope_type, ra.scope_resource;
+
 -- name: ListLegacyRolesForAccount :many
 SELECT DISTINCT r.legacy_role
 FROM role_assignments ra

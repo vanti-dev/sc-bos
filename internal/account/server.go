@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/vanti-dev/sc-bos/internal/account/queries"
+	"github.com/vanti-dev/sc-bos/internal/auth/permission"
 	"github.com/vanti-dev/sc-bos/internal/sqlite"
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -967,14 +968,38 @@ func (s *Server) DeleteRoleAssignment(ctx context.Context, req *gen.DeleteRoleAs
 	return &gen.DeleteRoleAssignmentResponse{}, nil
 }
 
-func (s *Server) GetPermission(ctx context.Context, req *gen.GetPermissionRequest) (*gen.Permission, error) {
-	// TODO: add list of valid permissions and support fetching them
-	return nil, ErrPermissionNotFound
+func (s *Server) GetPermission(_ context.Context, req *gen.GetPermissionRequest) (*gen.Permission, error) {
+	details, ok := permission.GetDetails(permission.ID(req.Id))
+	if !ok {
+		return nil, ErrPermissionNotFound
+	}
+
+	return &gen.Permission{
+		Id:          string(details.ID),
+		DisplayName: details.DisplayName,
+		Description: details.Description,
+	}, nil
 }
 
 func (s *Server) ListPermissions(ctx context.Context, req *gen.ListPermissionsRequest) (*gen.ListPermissionsResponse, error) {
-	// TODO: add list of valid permissions and support fetching them
-	return &gen.ListPermissionsResponse{}, nil
+	// We currently have few permissions, so we can return them all at once without pagination.
+	// If the number becomes significantly larger, we should implement pagination.
+	if req.PageToken != "" {
+		return nil, ErrInvalidPageToken
+	}
+
+	allPerms := permission.All()
+	converted := make([]*gen.Permission, 0, len(allPerms))
+	for _, details := range allPerms {
+		converted = append(converted, &gen.Permission{
+			Id:          string(details.ID),
+			DisplayName: details.DisplayName,
+			Description: details.Description,
+		})
+	}
+	return &gen.ListPermissionsResponse{
+		Permissions: converted,
+	}, nil
 }
 
 func (s *Server) GetAccountLimits(ctx context.Context, req *gen.GetAccountLimitsRequest) (*gen.AccountLimits, error) {

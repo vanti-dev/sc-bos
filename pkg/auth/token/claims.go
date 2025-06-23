@@ -23,6 +23,18 @@ type PermissionAssignment struct {
 
 type ResourceType gen.RoleAssignment_ResourceType
 
+func ParseResourceType(s string) (ResourceType, bool) {
+	rt, ok := gen.RoleAssignment_ResourceType_value[s]
+	if !ok {
+		return 0, false
+	}
+	return ResourceType(rt), true
+}
+
 func (rt ResourceType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(gen.RoleAssignment_ResourceType(rt))
+}
+
+func (rt ResourceType) String() string {
+	return gen.RoleAssignment_ResourceType(rt).String()
 }
