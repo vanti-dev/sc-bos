@@ -2,7 +2,9 @@ package authn
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -11,7 +13,10 @@ import (
 
 	"github.com/vanti-dev/sc-bos/internal/account"
 	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
+	"github.com/vanti-dev/sc-bos/internal/auth/permission"
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
 )
 
@@ -167,6 +172,138 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
 			result, err := verifier.Verify(ctx, tc.username, tc.password)
+			if !errors.Is(err, tc.expectedError) {
+				t.Errorf("expected error:\n\t%v\ngot:\n\t%v", tc.expectedError, err)
+			}
+			if tc.expectedError == nil {
+				diff := cmp.Diff(tc.expect, result,
+					cmpopts.IgnoreFields(accesstoken.SecretData{}, "TenantID"),
+				)
+				if diff != "" {
+					t.Errorf("unexpected result (-want +got):\n%s", diff)
+				}
+				if result.TenantID == "" {
+					t.Errorf("expected non-empty TenantID, got empty")
+				}
+			}
+		})
+	}
+}
+
+func TestLocalServiceVerifier_Verify(t *testing.T) {
+	ctx := context.Background()
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		t.Fatalf("failed to create logger: %v", err)
+	}
+	accountStore := account.NewMemoryStore(logger)
+	accountServer := account.NewServer(accountStore, logger)
+	verifier := newLocalServiceVerifier(accountStore)
+
+	// can't create a role with a system role, need to find the auto-created one
+	var adminRoleID string
+	err = accountStore.Read(ctx, func(tx *account.Tx) error {
+		roles, err := tx.ListRolesWithLegacyRole(ctx, sql.NullString{Valid: true, String: "admin"})
+		if err != nil {
+			return err
+		}
+		if len(roles) == 0 {
+			return errors.New("no admin role found")
+		}
+		adminRoleID = strconv.FormatInt(roles[0].ID, 10)
+		return nil
+	})
+
+	// role to test permissions propagation
+	roleWithPermissions, err := accountServer.CreateRole(ctx, &gen.CreateRoleRequest{
+		Role: &gen.Role{
+			DisplayName:   "Test Role",
+			PermissionIds: []string{string(permission.TraitRead), string(permission.TraitWrite)},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create role with permissions: %v", err)
+	}
+
+	serviceAccount, err := accountServer.CreateAccount(ctx, &gen.CreateAccountRequest{
+		Account: &gen.Account{
+			Type:        gen.Account_SERVICE_ACCOUNT,
+			DisplayName: "Test Service Account",
+			Details:     &gen.Account_ServiceDetails{ServiceDetails: &gen.ServiceAccount{}},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create service account: %v", err)
+	}
+
+	// assign both roles to the service account
+	_, err = accountServer.CreateRoleAssignment(ctx, &gen.CreateRoleAssignmentRequest{
+		RoleAssignment: &gen.RoleAssignment{
+			AccountId: serviceAccount.Id,
+			RoleId:    roleWithPermissions.Id,
+			Scope: &gen.RoleAssignment_Scope{
+				ResourceType: gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX,
+				Resource:     "foo",
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to assign role %s to service account: %v", adminRoleID, err)
+	}
+	_, err = accountServer.CreateRoleAssignment(ctx, &gen.CreateRoleAssignmentRequest{
+		RoleAssignment: &gen.RoleAssignment{
+			AccountId: serviceAccount.Id,
+			RoleId:    adminRoleID,
+		},
+	})
+
+	type testCase struct {
+		clientID      string
+		clientSecret  string
+		expectedError error
+		expect        accesstoken.SecretData
+	}
+
+	testCases := map[string]testCase{
+		"valid_service_account": {
+			clientID:     serviceAccount.Id,
+			clientSecret: serviceAccount.GetServiceDetails().ClientSecret,
+			expect: accesstoken.SecretData{
+				Title:       serviceAccount.DisplayName,
+				TenantID:    serviceAccount.Id,
+				SystemRoles: []string{"admin"},
+				IsService:   true,
+				Permissions: []token.PermissionAssignment{
+					{
+						Permission:   permission.TraitRead,
+						Scoped:       true,
+						ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+						Resource:     "foo",
+					},
+					{
+						Permission:   permission.TraitWrite,
+						Scoped:       true,
+						ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+						Resource:     "foo",
+					},
+				},
+			},
+		},
+		"invalid_client_id": {
+			clientID:      "9999",
+			clientSecret:  serviceAccount.GetServiceDetails().ClientSecret,
+			expectedError: accesstoken.ErrInvalidCredentials,
+		},
+		"invalid_client_secret": {
+			clientID:      serviceAccount.Id,
+			clientSecret:  "foo",
+			expectedError: accesstoken.ErrInvalidCredentials,
+		},
+	}
+
+	for name, tc := range testCases {
+		t.Run(name, func(t *testing.T) {
+			result, err := verifier.Verify(ctx, tc.clientID, tc.clientSecret)
 			if !errors.Is(err, tc.expectedError) {
 				t.Errorf("expected error:\n\t%v\ngot:\n\t%v", tc.expectedError, err)
 			}
