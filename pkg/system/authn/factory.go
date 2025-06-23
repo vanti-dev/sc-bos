@@ -85,6 +85,12 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		serveTokenEndpoint = true
 		tokenServerOpts = append(tokenServerOpts, accesstoken.WithClientCredentialFlow(tenantVerifier, validity))
+
+		if cfg.System.LocalAccounts && s.accounts != nil {
+			verifier := newLocalServiceVerifier(s.accounts)
+			tokenServerOpts = append(tokenServerOpts, accesstoken.WithClientCredentialFlow(verifier, validity))
+		}
+
 		s.logger.Debug("using system tenant verifier", zap.Duration("validity", validity))
 	}
 

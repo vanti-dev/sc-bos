@@ -12,6 +12,7 @@ import (
 
 	"go.uber.org/multierr"
 
+	"github.com/vanti-dev/sc-bos/internal/auth/permission"
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -366,7 +367,7 @@ type SecretData struct {
 // This does not use a ZONE resource type, in order to maintain compatibility.
 func LegacyZonePermission(zone string) token.PermissionAssignment {
 	return token.PermissionAssignment{
-		Permission:   token.TraitWriteAll,
+		Permission:   permission.TraitWrite,
 		Scoped:       true,
 		ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
 		Resource:     zone,
