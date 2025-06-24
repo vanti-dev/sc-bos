@@ -17,6 +17,7 @@ import (
 	historyconfig "github.com/vanti-dev/sc-bos/pkg/auto/history/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 // ConfigForFloor is basically just a wrapper around the root config with support for automations and traits
@@ -28,7 +29,7 @@ type ConfigForFloor struct {
 	AddHistories []trait.Name
 }
 
-func (bc *ConfigForFloor) addHistoryForTraits(traits []map[string]any) []map[string]any {
+func (bc *ConfigForFloor) addHistoryForTraits(traits []map[string]any, pollingSchedule *jsontypes.Schedule) []map[string]any {
 	var allConfigs []map[string]any
 	for _, t := range traits {
 		if kind, ok := t["kind"]; ok {
@@ -39,8 +40,9 @@ func (bc *ConfigForFloor) addHistoryForTraits(traits []map[string]any) []map[str
 					c["name"] = strings.Replace(name, "devices", "history", 1)
 					c["type"] = "history"
 					c["source"] = &historyconfig.Source{
-						Name:  name,
-						Trait: traitWithHistory,
+						Name:            name,
+						Trait:           traitWithHistory,
+						PollingSchedule: pollingSchedule,
 					}
 					c["storage"] = &historyconfig.Storage{
 						Type: "hub",
@@ -59,16 +61,17 @@ func (bc *ConfigForFloor) addHistoryForTraits(traits []map[string]any) []map[str
 // there must be a directory value defined for each floor. This allows you to put 2 floor configs in the same directory.
 // configRoot is the root directory for the config, defaults to "config" if empty
 // scPrefix is the prefix for the driver's Name. The bacnet driver name will become <sc-prefix>/floor-xx/drivers/<subsystem>
-// subsystem is the name of the subsystem, e.g. "bms", "fire-alarm", etc. which gets used as the file prefix for the output files.
+// subsystem is the name of the subsystem, e.g. "bms", "fire-alarm", etc. which gets used as the file prefix for the output files
+// pollingSchedule is a cron schedule for polling the history traits. If nil, no polling will be added and the history auto will default to pulling records on change.
 func WriteBacnetConfig(configPerFloor map[string]*ConfigForFloor, dirForFloor map[string]string, configRoot string,
-	scPrefix string, subsystem string) error {
+	scPrefix string, subsystem string, pollingSchedule *jsontypes.Schedule) error {
 	if configRoot == "" {
 		configRoot = "config"
 	}
 	for floor, cfg := range configPerFloor {
 
 		if len(cfg.AddHistories) > 0 {
-			autos := cfg.addHistoryForTraits(cfg.Traits)
+			autos := cfg.addHistoryForTraits(cfg.Traits, pollingSchedule)
 			cfg.Automations = append(cfg.Automations, autos...)
 		}
 
