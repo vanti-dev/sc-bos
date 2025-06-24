@@ -130,6 +130,10 @@ func accountTokenData(ctx context.Context, tx *account.Tx, accountID int64, isSe
 		permissions = append(permissions, perm)
 	}
 
+	if len(permissions) == 0 && len(legacyRoles) == 0 {
+		return accesstoken.SecretData{}, accesstoken.ErrNoRolesAssigned
+	}
+
 	return accesstoken.SecretData{
 		Title:       details.DisplayName,
 		TenantID:    strconv.FormatInt(accountID, 10),

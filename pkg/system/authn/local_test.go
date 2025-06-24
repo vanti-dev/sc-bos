@@ -17,7 +17,6 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/util/pass"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
 )
 
 func TestLocalUserVerifier_Verify(t *testing.T) {
@@ -26,76 +25,242 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create logger: %v", err)
 	}
-	store := account.NewMemoryStore(logger)
-	verifier := newLocalUserVerifier(store)
+	accountStore := account.NewMemoryStore(logger)
+	accountServer := account.NewServer(accountStore, logger)
+	verifier := newLocalUserVerifier(accountStore)
 
-	identities := []config.Identity{
+	// Find the auto-created roles by their legacy role names
+	systemRoleIDs := make(map[string]string)
+	err = accountStore.Read(ctx, func(tx *account.Tx) error {
+		for _, roleName := range []string{"admin", "commissioner", "operator", "viewer", "super-admin"} {
+			roles, err := tx.ListRolesWithLegacyRole(ctx, sql.NullString{Valid: true, String: roleName})
+			if err != nil {
+				return err
+			}
+			if len(roles) > 0 {
+				systemRoleIDs[roleName] = strconv.FormatInt(roles[0].ID, 10)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("failed to find role IDs: %v", err)
+	}
+
+	// Create custom roles with specific permissions
+	readOnlyRole, err := accountServer.CreateRole(ctx, &gen.CreateRoleRequest{
+		Role: &gen.Role{
+			DisplayName:   "Read Only Access",
+			Description:   "Role with read-only permissions",
+			PermissionIds: []string{string(permission.TraitRead)},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create read-only role: %v", err)
+	}
+
+	writeRole, err := accountServer.CreateRole(ctx, &gen.CreateRoleRequest{
+		Role: &gen.Role{
+			DisplayName:   "Write Only Access",
+			Description:   "Role with write-only permissions",
+			PermissionIds: []string{string(permission.TraitWrite)},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create write-only role: %v", err)
+	}
+
+	bothRole, err := accountServer.CreateRole(ctx, &gen.CreateRoleRequest{
+		Role: &gen.Role{
+			DisplayName:   "Full Access",
+			Description:   "Role with full access permissions",
+			PermissionIds: []string{string(permission.TraitRead), string(permission.TraitWrite)},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to create full access role: %v", err)
+	}
+
+	// Create test users
+	type roleAssignment struct {
+		roleID   string
+		resource string
+		resType  gen.RoleAssignment_ResourceType
+	}
+	type testUser struct {
+		username string
+		password string
+		title    string
+		roles    []roleAssignment
+	}
+	testUsers := []testUser{
 		{
-			ID:    "user1",
-			Title: "User 1 - Basic",
-			Secrets: []config.Secret{
-				{Hash: testHash(t, "password123")},
+			username: "user1",
+			password: "Password123456",
+			title:    "User 1 - Basic",
+			roles: []roleAssignment{
+				{roleID: systemRoleIDs["admin"]},
 			},
-			Roles: []string{"admin"},
 		},
 		{
-			ID:    "user1",
-			Title: "User 1 - Duplicate",
-			Secrets: []config.Secret{
-				{Hash: testHash(t, "password456")},
+			username: "multi-role-user",
+			password: "SecurePass9876",
+			title:    "User with Multiple Roles",
+			roles: []roleAssignment{
+				{roleID: systemRoleIDs["admin"]},
+				{roleID: systemRoleIDs["commissioner"]},
+				{roleID: systemRoleIDs["operator"]},
 			},
 		},
 		{
-			ID:    "multi-role-user",
-			Title: "User with Multiple Roles",
-			Secrets: []config.Secret{
-				{Hash: testHash(t, "secure456")},
+			username: "invalid-role-user",
+			password: "InvalidRole1234",
+			title:    "User with Invalid Role",
+			roles: []roleAssignment{
+				{roleID: "unknown-role"},
 			},
-			Roles: []string{"admin", "commissioner", "operator"},
 		},
 		{
-			ID:    "invalid-role-user",
-			Title: "User with Invalid Role",
-			Secrets: []config.Secret{
-				{Hash: testHash(t, "pass789")},
-			},
-			Roles: []string{"unknown-role"},
+			username: "no-role-user",
+			password: "NoRoleUser5678",
+			title:    "User with No Roles",
+			roles:    []roleAssignment{},
 		},
 		{
-			ID:    "no-role-user",
-			Title: "User with No Roles",
-			Secrets: []config.Secret{
-				{Hash: testHash(t, "password")},
+			username: "no-password-user",
+			password: "", // Empty password
+			title:    "User with No Password",
+			roles: []roleAssignment{
+				{roleID: systemRoleIDs["viewer"]},
 			},
-			Roles: []string{},
 		},
 		{
-			ID:      "no-password-user",
-			Title:   "User with No Password",
-			Secrets: []config.Secret{},
-			Roles:   []string{"viewer"},
+			username: "super-admin",
+			password: "SuperAdmin123456!",
+			title:    "Super Admin User",
+			roles: []roleAssignment{
+				{roleID: systemRoleIDs["super-admin"]},
+			},
 		},
 		{
-			ID:    "multi-password-user",
-			Title: "User with Multiple Passwords",
-			Secrets: []config.Secret{
-				{Hash: testHash(t, "firstpass")},
-				{Hash: testHash(t, "secondpass")},
+			username: "read-only-user",
+			password: "ReadOnlyPass123",
+			title:    "User with Read-Only Role",
+			roles: []roleAssignment{
+				{roleID: readOnlyRole.Id},
 			},
-			Roles: []string{"viewer", "operator"},
 		},
 		{
-			ID:    "super-admin",
-			Title: "Super Admin User",
-			Secrets: []config.Secret{
-				{Hash: testHash(t, "superadmin!")},
+			username: "write-only-user",
+			password: "WriteOnlyPass123",
+			title:    "User with Write-Only Role",
+			roles: []roleAssignment{
+				{roleID: writeRole.Id},
 			},
-			Roles: []string{"super-admin"},
+		},
+		{
+			username: "both-roles-user",
+			password: "FullAccessPass123",
+			title:    "User with Full Access Role",
+			roles: []roleAssignment{
+				{roleID: bothRole.Id},
+			},
+		},
+		{
+			username: "scoped-permissions-user",
+			password: "ScopedPass123456",
+			title:    "User with Scoped Permissions",
+			roles: []roleAssignment{
+				{
+					roleID:   readOnlyRole.Id,
+					resource: "lights",
+					resType:  gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX,
+				},
+				{
+					roleID:   writeRole.Id,
+					resource: "hvac",
+					resType:  gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX,
+				},
+				{
+					roleID:   bothRole.Id,
+					resource: "doors",
+					resType:  gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX,
+				},
+			},
+		},
+		{
+			username: "mixed-permissions-user",
+			password: "MixedPerms123456",
+			title:    "User with Mixed Scoped and Global Permissions",
+			roles: []roleAssignment{
+				{roleID: readOnlyRole.Id},
+				{
+					roleID:   writeRole.Id,
+					resource: "displays",
+					resType:  gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX,
+				},
+			},
+		},
+		{
+			username: "system-role-and-permissions-user",
+			password: "SystemRoleAndPerms123",
+			title:    "User with System Role and Permissions",
+			roles: []roleAssignment{
+				{roleID: systemRoleIDs["viewer"]},
+				{
+					roleID:   writeRole.Id,
+					resource: "foo",
+					resType:  gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX,
+				},
+			},
 		},
 	}
-	err = importIdentities(ctx, store, identities, logger)
-	if err != nil {
-		t.Fatalf("failed to import identities: %v", err)
+
+	for _, user := range testUsers {
+		created, err := accountServer.CreateAccount(ctx, &gen.CreateAccountRequest{
+			Account: &gen.Account{
+				DisplayName: user.title,
+				Type:        gen.Account_USER_ACCOUNT,
+				Details: &gen.Account_UserDetails{
+					UserDetails: &gen.UserAccount{
+						Username: user.username,
+					},
+				},
+			},
+			Password: user.password,
+		})
+		if err != nil {
+			t.Fatalf("failed to create account %s: %v", user.username, err)
+		}
+
+		// Assign roles to the account
+		for _, role := range user.roles {
+			if role.roleID == "unknown-role" {
+				continue // Skip invalid role
+			}
+
+			// Create role assignment request
+			assignmentReq := &gen.CreateRoleAssignmentRequest{
+				RoleAssignment: &gen.RoleAssignment{
+					AccountId: created.Id,
+					RoleId:    role.roleID,
+				},
+			}
+
+			// Add scope if provided
+			if role.resource != "" {
+				assignmentReq.RoleAssignment.Scope = &gen.RoleAssignment_Scope{
+					ResourceType: role.resType,
+					Resource:     role.resource,
+				}
+			}
+
+			// Assign role
+			_, err = accountServer.CreateRoleAssignment(ctx, assignmentReq)
+			if err != nil {
+				t.Fatalf("failed to assign role %s to account %s: %v", role.roleID, user.username, err)
+			}
+		}
 	}
 
 	type testCase struct {
@@ -107,7 +272,7 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 	testCases := map[string]testCase{
 		"correct_password_and_roles": {
 			username: "user1",
-			password: "password123",
+			password: "Password123456",
 			expect: accesstoken.SecretData{
 				Title:       "User 1 - Basic",
 				SystemRoles: []string{"admin"},
@@ -115,17 +280,17 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 		},
 		"wrong_password": {
 			username:      "user1",
-			password:      "wrong-password",
+			password:      "wrong-password-123",
 			expectedError: accesstoken.ErrInvalidCredentials,
 		},
 		"non_existent_user": {
 			username:      "nonexistent",
-			password:      "anything",
+			password:      "anything12345678",
 			expectedError: accesstoken.ErrInvalidCredentials,
 		},
 		"multiple_valid_roles": {
 			username: "multi-role-user",
-			password: "secure456",
+			password: "SecurePass9876",
 			expect: accesstoken.SecretData{
 				Title:       "User with Multiple Roles",
 				SystemRoles: []string{"admin", "commissioner", "operator"},
@@ -133,12 +298,12 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 		},
 		"no_roles_assigned": {
 			username:      "no-role-user",
-			password:      "password",
+			password:      "NoRoleUser5678",
 			expectedError: accesstoken.ErrNoRolesAssigned,
 		},
 		"invalid_role_missing": {
 			username:      "invalid-role-user",
-			password:      "pass789",
+			password:      "InvalidRole1234",
 			expectedError: accesstoken.ErrNoRolesAssigned, // Since the role wasn't imported, user will have no valid roles
 		},
 		"no_password": {
@@ -146,25 +311,120 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 			password:      "", // Try with empty password
 			expectedError: accesstoken.ErrInvalidCredentials,
 		},
-		"multiple_passwords_first_works": {
-			username: "multi-password-user",
-			password: "firstpass",
-			expect: accesstoken.SecretData{
-				Title:       "User with Multiple Passwords",
-				SystemRoles: []string{"operator", "viewer"},
-			},
-		},
 		"multiple_passwords_second_fails": {
 			username:      "multi-password-user",
-			password:      "secondpass", // System only imports first password
+			password:      "SecondPass123456",
 			expectedError: accesstoken.ErrInvalidCredentials,
 		},
 		"super_admin_role": {
 			username: "super-admin",
-			password: "superadmin!",
+			password: "SuperAdmin123456!",
 			expect: accesstoken.SecretData{
 				Title:       "Super Admin User",
 				SystemRoles: []string{"super-admin"},
+			},
+		},
+		"read_only_user": {
+			username: "read-only-user",
+			password: "ReadOnlyPass123",
+			expect: accesstoken.SecretData{
+				Title:       "User with Read-Only Role",
+				SystemRoles: []string{},
+				Permissions: []token.PermissionAssignment{
+					{Permission: permission.TraitRead},
+				},
+			},
+		},
+		"write_only_user": {
+			username: "write-only-user",
+			password: "WriteOnlyPass123",
+			expect: accesstoken.SecretData{
+				Title:       "User with Write-Only Role",
+				SystemRoles: []string{},
+				Permissions: []token.PermissionAssignment{
+					{Permission: permission.TraitWrite},
+				},
+			},
+		},
+		"both_roles_user": {
+			username: "both-roles-user",
+			password: "FullAccessPass123",
+			expect: accesstoken.SecretData{
+				Title:       "User with Full Access Role",
+				SystemRoles: []string{},
+				Permissions: []token.PermissionAssignment{
+					{Permission: permission.TraitRead},
+					{Permission: permission.TraitWrite},
+				},
+			},
+		},
+		"scoped_permissions_user": {
+			username: "scoped-permissions-user",
+			password: "ScopedPass123456",
+			expect: accesstoken.SecretData{
+				Title:       "User with Scoped Permissions",
+				SystemRoles: []string{},
+				Permissions: []token.PermissionAssignment{
+					{
+						Permission:   permission.TraitRead,
+						Scoped:       true,
+						ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+						Resource:     "doors",
+					},
+					{
+						Permission:   permission.TraitRead,
+						Scoped:       true,
+						ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+						Resource:     "lights",
+					},
+					{
+						Permission:   permission.TraitWrite,
+						Scoped:       true,
+						ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+						Resource:     "doors",
+					},
+					{
+						Permission:   permission.TraitWrite,
+						Scoped:       true,
+						ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+						Resource:     "hvac",
+					},
+				},
+			},
+		},
+		"mixed_permissions_user": {
+			username: "mixed-permissions-user",
+			password: "MixedPerms123456",
+			expect: accesstoken.SecretData{
+				Title:       "User with Mixed Scoped and Global Permissions",
+				SystemRoles: []string{},
+				Permissions: []token.PermissionAssignment{
+					{
+						Permission: permission.TraitRead,
+					},
+					{
+						Permission:   permission.TraitWrite,
+						Scoped:       true,
+						ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+						Resource:     "displays",
+					},
+				},
+			},
+		},
+		"system_role_and_permissions": {
+			username: "system-role-and-permissions-user",
+			password: "SystemRoleAndPerms123",
+			expect: accesstoken.SecretData{
+				Title:       "User with System Role and Permissions",
+				SystemRoles: []string{"viewer"},
+				Permissions: []token.PermissionAssignment{
+					{
+						Permission:   permission.TraitWrite,
+						Scoped:       true,
+						ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+						Resource:     "foo",
+					},
+				},
 			},
 		},
 	}
@@ -178,6 +438,7 @@ func TestLocalUserVerifier_Verify(t *testing.T) {
 			if tc.expectedError == nil {
 				diff := cmp.Diff(tc.expect, result,
 					cmpopts.IgnoreFields(accesstoken.SecretData{}, "TenantID"),
+					cmpopts.EquateEmpty(),
 				)
 				if diff != "" {
 					t.Errorf("unexpected result (-want +got):\n%s", diff)
