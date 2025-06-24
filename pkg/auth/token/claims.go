@@ -9,7 +9,6 @@ import (
 
 type Claims struct {
 	SystemRoles []string               `json:"system_roles"` // The built-in system roles that this token is authorized for
-	Zones       []string               `json:"zones"`        // The zones that this token is authorized for, for tenant tokens
 	IsService   bool                   `json:"is_service"`   // True if the subject is an application acting on its own behalf, false if it's a user
 	Permissions []PermissionAssignment `json:"permissions"`
 }
