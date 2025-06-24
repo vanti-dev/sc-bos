@@ -10,8 +10,10 @@ import (
 	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
 
+	"github.com/vanti-dev/sc-bos/internal/auth/permission"
 	jose_utils "github.com/vanti-dev/sc-bos/internal/util/jose"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 var ErrUnsupportedTokenVersion = errors.New("unsupported token version")
@@ -19,10 +21,38 @@ var ErrUnsupportedTokenVersion = errors.New("unsupported token version")
 const claimsVersion = 1
 
 type claims struct {
-	Version     int                          `json:"v"` // to detect which schema version this token uses
-	Name        string                       `json:"name,omitempty"`
-	SystemRoles []string                     `json:"roles,omitempty"` // Named roles in JSON for back-compat
-	Permissions []token.PermissionAssignment `json:"permissions,omitempty"`
+	Version     int                    `json:"v"` // to detect which schema version this token uses
+	Name        string                 `json:"name,omitempty"`
+	SystemRoles []string               `json:"roles,omitempty"` // Named roles in JSON for back-compat
+	Permissions []permissionAssignment `json:"perms,omitempty"`
+}
+
+// like token.PermissionAssignment but with a more compact JSON representation
+type permissionAssignment struct {
+	Permission   permission.ID                   `json:"p"`
+	ResourceType gen.RoleAssignment_ResourceType `json:"rt,omitempty"` // will serialise as an integer
+	Resource     string                          `json:"r,omitempty"`
+}
+
+func permissionAssignmentFromToken(pa token.PermissionAssignment) permissionAssignment {
+	return permissionAssignment{
+		Permission:   pa.Permission,
+		ResourceType: gen.RoleAssignment_ResourceType(pa.ResourceType),
+		Resource:     pa.Resource,
+	}
+}
+
+func (pa permissionAssignment) Scoped() bool {
+	return pa.ResourceType != gen.RoleAssignment_RESOURCE_TYPE_UNSPECIFIED
+}
+
+func (pa permissionAssignment) ToTokenPermissionAssignment() token.PermissionAssignment {
+	return token.PermissionAssignment{
+		Permission:   pa.Permission,
+		Scoped:       pa.Scoped(),
+		ResourceType: token.ResourceType(pa.ResourceType),
+		Resource:     pa.Resource,
+	}
 }
 
 type Source struct {
@@ -55,10 +85,14 @@ func (ts *Source) GenerateAccessToken(data SecretData, validity time.Duration) (
 		NotBefore: jwt.NewNumericDate(now),
 		IssuedAt:  jwt.NewNumericDate(now),
 	}
+	compressedPermissions := make([]permissionAssignment, 0, len(data.Permissions))
+	for _, pa := range data.Permissions {
+		compressedPermissions = append(compressedPermissions, permissionAssignmentFromToken(pa))
+	}
 	customClaims := claims{
 		Version:     claimsVersion,
 		Name:        data.Title,
-		Permissions: data.Permissions,
+		Permissions: compressedPermissions,
 		SystemRoles: data.SystemRoles,
 	}
 	return jwt.Signed(signer).
@@ -89,10 +123,14 @@ func (ts *Source) ValidateAccessToken(_ context.Context, tokenStr string) (*toke
 		// token issued using a schema we no longer support
 		return nil, ErrUnsupportedTokenVersion
 	}
+	tokenPermissions := make([]token.PermissionAssignment, 0, len(customClaims.Permissions))
+	for _, pa := range customClaims.Permissions {
+		tokenPermissions = append(tokenPermissions, pa.ToTokenPermissionAssignment())
+	}
 	return &token.Claims{
 		SystemRoles: customClaims.SystemRoles,
 		IsService:   true,
-		Permissions: customClaims.Permissions,
+		Permissions: tokenPermissions,
 	}, nil
 }
 
