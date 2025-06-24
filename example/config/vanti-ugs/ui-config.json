@@ -1,9 +1,7 @@
 {
   "features": {
     "auth": {
-      "third-party": true,
-      "accounts": false,
-      "roles": false
+      "third-party": true
     },
     "device": true,
     "devices": true,
@@ -18,7 +16,7 @@
     "hub": true,
     "auth": {
       "disabled": true,
-      "providers": ["localAuth", "keycloak"],
+      "providers": ["localAuth", "keyCloakAuth"],
       "keycloak": {
         "realm": "Smart_Core",
         "url": "http://localhost:8888/",
