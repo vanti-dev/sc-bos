@@ -114,6 +114,12 @@ func (s *Server) CreateTenant(ctx context.Context, request *gen.CreateTenantRequ
 }
 
 func (s *Server) GetTenant(ctx context.Context, request *gen.GetTenantRequest) (*gen.Tenant, error) {
+	if request.Id == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing tenant id")
+	}
+	if !ValidateTenantID(request.GetId()) {
+		return nil, errTenantNotFound
+	}
 	logger := rpcutil.ServerLogger(ctx, s.logger)
 
 	var tenant *gen.Tenant
@@ -305,6 +311,9 @@ func (s *Server) CreateSecret(ctx context.Context, request *gen.CreateSecretRequ
 func (s *Server) VerifySecret(ctx context.Context, request *gen.VerifySecretRequest) (*gen.Secret, error) {
 	if request.TenantId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing tenant_id")
+	}
+	if !ValidateTenantID(request.TenantId) {
+		return nil, errTenantNotFound
 	}
 
 	var secrets []*gen.Secret
