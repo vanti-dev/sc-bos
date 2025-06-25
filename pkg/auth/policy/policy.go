@@ -12,7 +12,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var ErrPermissionDenied = status.Error(codes.PermissionDenied, "you are not authorized to perform this operation")
+var (
+	ErrPermissionDenied = status.Error(codes.PermissionDenied, "you are not authorized to perform this operation")
+	ErrUnauthenticated  = status.Error(codes.Unauthenticated, "please authenticate to perform this operation")
+)
 
 type Protocol string
 
@@ -100,11 +103,11 @@ func Validate(ctx context.Context, policy Policy, attr Attributes) (tried []stri
 			if result.Allowed() {
 				return queries[:i+1], nil
 			} else {
-				return queries[:i+1], ErrPermissionDenied
+				return queries[:i+1], authError(attr)
 			}
 		}
 	}
-	return queries, ErrPermissionDenied
+	return queries, authError(attr)
 }
 
 func queryHierarchy(protocol Protocol, service string) (queries []string) {
@@ -125,5 +128,14 @@ func queryHierarchy(protocol Protocol, service string) (queries []string) {
 
 	default:
 		panic("unknown protocol")
+	}
+}
+
+func authError(attr Attributes) error {
+	switch {
+	case attr.CertificatePresent && attr.CertificateValid, attr.TokenPresent && attr.TokenValid:
+		return ErrPermissionDenied
+	default:
+		return ErrUnauthenticated
 	}
 }

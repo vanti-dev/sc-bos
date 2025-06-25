@@ -28,8 +28,8 @@ func (e *EnergyJob) GetName() string {
 func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 	consumption := float32(.0)
 
-	now := time.Now()
-	filterTime := now.Sub(e.PreviousExecution)
+	now := time.Now().UTC()
+	filterTime := now.Sub(e.PreviousExecution.UTC())
 
 	for _, meter := range e.Meters {
 		cctx, cancel := context.WithTimeout(ctx, e.Timeout.Or(defaultTimeout))
@@ -50,7 +50,13 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 		}
 
 		consumption += processMeterRecords(multiplier, earliest, latest)
+	}
 
+	roundedConsumption := float32(math.Floor(float64(consumption)))
+
+	if roundedConsumption <= 0 {
+		e.Logger.Debug("no energy consumption found, skipping post")
+		return nil
 	}
 
 	body := &types.EnergyConsumption{
@@ -59,7 +65,7 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 			Site:      e.GetSite(),
 		},
 		TodaysEnergyConsumption: types.Float32Measure{
-			Value: float32(math.Floor(float64(consumption))),
+			Value: roundedConsumption,
 			Units: "kWh",
 		},
 	}
@@ -70,7 +76,11 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	return sendFn(ctx, e.GetUrl(), bytes)
+	err = sendFn(ctx, e.GetUrl(), bytes)
+
+	e.PreviousExecution = time.Now().UTC()
+
+	return err
 }
 
 func (e *EnergyJob) getUnitMultiplier(ctx context.Context, meter string) (float32, error) {

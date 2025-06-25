@@ -19,14 +19,14 @@ export function clientOptions(options = {}) {
   };
 
   /**
-   * Log the user out if we get a permission denied error (this going to clear the pinia state too)
+   * Log the user out if we get an auth error (this going to clear the pinia state too)
    *
    * @param {Error} e
    */
   const handleError = (e) => {
     switch (e.code) {
       case StatusCode.PERMISSION_DENIED:
-        handleLogout('Permission denied');
+        console.warn('Attempt to access a protected resource', e);
         break;
       case StatusCode.UNAUTHENTICATED:
         handleLogout('Unauthenticated');

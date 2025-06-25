@@ -24,6 +24,11 @@ type User struct {
 
 	// FileAccounts enumerates a list of identities that incoming credentials are validated against.
 	FileAccounts *Identities `json:"fileAccounts,omitempty"`
+	// If true, when the system starts, all accounts from FileAccounts that do not already exist in the local accounts database will be imported.
+	// Login will only use the local accounts database, as all accounts will be in there.
+	ImportFileAccounts bool `json:"importFileAccounts,omitempty"`
+	// Enable user login using user accounts stored in the local database.
+	LocalAccounts bool `json:"localAccounts,omitempty"`
 	// Keycloak configures access token validation against a KeyCloak server using OIDC.
 	Keycloak *keycloak.Config `json:"keycloakAccounts,omitempty"`
 }
@@ -36,7 +41,7 @@ type System struct {
 	// file of identities and secrets.
 	// See Identities for how this field can be represented/configured in JSON.
 	FileAccounts *Identities `json:"fileAccounts,omitempty"`
-	// TenantAccounts causes the system to validate system tokens using the tenants system.
+	// TenantAccounts causes the system to validate system tokens using the legacy tenants system.
 	// All tokens are deemed invalid if the tenants system is not available.
 	TenantAccounts bool `json:"tenantAccounts,omitempty"`
 	// CohortAccounts causes the system to validate system tokens using the cohort manager, setup via enrollment.

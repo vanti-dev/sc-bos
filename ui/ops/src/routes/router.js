@@ -46,8 +46,9 @@ if (window) {
 
     const sidebar = useSidebarStore();
 
-    // Reset the sidebar to defaults if the path has changed
-    if (to.path !== from.path) {
+    // Reset the sidebar to defaults if the active route changes
+    if ((to.name && to.name !== from.name) ||
+        (!to.name && to.path !== from.path)) {
       sidebar.resetSidebarToDefaults();
     }
 

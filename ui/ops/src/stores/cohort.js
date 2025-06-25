@@ -157,6 +157,11 @@ export const useCohortStore = defineStore('cohort', () => {
       name: serverName.value,
       error: serverNameError.value
     };
+    if (node.error?.code === StatusCode.UNAUTHENTICATED) {
+      // If the user isn't logged in, then we can't get the name of the server.
+      // This is fine, we just don't know it.
+      node.error = null;
+    }
     if (!node.error && node.role === NodeRole.NODE || node.role === NodeRole.GATEWAY) {
       // we don't care about enrollment errors if the node is independent or a hub
       node.error = enrollmentErr.value;

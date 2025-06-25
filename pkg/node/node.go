@@ -226,7 +226,7 @@ func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
 // retryConcurrentOp runs fn retrying up to 5 times when any panics that isConcurrentUpdateDetectedPanic returns true for.
 func retryConcurrentOp(fn func()) (retried bool) {
 	var err any
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		err = catchPanic(fn)
 		if isConcurrentUpdateDetectedPanic(err) {
 			retried = true

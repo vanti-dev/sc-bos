@@ -30,7 +30,7 @@ func (c *countAccumulator) consumeRecords(records ...LogicRecord) ([]countEvent,
 				time:      record.To,
 				direction: traits.EnterLeaveEvent_ENTER,
 			}
-			for i := 0; i < fwDelta; i++ {
+			for range fwDelta {
 				events = append(events, event)
 			}
 		}
@@ -42,7 +42,7 @@ func (c *countAccumulator) consumeRecords(records ...LogicRecord) ([]countEvent,
 				time:      record.To,
 				direction: traits.EnterLeaveEvent_LEAVE,
 			}
-			for i := 0; i < bwDelta; i++ {
+			for range bwDelta {
 				events = append(events, event)
 			}
 		}

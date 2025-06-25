@@ -44,7 +44,7 @@ func TestValidate(t *testing.T) {
 				Protocol: ProtocolGRPC,
 				Service:  "foo.bar.baz",
 			},
-			expectErr: ErrPermissionDenied,
+			expectErr: ErrUnauthenticated,
 			expectQueries: []string{
 				"data.foo.bar.baz.allow",
 				"data.foo.bar.allow",
@@ -78,10 +78,40 @@ func TestValidate(t *testing.T) {
 				"data.foo.bar.allow":     deny,
 				"data.foo.allow":         allow,
 			},
-			expectErr: ErrPermissionDenied,
+			expectErr: ErrUnauthenticated,
 			expectQueries: []string{
 				"data.foo.bar.baz.allow",
 				"data.foo.bar.allow",
+			},
+		},
+		"PermissionDenied_token": {
+			attr: Attributes{
+				Protocol:     ProtocolGRPC,
+				Service:      "foo.bar.baz",
+				TokenPresent: true,
+				TokenValid:   true,
+			},
+			responses: map[string]rego.ResultSet{
+				"data.foo.bar.baz.allow": deny,
+			},
+			expectErr: ErrPermissionDenied,
+			expectQueries: []string{
+				"data.foo.bar.baz.allow",
+			},
+		},
+		"PermissionDenied_cert": {
+			attr: Attributes{
+				Protocol:           ProtocolGRPC,
+				Service:            "foo.bar.baz",
+				CertificatePresent: true,
+				CertificateValid:   true,
+			},
+			responses: map[string]rego.ResultSet{
+				"data.foo.bar.baz.allow": deny,
+			},
+			expectErr: ErrPermissionDenied,
+			expectQueries: []string{
+				"data.foo.bar.baz.allow",
 			},
 		},
 	}
@@ -129,7 +159,7 @@ func TestValidate_Integration(t *testing.T) {
 				Protocol: ProtocolGRPC,
 				Service:  "foo.bar",
 			},
-			expectErr: ErrPermissionDenied,
+			expectErr: ErrUnauthenticated,
 		},
 		"foo.baz": {
 			attr: Attributes{

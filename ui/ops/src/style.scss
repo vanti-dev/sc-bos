@@ -12,8 +12,18 @@ p {
   margin-bottom: 16px;
 }
 
+a {
+  text-decoration: none;
+}
+
 .no-pointer-events {
   pointer-events: none !important;
+}
+
+.text-overflow-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .v-text-field--outlined {

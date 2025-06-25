@@ -35,6 +35,9 @@
           Sign In
         </v-btn>
       </v-card-actions>
+      <v-expand-transition>
+        <v-alert v-if="errorStr" type="error" :text="errorStr"/>
+      </v-expand-transition>
     </v-form>
   </div>
 </template>
@@ -50,13 +53,43 @@ const username = ref('');
 const rules = {
   required: (value) => !!value || 'Required.'
 };
+
+const loginError = ref(null);
+const errorStr = computed(() => {
+  const err = loginError.value;
+  if (!err) {
+    return '';
+  }
+  if (err.error_description) return err.error_description;
+
+  if (err.error) {
+    switch (err.error) {
+      case 'invalid_grant':
+      case 'invalid_client':
+        return 'Incorrect username or password';
+      case 'account_locked':
+        return 'Account is locked. Please contact support.';
+      case 'account_disabled':
+        return 'Account is disabled. Please contact support.';
+      default:
+        return 'Login failed: ' + err.error;
+    }
+  }
+  return (err.message ?? err);
+})
+
 const login = async () => {
   // check if username and password are entered
   if (username.value && password.value) {
     const values = {username: username.value, password: password.value};
 
     // Forwards the login request to the account store with the values from the form
-    await accountStore.loginWithLocalAuth(values);
+    try {
+      await accountStore.loginWithLocalAuth(values);
+      loginError.value = null;
+    } catch (e) {
+      loginError.value = e;
+    }
   } else {
     console.error('username and password are required');
   }

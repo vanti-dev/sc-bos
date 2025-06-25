@@ -115,7 +115,9 @@ func (tx *Tx) CheckAccountPassword(ctx context.Context, accountID int64, passwor
 		return ErrIncorrectPassword // no password set
 	}
 	err = pass.Compare(details.PasswordHash, []byte(password))
-	if err != nil {
+	if errors.Is(err, pass.ErrMismatchedHashAndPassword) {
+		return ErrIncorrectPassword
+	} else if err != nil {
 		return err
 	}
 

@@ -46,6 +46,8 @@ var (
 	ErrInvalidPageToken         = status.Error(codes.InvalidArgument, "invalid page token")
 	ErrInvalidFilter            = status.Error(codes.InvalidArgument, "invalid filter")
 	ErrRoleInUse                = status.Error(codes.FailedPrecondition, "role is in use")
+	ErrRoleProtected            = status.Error(codes.FailedPrecondition, "role is protected and cannot be updated or deleted")
+	ErrRoleScopedAssignment     = status.Error(codes.FailedPrecondition, "role cannot be used in a scoped assignment")
 	ErrResourceMissing          = status.Error(codes.InvalidArgument, "resource to create/update not supplied")
 	ErrGenerateSecret           = status.Error(codes.Internal, "failed to generate secret")
 )
@@ -665,6 +667,9 @@ func (s *Server) UpdateRole(ctx context.Context, req *gen.UpdateRoleRequest) (*g
 		} else if err != nil {
 			return err
 		}
+		if role.Protected {
+			return ErrRoleProtected
+		}
 		permissions, err = tx.ListRolePermissions(ctx, id)
 		if err != nil {
 			return err
@@ -776,8 +781,23 @@ func (s *Server) DeleteRole(ctx context.Context, req *gen.DeleteRoleRequest) (*g
 			s.logger.Error("failed to delete role", zap.Error(err), zap.String("id", req.Id))
 			return ErrDatabase
 		}
-		deleted = rowsDeleted > 0
-		return nil
+
+		if rowsDeleted > 0 {
+			// role was deleted successfully
+			deleted = true
+			return nil
+		}
+
+		// role was not deleted, because either
+		// 1. it does not exist, or
+		// 2. it is protected and cannot be deleted
+		// detect which applies
+		_, err = tx.GetRole(ctx, id)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		} else {
+			return ErrRoleProtected
+		}
 	})
 	if err != nil {
 		return nil, s.processError(err, zap.String("rpc", "DeleteRole"), zap.String("id", req.Id))
@@ -889,7 +909,14 @@ func (s *Server) CreateRoleAssignment(ctx context.Context, req *gen.CreateRoleAs
 
 	var assignment queries.RoleAssignment
 	err := s.store.Write(ctx, func(tx *Tx) error {
-		var err error
+		role, err := tx.GetRole(ctx, roleID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrRoleNotFound
+		}
+		if role.LegacyRole.Valid && scopeType.Valid {
+			return ErrRoleScopedAssignment
+		}
+
 		assignment, err = tx.CreateRoleAssignment(ctx, queries.CreateRoleAssignmentParams{
 			AccountID:     accountID,
 			RoleID:        roleID,
@@ -899,17 +926,8 @@ func (s *Server) CreateRoleAssignment(ctx context.Context, req *gen.CreateRoleAs
 		if sqlite.IsUniqueConstraintError(err) {
 			return ErrRoleAssignmentExists
 		} else if sqlite.IsForeignKeyError(err) {
-			// figure out which one is missing
-			_, accountErr := tx.GetAccount(ctx, accountID)
-			_, roleErr := tx.GetRole(ctx, roleID)
-			if errors.Is(accountErr, sql.ErrNoRows) {
-				return ErrAccountNotFound
-			} else if errors.Is(roleErr, sql.ErrNoRows) {
-				return ErrRoleNotFound
-			} else {
-				// unexpected database error
-				return errors.Join(err, accountErr, roleErr)
-			}
+			// already checked that role exists, so this must be a non-existing account
+			return ErrAccountNotFound
 		}
 		return err
 	})

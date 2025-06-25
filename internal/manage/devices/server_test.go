@@ -74,7 +74,7 @@ func TestServer_ListDevices(t *testing.T) {
 
 	// create 40 devices, half are lights, half are hvac,
 	// they're created interleaved to try and avoid page 1 being all lights and page 2 being all hvac
-	for i := 0; i < 20; i++ {
+	for i := range 20 {
 		n.Announce(fmt.Sprintf("device/%02d/light", i),
 			node.HasMetadata(&traits.Metadata{
 				Membership: &traits.Metadata_Membership{

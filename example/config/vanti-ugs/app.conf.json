@@ -1,5 +1,10 @@
 {
   "name": "van/uk/brum/ugs/eg-ac-01",
+  "metadata": {
+    "appearance": {
+      "title": "Vanti UGS 01"
+    }
+  },
   "drivers": [
     {
       "name": "van/uk/brum/ugs/eg-ac-01/driver/basement",
@@ -840,6 +845,9 @@
         "van/uk/brum/ugs/zones/floors/ground",
         "van/uk/brum/ugs/zones/floors/first"
       ],
+      "enterLeaveOccupancySensors": [
+        "van/uk/brum/ugs/devices/ACR-L00-01"
+      ],
       "airQualitySensors": [
         "van/uk/brum/ugs/zones/floors/basement",
         "van/uk/brum/ugs/zones/floors/ground",
@@ -926,8 +934,9 @@
         "van/uk/brum/ugs/zones/rooms/green",
         "van/uk/brum/ugs/zones/rooms/yellow"
       ],
-      "openClose": [
+      "enterLeaveSensors": [
         "van/uk/brum/ugs/devices/ACR-L00-01",
+        "van/uk/brum/ugs/devices/ACR-L00-02",
         "van/uk/brum/ugs/devices/DOR-L00-01",
         "van/uk/brum/ugs/devices/DOR-L00-02"
       ],
@@ -1169,7 +1178,8 @@
         "location": {"floor": "Ground Floor", "zone": "Secure Store"},
         "membership": {"subsystem": "zones"}
       },
-      "lights": ["van/uk/brum/ugs/devices/LTF-L00-14"]
+      "lights": ["van/uk/brum/ugs/devices/LTF-L00-14"],
+      "enterLeaveSensors": ["van/uk/brum/ugs/devices/ACR-L00-02"]
     },
     {
       "name": "van/uk/brum/ugs/zones/areas/comms-room",
@@ -1191,6 +1201,7 @@
         "location": {"floor": "Ground Floor", "zone": "Reception"},
         "membership": {"subsystem": "zones"}
       },
+      "enterLeaveSensors": ["van/uk/brum/ugs/devices/ACR-L00-01"],
       "lights": [
         "van/uk/brum/ugs/devices/LTF-L00-01",
         "van/uk/brum/ugs/devices/LTF-L00-02",
@@ -1217,6 +1228,7 @@
         "location": {"floor": "Ground Floor", "zone": "Loading Bay"},
         "membership": {"subsystem": "zones"}
       },
+      "enterLeaveSensors": ["van/uk/brum/ugs/devices/DOR-L00-01"],
       "lights": ["van/uk/brum/ugs/devices/LTF-L00-17"],
       "openClose": ["van/uk/brum/ugs/devices/DOR-L00-01"]
     },

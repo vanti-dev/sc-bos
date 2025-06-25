@@ -26,6 +26,16 @@ const menuItems = [
     link: {path: '/auth/users'}
   },
   {
+    title: 'Accounts',
+    icon: 'mdi-account-box-outline',
+    link: {path: '/auth/accounts', name: 'accounts'}
+  },
+  {
+    title: 'Roles',
+    icon: 'mdi-account-details',
+    link: {path: '/auth/roles', name: 'roles'}
+  },
+  {
     title: 'Third-party Accounts',
     icon: 'mdi-key',
     link: {path: '/auth/third-party'}
