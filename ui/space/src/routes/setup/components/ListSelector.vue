@@ -73,14 +73,14 @@ const noZones = computed(() => {
 
 
 const fetch = async ({done}) => {
-  if (!isInitialized.value) return; //don't do anything until we know about account zones
+  if (!isInitialized.value) return; // don't do anything until we know about account zones
   if (zones.value.length > 0) return; // don't load zones from server if we have account zones to use
 
   const prev = zoneList.value.length;
 
   await getNextZones(10);
 
-  if (zoneList.value.length === prev) {
+  if (prev !== 0 && zoneList.value.length === prev) {
     done('empty'); // disable further fetch calls
     return;
   }
