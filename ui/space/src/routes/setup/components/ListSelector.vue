@@ -40,7 +40,7 @@ const emits = defineEmits(['shouldAutoLogout']);
 const router = useRouter();
 const {zoneCollection, getNextZones} = useZoneCollection();
 const accountStore = useAccountStore();
-const {zones} = storeToRefs(accountStore);
+const {zones, isInitialized} = storeToRefs(accountStore);
 const uiConfig = useUiConfigStore();
 const disableAuthentication = computed(() => uiConfig.auth.disabled);
 const configStore = useConfigStore();
@@ -73,6 +73,9 @@ const noZones = computed(() => {
 
 
 const fetch = async ({done}) => {
+  if (!isInitialized.value) return; //don't do anything until we know about account zones
+  if (zones.value.length > 0) return; // don't load zones from server if we have account zones to use
+
   const prev = zoneList.value.length;
 
   await getNextZones(10);
