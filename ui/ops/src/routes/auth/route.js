@@ -2,6 +2,7 @@ import SidebarPage from '@/components/pages/SidebarPage.vue';
 import accounts from '@/routes/auth/accounts/route.js';
 import roles from '@/routes/auth/roles/route.js';
 import thirdParty from '@/routes/auth/third-party/route.js';
+import users from '@/routes/auth/users/route.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {route} from '@/util/router.js';
 
@@ -14,19 +15,10 @@ export default [
       nav: () => import('./AuthNav.vue')
     },
     children: [
-      {
-        path: 'users',
-        component: () => import('./users/Users.vue'),
-        meta: {
-          authentication: {
-            rolesRequired: ['superAdmin', 'admin', 'viewer']
-          },
-          title: 'Users'
-        }
-      },
       ...route(thirdParty),
       ...route(accounts),
       ...route(roles),
+      ...route(users),
     ],
     meta: {
       authentication: {
