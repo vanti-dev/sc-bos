@@ -58,6 +58,34 @@ func (c *Client) ListEvents(req *EventsRequest) (*EventsResponse, error) {
 	return makeReq[EventsRequest, EventsResponse](c, "/artemis/api/eventService/v1/eventRecords/page", req)
 }
 
+func (c *Client) CheckAutoReviewFlow(req *AutoReviewFlowRequest) (*AutoReviewFlowResponse, error) {
+	return makeReq[AutoReviewFlowRequest, AutoReviewFlowResponse](c, "/artemis/api/visitor/v1/visitorconfig/automaticapproval", req)
+}
+
+func (c *Client) ManuallyApproveVisitor(req *VisitorApprovalRequest) (*VisitorApprovalResponse, error) {
+	return makeReq[VisitorApprovalRequest, VisitorApprovalResponse](c, "/artemis/api/visitor/v1/visitorapprovalflow/status", req)
+}
+
+func (c *Client) ListVisitorAppointments(req *ListVisitorAppointmentsRequest) (*ListVisitorAppointmentsResponse, error) {
+	return makeReq[ListVisitorAppointmentsRequest, ListVisitorAppointmentsResponse](c, "/artemis/api/visitor/v1/appointment/appointmentlist", req)
+}
+
+func (c *Client) ListANPREvents(req *ANPREventsRequest) (*ANPREventsResponse, error) {
+	return makeReq[ANPREventsRequest, ANPREventsResponse](c, "/artemis/api/pms/v1/crossRecords/page", req)
+}
+
+func (c *Client) CreateVisitorAppointment(req *VisitorAppointmentRequest) (*VisitorAppointmentData, error) {
+	return makeReq[VisitorAppointmentRequest, VisitorAppointmentData](c, "/artemis/api/visitor/v2/appointment", req)
+}
+
+func (c *Client) UpdateVisitorAppointment(req *VisitorAppointmentRequest) (*VisitorAppointmentData, error) {
+	return makeReq[VisitorAppointmentRequest, VisitorAppointmentData](c, "/artemis/api/visitor/v2/appointment/update", req)
+}
+
+func (c *Client) DeleteVisitorAppointment(req *DeleteVisitorAppointmentRequest) (*DeleteVisitorAppointmentResponse, error) {
+	return makeReq[DeleteVisitorAppointmentRequest, DeleteVisitorAppointmentResponse](c, "/artemis/api/visitor/v2/appointment/delete", req)
+}
+
 func makeReq[R any, T any](client *Client, path string, r *R) (*T, error) {
 	body, err := json.Marshal(r)
 	if err != nil {
