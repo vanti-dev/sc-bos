@@ -87,6 +87,18 @@ export default function() {
     }
   }
 
+  const getNextZones = (pageSize) => {
+    if (pageSize === 0) {
+      return;
+    }
+    const baseRequest = {
+      pageSize: pageSize
+    };
+    return listNextZones(baseRequest).catch(() => {
+      // handled by tracker
+    });
+  };
+
   watch(allNamesToCheck, () => {
     cursor.value = {nameIndex: 0, pageToken: ''};
     namesVersion.value++;
@@ -95,12 +107,7 @@ export default function() {
     if (!loadPage || names.length === 0) {
       return;
     }
-    const baseRequest = {
-      pageSize: 100
-    };
-    listNextZones(baseRequest).catch(() => {
-      // handled by tracker
-    });
+    getNextZones(100);
   }, {deep: true, immediate: true});
 
 
@@ -125,6 +132,7 @@ export default function() {
     zoneCollection,
 
     loadNextPage,
+    getNextZones,
 
     allNamesToCheck,
     cursor
