@@ -220,7 +220,8 @@ func (c *ANPRController) CreateAccessGrant(ctx context.Context, request *gen.Cre
 	autoApproval, err := c.client.CheckAutoReviewFlow(&api.AutoReviewFlowRequest{})
 
 	if err != nil {
-		return nil, status.Error(codes.Unavailable, "failed to check auto review flow: "+err.Error())
+		c.logger.Warn("failed to check auto review flow", zap.Error(err))
+		autoApproval = &api.AutoReviewFlowResponse{AutomaticApproval: 1} // default to automatic approval if the check fails
 	}
 
 	manuallyApprove := c.conf.GrantManagement.EnableSmartCoreApproval && autoApproval.AutomaticApproval == 0

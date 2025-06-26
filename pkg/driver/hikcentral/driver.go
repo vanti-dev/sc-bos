@@ -89,7 +89,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				continue
 			}
 
-			resources[anpr.Name] = resource.NewValue(resource.WithNoDuplicates())
+			resources[anpr.Name] = resource.NewValue(resource.WithInitialValue(&gen.AccessAttempt{}), resource.WithNoDuplicates())
 
 			announcer.Announce(anpr.Name,
 				node.HasMetadata(anpr.Metadata),
