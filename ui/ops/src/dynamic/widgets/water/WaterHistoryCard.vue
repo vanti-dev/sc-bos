@@ -37,7 +37,7 @@
         <bar ref="chartRef" :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
       </div>
     </v-card-text>
-    <energy-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="unit"/>
+    <water-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="unit"/>
   </v-card>
 </template>
 
@@ -46,7 +46,7 @@ import {useDateScale} from '@/components/charts/date.js';
 import {useExternalTooltip, useThemeColorPlugin, useVueLegendPlugin} from '@/components/charts/plugins.js';
 import {triggerDownload} from '@/components/download/download.js';
 import {computeDatasets, datasetSourceName} from '@/dynamic/widgets/meter/chart.js';
-import EnergyTooltip from '@/dynamic/widgets/energy/EnergyTooltip.vue';
+import WaterTooltip from '@/dynamic/widgets/water/WaterTooltip.vue';
 import PeriodChooserRows from '@/dynamic/widgets/meter/PeriodChooserRows.vue';
 import {useDescribeMeterReading} from '@/traits/meter/meter.js';
 import {isNullOrUndef} from '@/util/types.js';
@@ -64,21 +64,13 @@ const chartRef = ref(null);
 const props = defineProps({
   title: {
     type: String,
-    default: 'Energy Usage'
+    default: 'Water Usage'
   },
   totalConsumptionName: {
     type: String,
     default: undefined,
   },
-  totalProductionName: {
-    type: String,
-    default: undefined,
-  },
   subConsumptionNames: {
-    type: [Array],
-    default: () => [],
-  },
-  subProductionNames: {
     type: [Array],
     default: () => [],
   },
@@ -117,13 +109,11 @@ const rootClasses = computed(() => {
 // we assume here that all the meters share the same unit, so asking about any will be enough.
 const nameForDescribe = computed(() => {
   if (!isNullOrUndef(props.totalConsumptionName)) return props.totalConsumptionName;
-  if (!isNullOrUndef(props.totalProductionName)) return props.totalProductionName;
   const toName = (item) => {
     if (typeof item === 'string') return item;
     return item.name;
   }
   if (props.subConsumptionNames.length > 0) return toName(props.subConsumptionNames[0]);
-  if (props.subProductionNames.length > 0) return toName(props.subProductionNames[0]);
   return undefined;
 })
 const {response: meterInfo} = useDescribeMeterReading(nameForDescribe);
@@ -136,10 +126,8 @@ const _offset = useLocalProp(toRef(props, 'offset'));
 const {edges, pastEdges, tickUnit, startDate, endDate} = useDateScale(_start, _end, _offset);
 
 const totalConsumption = useMeterConsumption(toRef(props, 'totalConsumptionName'), pastEdges);
-const totalProduction = useMeterConsumption(toRef(props, 'totalProductionName'), pastEdges);
 
 const subConsumptions = useMetersConsumption(toRef(props, 'subConsumptionNames'), pastEdges);
-const subProductions = useMetersConsumption(toRef(props, 'subProductionNames'), pastEdges);
 
 const {
   external: tooltipExternal,
@@ -230,7 +218,6 @@ const chartData = computed(() => {
     labels: chartLabels.value,
     datasets: [
       ...computeDatasets('Consumption', totalConsumption, toRef(props, 'subConsumptionNames'), subConsumptions),
-      ...computeDatasets('Production', totalProduction, toRef(props, 'subProductionNames'), subProductions, true),
     ]
   };
 });
@@ -241,8 +228,6 @@ const visibleNames = () => {
   const namesByTitle = {
     'Other Consumption': props.totalConsumptionName,
     'Total Consumption': props.totalConsumptionName,
-    'Other Production': props.totalProductionName,
-    'Total Production': props.totalProductionName,
   };
   const chart = /** @type {import('chart.js').Chart} */ chartRef.value?.chart;
   if (!chart) return [];
@@ -270,14 +255,14 @@ const onDownloadClick = async () => {
   const names = visibleNames();
   if (names.length === 0) return;
   await triggerDownload(
-      props.title?.toLowerCase()?.replace(' ', '-') ?? 'energy-usage',
+      props.title?.toLowerCase()?.replace(' ', '-') ?? 'water-usage',
       {conditionsList: [{field: 'name', stringIn: {stringsList: names}}]},
       {startTime: startDate.value, endTime: endDate.value},
       {
         includeColsList: [
           {name: 'timestamp', title: 'Reading Time'},
           {name: 'md.name', title: 'Device Name'},
-          {name: 'meter.usage', title: (props.title || 'Energy Usage') + (unit.value ? ` (${unit.value})` : '')},
+          {name: 'meter.usage', title: (props.title || 'Water Usage') + (unit.value ? ` (${unit.value})` : '')},
         ]
       }
   )
