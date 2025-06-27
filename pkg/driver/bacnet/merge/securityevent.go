@@ -37,7 +37,8 @@ type securityEventSource struct {
 	Priority  *int32                       `json:"priority,omitempty"`  // Optional. Priority of the security event, lower is more important
 	Source    *string                      `json:"source,omitempty"`    // Optional. Source of the security event, e.g. "Door 1"
 
-	IsString bool `json:"isString,omitempty"` // Optional. If true, the value source is a string, otherwise it is a float64.
+	IsString      bool   `json:"isString,omitempty"`      // Optional. If true, the value source is a string, otherwise it is a float64.
+	OkStringValue string `json:"okStringValue,omitempty"` // if IsString is true, this is the value that is considered OK i.e. will deactivate the security event.
 }
 
 type securityEvent struct {
@@ -202,9 +203,19 @@ func (se *securityEvent) checkResponseForSecurityEvent(response any) (*gen.Secur
 			return nil, comm.ErrReadProperty{Prop: "securityEvent", Cause: err}
 		}
 
-		if value == "" {
+		if value == se.cfg.OkStringValue {
+			se.IsActive = false
 			return nil, nil // no event if the value is empty
 		}
+
+		if se.IsActive {
+			// if the security event is already active, we don't want to create a new one
+			// TODO: this also means that a new event on the existing security event source will be ignored
+			// e.g. a different card used to scan that is rejected won't reveal a new card ID
+			return nil, nil
+		}
+
+		se.IsActive = true
 
 		se.cfgDefaults(data)
 
