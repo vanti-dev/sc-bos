@@ -83,7 +83,7 @@ func (c *Client) UpdateVisitorAppointment(req *VisitorAppointmentRequest) (*Visi
 }
 
 func (c *Client) DeleteVisitorAppointment(req *DeleteVisitorAppointmentRequest) (*DeleteVisitorAppointmentResponse, error) {
-	return makeReq[DeleteVisitorAppointmentRequest, DeleteVisitorAppointmentResponse](c, "/artemis/api/visitor/v2/appointment/delete", req)
+	return makeReq[DeleteVisitorAppointmentRequest, DeleteVisitorAppointmentResponse](c, "/artemis/api/visitor/v1/appointment/single/delete", req)
 }
 
 func makeReq[R any, T any](client *Client, path string, r *R) (*T, error) {
