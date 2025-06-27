@@ -15,6 +15,7 @@ const props = defineProps({
   }
 });
 const navigationItemIcons = {
+  anpr: 'mdi-shield-car',
   lighting: 'mdi-lightbulb',
   hvac: 'mdi-thermometer',
   metering: 'mdi-meter-electric',
