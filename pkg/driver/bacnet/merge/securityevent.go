@@ -44,6 +44,8 @@ type securityEventSource struct {
 type securityEvent struct {
 	cfg      securityEventSource
 	IsActive bool
+
+	previousValue any // used to track the previous value of the security event source, to avoid duplicate events
 }
 
 type securityEventConfig struct {
@@ -209,10 +211,11 @@ func (se *securityEvent) checkResponseForSecurityEvent(response any) (*gen.Secur
 		}
 
 		if se.IsActive {
-			// if the security event is already active, we don't want to create a new one
-			// TODO: this also means that a new event on the existing security event source will be ignored
-			// e.g. a different card used to scan that is rejected won't reveal a new card ID
-			return nil, nil
+			// if the event is already active, we only want to update it if the value has changed
+			if value == se.previousValue {
+				return nil, nil
+			}
+			se.previousValue = value
 		}
 
 		se.IsActive = true
