@@ -14,6 +14,10 @@ service AccessApi {
   rpc GetLastAccessAttempt(GetLastAccessAttemptRequest) returns (AccessAttempt) {}
   rpc PullAccessAttempts(PullAccessAttemptsRequest) returns (stream PullAccessAttemptsResponse) {}
 
+  rpc CreateAccessGrant(CreateAccessGrantRequest) returns (AccessGrant) {}
+  rpc UpdateAccessGrant(UpdateAccessGrantRequest) returns (AccessGrant) {}
+  rpc DeleteAccessGrant(DeleteAccessGrantRequest) returns (DeleteAccessGrantResponse) {}
+
   // todo: rpc CreateActor... to replace axiomxa service
   // todo: rpc GrantAccess for manually granting access to an actor
 }
@@ -76,3 +80,64 @@ message PullAccessAttemptsResponse {
     AccessAttempt access_attempt = 3;
   }
 }
+
+message AccessGrant {
+  // id is a unique identifier for the access grant native to the subsystem device.
+  string id = 1;
+  // start_time is the time from which the access grant is valid.
+  google.protobuf.Timestamp start_time = 2;
+  // end_time is the time in which the access grant is revoked.
+  google.protobuf.Timestamp end_time = 3;
+  // purpose describes the reason for the access grant.
+  // For example: Business, Training, Visit, Meeting, Maintenance, Emergency, Other, etc.
+  string purpose = 4;
+  // grantee is the actor that has been granted access.
+  Actor grantee = 5;
+  // granter is the actor that granted the access grant or is expecting the grantee
+  // For example: Front of House (FoH) security, FoH host, FoH receptionist, interviewer, etc.
+  Actor granter = 6;
+  // created_time is the time the access grant was created.
+  google.protobuf.Timestamp created_time = 7;
+  // updated_time is the time the access grant was last updated.
+  google.protobuf.Timestamp updated_time = 8;
+
+  // entry_code is a code the grantee can use to enter the protected area
+  string entry_code = 9;
+  // qr_code is a QR code the grantee can scan to enter the protected area
+  // Can be a URL to the QR code image, or a base64 encoded image data.
+  string qr_code = 10;
+  // skip_check_in indicates whether the grantee should physically check in with granter
+  // before they enter the protected isa or skip the check-in process
+  bool skip_check_in = 11;
+
+  // Indicates whether access grant can be updated.
+  // If true, the access grant is immutable.
+  bool read_only = 12;
+}
+message CreateAccessGrantRequest {
+  // The name of the device to create access grant for.
+  string name = 1;
+  // The access grant to create.
+  AccessGrant access_grant = 2;
+}
+
+
+message UpdateAccessGrantRequest {
+  // The name of the device to update access grant for.
+  string name = 1;
+  // the access grant to update.
+  // The id of the access grant to update should be set.
+  // All other fields will be overwritten by the values in this request message.
+  AccessGrant access_grant = 2;
+}
+
+message DeleteAccessGrantRequest {
+  // The name of the device to delete access grant for.
+  string name = 1;
+  // The id of the access grant to delete.
+  string access_grant_id = 2;
+  // The device that originated the delete access grant request.
+  string source = 3;
+}
+
+message DeleteAccessGrantResponse {}
