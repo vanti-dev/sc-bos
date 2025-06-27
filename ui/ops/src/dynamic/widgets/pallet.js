@@ -23,6 +23,7 @@ export const builtinWidgets = {
   'occupancy/PresenceCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/PresenceCard.vue')),
   'power-history/PowerHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/power-history/PowerHistoryCard.vue')),
   'security/SecurityEventsCard': defineAsyncComponent(() => import('@/dynamic/widgets/security/SecurityEventsCard.vue')),
+  'water/WaterHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/water/WaterHistoryCard.vue')),
   // from elsewhere in our codebase
   'devices/DeviceTable': defineAsyncComponent(() => import('@/routes/devices/components/DeviceTable.vue')),
   'environmental/AirTemperatureChip': defineAsyncComponent(() => import('@/traits/airTemperature/AirTemperatureChip.vue')),
