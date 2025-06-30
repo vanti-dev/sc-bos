@@ -2,6 +2,7 @@ package history
 
 import (
 	"context"
+	"math"
 	"time"
 
 	"go.uber.org/zap"
@@ -28,6 +29,9 @@ func (a *automation) collectMeterReadingChanges(ctx context.Context, source conf
 				return err
 			}
 			for _, change := range msg.Changes {
+				if change.GetMeterReading() == nil || math.IsNaN(float64(change.GetMeterReading().Usage)) {
+					continue
+				}
 				if !last.Changed(change.GetMeterReading()) {
 					continue
 				}
@@ -49,7 +53,9 @@ func (a *automation) collectMeterReadingChanges(ctx context.Context, source conf
 		if err != nil {
 			return err
 		}
-
+		if resp == nil || math.IsNaN(float64(resp.Usage)) {
+			return nil
+		}
 		if !last.Changed(resp) {
 			return nil
 		}
