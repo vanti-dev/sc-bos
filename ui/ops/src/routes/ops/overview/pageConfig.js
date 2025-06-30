@@ -1,3 +1,4 @@
+import {computed, defineAsyncComponent, markRaw, reactive, toValue} from 'vue';
 import {builtinLayouts} from '@/dynamic/layout/pallet.js';
 const PlaceholderCard = defineAsyncComponent(() => import('@/dynamic/widgets/general/PlaceholderCard.vue'));
 import {builtinWidgets} from '@/dynamic/widgets/pallet.js';
@@ -5,7 +6,6 @@ import useBuildingConfig from '@/routes/ops/overview/pages/buildingConfig.js';
 import useDashPage from '@/routes/ops/overview/pages/dashPage.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {findActiveItem} from '@/util/router.js';
-import {computed, defineAsyncComponent, markRaw, reactive, toValue} from 'vue';
 
 /**
  * @param {MaybeRefOrGetter<string|string[]>} path - uri decoded path to the page
