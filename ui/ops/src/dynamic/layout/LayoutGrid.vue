@@ -11,8 +11,9 @@
 </template>
 
 <script setup>
+import {defineAsyncComponent} from 'vue';
 import useSignage from '@/composables/signage.js';
-import PlaceholderCard from '@/dynamic/widgets/general/PlaceholderCard.vue';
+const PlaceholderCard = defineAsyncComponent(() => import('@/dynamic/widgets/general/PlaceholderCard.vue'));
 import {computed} from 'vue';
 
 const props = defineProps({
