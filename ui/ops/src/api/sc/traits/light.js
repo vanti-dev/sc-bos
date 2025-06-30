@@ -38,6 +38,8 @@ export function pullBrightness(request, resource) {
 export function getBrightness(request, tracker) {
   return trackAction('Light.getBrightness', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
+    const req = getBrightnessRequestFromObject(request);
+    console.debug('DEAN getBrightness', req.toObject());
     return api.getBrightness(getBrightnessRequestFromObject(request));
   });
 }
@@ -106,7 +108,9 @@ export function getBrightnessRequestFromObject(obj) {
 
   const dst = new GetBrightnessRequest();
   setProperties(dst, obj, 'name');
-  dst.setUpdateMask(fieldMaskFromObject(obj.readMask));
+  if (obj.readMask) {
+    dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  }
   return dst;
 }
 

@@ -1,9 +1,10 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
-import {describeBrightness, pullBrightness, updateBrightness} from '@/api/sc/traits/light';
+import {describeBrightness, getBrightness, pullBrightness, updateBrightness} from '@/api/sc/traits/light';
 import {setRequestName, toQueryObject, watchResource} from '@/util/traits.js';
 import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
+ * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/light_pb').GetBrightnessRequest} GetBrightnessRequest
  * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/light_pb').PullBrightnessRequest} PullBrightnessRequest
  * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/light_pb').PullBrightnessResponse} PullBrightnessResponse
  * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/light_pb').UpdateBrightnessRequest} UpdateBrightnessRequest
@@ -168,4 +169,65 @@ export function useBrightness(value, support = null) {
     presets,
     currentPresetTitle
   };
+}
+
+/**
+ * @param {MaybeRefOrGetter<string|GetBrightnessRequest.AsObject>} query
+ * @param {MaybeRefOrGetter<boolean>=} paused
+ * @param {number=} intervalMs
+ * @return {ToRefs<ResourceValue<Brightness.AsObject, any>>}
+ */
+export function usePollBrightness(query, paused = false, intervalMs = 2000) {
+  const resource = reactive(
+    /** @type {ResourceValue<Brightness.AsObject, any>} */
+    newResourceValue()
+  );
+  onScopeDispose(() => closeResource(resource));
+
+  const queryObject = computed(() => toQueryObject(query));
+
+
+  let timer = null;
+
+  const startPolling = () => {
+    console.log("DEAN: Start Polling: " + JSON.stringify(toValue(queryObject)));
+    if (timer) return;
+    const poll = async () => {
+      if (toValue(paused)) return;
+      try {
+        resource.value = await getBrightness({name: 'van/uk/brum/ugs/devices/LTF-L00-05'}); // toValue(queryObject)
+        console.log("DEAN: Polled brightness:");
+        resource.error = null;
+        resource.loading = false;
+      } catch (e) {
+        console.error("DEAN: Error polling brightness:", e);
+        resource.error = e;
+        resource.loading = false;
+      }
+    };
+    timer = setInterval(poll, intervalMs);
+    poll();
+  };
+
+  const stopPolling = () => {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  };
+
+  watchResource(
+    () => toValue(queryObject),
+    () => toValue(paused),
+    (req, isPaused) => {
+      if (isPaused) {
+        stopPolling();
+      } else {
+        startPolling();
+      }
+      return () => stopPolling();
+    }
+  );
+
+  return toRefs(resource);
 }
