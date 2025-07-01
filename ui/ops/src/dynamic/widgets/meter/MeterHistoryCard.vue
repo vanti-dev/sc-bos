@@ -135,11 +135,36 @@ const _offset = useLocalProp(toRef(props, 'offset'));
 
 const {edges, pastEdges, tickUnit, startDate, endDate} = useDateScale(_start, _end, _offset);
 
-const totalConsumption = useMeterConsumption(toRef(props, 'totalConsumptionName'), pastEdges);
-const totalProduction = useMeterConsumption(toRef(props, 'totalProductionName'), pastEdges);
-
 const subConsumptions = useMetersConsumption(toRef(props, 'subConsumptionNames'), pastEdges);
 const subProductions = useMetersConsumption(toRef(props, 'subProductionNames'), pastEdges);
+
+const totalConsumption = computed(() => {
+  if (!props.subConsumptionNames || props.subConsumptionNames.length === 0) {
+    return useMeterConsumption(toRef(props, 'totalConsumptionName'), pastEdges).value;
+  } else {
+    // Use already-calculated subConsumptions
+    const subVals = subConsumptions.value;
+    if (!subVals || subVals.length === 0) return [];
+    const edgeCount = subVals[0]?.length || 0;
+    return Array.from({ length: edgeCount }, (_, i) =>
+      subVals.reduce((sum, arr) => sum + (arr[i] ?? 0), 0)
+    );
+  }
+});
+
+const totalProduction = computed(() => {
+  if (!props.subProductionNames || props.subProductionNames.length === 0) {
+    return useMeterConsumption(toRef(props, 'totalProductionName'), pastEdges).value;
+  } else {
+    const subVals = subProductions.value;
+    if (!subVals || subVals.length === 0) return [];
+    const edgeCount = subVals[0]?.length || 0;
+    return Array.from({ length: edgeCount }, (_, i) =>
+      subVals.reduce((sum, arr) => sum + (arr[i] ?? 0), 0)
+    );
+  }
+});
+
 
 const {
   external: tooltipExternal,
@@ -239,9 +264,7 @@ const chartData = computed(() => {
 const visibleNames = () => {
   const names = [];
   const namesByTitle = {
-    'Other Consumption': props.totalConsumptionName,
     'Total Consumption': props.totalConsumptionName,
-    'Other Production': props.totalProductionName,
     'Total Production': props.totalProductionName,
   };
   const chart = /** @type {import('chart.js').Chart} */ chartRef.value?.chart;
