@@ -609,7 +609,7 @@
           "sideWidth": 420,
           "main": [
             {
-              "component": "builtin:energy/EnergyHistoryCard",
+              "component": "builtin:meter/MeterHistoryCard",
               "props": {
                 "title": "Electricity Usage",
                 "totalConsumptionName": "van/uk/brum/ugs/zones/building",
@@ -753,7 +753,7 @@
             {
               "loc": {"x": 3, "y": 4, "w": 4, "h": 3},
               "id": "EnergyHistory",
-              "component": "builtin:energy/EnergyHistoryCard",
+              "component": "builtin:meter/MeterHistoryCard",
               "props": {
                 "title": "Weekly Energy Use",
                 "totalConsumptionName": "van/uk/brum/ugs/zones/building",
@@ -886,6 +886,54 @@
                 "hideHeaderActions": true,
                 "columns": ["createTime", "severity", "source", "description"],
                 "fixedRowCount": 5
+              }
+            }
+          ]
+        },
+        {
+          "title": "Water",
+          "icon": "mdi-water",
+          "layout": "builtin:LayoutMainSide",
+          "path": "water",
+          "mainWidgetMinHeight": 0,
+          "sideWidth": 420,
+          "main": [
+            {
+              "component": "builtin:meter/MeterHistoryCard",
+              "props": {
+                "title": "Water Usage",
+                "totalConsumptionName": "van/uk/brum/ugs/zones/building/water",
+                "subConsumptionNames": [
+                  "van/uk/brum/ugs/devices/WMT-L00-01",
+                  "van/uk/brum/ugs/devices/WMT-L00-02"
+                ]
+              }
+            }
+          ],
+          "after": [
+            {
+              "component": "builtin:container/FlexRow",
+              "props": {
+                "itemMinWidth": "14em",
+                "title": "Total Today",
+                "items": [
+                  {
+                    "component": "builtin:meter/ConsumptionCard",
+                    "props": {
+                      "name": "van/uk/brum/ugs/devices/WMT-L00-01",
+                      "period": "day",
+                      "title": "Meter 1"
+                    }
+                  },
+                  {
+                    "component": "builtin:meter/ConsumptionCard",
+                    "props": {
+                      "name": "van/uk/brum/ugs/devices/WMT-L00-02",
+                      "period": "day",
+                      "title": "Meter 2"
+                    }
+                  }
+                ]
               }
             }
           ]

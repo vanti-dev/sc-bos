@@ -37,7 +37,7 @@
         <bar ref="chartRef" :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
       </div>
     </v-card-text>
-    <energy-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="unit"/>
+    <meter-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="unit"/>
   </v-card>
 </template>
 
@@ -45,9 +45,9 @@
 import {useDateScale} from '@/components/charts/date.js';
 import {useExternalTooltip, useThemeColorPlugin, useVueLegendPlugin} from '@/components/charts/plugins.js';
 import {triggerDownload} from '@/components/download/download.js';
-import {computeDatasets, datasetSourceName} from '@/dynamic/widgets/energy/chart.js';
-import EnergyTooltip from '@/dynamic/widgets/energy/EnergyTooltip.vue';
-import PeriodChooserRows from '@/dynamic/widgets/energy/PeriodChooserRows.vue';
+import {computeDatasets, datasetSourceName} from '@/dynamic/widgets/meter/chart.js';
+import MeterTooltip from '@/dynamic/widgets/meter/MeterTooltip.vue';
+import PeriodChooserRows from '@/dynamic/widgets/meter/PeriodChooserRows.vue';
 import {useDescribeMeterReading} from '@/traits/meter/meter.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {useLocalProp} from '@/util/vue.js';
