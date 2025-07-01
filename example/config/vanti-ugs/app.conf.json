@@ -421,6 +421,32 @@
           "location": {"floor": "Ground Floor", "zone": "Lab"}
         },
         {
+          "name": "van/uk/brum/ugs/devices/WMT-L00-01",
+          "traits": [
+            {
+              "name": "smartcore.bos.Meter",
+              "more" : {"unit": "m³"}
+            },
+            {"name": "smartcore.bos.Status"}
+          ],
+          "appearance": {"title": "BCWS Meter 01"},
+          "membership": {"subsystem": "metering"},
+          "location": {"floor": "Ground Floor", "zone": "Loading Bay"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/WMT-L00-02",
+          "traits": [
+            {
+              "name": "smartcore.bos.Meter",
+              "more" : {"unit": "m³"}
+            },
+            {"name": "smartcore.bos.Status"}
+          ],
+          "appearance": {"title": "BCWS Meter 02"},
+          "membership": {"subsystem": "metering"},
+          "location": {"floor": "Basement", "zone": "Stairwell"}
+        },
+        {
           "name": "van/uk/brum/ugs/devices/PIR-L00-01",
           "traits": [{"name": "smartcore.traits.OccupancySensor"}, {"name": "smartcore.bos.Status"}],
           "membership": {"subsystem": "sensors"},
@@ -831,7 +857,11 @@
         "van/uk/brum/ugs/zones/floors/ground"
       ],
       "meterGroups": {
-        "generated": ["van/uk/brum/ugs/devices/PV-L02-01"]
+        "generated": ["van/uk/brum/ugs/devices/PV-L02-01"],
+        "water": [
+          "van/uk/brum/ugs/devices/WMT-L00-01",
+          "van/uk/brum/ugs/devices/WMT-L00-02"
+        ]
       },
       "electrics": [
         "van/uk/brum/ugs/zones/floors/basement",
@@ -1332,6 +1362,18 @@
       "storage": {"type": "postgres"}
     },
     {
+      "name": "van/uk/brum/ugs/automation/meter-history/WMT-L00-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/WMT-L00-01", "trait": "smartcore.bos.Meter"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/meter-history/WMT-L00-02",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/WMT-L00-02", "trait": "smartcore.bos.Meter"},
+      "storage": {"type": "postgres"}
+    },
+    {
       "name": "van/uk/brum/ugs/automation/meter-history/building",
       "type": "history",
       "source": {"name": "van/uk/brum/ugs/zones/building", "trait": "smartcore.bos.Meter"},
@@ -1341,6 +1383,12 @@
       "name": "van/uk/brum/ugs/automation/meter-history/building/generated",
       "type": "history",
       "source": {"name": "van/uk/brum/ugs/zones/building/generated", "trait": "smartcore.bos.Meter"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/meter-history/building/water",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/building/water", "trait": "smartcore.bos.Meter"},
       "storage": {"type": "postgres"}
     },
     {
