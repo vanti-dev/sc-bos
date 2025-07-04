@@ -178,7 +178,7 @@ export function useBrightness(value, support = null) {
  * @param {number=} intervalMs
  * @return {ToRefs<ResourceValue<Brightness.AsObject, any>>}
  */
-export function usePollBrightness(query, paused = false, intervalMs = 10000) {
+export function usePollBrightness(query, paused = false, intervalMs = 5000) {
   const resource = reactive(
     /** @type {ResourceValue<Brightness.AsObject, any>} */
     newResourceValue()
