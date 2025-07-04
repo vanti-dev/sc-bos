@@ -1,10 +1,10 @@
 export default [
   {
-    path: 'accounts/:accountId?',
-    name: 'accounts',
+    path: 'users/:accountId?',
+    name: 'users',
     components: {
-      default: () => import('./AccountsPage.vue'),
-      sidebar: () => import('./AccountsSideBar.vue')
+      default: () => import('./UsersPage.vue'),
+      sidebar: () => import('./UsersSideBar.vue')
     },
     props: {
       default: true,

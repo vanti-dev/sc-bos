@@ -111,6 +111,16 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
+			for name, group := range mtr.MeterGroups {
+				for _, met := range group {
+					err = SeedMeter(ctx, db, met, lookBack)
+					if err != nil {
+						panic(err)
+					}
+					fmt.Printf("seeded meter %s in group %s in zone %s\n", met, name, mtr.Name)
+				}
+				fmt.Printf("seeded meter group %s in zone %s\n", name, mtr.Name)
+			}
 			fmt.Printf("seeded meter zone %s\n", mtr.Name)
 		}
 	}()
