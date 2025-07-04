@@ -225,7 +225,7 @@ watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
   const scope = effectScope();
   scope.run(() => {
     const elements = config.elements ?? [];
-    const maxInteractiveElements = 2;//100; // limit the number of interactive elements to avoid performance issues
+    const maxInteractiveElements = 100; // limit the number of interactive elements to avoid performance issues
     if (elements.length >= maxInteractiveElements) {
       console.warn(`Large number of elements in the graphical layer, will poll instead of pull`, elements.length);
     }
