@@ -243,7 +243,6 @@ watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
           scopeClosers.value.push(() => closeResource(reactive(resource)));
           sources[name] = resource;
         } else {
-          console.debug(`Using polling for element ${source.request.name}`);
           const resource =  usePollTrait(source.trait, source.request.name);
           scopeClosers.value.push(() => closeResource(reactive(resource)));
           sources[name] = resource;
