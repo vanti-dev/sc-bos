@@ -1,9 +1,10 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
-import {describeBrightness, pullBrightness, updateBrightness} from '@/api/sc/traits/light';
+import {describeBrightness, getBrightness, pullBrightness, updateBrightness} from '@/api/sc/traits/light';
 import {setRequestName, toQueryObject, watchResource} from '@/util/traits.js';
 import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 
 /**
+ * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/light_pb').GetBrightnessRequest} GetBrightnessRequest
  * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/light_pb').PullBrightnessRequest} PullBrightnessRequest
  * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/light_pb').PullBrightnessResponse} PullBrightnessResponse
  * @typedef {import('@smart-core-os/sc-api-grpc-web/traits/light_pb').UpdateBrightnessRequest} UpdateBrightnessRequest
@@ -168,4 +169,67 @@ export function useBrightness(value, support = null) {
     presets,
     currentPresetTitle
   };
+}
+
+/**
+ * Polls getBrightness periodically and updates the resource.
+ * @param {MaybeRefOrGetter<string|GetBrightnessRequest.AsObject>} query
+ * @param {MaybeRefOrGetter<boolean>=} paused
+ * @param {number=} intervalMs
+ * @return {ToRefs<ResourceValue<Brightness.AsObject, any>>}
+ */
+export function usePollBrightness(query, paused = false, intervalMs = 5000) {
+  const resource = reactive(
+    /** @type {ResourceValue<Brightness.AsObject, any>} */
+    newResourceValue()
+  );
+  onScopeDispose(() => closeResource(resource));
+
+  let timer = null;
+
+  const poll = async () => {
+    if (toValue(paused)) return;
+    try {
+      const req = toQueryObject(query);
+      const result = await getBrightness(req);
+      if (result) {
+        resource.value = result;
+      }
+    } catch (err) {
+      console.error('Error polling brightness:', err);
+      resource.streamError = err?.message || String(err);
+    }
+  };
+
+  const start = () => {
+    if (timer) clearInterval(timer);
+    if (toValue(paused)) return;
+    poll();
+    timer = setInterval(poll, intervalMs);
+  };
+
+  const stop = () => {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  };
+
+  // Watch for changes in query or paused state
+  const stopWatch = watchResource(
+    () => toValue(query),
+    () => toValue(paused),
+    () => {
+      stop();
+      if (!toValue(paused)) start();
+      return stop;
+    }
+  );
+
+  onScopeDispose(() => {
+    stop();
+    stopWatch && stopWatch();
+  });
+
+  return toRefs(resource);
 }

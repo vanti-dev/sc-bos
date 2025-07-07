@@ -5,7 +5,7 @@ import {usePullElectricDemand} from '@/traits/electricDemand/electric.js';
 import {usePullEmergency} from '@/traits/emergency/emergency.js';
 import {usePullEnterLeaveEvents} from '@/traits/enterLeave/enterLeave.js';
 import {usePullFanSpeed} from '@/traits/fanSpeed/fanSpeed.js';
-import {usePullBrightness} from '@/traits/light/light.js';
+import {usePollBrightness, usePullBrightness} from '@/traits/light/light.js';
 import {usePullMeterReading} from '@/traits/meter/meter.js';
 import {usePullOccupancy} from '@/traits/occupancy/occupancy.js';
 import {usePullOpenClosePositions} from '@/traits/openClose/openClose.js';
@@ -65,3 +65,18 @@ export const pullTraitByType = {
   'smartcore.bos.Status': usePullCurrentStatus,
   'smartcore.bos.Status:CurrentStatus': usePullCurrentStatus
 };
+
+export function usePollTrait(trait, name) {
+  const fn = pollTraitByType[trait];
+  if (!fn) {
+    return {
+      streamError: computed(() => 'Trait not supported by usePollTrait: ' + trait)
+    };
+  }
+  
+  return fn(name);
+}
+
+export const pollTraitByType = {
+  'smartcore.traits.Light': usePollBrightness,
+}

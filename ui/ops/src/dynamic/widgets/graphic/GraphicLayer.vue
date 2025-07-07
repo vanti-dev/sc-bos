@@ -17,13 +17,13 @@
 </template>
 
 <script setup>
-import {closeResource, newResourceValue} from '@/api/resource.js';
+import {closeResource} from '@/api/resource.js';
 import {loadConfig} from '@/dynamic/widgets/graphic/config.js';
 import {usePathUtils} from '@/dynamic/widgets/graphic/path.js';
 import {useSvgEffects} from '@/dynamic/widgets/graphic/svg.js';
 import {useWidgetEffects} from '@/dynamic/widgets/graphic/widgets.js';
-import {usePullTrait} from '@/traits/traits.js';
-import {effectScope, nextTick, onBeforeUnmount, onUnmounted, reactive, ref, toRefs, watch} from 'vue';
+import {usePollTrait, usePullTrait} from '@/traits/traits.js';
+import {effectScope, nextTick, onBeforeUnmount, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
   layer: {
@@ -227,7 +227,7 @@ watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
     const elements = config.elements ?? [];
     const maxInteractiveElements = 100; // limit the number of interactive elements to avoid performance issues
     if (elements.length >= maxInteractiveElements) {
-      console.warn(`Too many elements in graphic layer, only the first ${maxInteractiveElements} will be interactive`, elements.length);
+      console.warn(`Large number of elements in the graphical layer, will poll instead of pull`, elements.length);
     }
     for (let ei = 0; ei < elements.length; ei++) {
       const element = elements[ei];
@@ -239,14 +239,13 @@ watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
       const sources = {};
       for (const [name, source] of Object.entries(element.sources)) {
         if (ei < maxInteractiveElements) {
-          const resource = usePullTrait(source.trait, source.request);
+          const resource =  usePullTrait(source.trait, source.request);
           scopeClosers.value.push(() => closeResource(reactive(resource)));
           sources[name] = resource;
         } else {
-          // fake resource
-          const res = toRefs(reactive(newResourceValue()));
-          res.streamError.value = 'Too many elements in graphic layer';
-          sources[name] = res
+          const resource =  usePollTrait(source.trait, source.request.name);
+          scopeClosers.value.push(() => closeResource(reactive(resource)));
+          sources[name] = resource;
         }
       }
       // setup dom changes based on server collected data
