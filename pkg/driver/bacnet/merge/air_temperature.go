@@ -311,49 +311,40 @@ func (t *airTemperature) getModePoints(data *modeDataPoints) ([]func(response an
 
 // updateMode updates the AirTemperature.Mode based on the current values of the mode data points.
 func updateMode(modeCfg *airTempModeConfig, data *modeDataPoints, airTemp *traits.AirTemperature) {
+
+	const (
+		OFF  = -1
+		NONE = 0
+		ON   = 1
+	)
+	calcState := func(v, t *float32) int {
+		switch {
+		case v == nil:
+			return NONE
+		case *v >= *t:
+			return ON
+		default:
+			return OFF
+		}
+	}
+
+	fan := calcState(data.FanOnValue, modeCfg.FanOnThreshold)
+	heat := calcState(data.HeatingOnValue, modeCfg.HeatingOnThreshold)
+	cool := calcState(data.CoolingOnValue, modeCfg.CoolingOnThreshold)
+
 	m := traits.AirTemperature_MODE_UNSPECIFIED
-
-	allBelow := true
-	if data.CoolingOnValue != nil && *data.CoolingOnValue >= *modeCfg.CoolingOnThreshold {
-		allBelow = false
-		if data.FanOnValue == nil {
-			m = traits.AirTemperature_COOL
-		} else if *data.FanOnValue >= *modeCfg.FanOnThreshold {
-			m = traits.AirTemperature_COOL
-		} else {
-			// we have a fan but it is off, therefore the unit is off
-			m = traits.AirTemperature_OFF
-		}
-	}
-	if data.HeatingOnValue != nil && *data.HeatingOnValue >= *modeCfg.HeatingOnThreshold {
-		allBelow = false
-		if data.FanOnValue == nil {
-			if m == traits.AirTemperature_MODE_UNSPECIFIED {
-				m = traits.AirTemperature_HEAT
-			} else {
-				m = traits.AirTemperature_HEAT_COOL
-			}
-		} else if *data.FanOnValue >= *modeCfg.FanOnThreshold {
-			if m == traits.AirTemperature_MODE_UNSPECIFIED {
-				m = traits.AirTemperature_HEAT
-			} else {
-				m = traits.AirTemperature_HEAT_COOL
-			}
-		} else {
-			m = traits.AirTemperature_OFF
-		}
-	}
-
-	if data.FanOnValue != nil && *data.FanOnValue >= *modeCfg.FanOnThreshold {
-		allBelow = false
-		if m == traits.AirTemperature_MODE_UNSPECIFIED {
-			m = traits.AirTemperature_FAN_ONLY
-		}
-	}
-
-	if allBelow &&
-		(data.FanOnValue != nil || data.HeatingOnValue != nil || data.CoolingOnValue != nil) {
+	switch {
+	case fan == OFF:
 		m = traits.AirTemperature_OFF
+	case heat == ON && cool == ON:
+		m = traits.AirTemperature_HEAT_COOL
+	case heat == ON:
+		m = traits.AirTemperature_HEAT
+	case cool == ON:
+		m = traits.AirTemperature_COOL
+	case fan == ON:
+		m = traits.AirTemperature_FAN_ONLY
 	}
+
 	airTemp.Mode = m
 }

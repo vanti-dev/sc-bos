@@ -105,6 +105,7 @@ func TestUpdateMode(t *testing.T) {
 		},
 		{
 			name: "Nil values everywhere",
+			cfg:  newModeConfig(&one, &one, &one),
 			data: newModeDataPoints(nil, nil, nil),
 		},
 	}
