@@ -1,4 +1,5 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
+import {setError, setValue} from '@/api/resource.js';
 import {describeBrightness, getBrightness, pullBrightness, updateBrightness} from '@/api/sc/traits/light';
 import {setRequestName, toQueryObject, watchResource} from '@/util/traits.js';
 import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
@@ -187,25 +188,24 @@ export function usePollBrightness(query, paused = false, intervalMs = 5000) {
 
   let timer = null;
 
-  const poll = async () => {
+  const poll = async (req) => {
     if (toValue(paused)) return;
     try {
-      const req = toQueryObject(query);
       const result = await getBrightness(req);
       if (result) {
-        resource.value = result;
+        setValue(resource, result);
       }
     } catch (err) {
       console.error('Error polling brightness:', err);
-      resource.streamError = err?.message || String(err);
+      setError(resource, err);
     }
   };
 
-  const start = () => {
+  const start = (req) => {
     if (timer) clearInterval(timer);
     if (toValue(paused)) return;
-    poll();
-    timer = setInterval(poll, intervalMs);
+    poll(req);
+    timer = setInterval(() => poll(req), intervalMs);
   };
 
   const stop = () => {
@@ -216,19 +216,19 @@ export function usePollBrightness(query, paused = false, intervalMs = 5000) {
   };
 
   // Watch for changes in query or paused state
+  const queryObject = computed(() => toQueryObject(query));
   const stopWatch = watchResource(
-    () => toValue(query),
+    () => toValue(queryObject),
     () => toValue(paused),
-    () => {
-      stop();
-      if (!toValue(paused)) start();
+    (req) => {
+      start(req);
       return stop;
     }
   );
 
   onScopeDispose(() => {
     stop();
-    stopWatch && stopWatch();
+    stopWatch();
   });
 
   return toRefs(resource);
