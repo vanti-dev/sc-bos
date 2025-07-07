@@ -113,7 +113,7 @@ func TestUpdateMode(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			airTemp := &traits.AirTemperature{}
-			updateMode(tt.cfg, &tt.data, airTemp)
+			updateMode(tt.cfg, tt.data, airTemp)
 			assert.Equal(t, tt.expected, airTemp.Mode)
 		})
 	}
@@ -248,11 +248,13 @@ func TestGetModePoints_Combinations(t *testing.T) {
 					ModeConfig: tc.modeConfig,
 				},
 			}
-			data := &modeDataPoints{}
-			processors, values, names := tgt.getModePoints(data)
+			var procs []func(response any) error
+			var vals []config.ValueSource
+			var names []string
+			_ = tgt.getModePoints(&procs, &vals, &names)
 			assert.Equal(t, tc.expectedNames, names)
-			assert.Equal(t, tc.expectedValues, values)
-			assert.Equal(t, len(tc.expectedNames), len(processors))
+			assert.Equal(t, tc.expectedValues, vals)
+			assert.Equal(t, len(tc.expectedNames), len(procs))
 		})
 	}
 }

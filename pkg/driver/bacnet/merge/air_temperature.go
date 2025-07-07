@@ -176,7 +176,7 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	var resProcessors []func(response any) error
 	var readValues []config.ValueSource
 	var requestNames []string
-	modeData := &modeDataPoints{}
+	modeData := modeDataPoints{}
 
 	if t.config.SetPoint != nil {
 		requestNames = append(requestNames, "setPoint")
@@ -237,10 +237,7 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	}
 
 	if t.config.ModeConfig != nil {
-		proc, vals, names := t.getModePoints(modeData)
-		resProcessors = append(resProcessors, proc...)
-		readValues = append(readValues, vals...)
-		requestNames = append(requestNames, names...)
+		modeData = t.getModePoints(&resProcessors, &readValues, &requestNames)
 	}
 	responses := comm.ReadProperties(ctx, t.client, t.known, readValues...)
 	var errs []error
@@ -260,15 +257,13 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	return t.model.UpdateAirTemperature(data)
 }
 
-// getModePoints fetches all the data points needed to calculate the current AirTemperature.Mode.
-func (t *airTemperature) getModePoints(data *modeDataPoints) ([]func(response any) error, []config.ValueSource, []string) {
-	var processors []func(response any) error
-	var values []config.ValueSource
-	var names []string
+// getModePoints appends all the data points needed to calculate the current AirTemperature.Mode to the provided slices.
+func (t *airTemperature) getModePoints(processors *[]func(response any) error, values *[]config.ValueSource, names *[]string) modeDataPoints {
+	data := modeDataPoints{}
 	if t.config.ModeConfig.FanOn != nil {
-		names = append(names, "fanOn")
-		values = append(values, *t.config.ModeConfig.FanOn)
-		processors = append(processors, func(response any) error {
+		*names = append(*names, "fanOn")
+		*values = append(*values, *t.config.ModeConfig.FanOn)
+		*processors = append(*processors, func(response any) error {
 			fanOn, err := comm.Float64Value(response)
 			if err != nil {
 				return comm.ErrReadProperty{Prop: "fanOn", Cause: err}
@@ -280,9 +275,9 @@ func (t *airTemperature) getModePoints(data *modeDataPoints) ([]func(response an
 	}
 
 	if t.config.ModeConfig.HeatingOn != nil {
-		names = append(names, "heatingOn")
-		values = append(values, *t.config.ModeConfig.HeatingOn)
-		processors = append(processors, func(response any) error {
+		*names = append(*names, "heatingOn")
+		*values = append(*values, *t.config.ModeConfig.HeatingOn)
+		*processors = append(*processors, func(response any) error {
 			heatingOn, err := comm.Float64Value(response)
 			if err != nil {
 				return comm.ErrReadProperty{Prop: "heatingOn", Cause: err}
@@ -294,9 +289,9 @@ func (t *airTemperature) getModePoints(data *modeDataPoints) ([]func(response an
 	}
 
 	if t.config.ModeConfig.CoolingOn != nil {
-		names = append(names, "coolingOn")
-		values = append(values, *t.config.ModeConfig.CoolingOn)
-		processors = append(processors, func(response any) error {
+		*names = append(*names, "coolingOn")
+		*values = append(*values, *t.config.ModeConfig.CoolingOn)
+		*processors = append(*processors, func(response any) error {
 			coolingOn, err := comm.Float64Value(response)
 			if err != nil {
 				return comm.ErrReadProperty{Prop: "coolingOn", Cause: err}
@@ -306,11 +301,11 @@ func (t *airTemperature) getModePoints(data *modeDataPoints) ([]func(response an
 			return nil
 		})
 	}
-	return processors, values, names
+	return data
 }
 
 // updateMode updates the AirTemperature.Mode based on the current values of the mode data points.
-func updateMode(modeCfg *airTempModeConfig, data *modeDataPoints, airTemp *traits.AirTemperature) {
+func updateMode(modeCfg *airTempModeConfig, data modeDataPoints, airTemp *traits.AirTemperature) {
 
 	const (
 		OFF  = -1
