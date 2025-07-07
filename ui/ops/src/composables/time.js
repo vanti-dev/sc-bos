@@ -238,9 +238,9 @@ export function usePeriod(start, end, offset) {
       // To get around this we assign a ref to res.value which causes Vue to
       // replace res.value with the new ref instead of trying to write to the old ref.
       res.value = computed(() => {
-        if (typeof t === 'number') return new Date(t.t);
-        if (typeof t === 'string') return new Date(t.t);
-        if (t instanceof Date) return t.t;
+        if (typeof t.t === 'number') return new Date(t.t);
+        if (typeof t.t === 'string') return new Date(t.t);
+        if (t.t instanceof Date) return t.t;
         return null;
       });
     }, {immediate: true});
