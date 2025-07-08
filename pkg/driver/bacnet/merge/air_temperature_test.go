@@ -13,8 +13,8 @@ func float32Ptr(v float32) *float32 { return &v }
 
 func TestUpdateMode(t *testing.T) {
 	// Helper to create modeDataPoints
-	newModeDataPoints := func(fanOn, heatingOn, coolingOn *float32) modeDataPoints {
-		return modeDataPoints{
+	newModeDataPoints := func(fanOn, heatingOn, coolingOn *float32) *modeDataPoints {
+		return &modeDataPoints{
 			FanOnValue:     fanOn,
 			HeatingOnValue: heatingOn,
 			CoolingOnValue: coolingOn,
@@ -34,7 +34,7 @@ func TestUpdateMode(t *testing.T) {
 	tests := []struct {
 		name     string
 		cfg      *airTempModeConfig
-		data     modeDataPoints
+		data     *modeDataPoints
 		expected traits.AirTemperature_Mode
 	}{
 		{
