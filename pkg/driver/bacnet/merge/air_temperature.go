@@ -176,7 +176,7 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	var resProcessors []func(response any) error
 	var readValues []config.ValueSource
 	var requestNames []string
-	modeData := modeDataPoints{}
+	modeData := &modeDataPoints{}
 
 	if t.config.SetPoint != nil {
 		requestNames = append(requestNames, "setPoint")
@@ -258,8 +258,8 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 }
 
 // getModePoints appends all the data points needed to calculate the current AirTemperature.Mode to the provided slices.
-func (t *airTemperature) getModePoints(processors *[]func(response any) error, values *[]config.ValueSource, names *[]string) modeDataPoints {
-	data := modeDataPoints{}
+func (t *airTemperature) getModePoints(processors *[]func(response any) error, values *[]config.ValueSource, names *[]string) *modeDataPoints {
+	data := &modeDataPoints{}
 	if t.config.ModeConfig.FanOn != nil {
 		*names = append(*names, "fanOn")
 		*values = append(*values, *t.config.ModeConfig.FanOn)
@@ -305,7 +305,7 @@ func (t *airTemperature) getModePoints(processors *[]func(response any) error, v
 }
 
 // updateMode updates the AirTemperature.Mode based on the current values of the mode data points.
-func updateMode(modeCfg *airTempModeConfig, data modeDataPoints, airTemp *traits.AirTemperature) {
+func updateMode(modeCfg *airTempModeConfig, data *modeDataPoints, airTemp *traits.AirTemperature) {
 
 	const (
 		OFF  = -1
