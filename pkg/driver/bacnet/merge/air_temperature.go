@@ -23,6 +23,24 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
+type modeDataPoints struct {
+	FanOnValue     *float32
+	HeatingOnValue *float32
+	CoolingOnValue *float32
+}
+
+type airTempModeConfig struct {
+	FanOn *config.ValueSource `json:"fanOn,omitempty"`
+	// When FanOn reads equal to or above this value, the fan is considered on. Defaults to 1.
+	FanOnThreshold *float32            `json:"fanOnThreshold,omitempty"`
+	HeatingOn      *config.ValueSource `json:"heatingOn,omitempty"`
+	// When HeatingOn reads equal to or above this value, the heating is considered on. Defaults to 1.
+	HeatingOnThreshold *float32            `json:"heatingOnThreshold,omitempty"`
+	CoolingOn          *config.ValueSource `json:"coolingOn,omitempty"`
+	// When CoolingOn reads equal to or above this value, the cooling is considered on. Defaults to 1.
+	CoolingOnThreshold *float32 `json:"coolingOnThreshold,omitempty"`
+}
+
 type airTemperatureConfig struct {
 	config.Trait
 	SetPoint           *config.ValueSource `json:"setPoint,omitempty"`
@@ -31,7 +49,8 @@ type airTemperatureConfig struct {
 	SetPointLow        *config.ValueSource `json:"setPointLow,omitempty"`
 	SetPointHigh       *config.ValueSource `json:"setPointHigh,omitempty"`
 	// SetPointDeadBand should be defined when SetPointLow & SetPointHigh are, defaults to 1
-	SetPointDeadBand *float32 `json:"deadBand,omitempty,omitzero"`
+	SetPointDeadBand *float32           `json:"deadBand,omitempty,omitzero"`
+	ModeConfig       *airTempModeConfig `json:"modeConfig,omitempty"`
 }
 
 func readAirTemperatureConfig(raw []byte) (cfg airTemperatureConfig, err error) {
@@ -40,6 +59,20 @@ func readAirTemperatureConfig(raw []byte) (cfg airTemperatureConfig, err error) 
 		if cfg.SetPointDeadBand == nil || *cfg.SetPointDeadBand == 0 {
 			cfg.SetPointDeadBand = new(float32)
 			*cfg.SetPointDeadBand = 1
+		}
+		if cfg.ModeConfig != nil {
+			if cfg.ModeConfig.FanOnThreshold == nil {
+				cfg.ModeConfig.FanOnThreshold = new(float32)
+				*cfg.ModeConfig.FanOnThreshold = 1
+			}
+			if cfg.ModeConfig.HeatingOnThreshold == nil {
+				cfg.ModeConfig.HeatingOnThreshold = new(float32)
+				*cfg.ModeConfig.HeatingOnThreshold = 1
+			}
+			if cfg.ModeConfig.CoolingOnThreshold == nil {
+				cfg.ModeConfig.CoolingOnThreshold = new(float32)
+				*cfg.ModeConfig.CoolingOnThreshold = 1
+			}
 		}
 	}
 	return
@@ -143,6 +176,7 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	var resProcessors []func(response any) error
 	var readValues []config.ValueSource
 	var requestNames []string
+	modeData := modeDataPoints{}
 
 	if t.config.SetPoint != nil {
 		requestNames = append(requestNames, "setPoint")
@@ -201,6 +235,10 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 			return nil
 		})
 	}
+
+	if t.config.ModeConfig != nil {
+		modeData = t.getModePoints(&resProcessors, &readValues, &requestNames)
+	}
 	responses := comm.ReadProperties(ctx, t.client, t.known, readValues...)
 	var errs []error
 	for i, response := range responses {
@@ -213,6 +251,95 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 	if len(errs) > 0 {
 		return nil, multierr.Combine(errs...)
 	}
-
+	if t.config.ModeConfig != nil {
+		updateMode(t.config.ModeConfig, modeData, data)
+	}
 	return t.model.UpdateAirTemperature(data)
+}
+
+// getModePoints appends all the data points needed to calculate the current AirTemperature.Mode to the provided slices.
+func (t *airTemperature) getModePoints(processors *[]func(response any) error, values *[]config.ValueSource, names *[]string) modeDataPoints {
+	data := modeDataPoints{}
+	if t.config.ModeConfig.FanOn != nil {
+		*names = append(*names, "fanOn")
+		*values = append(*values, *t.config.ModeConfig.FanOn)
+		*processors = append(*processors, func(response any) error {
+			fanOn, err := comm.Float64Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "fanOn", Cause: err}
+			}
+			data.FanOnValue = new(float32)
+			*data.FanOnValue = float32(fanOn)
+			return nil
+		})
+	}
+
+	if t.config.ModeConfig.HeatingOn != nil {
+		*names = append(*names, "heatingOn")
+		*values = append(*values, *t.config.ModeConfig.HeatingOn)
+		*processors = append(*processors, func(response any) error {
+			heatingOn, err := comm.Float64Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "heatingOn", Cause: err}
+			}
+			data.HeatingOnValue = new(float32)
+			*data.HeatingOnValue = float32(heatingOn)
+			return nil
+		})
+	}
+
+	if t.config.ModeConfig.CoolingOn != nil {
+		*names = append(*names, "coolingOn")
+		*values = append(*values, *t.config.ModeConfig.CoolingOn)
+		*processors = append(*processors, func(response any) error {
+			coolingOn, err := comm.Float64Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "coolingOn", Cause: err}
+			}
+			data.CoolingOnValue = new(float32)
+			*data.CoolingOnValue = float32(coolingOn)
+			return nil
+		})
+	}
+	return data
+}
+
+// updateMode updates the AirTemperature.Mode based on the current values of the mode data points.
+func updateMode(modeCfg *airTempModeConfig, data modeDataPoints, airTemp *traits.AirTemperature) {
+
+	const (
+		OFF  = -1
+		NONE = 0
+		ON   = 1
+	)
+	calcState := func(v, t *float32) int {
+		switch {
+		case v == nil:
+			return NONE
+		case *v >= *t:
+			return ON
+		default:
+			return OFF
+		}
+	}
+
+	fan := calcState(data.FanOnValue, modeCfg.FanOnThreshold)
+	heat := calcState(data.HeatingOnValue, modeCfg.HeatingOnThreshold)
+	cool := calcState(data.CoolingOnValue, modeCfg.CoolingOnThreshold)
+
+	m := traits.AirTemperature_MODE_UNSPECIFIED
+	switch {
+	case fan == OFF:
+		m = traits.AirTemperature_OFF
+	case heat == ON && cool == ON:
+		m = traits.AirTemperature_HEAT_COOL
+	case heat == ON:
+		m = traits.AirTemperature_HEAT
+	case cool == ON:
+		m = traits.AirTemperature_COOL
+	case fan == ON:
+		m = traits.AirTemperature_FAN_ONLY
+	}
+
+	airTemp.Mode = m
 }
