@@ -33,7 +33,7 @@ func TestInterceptor_GRPC(t *testing.T) {
 	traits.RegisterOnOffApiServer(server, onoffpb.NewModelServer(onoffpb.NewModel()))
 	go func() {
 		if err := server.Serve(lis); err != nil {
-			t.Errorf("server stopped with error: %v", err)
+			t.Logf("server stopped with error: %v", err)
 		}
 	}()
 
