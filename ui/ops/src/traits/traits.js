@@ -5,7 +5,7 @@ import {usePullElectricDemand} from '@/traits/electricDemand/electric.js';
 import {usePullEmergency} from '@/traits/emergency/emergency.js';
 import {usePullEnterLeaveEvents} from '@/traits/enterLeave/enterLeave.js';
 import {usePullFanSpeed} from '@/traits/fanSpeed/fanSpeed.js';
-import {usePullBrightness} from '@/traits/light/light.js';
+import {usePollBrightness, usePullBrightness} from '@/traits/light/light.js';
 import {usePullMeterReading} from '@/traits/meter/meter.js';
 import {usePullOccupancy} from '@/traits/occupancy/occupancy.js';
 import {usePullOpenClosePositions} from '@/traits/openClose/openClose.js';
@@ -65,3 +65,25 @@ export const pullTraitByType = {
   'smartcore.bos.Status': usePullCurrentStatus,
   'smartcore.bos.Status:CurrentStatus': usePullCurrentStatus
 };
+
+/**
+ * The equivalent of periodically calling `usePollAirTemperature` (or other traits) but using a named trait.
+ *
+ * @param {string} trait - The fully qualified trait name (e.g., 'smartcore.traits.Light').
+ * @param {string} name - The resource name or identifier to poll.
+ * @return {ToRefs<ResourceValue>} An object containing reactive references to the polled resource value and error state.
+ */
+export function usePollTrait(trait, name) {
+  const fn = pollTraitByType[trait];
+  if (!fn) {
+    return {
+      streamError: computed(() => 'Trait not supported by usePollTrait: ' + trait)
+    };
+  }
+  
+  return fn(name);
+}
+
+export const pollTraitByType = {
+  'smartcore.traits.Light': usePollBrightness,
+}
