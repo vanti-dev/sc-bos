@@ -601,111 +601,166 @@
           ]
         },
         {
-          "title": "Energy",
-          "icon": "mdi-flash",
-          "layout": "builtin:LayoutMainSide",
-          "path": "energy",
-          "mainWidgetMinHeight": 0,
-          "sideWidth": 420,
-          "main": [
+          "title": "Subsystems",
+          "icon": "mdi-shape",
+          "path": "subsystems",
+          "children": [
             {
-              "component": "builtin:meter/MeterHistoryCard",
-              "props": {
-                "title": "Electricity Usage",
-                "totalConsumptionName": "van/uk/brum/ugs/zones/building",
-                "totalProductionName": "van/uk/brum/ugs/zones/building/generated",
-                "subConsumptionNames": [
-                  "van/uk/brum/ugs/zones/floors/ground",
-                  "van/uk/brum/ugs/zones/floors/basement"
-                ]
-              }
+              "title": "Energy",
+              "icon": "mdi-flash",
+              "layout": "builtin:LayoutMainSide",
+              "path": "energy",
+              "mainWidgetMinHeight": 0,
+              "sideWidth": 420,
+              "main": [
+                {
+                  "component": "builtin:meter/MeterHistoryCard",
+                  "props": {
+                    "title": "Electricity Usage",
+                    "totalConsumptionName": "van/uk/brum/ugs/zones/building",
+                    "totalProductionName": "van/uk/brum/ugs/zones/building/generated",
+                    "subConsumptionNames": [
+                      "van/uk/brum/ugs/zones/floors/ground",
+                      "van/uk/brum/ugs/zones/floors/basement"
+                    ]
+                  }
+                },
+                {
+                  "component": "builtin:power-history/PowerHistoryCard",
+                  "props": {
+                    "demand": "van/uk/brum/ugs/zones/building",
+                    "generated": "van/uk/brum/ugs/zones/building/generated",
+                    "occupancy": "van/uk/brum/ugs/zones/building"
+                  }
+                }
+              ],
+              "after": [
+                {
+                  "component": "builtin:container/FlexRow",
+                  "props": {
+                    "itemMinWidth": "14em",
+                    "title": "Total Today",
+                    "items": [
+                      {
+                        "component": "builtin:meter/ConsumptionCard",
+                        "props": {
+                          "name": "van/uk/brum/ugs/zones/building",
+                          "period": "day",
+                          "title": "Consumed"
+                        }
+                      },
+                      {
+                        "component": "builtin:meter/ConsumptionCard",
+                        "props": {
+                          "name": "van/uk/brum/ugs/zones/building/generated",
+                          "period": "day",
+                          "title": "Produced"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "component": "builtin:container/FlexRow",
+                  "props": {
+                    "itemMinWidth": "14em",
+                    "title": "Total Month",
+                    "items": [
+                      {
+                        "component": "builtin:meter/ConsumptionCard",
+                        "props": {
+                          "name": "van/uk/brum/ugs/zones/building",
+                          "period": "month",
+                          "title": "Consumed"
+                        }
+                      },
+                      {
+                        "component": "builtin:meter/ConsumptionCard",
+                        "props": {
+                          "name": "van/uk/brum/ugs/zones/building/generated",
+                          "period": "month",
+                          "title": "Produced"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "component": "builtin:container/FlexRow",
+                  "props": {
+                    "itemMinWidth": "14em",
+                    "title": "Last Month",
+                    "items": [
+                      {
+                        "component": "builtin:meter/ConsumptionCard",
+                        "props": {
+                          "name": "van/uk/brum/ugs/zones/building",
+                          "period": "month",
+                          "offset": 1,
+                          "title": "Consumed"
+                        }
+                      },
+                      {
+                        "component": "builtin:meter/ConsumptionCard",
+                        "props": {
+                          "name": "van/uk/brum/ugs/zones/building/generated",
+                          "period": "month",
+                          "offset": 1,
+                          "title": "Produced"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             {
-              "component": "builtin:power-history/PowerHistoryCard",
-              "props": {
-                "demand": "van/uk/brum/ugs/zones/building",
-                "generated": "van/uk/brum/ugs/zones/building/generated",
-                "occupancy": "van/uk/brum/ugs/zones/building"
-              }
-            }
-          ],
-          "after": [
-            {
-              "component": "builtin:container/FlexRow",
-              "props": {
-                "itemMinWidth": "14em",
-                "title": "Total Today",
-                "items": [
-                  {
-                    "component": "builtin:meter/ConsumptionCard",
-                    "props": {
-                      "name": "van/uk/brum/ugs/zones/building",
-                      "period": "day",
-                      "title": "Consumed"
-                    }
-                  },
-                  {
-                    "component": "builtin:meter/ConsumptionCard",
-                    "props": {
-                      "name": "van/uk/brum/ugs/zones/building/generated",
-                      "period": "day",
-                      "title": "Produced"
-                    }
+              "title": "Water",
+              "icon": "mdi-water",
+              "layout": "builtin:LayoutMainSide",
+              "path": "water",
+              "mainWidgetMinHeight": 0,
+              "sideWidth": 420,
+              "main": [
+                {
+                  "component": "builtin:meter/MeterHistoryCard",
+                  "props": {
+                    "title": "Water Usage",
+                    "totalConsumptionName": "van/uk/brum/ugs/zones/building/water",
+                    "subConsumptionNames": [
+                      "van/uk/brum/ugs/devices/WMT-L00-01",
+                      "van/uk/brum/ugs/devices/WMT-L00-02"
+                    ]
                   }
-                ]
-              }
-            },
-            {
-              "component": "builtin:container/FlexRow",
-              "props": {
-                "itemMinWidth": "14em",
-                "title": "Total Month",
-                "items": [
-                  {
-                    "component": "builtin:meter/ConsumptionCard",
-                    "props": {
-                      "name": "van/uk/brum/ugs/zones/building",
-                      "period": "month",
-                      "title": "Consumed"
-                    }
-                  },
-                  {
-                    "component": "builtin:meter/ConsumptionCard",
-                    "props": {
-                      "name": "van/uk/brum/ugs/zones/building/generated",
-                      "period": "month",
-                      "title": "Produced"
-                    }
+                }
+              ],
+              "after": [
+                {
+                  "component": "builtin:container/FlexRow",
+                  "props": {
+                    "itemMinWidth": "14em",
+                    "title": "Total Today",
+                    "items": [
+                      {
+                        "component": "builtin:meter/ConsumptionCard",
+                        "props": {
+                          "name": "van/uk/brum/ugs/devices/WMT-L00-01",
+                          "period": "day",
+                          "title": "Meter 1"
+                        }
+                      },
+                      {
+                        "component": "builtin:meter/ConsumptionCard",
+                        "props": {
+                          "name": "van/uk/brum/ugs/devices/WMT-L00-02",
+                          "period": "day",
+                          "title": "Meter 2"
+                        }
+                      }
+                    ]
                   }
-                ]
-              }
-            },
-            {
-              "component": "builtin:container/FlexRow",
-              "props": {
-                "itemMinWidth": "14em",
-                "title": "Last Month",
-                "items": [
-                  {
-                    "component": "builtin:meter/ConsumptionCard",
-                    "props": {
-                      "name": "van/uk/brum/ugs/zones/building",
-                      "period": "month",
-                      "offset": 1,
-                      "title": "Consumed"
-                    }
-                  },
-                  {
-                    "component": "builtin:meter/ConsumptionCard",
-                    "props": {
-                      "name": "van/uk/brum/ugs/zones/building/generated",
-                      "period": "month",
-                      "offset": 1,
-                      "title": "Produced"
-                    }
-                  }
-                ]
-              }
+                }
+              ]
             }
           ]
         },
@@ -886,54 +941,6 @@
                 "hideHeaderActions": true,
                 "columns": ["createTime", "severity", "source", "description"],
                 "fixedRowCount": 5
-              }
-            }
-          ]
-        },
-        {
-          "title": "Water",
-          "icon": "mdi-water",
-          "layout": "builtin:LayoutMainSide",
-          "path": "water",
-          "mainWidgetMinHeight": 0,
-          "sideWidth": 420,
-          "main": [
-            {
-              "component": "builtin:meter/MeterHistoryCard",
-              "props": {
-                "title": "Water Usage",
-                "totalConsumptionName": "van/uk/brum/ugs/zones/building/water",
-                "subConsumptionNames": [
-                  "van/uk/brum/ugs/devices/WMT-L00-01",
-                  "van/uk/brum/ugs/devices/WMT-L00-02"
-                ]
-              }
-            }
-          ],
-          "after": [
-            {
-              "component": "builtin:container/FlexRow",
-              "props": {
-                "itemMinWidth": "14em",
-                "title": "Total Today",
-                "items": [
-                  {
-                    "component": "builtin:meter/ConsumptionCard",
-                    "props": {
-                      "name": "van/uk/brum/ugs/devices/WMT-L00-01",
-                      "period": "day",
-                      "title": "Meter 1"
-                    }
-                  },
-                  {
-                    "component": "builtin:meter/ConsumptionCard",
-                    "props": {
-                      "name": "van/uk/brum/ugs/devices/WMT-L00-02",
-                      "period": "day",
-                      "title": "Meter 2"
-                    }
-                  }
-                ]
               }
             }
           ]
