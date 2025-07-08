@@ -66,6 +66,13 @@ export const pullTraitByType = {
   'smartcore.bos.Status:CurrentStatus': usePullCurrentStatus
 };
 
+/**
+ * The equivalent of periodically calling `usePollAirTemperature` (or other traits) but using a named trait.
+ *
+ * @param {string} trait - The fully qualified trait name (e.g., 'smartcore.traits.Light').
+ * @param {string} name - The resource name or identifier to poll.
+ * @return {ToRefs<ResourceValue>} An object containing reactive references to the polled resource value and error state.
+ */
 export function usePollTrait(trait, name) {
   const fn = pollTraitByType[trait];
   if (!fn) {

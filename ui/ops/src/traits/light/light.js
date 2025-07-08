@@ -174,6 +174,7 @@ export function useBrightness(value, support = null) {
 
 /**
  * Polls getBrightness periodically and updates the resource.
+ *
  * @param {MaybeRefOrGetter<string|GetBrightnessRequest.AsObject>} query
  * @param {MaybeRefOrGetter<boolean>=} paused
  * @param {number=} intervalMs

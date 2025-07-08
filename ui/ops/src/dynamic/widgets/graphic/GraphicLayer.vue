@@ -239,11 +239,11 @@ watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
       const sources = {};
       for (const [name, source] of Object.entries(element.sources)) {
         if (ei < maxInteractiveElements) {
-          const resource =  usePullTrait(source.trait, source.request);
+          const resource = usePullTrait(source.trait, source.request);
           scopeClosers.value.push(() => closeResource(reactive(resource)));
           sources[name] = resource;
         } else {
-          const resource =  usePollTrait(source.trait, source.request.name);
+          const resource = usePollTrait(source.trait, source.request.name);
           scopeClosers.value.push(() => closeResource(reactive(resource)));
           sources[name] = resource;
         }
