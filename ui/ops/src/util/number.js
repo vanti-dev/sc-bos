@@ -1,3 +1,5 @@
+import {isNullOrUndef} from '@/util/types.js';
+
 export const MAX_INT32 = 2147483647; // 2^31 - 1
 
 /**
@@ -44,4 +46,33 @@ export function roundTo(num, decimals) {
 
   const factor = Math.pow(10, decimals);
   return Math.round(num * factor) / factor;
+}
+
+/**
+ * Returns a string representation of a number, formatted for display.
+ *
+ * @example
+ * format(1234.5678) // "1,235"
+ * format(0)         // "0"
+ * format(null)      // "-"
+ * format(0.0123)    // "0.012"
+ * format(0.000123)  // "~0"
+ *
+ * @param {number|null|undefined} num
+ * @param {string} [unit]
+ * @return {string}
+ */
+export function format(num, unit = '') {
+  const usageStr = (() => {
+    if (isNullOrUndef(num)) return '-';
+    if (num === 0) return '0';
+    if (Math.abs(num) < 0.001) return '~0'
+    if (Math.abs(num) < 0.01) return num.toPrecision(1);
+    if (Math.abs(num) < 100) return num.toPrecision(2);
+    return num.toLocaleString(undefined, {maximumFractionDigits: 0});
+  })();
+  if (unit) {
+    return `${usageStr} ${unit}`;
+  }
+  return usageStr;
 }

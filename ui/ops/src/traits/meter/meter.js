@@ -1,6 +1,7 @@
 import {timestampToDate} from '@/api/convpb.js';
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource';
 import {describeMeterReading, listMeterReadingHistory, pullMeterReading} from '@/api/sc/traits/meter';
+import {format} from '@/util/number.js';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {computed, effectScope, onScopeDispose, reactive, ref, toRefs, toValue, watch} from 'vue';
@@ -78,15 +79,7 @@ export function useDescribeMeterReading(query) {
  * @return {string}
  */
 export function usageToString(usage, unit = '') {
-  const usageStr = (() => {
-    if (isNullOrUndef(usage)) return '-';
-    if (Math.abs(usage) < 100) return usage.toPrecision(2);
-    return usage.toLocaleString(undefined, {maximumFractionDigits: 0});
-  })();
-  if (unit) {
-    return `${usageStr} ${unit}`;
-  }
-  return usageStr;
+  return format(usage, unit)
 }
 
 /**
