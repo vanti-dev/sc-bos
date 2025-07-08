@@ -1,26 +1,54 @@
 <template>
   <v-list-group v-if="hasChildren" :value="props.item.title">
     <template #activator="{props: _props, isOpen: _isOpen}">
-      <v-list-item
-          :to="toAreaLink"
-          :active="active"
-          :class="{activeExact}">
-        <template #prepend>
-          <v-icon v-if="!props.miniVariant || !props.item.shortTitle">{{ props.item.icon }}</v-icon>
-          <v-list-item-title v-else class="v-icon text-center text-truncate" style="width: 24px">
-            {{ props.item.shortTitle }}
-          </v-list-item-title>
-        </template>
-        <v-list-item-title>{{ props.item.title }}</v-list-item-title>
-        <template #append>
-          <v-btn
-              @click.prevent.stop="_props.onClick"
-              variant="text"
-              size="x-small"
-              style="font-size: 120%"
-              :icon="_isOpen ? 'mdi-chevron-down' : 'mdi-chevron-left'"/>
-        </template>
-      </v-list-item>
+      <!--
+      Slightly different behaviour for containers that have their own pages, vs those that don't.
+      The first we expand on button click only, clicking the activator navs to the page.
+      The second we expand on activator click, the button is just there for visual consistency.
+      -->
+      <template v-if="props.item.layout">
+        <v-list-item
+            :to="toAreaLink"
+            :active="active"
+            :class="{activeExact}">
+          <template #prepend>
+            <v-icon v-if="!props.miniVariant || !props.item.shortTitle">{{ props.item.icon }}</v-icon>
+            <v-list-item-title v-else class="v-icon text-center text-truncate" style="width: 24px">
+              {{ props.item.shortTitle }}
+            </v-list-item-title>
+          </template>
+          <v-list-item-title>{{ props.item.title }}</v-list-item-title>
+          <template #append>
+            <v-btn
+                @click.prevent.stop="_props.onClick"
+                variant="text"
+                size="x-small"
+                style="font-size: 120%"
+                :icon="_isOpen ? 'mdi-chevron-down' : 'mdi-chevron-left'"/>
+          </template>
+        </v-list-item>
+      </template>
+      <template v-else>
+        <v-list-item
+            @click.prevent.stop="_props.onClick"
+            :active="active"
+            :class="{activeExact}">
+          <template #prepend>
+            <v-icon v-if="!props.miniVariant || !props.item.shortTitle">{{ props.item.icon }}</v-icon>
+            <v-list-item-title v-else class="v-icon text-center text-truncate" style="width: 24px">
+              {{ props.item.shortTitle }}
+            </v-list-item-title>
+          </template>
+          <v-list-item-title>{{ props.item.title }}</v-list-item-title>
+          <template #append>
+            <v-btn
+                variant="text"
+                size="x-small"
+                style="font-size: 120%"
+                :icon="_isOpen ? 'mdi-chevron-down' : 'mdi-chevron-left'"/>
+          </template>
+        </v-list-item>
+      </template>
     </template>
     <ops-nav-list-items
         :items="props.item.children"
