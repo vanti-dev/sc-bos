@@ -761,6 +761,20 @@
                   }
                 }
               ]
+            },
+            {
+              "title": "Security Events",
+              "icon": "mdi-shield-alert",
+              "path": "security-events",
+              "layout": "builtin:page/SecurityEvents",
+              "name": "van/uk/brum/ugs/devices/security-events"
+            },
+            {
+              "title": "Waste",
+              "icon": "mdi-recycle",
+              "path": "waste",
+              "layout": "builtin:page/Waste",
+              "source": "van/uk/brum/ugs/devices/waste"
             }
           ]
         },
@@ -945,13 +959,8 @@
             }
           ]
         }
-      ],
-      "waste" : {
-        "source" : "van/uk/brum/ugs/devices/waste",
-        "unit" : "kg"
-      }
+      ]
     },
-    "securityEventsSource": "van/uk/brum/ugs/devices/security-events",
     "proxy": true,
     "siteFloorPlans": [
       {"name": "Ground Floor", "svgPath": "./assets/floor0-bg.svg"},
