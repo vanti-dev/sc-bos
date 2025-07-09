@@ -45,13 +45,21 @@ export const navItems = [
     title: 'Security Events',
     icon: 'mdi-shield-alert',
     link: {path: '/ops/security-events'},
-    badgeType: null
+    badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/security-events') && uiConfig.config?.securityEventsSource;
+    }
   },
   {
     title: 'Waste Records',
     icon: 'mdi-recycle',
     link: {path: '/ops/waste'},
     badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/waste') && uiConfig.config?.ops?.waste;
+    }
   }
 ];
 
