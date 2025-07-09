@@ -16,30 +16,29 @@
 </template>
 
 <script setup>
+import {useEnabledNavItems} from '@/routes/ops/nav.js';
 import router from '@/routes/router.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
-import {onUpdated, ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import {useRoute} from 'vue-router';
 
 const uiConfig = useUiConfigStore();
 const route = useRoute();
 
 const err = ref(null);
+const enabledNavItems = useEnabledNavItems();
 
-onUpdated(() => {
+onMounted(() => {
   uiConfig.loadConfig().then(async () => {
     if (route.path === '/ops/loading') {
       let to = null;
       if (uiConfig.pathEnabled('/ops/overview')) {
         to = '/ops/overview';
-      } else if (uiConfig.pathEnabled('/ops/notifications')) {
-        to = '/ops/notifications';
-      } else if (uiConfig.pathEnabled('/ops/air-quality')) {
-        to = '/ops/air-quality';
-      } else if (uiConfig.pathEnabled('/ops/emergency-lighting')) {
-        to = '/ops/emergency-lighting';
-      } else if (uiConfig.pathEnabled('/ops/security')) {
-        to = '/ops/security';
+      } else {
+        const page = enabledNavItems.value?.[0];
+        if (page) {
+          to = page.link;
+        }
       }
 
       if (to) {

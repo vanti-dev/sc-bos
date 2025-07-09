@@ -28,6 +28,7 @@
 
 <script setup>
 import useAuthSetup from '@/composables/useAuthSetup';
+import {useEnabledNavItems} from '@/routes/ops/nav.js';
 import {useAlertMetadataStore} from '@/routes/ops/notifications/alertMetadata';
 import OpsNavListItems from '@/routes/ops/overview/OpsNavListItems.vue';
 import {useNavStore} from '@/stores/nav';
@@ -100,60 +101,13 @@ const badges = reactive({
 });
 
 /**
- * Menu Items
- * This is the main list of items
- *
- * @type {
- *  import('vue').ComputedRef<{title: string, icon: string, link: {path: string}, countType?: string}[]>
- * } menuItems
- */
-const menuItems = computed(() => [
-  {
-    title: 'Notifications',
-    icon: 'mdi-bell-outline',
-    link: {path: '/ops/notifications'},
-    badgeType: 'unacknowledgedAlertCount'
-  },
-  {
-    title: 'Air Quality',
-    icon: 'mdi-air-filter',
-    link: {path: '/ops/air-quality'},
-    badgeType: null
-  },
-  {
-    title: 'Emergency Lighting',
-    icon: 'mdi-alarm-light-outline',
-    link: {path: '/ops/emergency-lighting'},
-    badgeType: null
-  },
-  {
-    title: 'Security',
-    icon: 'mdi-shield-key',
-    link: {path: '/ops/security'},
-    badgeType: null
-  },
-  {
-    title: 'Security Events',
-    icon: 'mdi-shield-alert',
-    link: {path: '/ops/security-events'},
-    badgeType: null
-  },
-  {
-    title: 'Waste Records',
-    icon: 'mdi-recycle',
-    link: {path: '/ops/waste'},
-    badgeType: null
-  }
-]);
-
-/**
  * Filter the menu items based on the app config (enabled/disabled)
  *
  * @type {
  *  import('vue').ComputedRef<{title: string, icon: string, link: {path: string}, countType: string}[]>
  * } enabledMenuItems
  */
-const enabledMenuItems = computed(() => menuItems.value.filter((item) => uiConfig.pathEnabled(item.link.path)));
+const enabledMenuItems = useEnabledNavItems();
 
 /**
  * Check if the notification area is enabled
