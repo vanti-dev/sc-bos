@@ -47,7 +47,11 @@ export const navItems = [
     title: 'Security',
     icon: 'mdi-shield-key',
     link: {path: '/ops/security'},
-    badgeType: null
+    badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/security') && (uiConfig.config?.ops?.security ?? true);
+    }
   },
   {
     title: 'Security Events',
