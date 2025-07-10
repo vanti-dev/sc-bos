@@ -1,0 +1,187 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// The HealthApi reports on the health of devices in the system.
+// Health is split into connection, communication, and monitor health.
+//
+// Connection health
+//
+// Connection health is about the physical connection to the device.
+// This might be a TCP connection or a HDMI cable connection.
+// Low level network protocols like ICMP can be used to determine the health of the connection.
+//
+// Communication health
+//
+// Communication health is about the communication with the device.
+// This will be dependent on the protocol used to communicate with the device.
+// The kinds of issues that arise here could include version mismatches, missing resources, or unexpected responses.
+//
+// Monitor health
+//
+// Monitor health is about the runtime state of the device.
+// The values monitored can range from system metrics like CPU and memory usage,
+// to device specific metrics like flow rate or filter run hours.
+service HealthApi {
+}
+
+// Health represents the health of a device and our communication with it.
+message Health {
+  // Check helps to distinguish a health metric from others of its kind.
+  message Check {
+    string display_name = 1;
+    string description = 2;
+
+    // todo: add a concept like Impact or Severity
+    //  I'd like the concept to be action driven, maybe something like Impact { Data, Equipment, Environment, Safety }
+    //  Something where we could easily know which bucket to put checks in and know which to notify or prioritise.
+  }
+
+  // Connection models health of the physical connection to the device.
+  message Connection {
+    Check check = 1;
+
+    enum Status {
+      STATUS_UNSPECIFIED = 0;
+      // The connection is established and healthy.
+      CONNECTED = 1;
+      // The connection is ready to be established when it is needed.
+      READY = 2;
+      // There are issues with the connection that may resolve themselves on future attempts.
+      TRANSIENT_FAILURE = 3;
+    }
+    // The status of the connection.
+    Status status = 2;
+    // The earliest time when the status left READY.
+    google.protobuf.Timestamp start_time = 3;
+    // The time when the status last entered CONNECTED.
+    // Reconnections during normal operation will not update this time.
+    google.protobuf.Timestamp connected_time = 4;
+    // The time when the status last entered TRANSIENT_FAILURE.
+    google.protobuf.Timestamp transient_failure_time = 5;
+
+    // An error message relating to the TRANSIENT_FAILURE state.
+    string last_error = 6;
+  }
+
+  // Health relating to the physical connections to the device.
+  // If the device does not have a physical connection, this will be empty.
+  //
+  // When there are more than one connection type, each will have a stable key in this map.
+  // For example, the device might have two network ports for redundancy, in which case this
+  // map might have keys like "eth0" and "eth1".
+  map<string, Connection> connections = 1;
+
+  // Communication models the health of our communication with the device.
+  message Communication {
+    Check check = 1;
+
+    enum Status {
+      STATUS_UNSPECIFIED = 0;
+      // The device is responding as expected to communication requests.
+      SUCCESS = 1;
+      // Communication has not been attempted yet.
+      NOT_ATTEMPTED = 2;
+      // We were unable to send a message to the device.
+      BAD_SEND = 3;
+      // The device has not responded to our last message.
+      NO_RESPONSE = 4;
+      // The device has responded to our last message, but the response was not valid.
+      BAD_RESPONSE = 5;
+    }
+    // The status of the communication.
+    Status status = 2;
+    // The time when the status last entered SUCCESS.
+    google.protobuf.Timestamp success_time = 3;
+    // The time when the status last entered BAD_SEND.
+    google.protobuf.Timestamp bad_send_time = 4;
+    // The time when the status last entered NO_RESPONSE.
+    google.protobuf.Timestamp no_response_time = 5;
+    // The time when the status last entered BAD_RESPONSE.
+    google.protobuf.Timestamp bad_response_time = 6;
+
+    // An error message relating to the BAD_SEND, NO_RESPONSE or BAD_RESPONSE states.
+    string last_error = 7;
+  }
+
+  // Health relating to our communication channels with the device.
+  //
+  // When there are multiple ways to communicate with the device, each will have a stable key in this map.
+  // For example, the device might have a HTTP REST API and a WebSocket API, in which case this map
+  // might have keys like "rest" and "ws".
+  map<string, Communication> communications = 2;
+
+  // Monitor tracks a state value in the device for abnormality.
+  message Monitor {
+    Check check = 1;
+
+    enum Status {
+      STATUS_UNSPECIFIED = 0;
+      // The value is within the normal operating range.
+      // Any Status greater than 1 indicates a problem with the device.
+      NORMAL = 1;
+      // The value is outside of the normal operating range.
+      ABNORMAL = 2;
+      // The value is below the normal operating range.
+      LOW = 3;
+      // The value is above the normal operating range.
+      HIGH = 4;
+    }
+    // The status of the monitor.
+    Status status = 2;
+
+    // Value is one of the supported value types for the monitor.
+    message Value {
+      oneof value {
+        bool bool_value = 1;
+        string string_value = 2;
+        int64 int_value = 3;
+        uint64 uint_value = 4;
+        double float_value = 5;
+        google.protobuf.Timestamp timestamp_value = 6;
+        google.protobuf.Duration duration_value = 7;
+      }
+    }
+    // A range of values.
+    // At least one of low or high must be set.
+    message ValueRange {
+      // The low range, above which the value is considered normal.
+      Value low = 1;
+      // The high range, below which the value is considered normal.
+      Value high = 2;
+    }
+
+    // The measured value.
+    // Optional when status is not in a bad state.
+    Value current_value = 3;
+    oneof bounds {
+      // The normal value we expect for a healthy device.
+      Value normal_value = 4;
+      // The range of values that are considered normal for a healthy device.
+      ValueRange normal_range = 5;
+    }
+    // The unit of the value, for example "°C", "%", "kB", etc.
+    string display_unit = 6;
+
+    // The time when the status last entered NORMAL.
+    google.protobuf.Timestamp normal_time = 7;
+    // The time when the device last entered a non-NORMAL status.
+    google.protobuf.Timestamp abnormal_time = 8;
+
+    // An error message relating to the non-NORMAL.
+    string last_error = 9;
+  }
+
+  // Monitors that are tracking the health of the runtime state of the device.
+  //
+  // When there are multiple monitors, each will have a stable key in this map.
+  // For example, the device might have a monitor for CPU usage and another for memory usage,
+  // in which case this map might have keys like "cpu" and "memory".
+  map<string, Monitor> monitors = 3;
+}
