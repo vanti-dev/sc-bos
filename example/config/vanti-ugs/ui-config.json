@@ -27,6 +27,7 @@
       }
     },
     "ops": {
+      "airQuality": false,
       "pages": [
         {
           "title": "Building Overview",
@@ -761,6 +762,12 @@
                   }
                 }
               ]
+            },
+            {
+              "title": "Air Quality",
+              "icon": "mdi-air-filter",
+              "path": "iaq",
+              "layout": "builtin:page/AirQuality"
             },
             {
               "title": "Security Events",
