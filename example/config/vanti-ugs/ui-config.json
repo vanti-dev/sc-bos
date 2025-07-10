@@ -29,6 +29,7 @@
     "ops": {
       "airQuality": false,
       "emergencyLighting": false,
+      "security": false,
       "pages": [
         {
           "title": "Building Overview",
@@ -775,6 +776,12 @@
               "icon": "mdi-alarm-light-outline",
               "path": "elt",
               "layout": "builtin:page/EmergencyLighting"
+            },
+            {
+              "title": "Security",
+              "icon": "mdi-shield-key",
+              "path": "security",
+              "layout": "builtin:page/Security"
             },
             {
               "title": "Security Events",
