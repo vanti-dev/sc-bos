@@ -37,7 +37,11 @@ export const navItems = [
     title: 'Emergency Lighting',
     icon: 'mdi-alarm-light-outline',
     link: {path: '/ops/emergency-lighting'},
-    badgeType: null
+    badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/emergency-lighting') && (uiConfig.config?.ops?.emergencyLighting ?? true);
+    }
   },
   {
     title: 'Security',
