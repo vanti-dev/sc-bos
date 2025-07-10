@@ -27,31 +27,51 @@ export const navItems = [
     title: 'Air Quality',
     icon: 'mdi-air-filter',
     link: {path: '/ops/air-quality'},
-    badgeType: null
+    badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/air-quality') && (uiConfig.config?.ops?.airQuality ?? true);
+    }
   },
   {
     title: 'Emergency Lighting',
     icon: 'mdi-alarm-light-outline',
     link: {path: '/ops/emergency-lighting'},
-    badgeType: null
+    badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/emergency-lighting') && (uiConfig.config?.ops?.emergencyLighting ?? true);
+    }
   },
   {
     title: 'Security',
     icon: 'mdi-shield-key',
     link: {path: '/ops/security'},
-    badgeType: null
+    badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/security') && (uiConfig.config?.ops?.security ?? true);
+    }
   },
   {
     title: 'Security Events',
     icon: 'mdi-shield-alert',
     link: {path: '/ops/security-events'},
-    badgeType: null
+    badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/security-events') && uiConfig.config?.securityEventsSource;
+    }
   },
   {
     title: 'Waste Records',
     icon: 'mdi-recycle',
     link: {path: '/ops/waste'},
     badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/waste') && uiConfig.config?.ops?.waste;
+    }
   }
 ];
 

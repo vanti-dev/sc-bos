@@ -3,4 +3,10 @@ import {defineAsyncComponent} from 'vue';
 export const builtinLayouts = {
   'LayoutMainSide': defineAsyncComponent(() => import('@/dynamic/layout/LayoutMainSide.vue')),
   'LayoutGrid': defineAsyncComponent(() => import('@/dynamic/layout/LayoutGrid.vue')),
+  // full pages, not widget containers
+  'page/AirQuality': defineAsyncComponent(() => import('@/routes/ops/air-quality/AirQuality.vue')),
+  'page/EmergencyLighting': defineAsyncComponent(() => import('@/routes/ops/emergency-lighting/EmergencyLighting.vue')),
+  'page/Security': defineAsyncComponent(() => import('@/routes/ops/security/SecurityHome.vue')),
+  'page/SecurityEvents': defineAsyncComponent(() => import('@/routes/ops/security-events/SecurityEventsTable.vue')),
+  'page/Waste': defineAsyncComponent(() => import('@/routes/ops/waste/WasteTable.vue'))
 };
