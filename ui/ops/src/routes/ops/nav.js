@@ -27,7 +27,11 @@ export const navItems = [
     title: 'Air Quality',
     icon: 'mdi-air-filter',
     link: {path: '/ops/air-quality'},
-    badgeType: null
+    badgeType: null,
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/air-quality') && (uiConfig.config?.ops?.airQuality ?? true);
+    }
   },
   {
     title: 'Emergency Lighting',
