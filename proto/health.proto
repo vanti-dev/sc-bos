@@ -5,6 +5,7 @@ package smartcore.bos;
 option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
 import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -19,7 +20,7 @@ import "google/protobuf/timestamp.proto";
 //
 // Communication health
 //
-// Communication health is about the communication with the device.
+// Communication health is about the messages sent between Smart Core and the device.
 // This will be dependent on the protocol used to communicate with the device.
 // The kinds of issues that arise here could include version mismatches, missing resources, or unexpected responses.
 //
@@ -29,6 +30,8 @@ import "google/protobuf/timestamp.proto";
 // The values monitored can range from system metrics like CPU and memory usage,
 // to device specific metrics like flow rate or filter run hours.
 service HealthApi {
+  rpc GetHealth(GetHealthRequest) returns (Health) {}
+  rpc PullHealth(PullHealthRequest) returns (stream PullHealthResponse) {}
 }
 
 // Health represents the health of a device and our communication with it.
@@ -37,10 +40,6 @@ message Health {
   message Check {
     string display_name = 1;
     string description = 2;
-
-    // todo: add a concept like Impact or Severity
-    //  I'd like the concept to be action driven, maybe something like Impact { Data, Equipment, Environment, Safety }
-    //  Something where we could easily know which bucket to put checks in and know which to notify or prioritise.
   }
 
   // Connection models health of the physical connection to the device.
@@ -176,6 +175,41 @@ message Health {
 
     // An error message relating to the non-NORMAL.
     string last_error = 9;
+
+    enum OccupantImpact {
+      OCCUPANT_IMPACT_UNSPECIFIED = 0;
+      // The monitor does not impact occupants.
+      NO_OCCUPANT_IMPACT = 1;
+      // Abnormal values for this monitor can impact the comfort of occupants.
+      // For example, a temperature monitor out of range in a climate control system.
+      COMFORT = 2;
+      // Abnormal values for this monitor can impact the health of occupants.
+      // For example, a CO2 monitor out of range in a ventilation system.
+      HEALTH = 3;
+      // Abnormal values for this monitor can impact the life-safety of occupants.
+      // For example, a gas leak monitor out of range in a gas safety system.
+      LIFE = 4;
+    }
+
+    // The impact abnormal values for this monitor can have on occupants.
+    OccupantImpact occupant_impact = 10;
+
+    enum EquipmentImpact {
+      EQUIPMENT_IMPACT_UNSPECIFIED = 0;
+      // The monitor does not impact equipment.
+      NO_EQUIPMENT_IMPACT = 1;
+      // Abnormal values for this monitor can impact the warranty for the device.
+      // For example, a temperature monitor out of range in a device that has an operating temperature range.
+      WARRANTY = 2;
+      // Abnormal values for this monitor can impact the lifespan of the device.
+      // For example, running a device at levels outside normal operating ranges.
+      LIFESPAN = 3;
+    }
+
+    // The impact abnormal values for this monitor can have on the equipment.
+    EquipmentImpact equipment_impact = 11;
+
+    // todo: compliance impact
   }
 
   // Monitors that are tracking the health of the runtime state of the device.
@@ -184,4 +218,30 @@ message Health {
   // For example, the device might have a monitor for CPU usage and another for memory usage,
   // in which case this map might have keys like "cpu" and "memory".
   map<string, Monitor> monitors = 3;
+}
+
+message GetHealthRequest {
+  // The name of the device.
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+}
+
+message PullHealthRequest {
+  // The name of the device.
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  bool updates_only = 3;
+}
+
+message PullHealthResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    // The name of the device that changed.
+    string name = 1;
+    // The time when the change was made.
+    google.protobuf.Timestamp change_time = 2;
+    // The health of the device after the change.
+    Health health = 3;
+  }
 }
