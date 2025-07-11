@@ -1,0 +1,270 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// The HealthApi reports on the health of devices in the system.
+// Health is split into connection, communication, and monitor health.
+//
+// Connection health
+//
+// Connection health is about the physical connection to the device.
+// This might be a TCP connection or a HDMI cable connection.
+// Low level network protocols like ICMP can be used to determine the health of the connection.
+//
+// Communication health
+//
+// Communication health is about the messages sent between Smart Core and the device.
+// This will be dependent on the protocol used to communicate with the device.
+// The kinds of issues that arise here could include version mismatches, missing resources, or unexpected responses.
+//
+// Monitor health
+//
+// Monitor health is about the runtime state of the device.
+// The values monitored can range from system metrics like CPU and memory usage,
+// to device specific metrics like flow rate or filter run hours.
+service HealthApi {
+  rpc GetHealth(GetHealthRequest) returns (Health) {}
+  rpc PullHealth(PullHealthRequest) returns (stream PullHealthResponse) {}
+}
+
+// Health represents the health of a device and our communication with it.
+message Health {
+  // Check helps to distinguish a health metric from others of its kind.
+  message Check {
+    string display_name = 1;
+    string description = 2;
+  }
+
+  // Error represents an error that occurred while checking the health of the device.
+  message Error {
+    // A short message describing the error suitable for display to the user.
+    string summary_text = 1;
+    // Additional details for the error in plain text.
+    string details_text = 2;
+
+    // Code is a structured error code that can be used to programmatically identify the error.
+    message Code {
+      // A unique code for the error within the system.
+      // Required.
+      string code = 1;
+      // The system responsible for the error code.
+      // Required.
+      // The value should be the well recognised name of the system that generated the error code.
+      // Examples include "DALI" and "HTTP".
+      string system = 2;
+    }
+    // An error code that can be used to programmatically identify the error.
+    // Errors with the same code and system should be interpreted as the same error.
+    Code code = 3;
+  }
+
+  // Connection models health of the physical connection to the device.
+  message Connection {
+    Check check = 1;
+
+    enum Status {
+      STATUS_UNSPECIFIED = 0;
+      // The connection is ready to be established when it is needed.
+      READY = 1;
+      // The connection is established and healthy.
+      CONNECTED = 2;
+      // There are issues with the connection that may resolve themselves on future attempts.
+      TRANSIENT_FAILURE = 3;
+    }
+    // The status of the connection.
+    Status status = 2;
+    // The earliest time when the status left READY.
+    google.protobuf.Timestamp start_time = 3;
+    // The time when the status last entered CONNECTED.
+    // Reconnections during normal operation will not update this time.
+    google.protobuf.Timestamp connected_time = 4;
+    // The time when the status last entered TRANSIENT_FAILURE.
+    google.protobuf.Timestamp transient_failure_time = 5;
+
+    // An error message relating to the TRANSIENT_FAILURE state.
+    Error last_error = 6;
+  }
+
+  // Health relating to the physical connections to the device.
+  // If the device does not have a physical connection, this will be empty.
+  //
+  // When there are more than one connection type, each will have a stable key in this map.
+  // For example, the device might have two network ports for redundancy, in which case this
+  // map might have keys like "eth0" and "eth1".
+  map<string, Connection> connections = 1;
+
+  // Communication models the health of our communication with the device.
+  message Communication {
+    Check check = 1;
+
+    enum Status {
+      STATUS_UNSPECIFIED = 0;
+      // Communication has not been attempted yet.
+      NOT_ATTEMPTED = 1;
+      // The device is responding as expected to communication requests.
+      SUCCESS = 2;
+      // We were unable to send a message to the device.
+      BAD_SEND = 3;
+      // The device has not responded to our last message.
+      NO_RESPONSE = 4;
+      // The device has responded to our last message, but the response was not valid.
+      BAD_RESPONSE = 5;
+    }
+    // The status of the communication.
+    Status status = 2;
+    // The time when the status last entered SUCCESS.
+    google.protobuf.Timestamp success_time = 3;
+    // The time when the status last entered BAD_SEND.
+    google.protobuf.Timestamp bad_send_time = 4;
+    // The time when the status last entered NO_RESPONSE.
+    google.protobuf.Timestamp no_response_time = 5;
+    // The time when the status last entered BAD_RESPONSE.
+    google.protobuf.Timestamp bad_response_time = 6;
+
+    // An error message relating to the BAD_SEND, NO_RESPONSE or BAD_RESPONSE states.
+    Error last_error = 7;
+  }
+
+  // Health relating to our communication channels with the device.
+  //
+  // When there are multiple ways to communicate with the device, each will have a stable key in this map.
+  // For example, the device might have a HTTP REST API and a WebSocket API, in which case this map
+  // might have keys like "rest" and "ws".
+  map<string, Communication> communications = 2;
+
+  // Monitor tracks a state value in the device for abnormality.
+  message Monitor {
+    Check check = 1;
+
+    enum Status {
+      STATUS_UNSPECIFIED = 0;
+      // The value is within the normal operating range.
+      // Any Status greater than 1 indicates a problem with the device.
+      NORMAL = 1;
+      // The value is outside of the normal operating range.
+      ABNORMAL = 2;
+      // The value is below the normal operating range.
+      LOW = 3;
+      // The value is above the normal operating range.
+      HIGH = 4;
+    }
+    // The status of the monitor.
+    Status status = 2;
+
+    // Value is one of the supported value types for the monitor.
+    message Value {
+      oneof value {
+        bool bool_value = 1;
+        string string_value = 2;
+        int64 int_value = 3;
+        uint64 uint_value = 4;
+        double float_value = 5;
+        google.protobuf.Timestamp timestamp_value = 6;
+        google.protobuf.Duration duration_value = 7;
+      }
+    }
+    // A range of values.
+    // At least one of low or high must be set.
+    message ValueRange {
+      // The low range, above which the value is considered normal.
+      Value low = 1;
+      // The high range, below which the value is considered normal.
+      Value high = 2;
+    }
+
+    // The measured value.
+    // Optional when status is not in a bad state.
+    Value current_value = 3;
+    oneof bounds {
+      // The normal value we expect for a healthy device.
+      Value normal_value = 4;
+      // The range of values that are considered normal for a healthy device.
+      ValueRange normal_range = 5;
+    }
+    // The unit of the value, for example "°C", "%", "kB", etc.
+    string display_unit = 6;
+
+    // The time when the status last entered NORMAL.
+    google.protobuf.Timestamp normal_time = 7;
+    // The time when the device last entered a non-NORMAL status.
+    google.protobuf.Timestamp abnormal_time = 8;
+
+    // An error message relating to the non-NORMAL.
+    Error last_error = 9;
+
+    enum OccupantImpact {
+      OCCUPANT_IMPACT_UNSPECIFIED = 0;
+      // The monitor does not impact occupants.
+      NO_OCCUPANT_IMPACT = 1;
+      // Abnormal values for this monitor can impact the comfort of occupants.
+      // For example, a temperature monitor out of range in a climate control system.
+      COMFORT = 2;
+      // Abnormal values for this monitor can impact the health of occupants.
+      // For example, a CO2 monitor out of range in a ventilation system.
+      HEALTH = 3;
+      // Abnormal values for this monitor can impact the life-safety of occupants.
+      // For example, a gas leak monitor out of range in a gas safety system.
+      LIFE = 4;
+    }
+
+    // The impact abnormal values for this monitor can have on occupants.
+    OccupantImpact occupant_impact = 10;
+
+    enum EquipmentImpact {
+      EQUIPMENT_IMPACT_UNSPECIFIED = 0;
+      // The monitor does not impact equipment.
+      NO_EQUIPMENT_IMPACT = 1;
+      // Abnormal values for this monitor can impact the warranty for the device.
+      // For example, a temperature monitor out of range in a device that has an operating temperature range.
+      WARRANTY = 2;
+      // Abnormal values for this monitor can impact the lifespan of the device.
+      // For example, running a device at levels outside normal operating ranges.
+      LIFESPAN = 3;
+    }
+
+    // The impact abnormal values for this monitor can have on the equipment.
+    EquipmentImpact equipment_impact = 11;
+
+    // todo: compliance impact
+  }
+
+  // Monitors that are tracking the health of the runtime state of the device.
+  //
+  // When there are multiple monitors, each will have a stable key in this map.
+  // For example, the device might have a monitor for CPU usage and another for memory usage,
+  // in which case this map might have keys like "cpu" and "memory".
+  map<string, Monitor> monitors = 3;
+}
+
+message GetHealthRequest {
+  // The name of the device.
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+}
+
+message PullHealthRequest {
+  // The name of the device.
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  bool updates_only = 3;
+}
+
+message PullHealthResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    // The name of the device that changed.
+    string name = 1;
+    // The time when the change was made.
+    google.protobuf.Timestamp change_time = 2;
+    // The health of the device after the change.
+    Health health = 3;
+  }
+}
