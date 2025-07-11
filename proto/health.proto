@@ -48,10 +48,10 @@ message Health {
 
     enum Status {
       STATUS_UNSPECIFIED = 0;
-      // The connection is established and healthy.
-      CONNECTED = 1;
       // The connection is ready to be established when it is needed.
-      READY = 2;
+      READY = 1;
+      // The connection is established and healthy.
+      CONNECTED = 2;
       // There are issues with the connection that may resolve themselves on future attempts.
       TRANSIENT_FAILURE = 3;
     }
@@ -83,10 +83,10 @@ message Health {
 
     enum Status {
       STATUS_UNSPECIFIED = 0;
-      // The device is responding as expected to communication requests.
-      SUCCESS = 1;
       // Communication has not been attempted yet.
-      NOT_ATTEMPTED = 2;
+      NOT_ATTEMPTED = 1;
+      // The device is responding as expected to communication requests.
+      SUCCESS = 2;
       // We were unable to send a message to the device.
       BAD_SEND = 3;
       // The device has not responded to our last message.
