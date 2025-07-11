@@ -42,6 +42,29 @@ message Health {
     string description = 2;
   }
 
+  // Error represents an error that occurred while checking the health of the device.
+  message Error {
+    // A short message describing the error suitable for display to the user.
+    string summary_text = 1;
+    // Additional details for the error in plain text.
+    string details_text = 2;
+
+    // Code is a structured error code that can be used to programmatically identify the error.
+    message Code {
+      // A unique code for the error within the system.
+      // Required.
+      string code = 1;
+      // The system responsible for the error code.
+      // Required.
+      // The value should be the well recognised name of the system that generated the error code.
+      // Examples include "DALI" and "HTTP".
+      string system = 2;
+    }
+    // An error code that can be used to programmatically identify the error.
+    // Errors with the same code and system should be interpreted as the same error.
+    Code code = 3;
+  }
+
   // Connection models health of the physical connection to the device.
   message Connection {
     Check check = 1;
@@ -66,7 +89,7 @@ message Health {
     google.protobuf.Timestamp transient_failure_time = 5;
 
     // An error message relating to the TRANSIENT_FAILURE state.
-    string last_error = 6;
+    Error last_error = 6;
   }
 
   // Health relating to the physical connections to the device.
@@ -106,7 +129,7 @@ message Health {
     google.protobuf.Timestamp bad_response_time = 6;
 
     // An error message relating to the BAD_SEND, NO_RESPONSE or BAD_RESPONSE states.
-    string last_error = 7;
+    Error last_error = 7;
   }
 
   // Health relating to our communication channels with the device.
@@ -174,7 +197,7 @@ message Health {
     google.protobuf.Timestamp abnormal_time = 8;
 
     // An error message relating to the non-NORMAL.
-    string last_error = 9;
+    Error last_error = 9;
 
     enum OccupantImpact {
       OCCUPANT_IMPACT_UNSPECIFIED = 0;
