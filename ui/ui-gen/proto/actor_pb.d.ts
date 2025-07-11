@@ -33,6 +33,12 @@ export class Actor extends jspb.Message {
   getLastGrantZone(): string;
   setLastGrantZone(value: string): Actor;
 
+  getVehicleRegistration(): string;
+  setVehicleRegistration(value: string): Actor;
+
+  getCompany(): string;
+  setCompany(value: string): Actor;
+
   getIdsMap(): jspb.Map<string, string>;
   clearIdsMap(): Actor;
 
@@ -57,6 +63,8 @@ export namespace Actor {
     email: string,
     lastGrantTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     lastGrantZone: string,
+    vehicleRegistration: string,
+    company: string,
     idsMap: Array<[string, string]>,
     moreMap: Array<[string, string]>,
   }

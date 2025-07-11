@@ -479,3 +479,7 @@ const RFC3339NumericZone = "2006-01-02T15:04:05-07:00"
 func formatTime(t time.Time) string {
 	return t.Format(RFC3339NumericZone)
 }
+
+func parseTime(s string) (time.Time, error) {
+	return time.Parse(time.RFC3339, s)
+}

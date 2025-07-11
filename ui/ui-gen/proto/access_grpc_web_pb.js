@@ -198,5 +198,188 @@ proto.smartcore.bos.AccessApiPromiseClient.prototype.pullAccessAttempts =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.CreateAccessGrantRequest,
+ *   !proto.smartcore.bos.AccessGrant>}
+ */
+const methodDescriptor_AccessApi_CreateAccessGrant = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccessApi/CreateAccessGrant',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.CreateAccessGrantRequest,
+  proto.smartcore.bos.AccessGrant,
+  /**
+   * @param {!proto.smartcore.bos.CreateAccessGrantRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.AccessGrant.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.CreateAccessGrantRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.AccessGrant)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.AccessGrant>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AccessApiClient.prototype.createAccessGrant =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AccessApi/CreateAccessGrant',
+      request,
+      metadata || {},
+      methodDescriptor_AccessApi_CreateAccessGrant,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.CreateAccessGrantRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.AccessGrant>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.AccessApiPromiseClient.prototype.createAccessGrant =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AccessApi/CreateAccessGrant',
+      request,
+      metadata || {},
+      methodDescriptor_AccessApi_CreateAccessGrant);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.UpdateAccessGrantRequest,
+ *   !proto.smartcore.bos.AccessGrant>}
+ */
+const methodDescriptor_AccessApi_UpdateAccessGrant = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccessApi/UpdateAccessGrant',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.UpdateAccessGrantRequest,
+  proto.smartcore.bos.AccessGrant,
+  /**
+   * @param {!proto.smartcore.bos.UpdateAccessGrantRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.AccessGrant.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.UpdateAccessGrantRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.AccessGrant)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.AccessGrant>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AccessApiClient.prototype.updateAccessGrant =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AccessApi/UpdateAccessGrant',
+      request,
+      metadata || {},
+      methodDescriptor_AccessApi_UpdateAccessGrant,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.UpdateAccessGrantRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.AccessGrant>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.AccessApiPromiseClient.prototype.updateAccessGrant =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AccessApi/UpdateAccessGrant',
+      request,
+      metadata || {},
+      methodDescriptor_AccessApi_UpdateAccessGrant);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.DeleteAccessGrantRequest,
+ *   !proto.smartcore.bos.DeleteAccessGrantResponse>}
+ */
+const methodDescriptor_AccessApi_DeleteAccessGrant = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.AccessApi/DeleteAccessGrant',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.DeleteAccessGrantRequest,
+  proto.smartcore.bos.DeleteAccessGrantResponse,
+  /**
+   * @param {!proto.smartcore.bos.DeleteAccessGrantRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.DeleteAccessGrantResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.DeleteAccessGrantRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.DeleteAccessGrantResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.DeleteAccessGrantResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.AccessApiClient.prototype.deleteAccessGrant =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.AccessApi/DeleteAccessGrant',
+      request,
+      metadata || {},
+      methodDescriptor_AccessApi_DeleteAccessGrant,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.DeleteAccessGrantRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.DeleteAccessGrantResponse>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.AccessApiPromiseClient.prototype.deleteAccessGrant =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.AccessApi/DeleteAccessGrant',
+      request,
+      metadata || {},
+      methodDescriptor_AccessApi_DeleteAccessGrant);
+};
+
+
 module.exports = proto.smartcore.bos;
 
