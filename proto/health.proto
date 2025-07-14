@@ -8,41 +8,84 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "actor.proto";
+import "types/change.proto";
 
-// The HealthApi reports on the health of devices in the system.
-// Health is split into connection, communication, and monitor health.
+// The HealthApi provides access to health information for devices and systems.
 //
-// Connection health
+// Health is the result of one of more checks performed against a device.
+// Each check measures a value of the device and compares it against a known good value or range.
+// Checks can be as simple as connection checks, in which case no value is measured,
+// or as complex as measuring the temperature of a device and comparing it against a range of acceptable values.
 //
-// Connection health is about the physical connection to the device.
-// This might be a TCP connection or a HDMI cable connection.
-// Low level network protocols like ICMP can be used to determine the health of the connection.
+// When performing a check, the reliability of the check is also recorded.
+// Reliability is a measure of how confident we are in the results of the check,
+// and generally map to our ability to communicate with the device.
+// Poor reliability may be caused by intermediate systems, like a headend or the network,
+// this information is modelled in the reliability cause.
+// An absent cause implies the device is responsible for its own reliability issues.
 //
-// Communication health
-//
-// Communication health is about the messages sent between Smart Core and the device.
-// This will be dependent on the protocol used to communicate with the device.
-// The kinds of issues that arise here could include version mismatches, missing resources, or unexpected responses.
-//
-// Monitor health
-//
-// Monitor health is about the runtime state of the device.
-// The values monitored can range from system metrics like CPU and memory usage,
-// to device specific metrics like flow rate or filter run hours.
+// Each check can specify that it should be acknowledged when it changes state.
+// Acknowledgements are used to track whether a change in health state has been investigated or not.
+// Comparing the ack_required field with the corresponding to_state_ack fields allows us to determine whether the change
+// has been acknowledged or not.
+// Health changes that require acknowledgement but have not been acknowledged still require attention from operators.
 service HealthApi {
-  rpc GetHealth(GetHealthRequest) returns (Health) {}
-  rpc PullHealth(PullHealthRequest) returns (stream PullHealthResponse) {}
+  rpc ListHealthChecks(ListHealthChecksRequest) returns (ListHealthChecksResponse);
+  rpc PullHealthChecks(PullHealthChecksRequest) returns (stream PullHealthChecksResponse);
 }
 
-// Health represents the health of a device and our communication with it.
-message Health {
-  // Check helps to distinguish a health metric from others of its kind.
-  message Check {
-    string display_name = 1;
-    string description = 2;
+// HealthCheck represents the results of a check against the health of a device.
+message HealthCheck {
+  // An id uniquely representing this check against this device.
+  // An equivalent check against a different device may have the same id, for example "ping" or "temperature".
+  string id = 1;
+
+  // A human readable name for this check, to distinguish the check from others.
+  string display_name = 2;
+  // A description of the check.
+  string description = 3;
+
+  // OccupantImpact represents the impact abnormal values for this check can have on occupants.
+  enum OccupantImpact {
+    OCCUPANT_IMPACT_UNSPECIFIED = 0;
+    // The check does not impact occupants.
+    NO_OCCUPANT_IMPACT = 1;
+    // Abnormal values for this check can impact the comfort of occupants.
+    // For example, a temperature check out of range in a climate control system.
+    COMFORT = 2;
+    // Abnormal values for this check can impact the health of occupants.
+    // For example, a CO2 check out of range in a ventilation system.
+    HEALTH = 3;
+    // Abnormal values for this check can impact the life-safety of occupants.
+    // For example, a gas leak check out of range in a gas safety system.
+    LIFE = 4;
   }
 
-  // Error represents an error that occurred while checking the health of the device.
+  // The impact abnormal values for this check can have on occupants.
+  OccupantImpact occupant_impact = 5;
+
+  // EquipmentImpact represents the impact abnormal values for this check can have on equipment.
+  enum EquipmentImpact {
+    EQUIPMENT_IMPACT_UNSPECIFIED = 0;
+    // The check does not impact equipment.
+    NO_EQUIPMENT_IMPACT = 1;
+    // Abnormal values for this check can impact the warranty for the device.
+    // For example, a temperature check out of range in a device that has an operating temperature range.
+    WARRANTY = 2;
+    // Abnormal values for this check can impact the lifespan of the device.
+    // For example, running a device at levels outside normal operating ranges.
+    LIFESPAN = 3;
+  }
+
+  // The impact abnormal values for this check can have on the equipment.
+  EquipmentImpact equipment_impact = 6;
+
+  // todo: compliance impact, WARNING, GRADE, FAIL, etc.
+  //  Might also need to mention which compliance standard this relates to
+
+
+  // Error represents an error during one of the checks.
   message Error {
     // A short message describing the error suitable for display to the user.
     string summary_text = 1;
@@ -65,84 +108,79 @@ message Health {
     Code code = 3;
   }
 
-  // Connection models health of the physical connection to the device.
-  message Connection {
-    Check check = 1;
-
+  // Reliability represents confidence in the results of the check,
+  // typically tied to the communication with the device.
+  message Reliability {
     enum Status {
       STATUS_UNSPECIFIED = 0;
-      // The connection is ready to be established when it is needed.
-      READY = 1;
-      // The connection is established and healthy.
-      CONNECTED = 2;
+      // The communication with the device is established and healthy.
+      // The status will remain OK across normal reconnections and transient bad responses.
+      OK = 1;
       // There are issues with the connection that may resolve themselves on future attempts.
-      TRANSIENT_FAILURE = 3;
-    }
-    // The status of the connection.
-    Status status = 2;
-    // The earliest time when the status left READY.
-    google.protobuf.Timestamp start_time = 3;
-    // The time when the status last entered CONNECTED.
-    // Reconnections during normal operation will not update this time.
-    google.protobuf.Timestamp connected_time = 4;
-    // The time when the status last entered TRANSIENT_FAILURE.
-    google.protobuf.Timestamp transient_failure_time = 5;
-
-    // An error message relating to the TRANSIENT_FAILURE state.
-    Error last_error = 6;
-  }
-
-  // Health relating to the physical connections to the device.
-  // If the device does not have a physical connection, this will be empty.
-  //
-  // When there are more than one connection type, each will have a stable key in this map.
-  // For example, the device might have two network ports for redundancy, in which case this
-  // map might have keys like "eth0" and "eth1".
-  map<string, Connection> connections = 1;
-
-  // Communication models the health of our communication with the device.
-  message Communication {
-    Check check = 1;
-
-    enum Status {
-      STATUS_UNSPECIFIED = 0;
-      // Communication has not been attempted yet.
-      NOT_ATTEMPTED = 1;
-      // The device is responding as expected to communication requests.
-      SUCCESS = 2;
-      // We were unable to send a message to the device.
-      BAD_SEND = 3;
+      CONN_TRANSIENT_FAILURE = 2;
+      // Sending messages to the device has failed.
+      SEND_FAILURE = 3;
       // The device has not responded to our last message.
+      // For example if the client times out waiting for a response from the device.
       NO_RESPONSE = 4;
       // The device has responded to our last message, but the response was not valid.
+      // For example, persistent HTTP 500 responses or version mismatches between client and device.
       BAD_RESPONSE = 5;
     }
-    // The status of the communication.
-    Status status = 2;
-    // The time when the status last entered SUCCESS.
-    google.protobuf.Timestamp success_time = 3;
-    // The time when the status last entered BAD_SEND.
-    google.protobuf.Timestamp bad_send_time = 4;
-    // The time when the status last entered NO_RESPONSE.
-    google.protobuf.Timestamp no_response_time = 5;
-    // The time when the status last entered BAD_RESPONSE.
-    google.protobuf.Timestamp bad_response_time = 6;
+    // The status of the connection.
+    Status status = 1;
+    // The time when the status last entered OK.
+    // Reconnections during normal operation will not update this time.
+    // Temporary bad responses will not update this time.
+    google.protobuf.Timestamp ok_time = 2;
+    // The time when the status last entered a non-OK status.
+    google.protobuf.Timestamp failure_time = 3;
 
-    // An error message relating to the BAD_SEND, NO_RESPONSE or BAD_RESPONSE states.
-    Error last_error = 7;
+    // An error message relating to the non-OK status.
+    Error last_error = 4;
+
+    // todo: ReliabilityCause to model when a headend (or transport) system is causing our issues.
   }
 
-  // Health relating to our communication channels with the device.
-  //
-  // When there are multiple ways to communicate with the device, each will have a stable key in this map.
-  // For example, the device might have a HTTP REST API and a WebSocket API, in which case this map
-  // might have keys like "rest" and "ws".
-  map<string, Communication> communications = 2;
+  // A measure of how reliable the measured health is.
+  // Typically this represents our ability to communicate with the device, to ask it questions about its health.
+  Reliability reliability = 10;
 
-  // Monitor tracks a state value in the device for abnormality.
-  message Monitor {
-    Check check = 1;
 
+  // Value is one of the supported value types for a check.
+  message Value {
+    oneof value {
+      bool bool_value = 1;
+      string string_value = 2;
+      int64 int_value = 3;
+      uint64 uint_value = 4;
+      double float_value = 5;
+      google.protobuf.Timestamp timestamp_value = 6;
+      google.protobuf.Duration duration_value = 7;
+    }
+  }
+  // A range of Values.
+  // At least one of low or high must be set.
+  message ValueRange {
+    // The low range, above which the value is considered normal.
+    Value low = 1;
+    // The high range, below which the value is considered normal.
+    Value high = 2;
+    // Optional deadband applied before the check returns to NORMAL to avoid jitter.
+    // Deadband should have a value type compatible with the low and high values.
+    // If low and high are Timestamps, then deadband should be a Duration.
+    //
+    // When the check will transition from HIGH to NORMAL when the current_value becomes less than high - deadband,
+    // and from LOW to NORMAL when the current_value becomes greater than low + deadband.
+    Value deadband = 3;
+  }
+  // A collection of values.
+  message Values {
+    repeated Value values = 1;
+  }
+
+  // Check tracks a state value in the device for abnormality.
+  message Check {
     enum Status {
       STATUS_UNSPECIFIED = 0;
       // The value is within the normal operating range.
@@ -155,116 +193,146 @@ message Health {
       // The value is above the normal operating range.
       HIGH = 4;
     }
-    // The status of the monitor.
-    Status status = 2;
-
-    // Value is one of the supported value types for the monitor.
-    message Value {
-      oneof value {
-        bool bool_value = 1;
-        string string_value = 2;
-        int64 int_value = 3;
-        uint64 uint_value = 4;
-        double float_value = 5;
-        google.protobuf.Timestamp timestamp_value = 6;
-        google.protobuf.Duration duration_value = 7;
-      }
-    }
-    // A range of values.
-    // At least one of low or high must be set.
-    message ValueRange {
-      // The low range, above which the value is considered normal.
-      Value low = 1;
-      // The high range, below which the value is considered normal.
-      Value high = 2;
-    }
+    // The status of the check.
+    Status status = 1;
 
     // The measured value.
     // Optional when status is not in a bad state.
     Value current_value = 3;
     oneof bounds {
       // The normal value we expect for a healthy device.
+      // Any measured value that is not equal to this value will result in a status of ABNORMAL.
       Value normal_value = 4;
       // The range of values that are considered normal for a healthy device.
+      // Any measured value that is not within this range will result in a status of HIGH or LOW.
+      // See ValueRange.deadband for more information on how the deadband is applied.
       ValueRange normal_range = 5;
+      // A list of normal values that are considered healthy for the device.
+      // Any measured value that is not in this list will result in a status of ABNORMAL.
+      Values normal_values = 6;
+      // A list of abnormal values that are considered unhealthy for the device.
+      // Any measured value that is in this list will result in a status of ABNORMAL.
+      Values abnormal_values = 7;
     }
     // The unit of the value, for example "°C", "%", "kB", etc.
-    string display_unit = 6;
+    string display_unit = 8;
 
     // The time when the status last entered NORMAL.
-    google.protobuf.Timestamp normal_time = 7;
+    google.protobuf.Timestamp normal_time = 9;
     // The time when the device last entered a non-NORMAL status.
-    google.protobuf.Timestamp abnormal_time = 8;
+    google.protobuf.Timestamp abnormal_time = 10;
 
-    // An error message relating to the non-NORMAL.
-    Error last_error = 9;
-
-    enum OccupantImpact {
-      OCCUPANT_IMPACT_UNSPECIFIED = 0;
-      // The monitor does not impact occupants.
-      NO_OCCUPANT_IMPACT = 1;
-      // Abnormal values for this monitor can impact the comfort of occupants.
-      // For example, a temperature monitor out of range in a climate control system.
-      COMFORT = 2;
-      // Abnormal values for this monitor can impact the health of occupants.
-      // For example, a CO2 monitor out of range in a ventilation system.
-      HEALTH = 3;
-      // Abnormal values for this monitor can impact the life-safety of occupants.
-      // For example, a gas leak monitor out of range in a gas safety system.
-      LIFE = 4;
-    }
-
-    // The impact abnormal values for this monitor can have on occupants.
-    OccupantImpact occupant_impact = 10;
-
-    enum EquipmentImpact {
-      EQUIPMENT_IMPACT_UNSPECIFIED = 0;
-      // The monitor does not impact equipment.
-      NO_EQUIPMENT_IMPACT = 1;
-      // Abnormal values for this monitor can impact the warranty for the device.
-      // For example, a temperature monitor out of range in a device that has an operating temperature range.
-      WARRANTY = 2;
-      // Abnormal values for this monitor can impact the lifespan of the device.
-      // For example, running a device at levels outside normal operating ranges.
-      LIFESPAN = 3;
-    }
-
-    // The impact abnormal values for this monitor can have on the equipment.
-    EquipmentImpact equipment_impact = 11;
-
-    // todo: compliance impact
+    // An error message relating to the non-NORMAL status.
+    Error last_error = 11;
   }
 
-  // Monitors that are tracking the health of the runtime state of the device.
+  // A check that has been performed against the device.
+  Check check = 11;
+
+  // An acknowledgement for a change in health state.
+  // Some changes in health state require acknowledgement from another person or system before they can be considered
+  // resolved.
   //
-  // When there are multiple monitors, each will have a stable key in this map.
-  // For example, the device might have a monitor for CPU usage and another for memory usage,
-  // in which case this map might have keys like "cpu" and "memory".
-  map<string, Monitor> monitors = 3;
+  // For example, a fire detection system may detect smoke, which will cause the health check to change to ABNORMAL.
+  // Even if the smoke clears and the check returns to NORMAL, the system should still require a person to investigate
+  // the abnormality.
+  // Requiring an acknowledgement allows the system to track whether the abnormality has been investigated,
+  // or whether the system is still in a state that requires attention.
+  //
+  // Each check can specify whether it requires an acknowledgement independently for each health state transition.
+  // The possible transitions are represented by the HealthChange enum.
+  // Changing the required acks will not change any existing acks, but will change the required acks for future changes
+  // in health state.
+  //
+  // The Ack itself can come from user interaction with a Smart Core app, via this API,
+  // from an interaction with a system managing a device, like a headend workstation,
+  // or from physical interaction with the device, like pressing a reset button.
+  // The source field should identify the source of the acknowledgement.
+  message Ack {
+    google.protobuf.Timestamp ack_time = 1;
+    // The actor that has acknowledged the change in health, if known.
+    smartcore.bos.Actor actor = 2;
+    // The source of the acknowledgement.
+    // This should identify the app or system that acknowledged the change in health.
+    // For example, "smartcore.app.ops", "reset button", or "device".
+    string source = 3;
+  }
+  // Health state transitions as different bit mask values.
+  // See Ack for details.
+  enum HealthChange {
+    HEALTH_CHANGE_UNSPECIFIED = 0;
+    // A change from an unhealthy state to the healthy state.
+    TO_HEALTHY = 1;
+    // A change to a reliability state that is not OK.
+    TO_UNRELIABLE = 2;
+    // A change to a check state that is not NORMAL.
+    TO_ABNORMAL = 4;
+  }
+  // A bit mask of health state transitions that require acknowledgement.
+  // See Ack for details.
+  optional int32 ack_required = 20;
+  // An acknowledgement for the change to a healthy state.
+  // See Ack for details.
+  Ack to_healthy_ack = 21;
+  // An acknowledgement for the change to a reliability state that is not OK.
+  // See Ack for details.
+  Ack to_unreliable_ack = 22;
+  // An acknowledgement for the change to a check state that is not NORMAL.
+  // See Ack for details.
+  Ack to_abnormal_ack = 23;
 }
 
-message GetHealthRequest {
-  // The name of the device.
-  string name = 1;
-  google.protobuf.FieldMask read_mask = 2;
+message HealthCheckSummary {
+  // todo: fields that summarise the health for the device.
 }
 
-message PullHealthRequest {
-  // The name of the device.
+message ListHealthChecksRequest {
+  // The device to get the health checks for.
   string name = 1;
+  // A field mask to select which fields to return.
   google.protobuf.FieldMask read_mask = 2;
+  // The maximum number of health checks to return.
+  // The service may return fewer than this value.
+  // If unspecified, at most 50 items will be returned.
+  // The maximum value is 1000; values above 1000 will be coerced to 1000.
+  int32 page_size = 3;
+  // A page token, received from a previous `ListHealthChecksResponse` call.
+  // Provide this to retrieve the subsequent page.
+  string page_token = 4;
+}
+
+message ListHealthChecksResponse {
+  // The health checks for the device.
+  repeated HealthCheck health_checks = 1;
+  // A token to retrieve the next page of results.
+  // If there are no more results, this will be empty.
+  string next_page_token = 2;
+  // The total number of health checks for the device.
+  int32 total_size = 3;
+}
+
+message PullHealthChecksRequest {
+  // The device to get the health checks for.
+  string name = 1;
+  // A field mask to select which fields to return.
+  google.protobuf.FieldMask read_mask = 2;
+  // When true the device will only send changes to the health checks.
+  // The default behaviour is to send the current health checks immediately followed by any updates as they happen.
   bool updates_only = 3;
 }
 
-message PullHealthResponse {
-  repeated Change changes = 1;
+message PullHealthChecksResponse {
+  // The health checks for the device.
+  repeated HealthCheck changes = 1;
 
   message Change {
-    // The name of the device that changed.
-    string name = 1;
-    // The time when the change was made.
+    // The type of change (e.g. ADD, UPDATE, etc...)
+    smartcore.types.ChangeType type = 1;
+    // When the change occurred
     google.protobuf.Timestamp change_time = 2;
-    // The health of the device after the change.
-    Health health = 3;
+    // The new value to use for ADD|UPDATE changes
+    HealthCheck new_value = 3;
+    // The old value to use for UPDATE|REMOVE changes
+    HealthCheck old_value = 4;
   }
 }
