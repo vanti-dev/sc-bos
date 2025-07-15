@@ -115,29 +115,36 @@ message HealthCheck {
     enum Status {
       STATUS_UNSPECIFIED = 0;
       // The communication with the device is established and healthy.
-      // The status will remain OK across normal reconnections and transient bad responses.
-      OK = 1;
+      // The status will remain RELIABLE across normal reconnections and transient bad responses.
+      RELIABLE = 1;
+      // Communication with the device is unreliable for an unspecified reason.
+      // Prefer more specific statuses to indicate the reason for unreliability when possible.
+      UNRELIABLE = 2;
       // There are issues with the connection that may resolve themselves on future attempts.
-      CONN_TRANSIENT_FAILURE = 2;
+      CONN_TRANSIENT_FAILURE = 3;
       // Sending messages to the device has failed.
-      SEND_FAILURE = 3;
+      SEND_FAILURE = 4;
       // The device has not responded to our last message.
       // For example if the client times out waiting for a response from the device.
-      NO_RESPONSE = 4;
+      NO_RESPONSE = 5;
       // The device has responded to our last message, but the response was not valid.
       // For example, persistent HTTP 500 responses or version mismatches between client and device.
-      BAD_RESPONSE = 5;
+      BAD_RESPONSE = 6;
+      // The device, or the properties we require on the device, are not present.
+      NOT_FOUND = 7;
+      // The device indicates that we do not have permission to access it.
+      PERMISSION_DENIED = 8;
     }
     // The status of the connection.
     Status status = 1;
-    // The time when the status last entered OK.
+    // The time when the status last entered RELIABLE.
     // Reconnections during normal operation will not update this time.
     // Temporary bad responses will not update this time.
     google.protobuf.Timestamp ok_time = 2;
-    // The time when the status last entered a non-OK status.
-    google.protobuf.Timestamp failure_time = 3;
+    // The time when the status last entered a non-RELIABLE status.
+    google.protobuf.Timestamp unreliable_time = 3;
 
-    // An error message relating to the non-OK status.
+    // An error message relating to the non-RELIABLE status.
     Error last_error = 4;
 
     // Cause describes the underlying cause of the reliability issue.
@@ -290,7 +297,7 @@ message HealthCheck {
     HEALTH_CHANGE_UNSPECIFIED = 0;
     // A change from an unhealthy state to the healthy state.
     TO_HEALTHY = 1;
-    // A change to a reliability state that is not OK.
+    // A change to a reliability state that is not RELIABLE.
     TO_UNRELIABLE = 2;
     // A change to a check state that is not NORMAL.
     TO_ABNORMAL = 4;
@@ -301,7 +308,7 @@ message HealthCheck {
   // An acknowledgement for the change to a healthy state.
   // See Ack for details.
   Ack to_healthy_ack = 21;
-  // An acknowledgement for the change to a reliability state that is not OK.
+  // An acknowledgement for the change to a reliability state that is not RELIABLE.
   // See Ack for details.
   Ack to_unreliable_ack = 22;
   // An acknowledgement for the change to a check state that is not NORMAL.
