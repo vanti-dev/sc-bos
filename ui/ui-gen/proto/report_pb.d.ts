@@ -98,27 +98,6 @@ export namespace Report {
     createdAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     mediaType: string,
   }
-
-  export class DownloadToken extends jspb.Message {
-    getRequest(): GetDownloadReportUrlRequest | undefined;
-    setRequest(value?: GetDownloadReportUrlRequest): DownloadToken;
-    hasRequest(): boolean;
-    clearRequest(): DownloadToken;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): DownloadToken.AsObject;
-    static toObject(includeInstance: boolean, msg: DownloadToken): DownloadToken.AsObject;
-    static serializeBinaryToWriter(message: DownloadToken, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): DownloadToken;
-    static deserializeBinaryFromReader(message: DownloadToken, reader: jspb.BinaryReader): DownloadToken;
-  }
-
-  export namespace DownloadToken {
-    export type AsObject = {
-      request?: GetDownloadReportUrlRequest.AsObject,
-    }
-  }
-
 }
 
 export class GetDownloadReportUrlRequest extends jspb.Message {

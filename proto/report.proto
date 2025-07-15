@@ -57,10 +57,6 @@ message Report {
 
   // The media type of the report, e.g., "application/pdf", "text/csv".
   string media_type = 5;
-
-  message DownloadToken {
-    GetDownloadReportUrlRequest request = 1;
-  }
 }
 
 // GetDownloadReportUrlRequest is used to request a specific report by its ID.

@@ -370,50 +370,6 @@ func (x *DownloadReportUrl) GetExpireAfterTime() *timestamppb.Timestamp {
 	return nil
 }
 
-type Report_DownloadToken struct {
-	state         protoimpl.MessageState       `protogen:"open.v1"`
-	Request       *GetDownloadReportUrlRequest `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Report_DownloadToken) Reset() {
-	*x = Report_DownloadToken{}
-	mi := &file_report_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Report_DownloadToken) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Report_DownloadToken) ProtoMessage() {}
-
-func (x *Report_DownloadToken) ProtoReflect() protoreflect.Message {
-	mi := &file_report_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Report_DownloadToken.ProtoReflect.Descriptor instead.
-func (*Report_DownloadToken) Descriptor() ([]byte, []int) {
-	return file_report_proto_rawDescGZIP(), []int{2, 0}
-}
-
-func (x *Report_DownloadToken) GetRequest() *GetDownloadReportUrlRequest {
-	if x != nil {
-		return x.Request
-	}
-	return nil
-}
-
 var File_report_proto protoreflect.FileDescriptor
 
 const file_report_proto_rawDesc = "" +
@@ -429,7 +385,7 @@ const file_report_proto_rawDesc = "" +
 	"\areports\x18\x01 \x03(\v2\x15.smartcore.bos.ReportR\areports\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1d\n" +
 	"\n" +
-	"total_size\x18\x03 \x01(\x05R\ttotalSize\"\x81\x02\n" +
+	"total_size\x18\x03 \x01(\x05R\ttotalSize\"\xaa\x01\n" +
 	"\x06Report\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
@@ -437,9 +393,7 @@ const file_report_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"media_type\x18\x05 \x01(\tR\tmediaType\x1aU\n" +
-	"\rDownloadToken\x12D\n" +
-	"\arequest\x18\x01 \x01(\v2*.smartcore.bos.GetDownloadReportUrlRequestR\arequest\"A\n" +
+	"media_type\x18\x05 \x01(\tR\tmediaType\"A\n" +
 	"\x1bGetDownloadReportUrlRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x0e\n" +
 	"\x02id\x18\x02 \x01(\tR\x02id\"\xa8\x01\n" +
@@ -465,32 +419,30 @@ func file_report_proto_rawDescGZIP() []byte {
 	return file_report_proto_rawDescData
 }
 
-var file_report_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_report_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_report_proto_goTypes = []any{
 	(*ListReportsRequest)(nil),          // 0: smartcore.bos.ListReportsRequest
 	(*ListReportsResponse)(nil),         // 1: smartcore.bos.ListReportsResponse
 	(*Report)(nil),                      // 2: smartcore.bos.Report
 	(*GetDownloadReportUrlRequest)(nil), // 3: smartcore.bos.GetDownloadReportUrlRequest
 	(*DownloadReportUrl)(nil),           // 4: smartcore.bos.DownloadReportUrl
-	(*Report_DownloadToken)(nil),        // 5: smartcore.bos.Report.DownloadToken
-	(*fieldmaskpb.FieldMask)(nil),       // 6: google.protobuf.FieldMask
-	(*timestamppb.Timestamp)(nil),       // 7: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),       // 5: google.protobuf.FieldMask
+	(*timestamppb.Timestamp)(nil),       // 6: google.protobuf.Timestamp
 }
 var file_report_proto_depIdxs = []int32{
-	6, // 0: smartcore.bos.ListReportsRequest.read_mask:type_name -> google.protobuf.FieldMask
+	5, // 0: smartcore.bos.ListReportsRequest.read_mask:type_name -> google.protobuf.FieldMask
 	2, // 1: smartcore.bos.ListReportsResponse.reports:type_name -> smartcore.bos.Report
-	7, // 2: smartcore.bos.Report.created_at:type_name -> google.protobuf.Timestamp
-	7, // 3: smartcore.bos.DownloadReportUrl.expire_after_time:type_name -> google.protobuf.Timestamp
-	3, // 4: smartcore.bos.Report.DownloadToken.request:type_name -> smartcore.bos.GetDownloadReportUrlRequest
-	0, // 5: smartcore.bos.ReportApi.ListReports:input_type -> smartcore.bos.ListReportsRequest
-	3, // 6: smartcore.bos.ReportApi.GetDownloadReportUrl:input_type -> smartcore.bos.GetDownloadReportUrlRequest
-	1, // 7: smartcore.bos.ReportApi.ListReports:output_type -> smartcore.bos.ListReportsResponse
-	4, // 8: smartcore.bos.ReportApi.GetDownloadReportUrl:output_type -> smartcore.bos.DownloadReportUrl
-	7, // [7:9] is the sub-list for method output_type
-	5, // [5:7] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	6, // 2: smartcore.bos.Report.created_at:type_name -> google.protobuf.Timestamp
+	6, // 3: smartcore.bos.DownloadReportUrl.expire_after_time:type_name -> google.protobuf.Timestamp
+	0, // 4: smartcore.bos.ReportApi.ListReports:input_type -> smartcore.bos.ListReportsRequest
+	3, // 5: smartcore.bos.ReportApi.GetDownloadReportUrl:input_type -> smartcore.bos.GetDownloadReportUrlRequest
+	1, // 6: smartcore.bos.ReportApi.ListReports:output_type -> smartcore.bos.ListReportsResponse
+	4, // 7: smartcore.bos.ReportApi.GetDownloadReportUrl:output_type -> smartcore.bos.DownloadReportUrl
+	6, // [6:8] is the sub-list for method output_type
+	4, // [4:6] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_report_proto_init() }
@@ -504,7 +456,7 @@ func file_report_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_report_proto_rawDesc), len(file_report_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
