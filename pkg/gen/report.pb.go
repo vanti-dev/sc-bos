@@ -174,7 +174,7 @@ type Report struct {
 	// The description of the report.
 	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	// The timestamp when the report was created.
-	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreateTime *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
 	// The media type of the report, e.g., "application/pdf", "text/csv".
 	MediaType     string `protobuf:"bytes,5,opt,name=media_type,json=mediaType,proto3" json:"media_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -232,9 +232,9 @@ func (x *Report) GetDescription() string {
 	return ""
 }
 
-func (x *Report) GetCreatedAt() *timestamppb.Timestamp {
+func (x *Report) GetCreateTime() *timestamppb.Timestamp {
 	if x != nil {
-		return x.CreatedAt
+		return x.CreateTime
 	}
 	return nil
 }
@@ -385,13 +385,13 @@ const file_report_proto_rawDesc = "" +
 	"\areports\x18\x01 \x03(\v2\x15.smartcore.bos.ReportR\areports\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1d\n" +
 	"\n" +
-	"total_size\x18\x03 \x01(\x05R\ttotalSize\"\xaa\x01\n" +
+	"total_size\x18\x03 \x01(\x05R\ttotalSize\"\xac\x01\n" +
 	"\x06Report\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x129\n" +
-	"\n" +
-	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1d\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12;\n" +
+	"\vcreate_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"createTime\x12\x1d\n" +
 	"\n" +
 	"media_type\x18\x05 \x01(\tR\tmediaType\"A\n" +
 	"\x1bGetDownloadReportUrlRequest\x12\x12\n" +
@@ -432,7 +432,7 @@ var file_report_proto_goTypes = []any{
 var file_report_proto_depIdxs = []int32{
 	5, // 0: smartcore.bos.ListReportsRequest.read_mask:type_name -> google.protobuf.FieldMask
 	2, // 1: smartcore.bos.ListReportsResponse.reports:type_name -> smartcore.bos.Report
-	6, // 2: smartcore.bos.Report.created_at:type_name -> google.protobuf.Timestamp
+	6, // 2: smartcore.bos.Report.create_time:type_name -> google.protobuf.Timestamp
 	6, // 3: smartcore.bos.DownloadReportUrl.expire_after_time:type_name -> google.protobuf.Timestamp
 	0, // 4: smartcore.bos.ReportApi.ListReports:input_type -> smartcore.bos.ListReportsRequest
 	3, // 5: smartcore.bos.ReportApi.GetDownloadReportUrl:input_type -> smartcore.bos.GetDownloadReportUrlRequest

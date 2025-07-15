@@ -631,7 +631,7 @@ proto.smartcore.bos.Report.toObject = function(includeInstance, msg) {
 id: jspb.Message.getFieldWithDefault(msg, 1, ""),
 title: jspb.Message.getFieldWithDefault(msg, 2, ""),
 description: jspb.Message.getFieldWithDefault(msg, 3, ""),
-createdAt: (f = msg.getCreatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+createTime: (f = msg.getCreateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
 mediaType: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
@@ -684,7 +684,7 @@ proto.smartcore.bos.Report.deserializeBinaryFromReader = function(msg, reader) {
     case 4:
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
-      msg.setCreatedAt(value);
+      msg.setCreateTime(value);
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
@@ -740,7 +740,7 @@ proto.smartcore.bos.Report.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getCreatedAt();
+  f = message.getCreateTime();
   if (f != null) {
     writer.writeMessage(
       4,
@@ -813,10 +813,10 @@ proto.smartcore.bos.Report.prototype.setDescription = function(value) {
 
 
 /**
- * optional google.protobuf.Timestamp created_at = 4;
+ * optional google.protobuf.Timestamp create_time = 4;
  * @return {?proto.google.protobuf.Timestamp}
  */
-proto.smartcore.bos.Report.prototype.getCreatedAt = function() {
+proto.smartcore.bos.Report.prototype.getCreateTime = function() {
   return /** @type{?proto.google.protobuf.Timestamp} */ (
     jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 4));
 };
@@ -826,7 +826,7 @@ proto.smartcore.bos.Report.prototype.getCreatedAt = function() {
  * @param {?proto.google.protobuf.Timestamp|undefined} value
  * @return {!proto.smartcore.bos.Report} returns this
 */
-proto.smartcore.bos.Report.prototype.setCreatedAt = function(value) {
+proto.smartcore.bos.Report.prototype.setCreateTime = function(value) {
   return jspb.Message.setWrapperField(this, 4, value);
 };
 
@@ -835,8 +835,8 @@ proto.smartcore.bos.Report.prototype.setCreatedAt = function(value) {
  * Clears the message field making it undefined.
  * @return {!proto.smartcore.bos.Report} returns this
  */
-proto.smartcore.bos.Report.prototype.clearCreatedAt = function() {
-  return this.setCreatedAt(undefined);
+proto.smartcore.bos.Report.prototype.clearCreateTime = function() {
+  return this.setCreateTime(undefined);
 };
 
 
@@ -844,7 +844,7 @@ proto.smartcore.bos.Report.prototype.clearCreatedAt = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.smartcore.bos.Report.prototype.hasCreatedAt = function() {
+proto.smartcore.bos.Report.prototype.hasCreateTime = function() {
   return jspb.Message.getField(this, 4) != null;
 };
 

@@ -53,7 +53,7 @@ message Report {
   string description = 3;
 
   // The timestamp when the report was created.
-  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp create_time = 4;
 
   // The media type of the report, e.g., "application/pdf", "text/csv".
   string media_type = 5;

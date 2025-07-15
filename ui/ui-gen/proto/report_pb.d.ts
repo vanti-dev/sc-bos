@@ -74,10 +74,10 @@ export class Report extends jspb.Message {
   getDescription(): string;
   setDescription(value: string): Report;
 
-  getCreatedAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setCreatedAt(value?: google_protobuf_timestamp_pb.Timestamp): Report;
-  hasCreatedAt(): boolean;
-  clearCreatedAt(): Report;
+  getCreateTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setCreateTime(value?: google_protobuf_timestamp_pb.Timestamp): Report;
+  hasCreateTime(): boolean;
+  clearCreateTime(): Report;
 
   getMediaType(): string;
   setMediaType(value: string): Report;
@@ -95,7 +95,7 @@ export namespace Report {
     id: string,
     title: string,
     description: string,
-    createdAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     mediaType: string,
   }
 }
