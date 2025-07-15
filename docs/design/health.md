@@ -282,3 +282,4 @@ The storage need only be for seed during boot.
 - [ ] Manual issue API
 - [ ] HealthCheck conformance impact
 - [ ] Backwards compatibility considerations
+- [ ] Run health check API
