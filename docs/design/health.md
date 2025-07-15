@@ -133,7 +133,7 @@ aggregate health for zones.
 
 7. It would be nice to see if a device issue is caused by a parent device.
    Our access to devices is often dependent on our access to head ends or gateways,
-   distinguishing between a device being offline because the head end is offline, 
+   distinguishing between a device being offline because the head end is offline,
    or because the device itself is offline would be useful.
    Being able to collapse these alerts to avoid noise would be a good UX.
 
@@ -203,3 +203,82 @@ A health report could have a parent health report.
 This would imply that health reports are associated with devices, not owned by devices:
 it is no longer _device has health report_, but more _health report for device_.
 
+## Proposed solution
+
+I propose that health becomes a first class node concept is SC BOS, just like metadata is.
+I'd like to delete (or deprecate) the status trait and the alerts API,
+and replace them with a new health trait and a new `health_checks` field on DevicesApi.Device.
+
+I propose health should always be associated with a device (or name), we should remove the concept of an alert db.
+We can still maintain historical records for health checks, but these will follow the standard history pattern.
+Listing all issues on site (the current notifications page in the Ops UI) would be replaced with a DevicesApi query
+for devices that aren't healthy.
+Filtering for life safety issues would follow standard DevicesApi filtering, i.e.
+`healthChecks.occupant_impact = LIFE_SAFETY`.
+
+The health trait will model health in a more structured way, see [health.proto](../../proto/health.proto).
+The core concepts are:
+
+- Separation of "did it answer" from "is it healthy".
+- The introduction of _impact_ to model what the consequence of bad health is for each check
+    - We model equipment impact, occupant impact, and conformance impact (todo).
+    - There's room for more impacts in the future.
+    - This replaces severity with something (hopefully) more directly applicable to the use cases.
+- Acknowledgement is now associated with a health check transition, not a health report.
+    - We support both user and native acks, i.e. UI buttons and physical reset buttons
+    - Associating the ack with the transition instead of the state means we can maintain the lack of an ack for an
+      unhealthy state even if the device is healthy now.
+- Checks can report what they are checking for: value outside range, etc.
+    - If we store health checks over time, we should be able to chart the measured value against these bounds.
+- The cause (and affects) of bad health are modelled.
+    - This allows a device to know if there's an upstream device affecting it, and potentially link to it.
+    - This allows for querying for only upstream issues, removing duplicates.
+
+For manual issue reports, I propose we add a new API for this concept.
+The new API should allow management of user-reported issues: creation, update, accountability, etc.
+I think we should create a health check that looks for user reported issues associated with the device and marks the
+check as abnormal if any exist.
+This will allow us to expand the model for user reported issues to cover more workflow options, including CAFM systems.
+This will also allow us to show next to a device, or in our issues list, user reported issues for devices.
+This approach will make showing all issues on site harder, not sure if this is a problem or not.
+
+### Questions
+
+We may want to mint some well known check ids for common checks: `ping`, `user-reported`, etc.
+I'm not sure if these should be IDs or another concept in the check like `category`.
+
+Do we need to show the list of user reported issues intermingled with device health in a single list?
+User reported issues may not be associated with a device/name, though we could add them to a node or building zone.
+Should we auto expand issues in our _issues list_ view for this kind of thing?
+
+Should we split checks and results?
+This is a normalisation problem.
+Splitting them has the potential to reduce the payload size for history records, which might be significant.
+Splitting them may make clients (and servers) more complicated as the list of checks, and check details may not be
+fixed.
+We might be able to push this optimisation into the history feature.
+
+### Implementation notes
+
+We will likely need to add new conditions or rework how the DevicesApi filters work to support additional data types
+and query types.
+At minimum, we will want to be able to filter by absent acks, timestamps ranges, and enum values.
+
+We may need to adjust how the gateway system collates data from cohort nodes.
+It will need to merge and serve health checks as well as the existing metadata data.
+
+We will need new APIs associated with the `node` package to support adding checks and results for a name.
+
+Health checks will need to persisted to disk in most (all?) cases.
+Acknowledgements will need to be maintained across restarts.
+Health status will need to be maintained across restarts in order to correctly model state transition for
+acknowledgement.
+The storage need only be for seed during boot.
+
+## Todo
+
+- [x] Health trait
+- [ ] DevicesApi changes
+- [ ] Manual issue API
+- [ ] HealthCheck conformance impact
+- [ ] Backwards compatibility considerations
