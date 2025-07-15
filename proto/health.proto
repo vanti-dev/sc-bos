@@ -316,10 +316,6 @@ message HealthCheck {
   Ack to_abnormal_ack = 23;
 }
 
-message HealthCheckSummary {
-  // todo: fields that summarise the health for the device.
-}
-
 message ListHealthChecksRequest {
   // The device to get the health checks for.
   string name = 1;
