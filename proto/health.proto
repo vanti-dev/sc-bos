@@ -31,8 +31,18 @@ import "types/change.proto";
 // Health changes that require acknowledgement but have not been acknowledged still require attention from operators.
 // The ack_required field says which health state transitions require acknowledgement.
 service HealthApi {
+  // List health checks for a named device.
   rpc ListHealthChecks(ListHealthChecksRequest) returns (ListHealthChecksResponse);
+  // Pull changes to health checks for a named device.
   rpc PullHealthChecks(PullHealthChecksRequest) returns (stream PullHealthChecksResponse);
+
+  // Get a specific health check for a named device.
+  rpc GetHealthCheck(GetHealthCheckRequest) returns (HealthCheck);
+  // Pull changes to a specific health check for a named device.
+  rpc PullHealthCheck(PullHealthCheckRequest) returns (stream PullHealthCheckResponse);
+
+  // todo: RunHealthCheck(s), and other long running operation management RPCs
+  // todo: CreateHealthCheck, and other CRUD RPCs
 }
 
 // HealthCheck represents the results of a check against the health of a device.
@@ -355,13 +365,50 @@ message PullHealthChecksResponse {
   repeated HealthCheck changes = 1;
 
   message Change {
+    // The name of the device the health check belongs to.
+    string name = 1;
     // The type of change (e.g. ADD, UPDATE, etc...)
-    smartcore.types.ChangeType type = 1;
-    // When the change occurred
-    google.protobuf.Timestamp change_time = 2;
+    smartcore.types.ChangeType type = 2;
     // The new value to use for ADD|UPDATE changes
     HealthCheck new_value = 3;
     // The old value to use for UPDATE|REMOVE changes
     HealthCheck old_value = 4;
+    // When the change occurred
+    google.protobuf.Timestamp change_time = 5;
+  }
+}
+
+message GetHealthCheckRequest {
+  // The device to get the health check for.
+  string name = 1;
+  // The id of the health check to get.
+  string id = 2;
+  // A field mask to select which fields to return.
+  google.protobuf.FieldMask read_mask = 3;
+}
+
+message PullHealthCheckRequest {
+  // The device to get the health check for.
+  string name = 1;
+  // The id of the health check to get.
+  string id = 2;
+  // A field mask to select which fields to return.
+  google.protobuf.FieldMask read_mask = 3;
+  // When true the device will only send changes to the health check.
+  // The default behaviour is to send the current health check immediately followed by any updates as they happen.
+  bool updates_only = 4;
+}
+
+message PullHealthCheckResponse {
+  // The health check for the device.
+  HealthCheck health_check = 1;
+
+  message Change {
+    // The name of the device the health check belongs to.
+    string name = 1;
+    // The new health check value.
+    HealthCheck health_check = 3;
+    // When the change occurred
+    google.protobuf.Timestamp change_time = 2;
   }
 }
