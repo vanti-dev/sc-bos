@@ -6,7 +6,6 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/field_mask.proto";
-import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 import "actor.proto";
 import "types/change.proto";
