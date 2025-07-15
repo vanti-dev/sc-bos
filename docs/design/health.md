@@ -5,7 +5,7 @@ it is functioning correctly or not.
 
 ## What we have now
 
-There are four health concepts in Smart Core right now:
+There are five health concepts in Smart Core right now:
 
 1. [Status trait](#status-trait)
 2. [Alerts API](#alerts-api)
