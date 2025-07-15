@@ -11,7 +11,7 @@ import "google/protobuf/timestamp.proto";
 import "actor.proto";
 import "types/change.proto";
 
-// The HealthApi provides access to health information for devices and systems.
+// The HealthApi provides access to health information for devices.
 //
 // Health is the result of one of more checks performed against a device.
 // Each check measures a value of the device and compares it against a known good value or range.
@@ -20,16 +20,17 @@ import "types/change.proto";
 //
 // When performing a check, the reliability of the check is also recorded.
 // Reliability is a measure of how confident we are in the results of the check,
-// and generally map to our ability to communicate with the device.
-// Poor reliability may be caused by intermediate systems, like a headend or the network,
-// this information is modelled in the reliability cause.
+// and generally map to the ability to communicate with the device.
+//
+// Another device may have an effect on the reliability of this device, like a gateway or the network,
+// see the Reliability.cause field.
 // An absent cause implies the device is responsible for its own reliability issues.
+// Similarly, poor reliability of a device may affect the reliability of other devices,
+// see the Reliability.affects field.
 //
 // Each check can specify that it should be acknowledged when it changes state.
-// Acknowledgements are used to track whether a change in health state has been investigated or not.
-// Comparing the ack_required field with the corresponding to_state_ack fields allows us to determine whether the change
-// has been acknowledged or not.
 // Health changes that require acknowledgement but have not been acknowledged still require attention from operators.
+// The ack_required field says which health state transitions require acknowledgement.
 service HealthApi {
   rpc ListHealthChecks(ListHealthChecksRequest) returns (ListHealthChecksResponse);
   rpc PullHealthChecks(PullHealthChecksRequest) returns (stream PullHealthChecksResponse);
@@ -139,7 +140,33 @@ message HealthCheck {
     // An error message relating to the non-OK status.
     Error last_error = 4;
 
-    // todo: ReliabilityCause to model when a headend (or transport) system is causing our issues.
+    // Cause describes the underlying cause of the reliability issue.
+    // It is recommended that display_name is set to allow operators to identify where the issue is coming from.
+    // Providing a name allows navigation and additional details for the cause to be presented to the operator.
+    message Cause {
+      // The device name of the cause of the reliability issue.
+      // Reliability details for the cause can be found in the HealthCheck for that device.
+      string name = 1;
+      // An error that describes the cause of the reliability issue.
+      Error error = 2;
+      // A human readable name for the entity that is the cause of the reliability issue.
+      string display_name = 3;
+    }
+    // The underlying cause of the reliability issue, when not owned by this device.
+    // Cause should be set when another device or system has an impact on the reliability of this device.
+    Cause cause = 5;
+
+    // Affects represents the impact this device has on the reliability of other devices.
+    // An empty Affects denotes that this device affects other devices, but no other information is available.
+    message Affects {
+      // A count of how many devices are affected by this devices reliability issue.
+      // A zero value indicates the number of affected devices is unknown.
+      int32 count = 1;
+    }
+    // The devices that are affected by the reliability issue of this device.
+    // Affects should be set when this device has an impact on the reliability of other devices,
+    // even if information about the affected devices is not available.
+    Affects affects = 6;
   }
 
   // A measure of how reliable the measured health is.
