@@ -21,6 +21,9 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	AccessApi_GetLastAccessAttempt_FullMethodName = "/smartcore.bos.AccessApi/GetLastAccessAttempt"
 	AccessApi_PullAccessAttempts_FullMethodName   = "/smartcore.bos.AccessApi/PullAccessAttempts"
+	AccessApi_CreateAccessGrant_FullMethodName    = "/smartcore.bos.AccessApi/CreateAccessGrant"
+	AccessApi_UpdateAccessGrant_FullMethodName    = "/smartcore.bos.AccessApi/UpdateAccessGrant"
+	AccessApi_DeleteAccessGrant_FullMethodName    = "/smartcore.bos.AccessApi/DeleteAccessGrant"
 )
 
 // AccessApiClient is the client API for AccessApi service.
@@ -32,6 +35,9 @@ const (
 type AccessApiClient interface {
 	GetLastAccessAttempt(ctx context.Context, in *GetLastAccessAttemptRequest, opts ...grpc.CallOption) (*AccessAttempt, error)
 	PullAccessAttempts(ctx context.Context, in *PullAccessAttemptsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullAccessAttemptsResponse], error)
+	CreateAccessGrant(ctx context.Context, in *CreateAccessGrantRequest, opts ...grpc.CallOption) (*AccessGrant, error)
+	UpdateAccessGrant(ctx context.Context, in *UpdateAccessGrantRequest, opts ...grpc.CallOption) (*AccessGrant, error)
+	DeleteAccessGrant(ctx context.Context, in *DeleteAccessGrantRequest, opts ...grpc.CallOption) (*DeleteAccessGrantResponse, error)
 }
 
 type accessApiClient struct {
@@ -71,6 +77,36 @@ func (c *accessApiClient) PullAccessAttempts(ctx context.Context, in *PullAccess
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AccessApi_PullAccessAttemptsClient = grpc.ServerStreamingClient[PullAccessAttemptsResponse]
 
+func (c *accessApiClient) CreateAccessGrant(ctx context.Context, in *CreateAccessGrantRequest, opts ...grpc.CallOption) (*AccessGrant, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AccessGrant)
+	err := c.cc.Invoke(ctx, AccessApi_CreateAccessGrant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accessApiClient) UpdateAccessGrant(ctx context.Context, in *UpdateAccessGrantRequest, opts ...grpc.CallOption) (*AccessGrant, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AccessGrant)
+	err := c.cc.Invoke(ctx, AccessApi_UpdateAccessGrant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accessApiClient) DeleteAccessGrant(ctx context.Context, in *DeleteAccessGrantRequest, opts ...grpc.CallOption) (*DeleteAccessGrantResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteAccessGrantResponse)
+	err := c.cc.Invoke(ctx, AccessApi_DeleteAccessGrant_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccessApiServer is the server API for AccessApi service.
 // All implementations must embed UnimplementedAccessApiServer
 // for forward compatibility.
@@ -80,6 +116,9 @@ type AccessApi_PullAccessAttemptsClient = grpc.ServerStreamingClient[PullAccessA
 type AccessApiServer interface {
 	GetLastAccessAttempt(context.Context, *GetLastAccessAttemptRequest) (*AccessAttempt, error)
 	PullAccessAttempts(*PullAccessAttemptsRequest, grpc.ServerStreamingServer[PullAccessAttemptsResponse]) error
+	CreateAccessGrant(context.Context, *CreateAccessGrantRequest) (*AccessGrant, error)
+	UpdateAccessGrant(context.Context, *UpdateAccessGrantRequest) (*AccessGrant, error)
+	DeleteAccessGrant(context.Context, *DeleteAccessGrantRequest) (*DeleteAccessGrantResponse, error)
 	mustEmbedUnimplementedAccessApiServer()
 }
 
@@ -95,6 +134,15 @@ func (UnimplementedAccessApiServer) GetLastAccessAttempt(context.Context, *GetLa
 }
 func (UnimplementedAccessApiServer) PullAccessAttempts(*PullAccessAttemptsRequest, grpc.ServerStreamingServer[PullAccessAttemptsResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method PullAccessAttempts not implemented")
+}
+func (UnimplementedAccessApiServer) CreateAccessGrant(context.Context, *CreateAccessGrantRequest) (*AccessGrant, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAccessGrant not implemented")
+}
+func (UnimplementedAccessApiServer) UpdateAccessGrant(context.Context, *UpdateAccessGrantRequest) (*AccessGrant, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAccessGrant not implemented")
+}
+func (UnimplementedAccessApiServer) DeleteAccessGrant(context.Context, *DeleteAccessGrantRequest) (*DeleteAccessGrantResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteAccessGrant not implemented")
 }
 func (UnimplementedAccessApiServer) mustEmbedUnimplementedAccessApiServer() {}
 func (UnimplementedAccessApiServer) testEmbeddedByValue()                   {}
@@ -146,6 +194,60 @@ func _AccessApi_PullAccessAttempts_Handler(srv interface{}, stream grpc.ServerSt
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type AccessApi_PullAccessAttemptsServer = grpc.ServerStreamingServer[PullAccessAttemptsResponse]
 
+func _AccessApi_CreateAccessGrant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAccessGrantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccessApiServer).CreateAccessGrant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccessApi_CreateAccessGrant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccessApiServer).CreateAccessGrant(ctx, req.(*CreateAccessGrantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccessApi_UpdateAccessGrant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAccessGrantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccessApiServer).UpdateAccessGrant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccessApi_UpdateAccessGrant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccessApiServer).UpdateAccessGrant(ctx, req.(*UpdateAccessGrantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AccessApi_DeleteAccessGrant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAccessGrantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccessApiServer).DeleteAccessGrant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccessApi_DeleteAccessGrant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccessApiServer).DeleteAccessGrant(ctx, req.(*DeleteAccessGrantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccessApi_ServiceDesc is the grpc.ServiceDesc for AccessApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -156,6 +258,18 @@ var AccessApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLastAccessAttempt",
 			Handler:    _AccessApi_GetLastAccessAttempt_Handler,
+		},
+		{
+			MethodName: "CreateAccessGrant",
+			Handler:    _AccessApi_CreateAccessGrant_Handler,
+		},
+		{
+			MethodName: "UpdateAccessGrant",
+			Handler:    _AccessApi_UpdateAccessGrant_Handler,
+		},
+		{
+			MethodName: "DeleteAccessGrant",
+			Handler:    _AccessApi_DeleteAccessGrant_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
