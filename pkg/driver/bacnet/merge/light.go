@@ -85,7 +85,7 @@ func newLight(client *gobacnet.Client, devices known.Context, statuses *statuspb
 }
 
 func (l *light) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(l.config.Name, node.HasTrait(trait.Light, node.WithClients(lightpb.WrapApi(l))))
+	return a.Announce(l.config.Name, node.HasTrait(trait.Light, node.WithClients(lightpb.WrapApi(l), lightpb.WrapInfo(l))))
 }
 
 func (l *light) UpdateBrightness(ctx context.Context, request *traits.UpdateBrightnessRequest) (*traits.Brightness, error) {
@@ -145,7 +145,7 @@ func (l *light) startPoll(init context.Context) (stop task.StopFn, err error) {
 }
 
 func (l *light) pollPeer(ctx context.Context) (*traits.Brightness, error) {
-	data := &traits.Brightness{}
+	data := &traits.Brightness{Preset: &traits.LightPreset{}}
 	var resProcessors []func(response any) error
 	var readValues []config.ValueSource
 	var requestNames []string
@@ -154,15 +154,16 @@ func (l *light) pollPeer(ctx context.Context) (*traits.Brightness, error) {
 		requestNames = append(requestNames, "light")
 		readValues = append(readValues, *l.config.Point)
 		resProcessors = append(resProcessors, func(response any) error {
-			value, err := comm.Float64Value(response)
+			value, err := comm.Float32Value(response)
 			if err != nil {
 				return comm.ErrReadProperty{Prop: "light", Cause: err}
 			}
 
-			scene, err := l.findSceneByValue(int(value))
+			scene, err := l.findSceneByValue(value)
 
 			if err != nil {
-				return err
+				l.logger.Error("failed to find scene by value", zap.Error(err), zap.Float32("value", value))
+				return nil
 			}
 
 			data.Preset.Name = scene.Name
@@ -189,9 +190,20 @@ func (l *light) pollPeer(ctx context.Context) (*traits.Brightness, error) {
 	return l.model.UpdateBrightness(data)
 }
 
-func (l *light) findSceneByValue(sceneCmd int) (*sceneCfg, error) {
+func (l *light) findSceneByValue(sceneCmd float32) (*sceneCfg, error) {
+	if sceneCmd >= 0 && sceneCmd <= 100 {
+		// If the sceneCmd is a percentage, find the scene with that brightness
+		for idx := 0; idx < len(l.config.Scenes)-1; idx++ {
+			if l.config.Scenes[idx].Brightness >= sceneCmd && l.config.Scenes[idx+1].Brightness <= sceneCmd {
+				return &l.config.Scenes[idx+1], nil
+			}
+		}
+
+		return nil, errSceneNotFound
+	}
+
 	for _, scene := range l.config.Scenes {
-		if scene.SetValue == sceneCmd {
+		if scene.SetValue == int(sceneCmd) {
 			return &scene, nil
 		}
 	}
