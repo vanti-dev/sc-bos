@@ -136,6 +136,14 @@ func (t *Transport) handleTransportEvent(node *ua.NodeID, value any) {
 			}
 		}
 	}
+	if t.cfg.Speed != nil && NodeIdsAreEqual(t.cfg.Speed.NodeId, node) {
+		speed, err := conv.Float32Value(value)
+		if err != nil {
+			t.logger.Error("failed to convert Speed event", zap.Error(err))
+			return
+		}
+		old.Speed = &speed
+	}
 	_, _ = t.transport.Set(old)
 }
 

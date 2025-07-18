@@ -114,8 +114,9 @@ type TransportConfig struct {
 	// If the OPC UA server has more than one point which tells us about the next destinations,
 	// this array should be ordered so that it matches the order of the physical transport stops.
 	// i.e [0] = first stop, [1] = second stop, etc.
-	NextDestinations []*Location `json:"nextDestinations,omitempty"`
-	SpeedUnit        string      `json:"speedUnit,omitempty"`
+	NextDestinations []*Location  `json:"nextDestinations,omitempty"`
+	Speed            *ValueSource `json:"speed,omitempty"`
+	SpeedUnit        string       `json:"speedUnit,omitempty"`
 }
 
 type ElectricConfig struct {
