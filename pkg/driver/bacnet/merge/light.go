@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"slices"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -44,6 +45,14 @@ type sceneCfg struct {
 
 func readLightConfig(raw []byte) (cfg lightCfg, err error) {
 	err = json.Unmarshal(raw, &cfg)
+
+	slices.SortFunc(cfg.Scenes, func(a, b sceneCfg) int {
+		if a.Brightness < b.Brightness {
+			return -1
+		}
+		return 1
+	})
+
 	return
 }
 
