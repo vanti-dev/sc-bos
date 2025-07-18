@@ -106,14 +106,14 @@ func (o *occupancy) pollPeer(ctx context.Context) (*traits.Occupancy, error) {
 		requestNames = append(requestNames, "occupancy")
 		readValues = append(readValues, *o.config.OccupancyStatus)
 		resProcessors = append(resProcessors, func(response any) error {
-			value, err := comm.BoolValue(response)
+			value, err := comm.IntValue(response)
 			if err != nil {
 				return comm.ErrReadProperty{Prop: "occupancy", Cause: err}
 			}
 
 			data.State = traits.Occupancy_UNOCCUPIED
 
-			if value {
+			if value != 0 {
 				data.State = traits.Occupancy_OCCUPIED
 			}
 
