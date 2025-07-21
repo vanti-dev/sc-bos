@@ -1,6 +1,7 @@
 import SidebarPage from '@/components/pages/SidebarPage.vue';
 import notifications from '@/routes/ops/notifications/route.js';
 import overview from '@/routes/ops/overview/route.js';
+import reports from '@/routes/ops/reports/route.js';
 import securityEvents from '@/routes/ops/security-events/route.js';
 import waste from '@/routes/ops/waste/route.js';
 
@@ -48,6 +49,7 @@ export default {
       }
     },
     ...route(notifications),
+    ...route(reports),
     ...route(securityEvents),
     ...route(waste),
   ],
