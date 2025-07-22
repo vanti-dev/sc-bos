@@ -10,10 +10,10 @@ import {GetDownloadReportUrlRequest, ListReportsRequest} from '@vanti-dev/sc-bos
  * @return {Promise<DownloadReportUrl.AsObject>}
  */
 export function getDownloadReportUrl(request, tracker) {
-	return trackAction('Reports.getDownloadReportUrl', tracker ?? {}, endpoint => {
-		const api = apiClient(endpoint);
-		return api.getDownloadReportUrl(getDownloadReportUrlRequestFromObject(request));
-	});
+  return trackAction('Reports.getDownloadReportUrl', tracker ?? {}, endpoint => {
+    const api = apiClient(endpoint);
+    return api.getDownloadReportUrl(getDownloadReportUrlRequestFromObject(request));
+  });
 }
 
 /**
@@ -21,7 +21,7 @@ export function getDownloadReportUrl(request, tracker) {
  * @return {ReportApiPromiseClient}
  */
 function apiClient(endpoint) {
-	return new ReportApiPromiseClient(endpoint, null, clientOptions());
+  return new ReportApiPromiseClient(endpoint, null, clientOptions());
 }
 
 /**
@@ -29,10 +29,10 @@ function apiClient(endpoint) {
  * @return {GetDownloadReportUrlRequest|undefined}
  */
 function getDownloadReportUrlRequestFromObject(obj) {
-	if (!obj) return undefined;
-	const dst = new GetDownloadReportUrlRequest();
-	setProperties(dst, obj, 'name', 'id');
-	return dst;
+  if (!obj) return undefined;
+  const dst = new GetDownloadReportUrlRequest();
+  setProperties(dst, obj, 'name', 'id');
+  return dst;
 }
 
 /**
@@ -42,10 +42,10 @@ function getDownloadReportUrlRequestFromObject(obj) {
  * @return {Promise<ListReportsResponse.AsObject>}
  */
 export function listReports(request, tracker) {
-	return trackAction('Reports.listReports', tracker ?? {}, endpoint => {
-		const api = apiClient(endpoint);
-		return api.listReports(listReportsRequestFromObject(request));
-	});
+  return trackAction('Reports.listReports', tracker ?? {}, endpoint => {
+    const api = apiClient(endpoint);
+    return api.listReports(listReportsRequestFromObject(request));
+  });
 }
 
 /**
@@ -53,9 +53,9 @@ export function listReports(request, tracker) {
  * @return {ListReportsRequest|undefined}
  */
 function listReportsRequestFromObject(obj) {
-	if (!obj) return undefined;
-	const dst = new ListReportsRequest();
-	setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
-	dst.setReadMask(fieldMaskFromObject(obj.readMask));
-	return dst;
+  if (!obj) return undefined;
+  const dst = new ListReportsRequest();
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  return dst;
 }
