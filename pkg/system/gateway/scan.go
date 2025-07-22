@@ -132,7 +132,7 @@ func (s *System) pullSystems(ctx context.Context, node *remoteNode) (task.Next, 
 			}
 			switch id {
 			case Name:
-				systems.proxy = c.GetNewValue()
+				systems.gateway = c.GetNewValue()
 			}
 		}
 

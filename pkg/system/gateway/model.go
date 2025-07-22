@@ -65,5 +65,5 @@ type remoteDesc struct {
 
 // remoteSystems describes relevant systems a remote node has.
 type remoteSystems struct {
-	proxy *gen.Service // a description of the proxy system
+	gateway *gen.Service // a description of the gateway system
 }

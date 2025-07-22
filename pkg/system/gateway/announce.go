@@ -85,22 +85,22 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 	self, selfChanges := a.node.Self.Sub(ctx)
 	undoSelf := a.announceName(self)
 
-	// Remote nodes that are a proxy will likely also be announcing all the same children and apis we will.
-	// To avoid circular routing we don't announce advertised children for remote nodes that are a proxy.
-	// To avoid extra dynamic proxying we also don't announce reflected services for remote nodes that are a proxy.
-	// As being a proxy is something that can change,
-	// we track and update our advertised children and services when the proxy status changes.
+	// Remote nodes that are gateways will likely also be announcing all the same children and apis we will.
+	// To avoid circular routing we don't announce advertised children for remote nodes that are gateways.
+	// To avoid extra dynamic proxying we also don't announce reflected services for remote nodes that are gateways.
+	// As being a gateway is something that can change,
+	// we track and update our advertised children and services when the gateway status changes.
 	systems, systemChanges := a.node.Systems.Sub(ctx)
-	isProxy := func() bool {
-		// we are intentionally ignoring the loading state of the proxy system,
-		// under the assumption that whether the remote proxy system has loaded or not it's
-		// still intending to be a proxy eventually.
-		return systems.proxy.GetActive()
+	isGateway := func() bool {
+		// we are intentionally ignoring the loading state of the gateway system,
+		// under the assumption that whether the remote gateway system has loaded or not it's
+		// still intending to be a gateway eventually.
+		return systems.gateway.GetActive()
 	}
-	wasProxy := isProxy()
+	wasGateway := isGateway()
 
-	// The services we proxy are dependent on whether the remote node is a proxy or not.
-	// These track and update our advertised services when the proxy status changes.
+	// The services we proxy are dependent on whether the remote node is a gateway or not.
+	// These track and update our advertised services when the gateway status changes.
 	var serviceChanges <-chan rx.Change[protoreflect.ServiceDescriptor]
 	var stopServiceSub context.CancelFunc
 	var undoServices tasks
@@ -121,8 +121,8 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 	}
 	defer closeServiceSub()
 
-	// The children we proxy are dependent on whether the remote node is a proxy or not.
-	// These track and update our advertised children when the proxy status changes.
+	// The children we proxy are dependent on whether the remote node is a gateway or not.
+	// These track and update our advertised children when the gateway status changes.
 	var childChanges <-chan rx.Change[remoteDesc]
 	var stopChildSub context.CancelFunc
 	var undoChildren tasks
@@ -143,8 +143,8 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 	}
 	defer closeChildSub()
 
-	// The types and services we return via reflection depends on whether the remote node is a proxy or not.
-	// These update the reflection server when the proxy status changes.
+	// The types and services we return via reflection depends on whether the remote node is a gateway or not.
+	// These update the reflection server when the gateway status changes.
 	setupReflection := func() {
 		a.reflection.Add(a.node.conn)
 	}
@@ -153,9 +153,9 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 	}
 	defer closeReflection()
 
-	// helper for switching between proxy and non-proxy mode
-	switchProxyMode := func(isProxy bool) {
-		if isProxy {
+	// helper for switching between gateway and non-gateway mode
+	switchGatewayMode := func(isGateway bool) {
+		if isGateway {
 			closeChildSub()
 			closeServiceSub()
 			closeReflection()
@@ -166,7 +166,7 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 		}
 	}
 
-	switchProxyMode(isProxy())
+	switchGatewayMode(isGateway())
 
 	for {
 		select {
@@ -190,10 +190,11 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 				undoServices[string(c.New.FullName())] = a.announceRemoteService(c.New)
 			}
 		case systems = <-systemChanges:
-			isProxy := isProxy()
-			if isProxy != wasProxy {
-				switchProxyMode(isProxy)
-				wasProxy = isProxy
+			isGateway := isGateway()
+			if isGateway != wasGateway {
+				a.logger.Debug("switching gateway mode", zap.Bool("isGateway", isGateway))
+				switchGatewayMode(isGateway)
+				wasGateway = isGateway
 			}
 		case c, ok := <-childChanges:
 			if !ok {

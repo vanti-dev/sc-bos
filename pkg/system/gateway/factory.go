@@ -28,7 +28,7 @@
 // Some examples of this kind of API are the services API, the history admin API, and the tenant API.
 //
 // Node APIs are handled generically using gRPC reflection to discover available APIs.
-// Any node API this node implements via non-proxy mechanisms will take precedence over the proxy, for example the DevicesApi.
+// Any node API this node implements via non-gateway mechanisms will take precedence over the gateway, for example the DevicesApi.
 //
 // # Cohorts with Multiple Gateways
 //
