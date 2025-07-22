@@ -44,16 +44,6 @@ export const navItems = [
     }
   },
   {
-    title: 'Reports',
-    icon: 'mdi-file-document-outline',
-    link: {path: '/ops/reports'},
-    badgeType: null,
-    enabled: () => {
-      const uiConfig = useUiConfigStore();
-      return uiConfig.pathEnabled('/ops/reports') && (uiConfig.config?.ops?.reports ?? true);
-    }
-  },
-  {
     title: 'Security',
     icon: 'mdi-shield-key',
     link: {path: '/ops/security'},
