@@ -65,5 +65,6 @@ type remoteDesc struct {
 
 // remoteSystems describes relevant systems a remote node has.
 type remoteSystems struct {
-	gateway *gen.Service // a description of the gateway system
+	msgRecvd bool         // true if we've heard from the remote node
+	gateway  *gen.Service // a description of the gateway system
 }

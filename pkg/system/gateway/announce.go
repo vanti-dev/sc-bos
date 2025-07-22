@@ -5,6 +5,7 @@ import (
 	"iter"
 	"strings"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
@@ -15,6 +16,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/servicepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/rx"
+	"github.com/vanti-dev/sc-bos/pkg/util/chans"
 	"github.com/vanti-dev/sc-bos/pkg/util/slices"
 )
 
@@ -43,6 +45,7 @@ func (s *System) announceCohort(ctx context.Context, c *cohort) {
 			logger: s.logger.With(
 				zap.String("remoteAddr", n.addr),
 				zap.Bool("isHub", n.isHub),
+				// the remote node's name can change over time, can't add as a logger field
 			),
 			node:      n,
 			Announcer: scope,
@@ -163,6 +166,23 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 			setupServiceSub()
 			setupReflection()
 		}
+	}
+
+	if !systems.msgRecvd {
+		// Announcing a node that hasn't, but will eventually, be classified as a gateway is expensive.
+		// Delay our announcement a little bit to allow us to do an initial classification of the node,
+		// at least until we have a response from the remote node.
+		sysCtx, stopSysCtx := context.WithTimeout(ctx, 5*time.Second)
+		// we don't actually mind what the response is,
+		// we're just waiting a little bit to give the node a chance to respond.
+		_, _ = chans.RecvContextFunc(sysCtx, systemChanges, func(c remoteSystems) error {
+			systems = c
+			if !c.msgRecvd {
+				return chans.ErrSkip
+			}
+			return nil
+		})
+		stopSysCtx()
 	}
 
 	switchGatewayMode(isGateway())
