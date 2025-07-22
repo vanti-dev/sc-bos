@@ -55,19 +55,19 @@ func (s *System) scanLocalHub(ctx context.Context, c *cohort, hubClient gen.HubA
 func (s *System) scanRemoteNode(ctx context.Context, nodeName string, n *remoteNode) {
 	go s.poll(ctx, func(ctx context.Context) error {
 		return s.reflectNode(ctx, n)
-	}, zap.String("task", "reflect"), zap.String("nodeName", nodeName), zap.String("node", n.addr))
+	}, zap.String("task", "reflect"), zap.String("remoteAddr", n.addr), zap.String("nodeName", nodeName))
 
 	go s.retry(ctx, "pull metadata", func(ctx context.Context) (task.Next, error) {
 		return s.pullMetadata(ctx, "", n)
-	}, zap.String("node", n.addr), zap.String("nodeName", nodeName))
+	}, zap.String("remoteAddr", n.addr), zap.String("nodeName", nodeName))
 
 	go s.retry(ctx, "pull systems", func(ctx context.Context) (task.Next, error) {
 		return s.pullSystems(ctx, n)
-	}, zap.String("node", n.addr), zap.String("nodeName", nodeName))
+	}, zap.String("remoteAddr", n.addr), zap.String("nodeName", nodeName))
 
 	go s.retry(ctx, "pull children", func(ctx context.Context) (task.Next, error) {
 		return s.pullChildren(ctx, "", n)
-	}, zap.String("node", n.addr), zap.String("nodeName", nodeName))
+	}, zap.String("remoteAddr", n.addr), zap.String("nodeName", nodeName))
 }
 
 // pullMetadata updates node with metadata about name.
