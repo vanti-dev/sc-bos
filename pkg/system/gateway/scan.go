@@ -125,6 +125,7 @@ func (s *System) pullSystems(ctx context.Context, node *remoteNode) (task.Next, 
 		}
 
 		oldSystems := systems
+		systems.msgRecvd = true
 		for _, c := range msg.Changes {
 			id := cmp.Or(c.GetNewValue().GetId(), c.GetOldValue().GetId())
 			if id == "" {
