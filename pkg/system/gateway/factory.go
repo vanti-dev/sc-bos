@@ -143,11 +143,11 @@ func (s *System) retry(ctx context.Context, name string, t task.Task, logFields 
 
 		switch {
 		case attempt == 1:
-			logger.Warn("failed to run task, will retry", zap.Error(err), zap.Int("attempt", attempt))
+			logger.Warn("task failed, will retry", zap.Error(err), zap.Int("attempt", attempt))
 		case attempt == 5:
-			logger.Warn("failed to run task, reducing logging", zap.Error(err), zap.Int("attempt", attempt))
+			logger.Warn("task failed, reducing logging", zap.Error(err), zap.Int("attempt", attempt))
 		case attempt%10 == 0:
-			logger.Debug("failed to run task", zap.Error(err), zap.Int("attempt", attempt))
+			logger.Debug("task failed", zap.Error(err), zap.Int("attempt", attempt))
 		}
 
 		return next, err
@@ -178,11 +178,11 @@ func (s *System) poll(ctx context.Context, t func(context.Context) error, logFie
 			attempt := state.ErrorsSinceSuccess
 			switch {
 			case attempt == 1:
-				logger.Warn("failed to run poll task, will retry", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
+				logger.Warn("poll failed, will retry", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
 			case attempt == 5:
-				logger.Warn("failed to run poll task, reducing logging", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
+				logger.Warn("poll failed, reducing logging", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
 			case attempt%10 == 0:
-				logger.Debug("failed to run poll task", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
+				logger.Debug("poll failed", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
 			}
 
 			return false
