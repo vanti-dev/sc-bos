@@ -164,11 +164,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := a.Logger
 	logger = logger.With(zap.String("snmp.addr", cfg.Destination.Addr()))
 
-	var alertClient gen.AlertApiClient
-	if err := a.Node.Client(&alertClient); err != nil {
-		a.Logger.Warn("failed to create gen.AlertApiClient", zap.Error(err))
-		return err
-	}
+	alertClient := gen.NewAlertApiClient(a.Node.ClientConn())
 
 	sendTime := cfg.Destination.SendTime
 	now := cfg.Now

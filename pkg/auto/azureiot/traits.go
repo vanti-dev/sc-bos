@@ -95,8 +95,7 @@ func (a *Auto) pullTraits(ctx context.Context, dst chan<- proto.Message, device 
 // pullAirQuality publishes device's air quality changes (as *traits.PullAirQualityResponse) to dst,
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullAirQuality(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
-	var client traits.AirQualitySensorApiClient
-	err := grpcClient(a, &client, traits.NewAirQualitySensorApiClient, device)
+	client, err := grpcClient(a, traits.NewAirQualitySensorApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -130,8 +129,7 @@ func (a *Auto) pullAirQuality(ctx context.Context, dst chan<- proto.Message, dev
 // pullAirTemperature publishes device's air temperature changes (as *traits.PullAirTemperatureResponse) to dst,
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullAirTemperature(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
-	var client traits.AirTemperatureApiClient
-	err := grpcClient(a, &client, traits.NewAirTemperatureApiClient, device)
+	client, err := grpcClient(a, traits.NewAirTemperatureApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -165,8 +163,7 @@ func (a *Auto) pullAirTemperature(ctx context.Context, dst chan<- proto.Message,
 // pullAmbientBrightness publishes device's ambient brightness changes (as *traits.PullAmbientBrightnessResponse) to dst,
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullAmbientBrightness(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
-	var client traits.BrightnessSensorApiClient
-	err := grpcClient(a, &client, traits.NewBrightnessSensorApiClient, device)
+	client, err := grpcClient(a, traits.NewBrightnessSensorApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -200,8 +197,7 @@ func (a *Auto) pullAmbientBrightness(ctx context.Context, dst chan<- proto.Messa
 // pullBrightness publishes device's brightness changes (as *traits.PullBrightnessResponse) to dst,
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullBrightness(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
-	var client traits.LightApiClient
-	err := grpcClient(a, &client, traits.NewLightApiClient, device)
+	client, err := grpcClient(a, traits.NewLightApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -235,8 +231,7 @@ func (a *Auto) pullBrightness(ctx context.Context, dst chan<- proto.Message, dev
 // pullMeterReadings publishes device's meter readings changes (as *gen.PullMeterReadingsResponse) to dst,
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullMeterReadings(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
-	var client gen.MeterApiClient
-	err := grpcClient(a, &client, gen.NewMeterApiClient, device)
+	client, err := grpcClient(a, gen.NewMeterApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -270,8 +265,7 @@ func (a *Auto) pullMeterReadings(ctx context.Context, dst chan<- proto.Message, 
 // pullOccupancy publishes device's occupancy changes (as *traits.PullOccupancyResponse) to dst,
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullOccupancy(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
-	var client traits.OccupancySensorApiClient
-	err := grpcClient(a, &client, traits.NewOccupancySensorApiClient, device)
+	client, err := grpcClient(a, traits.NewOccupancySensorApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -305,8 +299,7 @@ func (a *Auto) pullOccupancy(ctx context.Context, dst chan<- proto.Message, devi
 // pullEnterLeave publishes device's EnterLeave changes (as *traits.PullEnterLeaveEventsResponse) to dst,
 // returning when ctx is done or a non-recoverable error occurs.
 func (a *Auto) pullEnterLeave(ctx context.Context, dst chan<- proto.Message, device SCDeviceConfig) error {
-	var client traits.EnterLeaveSensorApiClient
-	err := grpcClient(a, &client, traits.NewEnterLeaveSensorApiClient, device)
+	client, err := grpcClient(a, traits.NewEnterLeaveSensorApiClient, device)
 	if err != nil {
 		return err
 	}
@@ -337,30 +330,29 @@ func (a *Auto) pullEnterLeave(ctx context.Context, dst chan<- proto.Message, dev
 	return doPull(ctx, dst, pullFunc, pollFunc, reduce, delay)
 }
 
-// grpcClient assigns to c a new client of type T.
-// The client used comes from
+// grpcClient returns a new client of type T.
+// The client used will be backed by:
 //  1. a local device if dev.RemoteNode is nil
 //  2. a cached connection if available keyed by dev.RemoteDevice.Host
 //  3. a new connection to dev.RemoteDevice.Host
 //
 // grpcClient is safe to call from multiple goroutines.
-func grpcClient[T any](a *Auto, c *T, f func(connInterface grpc.ClientConnInterface) T, dev SCDeviceConfig) error {
+func grpcClient[T any](a *Auto, f func(connInterface grpc.ClientConnInterface) T, dev SCDeviceConfig) (client T, _ error) {
 	// use local client config
 	rn := dev.RemoteNode
 	if rn == nil {
-		return a.services.Node.Client(c)
+		return f(a.services.Node.ClientConn()), nil
 	}
 
 	a.connsMu.Lock()
 	defer a.connsMu.Unlock()
 	if conn, ok := a.conns[rn.Host]; ok {
-		*c = f(conn)
-		return nil
+		return f(conn), nil
 	}
 
 	tlsConfig, err := rn.TLSConfig.Read("", a.services.ClientTLSConfig)
 	if err != nil {
-		return err
+		return client, err
 	}
 	var opts []grpc.DialOption
 	if tlsConfig != nil {
@@ -368,11 +360,10 @@ func grpcClient[T any](a *Auto, c *T, f func(connInterface grpc.ClientConnInterf
 	}
 	conn, err := grpc.NewClient(rn.Host, opts...)
 	if err != nil {
-		return err
+		return client, err
 	}
 	a.conns[rn.Host] = conn
-	*c = f(conn)
-	return nil
+	return f(conn), nil
 }
 
 // doPull pulls changes from pullFunc or pollFunc, collates them via reduce, and publishes them to dst.
