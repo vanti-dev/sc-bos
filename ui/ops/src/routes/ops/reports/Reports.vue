@@ -24,7 +24,7 @@
 import {timestampToDate} from '@/api/convpb.js';
 import {getDownloadReportUrl, listReports} from '@/api/ui/reports.js';
 import ContentCard from '@/components/ContentCard.vue';
-import {computed, onMounted, ref} from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
 
 const reports = ref([]);
 
@@ -35,10 +35,12 @@ const props = defineProps({
   }
 });
 
-const name = computed(() => props.source );
+const source = ref(props.source);
+const name = computed(() => source.value);
 
 const fetchReports = async () => {
-  const req = { name: name.value}
+  reports.value = [];
+  const req = { name: name.value }
   try {
     const response = await listReports(req);
     reports.value = response.reportsList.map(report => ({
@@ -53,6 +55,11 @@ const fetchReports = async () => {
 };
 
 onMounted(() => {
+  fetchReports();
+});
+
+// Watch for changes to source and fetch reports
+watch(source, () => {
   fetchReports();
 });
 
