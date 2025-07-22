@@ -44,11 +44,7 @@ func (a *Auto) applyConfig(ctx context.Context, cfg config.Root) error {
 		return nil
 	}
 
-	var elClient traits.EnterLeaveSensorApiClient
-	err := a.services.Node.Client(&elClient)
-	if err != nil {
-		return err
-	}
+	elClient := traits.NewEnterLeaveSensorApiClient(a.services.Node.ClientConn())
 
 	sched := cfg.Schedule
 	if sched == nil {

@@ -32,10 +32,7 @@ type bacnet struct {
 }
 
 func (b *bacnet) applyConfig(ctx context.Context, cfg config.BacnetSource) error {
-	var bacnetDriverClient rpc.BacnetDriverServiceClient
-	if err := b.services.Node.Client(&bacnetDriverClient); err != nil {
-		return err
-	}
+	bacnetDriverClient := rpc.NewBacnetDriverServiceClient(b.services.Node.ClientConn())
 
 	delay := 5 * time.Second
 	if cfg.COV != nil && cfg.COV.PollDelay.Duration != 0 {

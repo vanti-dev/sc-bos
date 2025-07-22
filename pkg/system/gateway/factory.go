@@ -110,10 +110,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		go s.scanRemoteHub(ctx, c, hubConn)
 	case config.HubModeLocal:
-		var hubClient gen.HubApiClient
-		if err := s.self.Client(&hubClient); err != nil {
-			return fmt.Errorf("local hub proxying not available, the node does not support the hub api: %w", err)
-		}
+		hubClient := gen.NewHubApiClient(s.self.ClientConn())
 		go s.scanLocalHub(ctx, c, hubClient)
 	}
 

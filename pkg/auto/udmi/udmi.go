@@ -49,11 +49,7 @@ type udmiAuto struct {
 }
 
 func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
-	var udmiClient gen.UdmiServiceClient
-	err := e.services.Node.Client(&udmiClient)
-	if err != nil {
-		return err
-	}
+	udmiClient := gen.NewUdmiServiceClient(e.services.Node.ClientConn())
 
 	client, err := newMqttClient(cfg)
 	if err != nil {
