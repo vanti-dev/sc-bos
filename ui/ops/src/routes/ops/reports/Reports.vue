@@ -24,8 +24,6 @@
 import {timestampToDate} from '@/api/convpb.js';
 import {getDownloadReportUrl, listReports} from '@/api/ui/reports.js';
 import ContentCard from '@/components/ContentCard.vue';
-import {useCohortStore} from '@/stores/cohort.js';
-import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {computed, onMounted, ref} from 'vue';
 
 const reports = ref([]);
@@ -33,12 +31,11 @@ const reports = ref([]);
 const props = defineProps({
   source: {
     type: String,
-    default: ''
+    required: true
   }
 });
-const uiConfig = useUiConfigStore();
-const cohort = useCohortStore();
-const name = computed(() => props.source || (uiConfig.config?.ops?.reports?.source ?? cohort.hubNode?.name ?? ''));
+
+const name = computed(() => props.source );
 
 const fetchReports = async () => {
   const req = { name: name.value}
