@@ -130,6 +130,9 @@ func (s *System) pullSystems(ctx context.Context, node *remoteNode) (task.Next, 
 			if id == "" {
 				continue // not sure what happened, all services should have an id
 			}
+			if id == LegacyName {
+				id = Name // legacy support for the old system name
+			}
 			switch id {
 			case Name:
 				systems.gateway = c.GetNewValue()
