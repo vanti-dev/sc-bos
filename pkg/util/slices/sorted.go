@@ -2,6 +2,7 @@ package slices
 
 import (
 	"cmp"
+	"slices"
 	"sort"
 )
 
@@ -35,9 +36,7 @@ func (s *Sorted[T]) Cmp() func(a, b T) int {
 
 // Set adds or replaces an item to the slice, returning the index, old item, and true if the item was replaced.
 func (s *Sorted[T]) Set(item T) (int, T, bool) {
-	i, found := sort.Find(s.Len(), func(i int) int {
-		return s.cmp(s.items[i], item)
-	})
+	i, found := s.find(item)
 	if found {
 		old := s.items[i]
 		s.items[i] = item
@@ -55,9 +54,7 @@ func (s *Sorted[T]) Set(item T) (int, T, bool) {
 
 // Remove removes an item from the slice, returning the index and true if the item was removed.
 func (s *Sorted[T]) Remove(item T) (int, T, bool) {
-	i, found := sort.Find(s.Len(), func(i int) int {
-		return s.cmp(s.items[i], item)
-	})
+	i, found := s.find(item)
 	var zero T
 	if found {
 		removed := s.items[i]
@@ -89,9 +86,7 @@ func (s *Sorted[T]) Get(i int) T {
 // Find returns smallest index in s where item would exist.
 // If the existing item at the index compares equal to item, then it is returned along with true.
 func (s *Sorted[T]) Find(item T) (int, T, bool) {
-	i, found := sort.Find(s.Len(), func(i int) int {
-		return s.cmp(s.items[i], item)
-	})
+	i, found := s.find(item)
 	if found {
 		return i, s.items[i], true
 	}
@@ -123,4 +118,8 @@ func (s *Sorted[T]) Copy() *Sorted[T] {
 		items: append([]T(nil), s.items...),
 		cmp:   s.cmp,
 	}
+}
+
+func (s *Sorted[T]) find(item T) (int, bool) {
+	return slices.BinarySearchFunc(s.items, item, s.cmp)
 }
