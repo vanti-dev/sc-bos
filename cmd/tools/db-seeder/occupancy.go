@@ -16,8 +16,8 @@ import (
 )
 
 func SeedOccupancy(ctx context.Context, db *pgxpool.Pool, name string, lookBack time.Duration) error {
-	current := time.Now()
-	now := current
+	now := time.Now()
+	current := now.Add(-lookBack)
 
 	source := fmt.Sprintf("%s[%s]", name, trait.OccupancySensor)
 
@@ -26,7 +26,7 @@ func SeedOccupancy(ctx context.Context, db *pgxpool.Pool, name string, lookBack 
 		return err
 	}
 
-	for current.After(now.Add(-lookBack)) {
+	for current.Before(now) {
 
 		payload, err := proto.Marshal(&traits.Occupancy{
 			PeopleCount:     int32(rand.Intn(50)),
@@ -44,7 +44,7 @@ func SeedOccupancy(ctx context.Context, db *pgxpool.Pool, name string, lookBack 
 			return err
 		}
 
-		current = current.Add(-time.Duration(rand.Intn(60)) * time.Minute)
+		current = current.Add(time.Duration(rand.Intn(60)) * time.Minute)
 	}
 
 	return nil
