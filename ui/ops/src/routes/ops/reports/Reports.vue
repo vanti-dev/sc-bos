@@ -2,9 +2,10 @@
   <div>
     <h2>Reports</h2>
     <content-card class="px-8 mt-8">
-      <v-data-table
+      <v-data-table-server
           :headers="allHeaders"
-          :items="reports"
+          v-bind="tableAttrs"
+          :items-length="queryTotalCount"
           item-key="id"
           class="pt-4">
         <template #item.created="{ item }">
@@ -15,18 +16,18 @@
             <v-icon icon="mdi-download" size="large"/>
           </v-btn>
         </template>
-      </v-data-table>
+      </v-data-table-server>
     </content-card>
   </div>
 </template>
 
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
-import {getDownloadReportUrl, listReports} from '@/api/ui/reports.js';
+import {getDownloadReportUrl} from '@/api/ui/reports.js';
 import ContentCard from '@/components/ContentCard.vue';
-import {computed, ref, watch} from 'vue';
-
-const reports = ref([]);
+import {useReportsCollection} from '@/composables/reports.js';
+import {useDataTableCollection} from '@/composables/table.js';
+import {computed, ref} from 'vue';
 
 const props = defineProps({
   source: {
@@ -35,26 +36,19 @@ const props = defineProps({
   }
 });
 
-const fetchReports = async () => {
-  reports.value = [];
-  const req = { name: props.source }
-  try {
-    const response = await listReports(req);
-    reports.value = response.reportsList.map(report => ({
-      id: report.id,
-      title: report.title,
-      description: report.description,
-      createTime: report.createTime
-    }));
-  } catch (error) {
-    console.error('Failed to fetch reports:', error);
-  }
-};
+const listReportsRequest = computed(() => ({
+  name: props.source,
+}))
+const wantCount = ref(20);
+const reportOptions = computed(() => ({
+  wantCount: wantCount.value
+}));
+const reportsCollection = useReportsCollection(listReportsRequest, reportOptions);
+const tableAttrs = useDataTableCollection(wantCount, reportsCollection);
 
-// Watch for changes to source and fetch reports
-watch(() => props.source, () => {
-  fetchReports();
-}, { immediate: true });
+const queryTotalCount = computed(() => {
+  return reportsCollection.totalItems.value;
+});
 
 /**
  * Downloads a report by its ID.
