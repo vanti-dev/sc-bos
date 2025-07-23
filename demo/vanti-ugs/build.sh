@@ -58,8 +58,7 @@ $containerCmd build \
   --manifest "demo-ugs-seed-db" \
   -f demo/vanti-ugs/Dockerfile-SeedDb .
 
+TAG_VERSION=$(basename $GIT_VERSION)
 echo "Push the images to the container registry using:"
-echo "  $containerCmd manifest push --all demo-ugs-sc-bos docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-sc-bos:$GIT_VERSION"
-echo "  $containerCmd manifest push --all demo-ugs-seed-db docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-seed-db:$GIT_VERSION"
-
-
+echo "$containerCmd manifest push --all demo-ugs-sc-bos docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-sc-bos:$TAG_VERSION"
+echo "$containerCmd manifest push --all demo-ugs-seed-db docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-seed-db:$TAG_VERSION"
