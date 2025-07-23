@@ -24,7 +24,7 @@
 import {timestampToDate} from '@/api/convpb.js';
 import {getDownloadReportUrl, listReports} from '@/api/ui/reports.js';
 import ContentCard from '@/components/ContentCard.vue';
-import {computed, onMounted, ref, watch} from 'vue';
+import {computed, ref, watch} from 'vue';
 
 const reports = ref([]);
 
@@ -35,12 +35,9 @@ const props = defineProps({
   }
 });
 
-const source = ref(props.source);
-const name = computed(() => source.value);
-
 const fetchReports = async () => {
   reports.value = [];
-  const req = { name: name.value }
+  const req = { name: props.source }
   try {
     const response = await listReports(req);
     reports.value = response.reportsList.map(report => ({
@@ -54,14 +51,10 @@ const fetchReports = async () => {
   }
 };
 
-onMounted(() => {
-  fetchReports();
-});
-
 // Watch for changes to source and fetch reports
-watch(source, () => {
+watch(() => props.source, () => {
   fetchReports();
-});
+}, { immediate: true });
 
 /**
  * Downloads a report by its ID.
@@ -69,7 +62,7 @@ watch(source, () => {
  * @param {string} id
  */
 function downloadReport(id) {
-  const request = { id, name: name.value };
+  const request = { id, name: props.source };
   getDownloadReportUrl(request)
       .then(url => {
         const link = document.createElement('a');
@@ -89,6 +82,7 @@ const allHeaders = computed(() => [
   { title: 'Create Time', value: 'created', width: '15em', sortable: false },
   { title: 'Download', value: 'download', width: '15em', sortable: false }
 ]);
+
 </script>
 
 <style scoped>
