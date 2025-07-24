@@ -15,7 +15,6 @@ type Set[T any] struct {
 	m sync.Mutex
 	v *slices.Sorted[T]
 	b *minibus.Bus[Change[T]]
-	c <-chan struct{} // nil when not notifying, blocks when notifying, closed when done notifying
 }
 
 func NewSet[T any](v *slices.Sorted[T]) *Set[T] {
@@ -27,7 +26,7 @@ func NewSet[T any](v *slices.Sorted[T]) *Set[T] {
 }
 
 // Set adds item to the set, replacing any existing item.
-func (s *Set[T]) Set(item T) (i int, old T, replaced bool, sent <-chan struct{}) {
+func (s *Set[T]) Set(item T) (i int, old T, replaced bool) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	i, old, replaced = s.v.Set(item)
@@ -40,11 +39,11 @@ func (s *Set[T]) Set(item T) (i int, old T, replaced bool, sent <-chan struct{})
 		e.Old = old
 	}
 
-	s.c = send(s.b, e, s.c)
-	return i, old, replaced, s.c
+	s.b.Send(context.Background(), e)
+	return i, old, replaced
 }
 
-func (s *Set[T]) Remove(item T) (i int, old T, removed bool, sent <-chan struct{}) {
+func (s *Set[T]) Remove(item T) (i int, old T, removed bool) {
 	s.m.Lock()
 	defer s.m.Unlock()
 	i, old, removed = s.v.Remove(item)
@@ -53,17 +52,15 @@ func (s *Set[T]) Remove(item T) (i int, old T, removed bool, sent <-chan struct{
 			Type: Remove,
 			Old:  old,
 		}
-		s.c = send(s.b, e, s.c)
+		s.b.Send(context.Background(), e)
 	}
-	return i, old, removed, s.c
+	return i, old, removed
 }
 
 // Replace replaces the set with items.
-func (s *Set[T]) Replace(items []T) (added, deleted, updated *slices.Sorted[T], sent <-chan struct{}) {
+func (s *Set[T]) Replace(items []T) (added, deleted, updated *slices.Sorted[T]) {
 	s.m.Lock()
 	defer s.m.Unlock()
-
-	var sends []<-chan struct{}
 
 	deleted = s.v.Copy()
 	added = slices.NewSortedFunc(s.v.Cmp())
@@ -83,7 +80,7 @@ func (s *Set[T]) Replace(items []T) (added, deleted, updated *slices.Sorted[T], 
 		} else {
 			added.Set(item)
 		}
-		sends = append(sends, send(s.b, e, s.c))
+		s.b.Send(context.Background(), e)
 	}
 
 	deleted.All(func(i int, item T) bool {
@@ -92,11 +89,11 @@ func (s *Set[T]) Replace(items []T) (added, deleted, updated *slices.Sorted[T], 
 			Type: Remove,
 			Old:  item,
 		}
-		sends = append(sends, send(s.b, e, s.c))
+		s.b.Send(context.Background(), e)
 		return true
 	})
 
-	return added, deleted, updated, allDone(sends)
+	return added, deleted, updated
 }
 
 func (s *Set[T]) Len() int {
