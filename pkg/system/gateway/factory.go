@@ -121,10 +121,11 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 
 func (s *System) retry(ctx context.Context, name string, t task.Task, logFields ...zap.Field) error {
 	attempt := 0
-	logger := s.logger.With(logFields...)
+	logger := s.logger
 	if name != "" {
 		logger = logger.With(zap.String("task", name))
 	}
+	logger = logger.With(logFields...)
 	return task.Run(ctx, func(taskCtx context.Context) (task.Next, error) {
 		attempt++
 		next, err := t(taskCtx)
