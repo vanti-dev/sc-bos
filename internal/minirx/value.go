@@ -29,6 +29,12 @@ func (v *Value[T]) Set(val T) {
 	v.m.Lock()
 	defer v.m.Unlock()
 	v.v = val
+
+	for listener := range v.listeners {
+		if !listener.Dispatch(val) {
+			delete(v.listeners, listener)
+		}
+	}
 }
 
 func (v *Value[T]) Pull(ctx context.Context) (initial T, changes iter.Seq[T]) {
@@ -83,4 +89,19 @@ func (l *valueListener[T]) Stop() {
 	l.stopped = true
 	l.m.Unlock()
 	l.c.Broadcast()
+}
+
+func (l *valueListener[T]) Dispatch(v T) bool {
+	l.m.Lock()
+	defer l.m.Unlock()
+
+	if l.stopped {
+		return false
+	}
+
+	l.value = v
+	l.hasNewValue = true
+	l.c.Broadcast()
+
+	return true
 }
