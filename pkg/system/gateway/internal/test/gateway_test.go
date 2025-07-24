@@ -237,20 +237,49 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 	defer conn.Close()
 
 	// Named devices are correctly routed
-	deviceNames := []string{
+	nodeDevices := []string{
+		"hub", "ac1", "ac2",
+		// one of these will be the node we're talking to, but either way it should exist
+		"gw1", "gw2",
+	}
+	onOffDevices := []string{
 		"ac1/dev1",
 		"ac2/dev1",
 		"hub/dev1",
 	}
-	t.Logf("[%s] Waiting for gw to configure gateway system", addr)
-	for _, name := range deviceNames {
-		waitForDevice(t, ctx, conn, name)
+	serviceDevices := []string{"automations", "drivers", "systems", "zones"}
+	for _, node := range nodeDevices {
+		for _, s := range []string{"automations", "drivers", "systems", "zones"} {
+			serviceDevices = append(serviceDevices, fmt.Sprintf("%s/%s", node, s))
+		}
 	}
+	t.Logf("[%s] Waiting for gw to configure gateway system", addr)
+	t.Run("node devices online", func(t *testing.T) {
+		for _, name := range nodeDevices {
+			waitForDevice(t, ctx, conn, name)
+		}
+	})
+	t.Run("onOff devices online", func(t *testing.T) {
+		for _, name := range onOffDevices {
+			waitForDevice(t, ctx, conn, name)
+		}
+	})
+	t.Run("service devices online", func(t *testing.T) {
+		for _, name := range serviceDevices {
+			waitForDevice(t, ctx, conn, name)
+		}
+	})
 
-	t.Run("named devices", func(t *testing.T) {
+	t.Run("onOff devices respond", func(t *testing.T) {
 		client := traits.NewOnOffApiClient(conn)
-		for _, name := range deviceNames {
+		for _, name := range onOffDevices {
 			testOnOffApi(t, ctx, addr, name, client)
+		}
+	})
+	t.Run("services respond", func(t *testing.T) {
+		client := gen.NewServicesApiClient(conn)
+		for _, name := range serviceDevices {
+			testServicesApi(t, ctx, addr, name, client)
 		}
 	})
 
@@ -343,6 +372,15 @@ func testOnOffApi(t *testing.T, ctx context.Context, addr, name string, client t
 		if diff := cmp.Diff(want, res, protocmp.Transform()); diff != "" {
 			t.Fatalf("[%s] pull onoff %s: unexpected response (-want +got):\n%s", addr, name, diff)
 		}
+	}
+}
+
+func testServicesApi(t *testing.T, ctx context.Context, addr, name string, client gen.ServicesApiClient) {
+	t.Helper()
+
+	_, err := client.ListServices(ctx, &gen.ListServicesRequest{Name: name})
+	if err != nil {
+		t.Fatalf("[%s] list services %s: %v", addr, name, err)
 	}
 }
 
