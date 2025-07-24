@@ -52,10 +52,9 @@ func (s *System) announceCohort(ctx context.Context, c *cohort) {
 	}
 
 	nodes, nodeChanges := c.Nodes.Sub(ctx)
-	nodes.All(func(_ int, n *remoteNode) bool {
+	for _, n := range nodes.All {
 		runAnnouncer(n)
-		return true
-	})
+	}
 
 	for nodeChange := range nodeChanges {
 		if nodeChange.Old != nil {
