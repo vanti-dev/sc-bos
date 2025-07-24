@@ -179,7 +179,7 @@ func (s *System) pullChildren(ctx context.Context, name string, node *remoteNode
 			tasks[c.NewValue.Name] = stop
 			go s.retry(childCtx, "pull child metadata", func(ctx context.Context) (task.Next, error) {
 				return s.pullMetadata(ctx, child.Name, node)
-			}, zap.String("name", child.Name), zap.String("node", node.addr))
+			}, zap.String("remoteAddr", node.addr), zap.String("nodeName", name), zap.String("child", child.Name))
 		}
 	}
 }
