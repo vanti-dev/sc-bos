@@ -57,25 +57,23 @@ func (s *System) scanRemoteNode(ctx context.Context, nodeName string, n *remoteN
 		return s.reflectNode(ctx, n)
 	}, zap.String("task", "reflect"), zap.String("remoteAddr", n.addr), zap.String("nodeName", nodeName))
 
-	go s.retry(ctx, "pull metadata", func(ctx context.Context) (task.Next, error) {
-		return s.pullMetadata(ctx, "", n)
+	go s.retry(ctx, "pull self", func(ctx context.Context) (task.Next, error) {
+		return s.pullSelf(ctx, n)
 	}, zap.String("remoteAddr", n.addr), zap.String("nodeName", nodeName))
 
 	go s.retry(ctx, "pull systems", func(ctx context.Context) (task.Next, error) {
 		return s.pullSystems(ctx, n)
 	}, zap.String("remoteAddr", n.addr), zap.String("nodeName", nodeName))
 
-	go s.retry(ctx, "pull children", func(ctx context.Context) (task.Next, error) {
-		return s.pullChildren(ctx, "", n)
+	go s.retry(ctx, "pull devices", func(ctx context.Context) (task.Next, error) {
+		return s.pullDevices(ctx, n)
 	}, zap.String("remoteAddr", n.addr), zap.String("nodeName", nodeName))
 }
 
-// pullMetadata updates node with metadata about name.
-// If name is empty, metadata about node itself is fetched and updated,
-// otherwise metadata about a child is fetched and updated.
-func (s *System) pullMetadata(ctx context.Context, name string, node *remoteNode) (task.Next, error) {
+// pullSelf updates node.Self with metadata about itself.
+func (s *System) pullSelf(ctx context.Context, node *remoteNode) (task.Next, error) {
 	mdClient := traits.NewMetadataApiClient(node.conn)
-	mdStream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{Name: name})
+	mdStream, err := mdClient.PullMetadata(ctx, &traits.PullMetadataRequest{}) // no name means "self"
 	if err != nil {
 		return neverSucceeded, err
 	}
@@ -94,14 +92,7 @@ func (s *System) pullMetadata(ctx context.Context, name string, node *remoteNode
 		}
 		c := cs.Changes[len(cs.Changes)-1]
 		md := c.Metadata
-
-		// are we fetching metadata for the remoteNode itself or a child?
-		self := name == ""
-		if self {
-			node.Self.Set(remoteDesc{name: md.Name, md: md})
-		} else {
-			node.Children.Set(remoteDesc{name: name, md: md})
-		}
+		node.Self.Set(remoteDesc{name: md.Name, md: md})
 	}
 }
 
@@ -147,21 +138,17 @@ func (s *System) pullSystems(ctx context.Context, node *remoteNode) (task.Next, 
 	}
 }
 
-// pullChildren uses node's ParentApi to collect the list of children and metadata about them.
-// pullChildren blocks while the ParentApi stream is active.
-func (s *System) pullChildren(ctx context.Context, name string, node *remoteNode) (task.Next, error) {
-	parentClient := traits.NewParentApiClient(node.conn)
-	childStream, err := parentClient.PullChildren(ctx, &traits.PullChildrenRequest{Name: name})
+// pullDevices uses node's DevicesApi to collect the list of devices and metadata about them.
+// pullDevices blocks while the DevicesApi stream is active.
+func (s *System) pullDevices(ctx context.Context, node *remoteNode) (task.Next, error) {
+	client := gen.NewDevicesApiClient(node.conn)
+	stream, err := client.PullDevices(ctx, &gen.PullDevicesRequest{})
 	if err != nil {
 		return neverSucceeded, err
 	}
 
-	// tasks tracks the information we query for each child.
-	tasks := tasks{}
-	defer tasks.callAll()
-
 	for msgReceived := false; ; msgReceived = true {
-		cs, err := childStream.Recv()
+		msg, err := stream.Recv()
 		if err != nil {
 			if msgReceived {
 				return someSuccess, err
@@ -169,21 +156,16 @@ func (s *System) pullChildren(ctx context.Context, name string, node *remoteNode
 			return neverSucceeded, err
 		}
 
-		for _, c := range cs.Changes {
-			// for anything that isn't an add stop the existing task for the child
+		for _, c := range msg.Changes {
+			// for anything that isn't an add stop the existing task for the device
 			if c.OldValue != nil {
-				tasks.remove(c.OldValue.Name)
+				node.Devices.Remove(remoteDesc{name: c.OldValue.Name})
 			}
 			if c.NewValue == nil {
 				continue // was a deletion
 			}
 
-			child := c.NewValue
-			childCtx, stop := context.WithCancel(ctx)
-			tasks[c.NewValue.Name] = stop
-			go s.retry(childCtx, "pull child metadata", func(ctx context.Context) (task.Next, error) {
-				return s.pullMetadata(ctx, child.Name, node)
-			}, zap.String("remoteAddr", node.addr), zap.String("nodeName", name), zap.String("child", child.Name))
+			node.Devices.Set(remoteDesc{name: c.NewValue.Name, md: c.NewValue.Metadata})
 		}
 	}
 }
