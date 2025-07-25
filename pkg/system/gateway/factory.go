@@ -89,8 +89,8 @@ type System struct {
 
 // applyConfig runs this system based on the given config.
 // This will query the hub for nodes,
-// for each node (not ignored) it will query for all children,
-// announcing each trait for each child.
+// for each node (not ignored) it will query for all devices,
+// announcing metadata for each.
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	s.logger.Debug("applying config", zap.Any("config", cfg))
 	ignore := append([]string{}, s.ignore...)
