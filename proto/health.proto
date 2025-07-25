@@ -121,13 +121,13 @@ message HealthCheck {
   // Reliability represents confidence in the results of the check,
   // typically tied to the communication with the device.
   message Reliability {
-    enum Status {
-      STATUS_UNSPECIFIED = 0;
+    enum State {
+      STATE_UNSPECIFIED = 0;
       // The communication with the device is established and healthy.
-      // The status will remain RELIABLE across normal reconnections and transient bad responses.
+      // The state will remain RELIABLE across normal reconnections and transient bad responses.
       RELIABLE = 1;
       // Communication with the device is unreliable for an unspecified reason.
-      // Prefer more specific statuses to indicate the reason for unreliability when possible.
+      // Prefer more specific states to indicate the reason for unreliability when possible.
       UNRELIABLE = 2;
       // There are issues with the connection that may resolve themselves on future attempts.
       CONN_TRANSIENT_FAILURE = 3;
@@ -144,16 +144,16 @@ message HealthCheck {
       // The device indicates that we do not have permission to access it.
       PERMISSION_DENIED = 8;
     }
-    // The status of the connection.
-    Status status = 1;
-    // The time when the status last entered RELIABLE.
+    // The state of the connection.
+    State state = 1;
+    // The time when the state last entered RELIABLE.
     // Reconnections during normal operation will not update this time.
     // Temporary bad responses will not update this time.
     google.protobuf.Timestamp ok_time = 2;
-    // The time when the status last entered a non-RELIABLE status.
+    // The time when the state last entered a non-RELIABLE state.
     google.protobuf.Timestamp unreliable_time = 3;
 
-    // An error message relating to the non-RELIABLE status.
+    // An error message relating to the non-RELIABLE state.
     Error last_error = 4;
 
     // Cause describes the underlying cause of the reliability issue.
@@ -224,10 +224,10 @@ message HealthCheck {
 
   // Check tracks a state value in the device for abnormality.
   message Check {
-    enum Status {
-      STATUS_UNSPECIFIED = 0;
+    enum State {
+      STATE_UNSPECIFIED = 0;
       // The value is within the normal operating range.
-      // Any Status greater than 1 indicates a problem with the device.
+      // Any State greater than 1 indicates a problem with the device.
       NORMAL = 1;
       // The value is outside of the normal operating range.
       ABNORMAL = 2;
@@ -236,36 +236,36 @@ message HealthCheck {
       // The value is above the normal operating range.
       HIGH = 4;
     }
-    // The status of the check.
-    Status status = 1;
+    // The state of the check.
+    State state = 1;
 
     // The measured value.
-    // Optional when status is not in a bad state.
+    // Optional when state is not in a bad state.
     Value current_value = 3;
     oneof bounds {
       // The normal value we expect for a healthy device.
-      // Any measured value that is not equal to this value will result in a status of ABNORMAL.
+      // Any measured value that is not equal to this value will result in a state of ABNORMAL.
       Value normal_value = 4;
       // The range of values that are considered normal for a healthy device.
-      // Any measured value that is not within this range will result in a status of HIGH or LOW.
+      // Any measured value that is not within this range will result in a state of HIGH or LOW.
       // See ValueRange.deadband for more information on how the deadband is applied.
       ValueRange normal_range = 5;
       // A list of normal values that are considered healthy for the device.
-      // Any measured value that is not in this list will result in a status of ABNORMAL.
+      // Any measured value that is not in this list will result in a state of ABNORMAL.
       Values normal_values = 6;
       // A list of abnormal values that are considered unhealthy for the device.
-      // Any measured value that is in this list will result in a status of ABNORMAL.
+      // Any measured value that is in this list will result in a state of ABNORMAL.
       Values abnormal_values = 7;
     }
     // The unit of the value, for example "°C", "%", "kB", etc.
     string display_unit = 8;
 
-    // The time when the status last entered NORMAL.
+    // The time when the state last entered NORMAL.
     google.protobuf.Timestamp normal_time = 9;
-    // The time when the device last entered a non-NORMAL status.
+    // The time when the device last entered a non-NORMAL state.
     google.protobuf.Timestamp abnormal_time = 10;
 
-    // An error message relating to the non-NORMAL status.
+    // An error message relating to the non-NORMAL state.
     Error last_error = 11;
   }
 
