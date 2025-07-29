@@ -62,7 +62,8 @@ func (p *Pir) refreshOccupancyStatus() error {
 
 	// Update the occupancy status
 	_, _ = p.occupancy.Set(&traits.Occupancy{
-		State: occupancy,
+		State:      occupancy,
+		Confidence: 1,
 	})
 
 	return nil
