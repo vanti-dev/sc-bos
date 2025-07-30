@@ -4,6 +4,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/azureiot"
 	"github.com/vanti-dev/sc-bos/pkg/auto/bms"
+	"github.com/vanti-dev/sc-bos/pkg/auto/devicemonitor"
 	"github.com/vanti-dev/sc-bos/pkg/auto/export"
 	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp"
 	"github.com/vanti-dev/sc-bos/pkg/auto/history"
@@ -23,6 +24,7 @@ func Factories() map[string]auto.Factory {
 	return map[string]auto.Factory{
 		azureiot.FactoryName:        azureiot.Factory,
 		bms.AutoType:                bms.Factory,
+		devicemonitor.AutoName:      devicemonitor.Factory,
 		"export-mqtt":               export.MQTTFactory,
 		"history":                   history.Factory,
 		lights.AutoType:             lights.Factory,
