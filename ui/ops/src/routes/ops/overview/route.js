@@ -39,7 +39,36 @@ export default [
         // legacy behaviour:
         return next(to.path + '/building');
       }
-      return next(to.path + '/' + encodeURIComponent(pages[0].path ?? pages[0].title));
+
+      const pageToPathPart = (page) => encodeURIComponent(page.path ?? page.title)
+      // depth first search for the first page that has a layout,
+      // returning the router path to that page (including parents).
+      const pagePath = (() => {
+        // stack contains the pages we want to check, the last item is the next to check
+        const stack = pages.toReversed();
+        // path contains the parent pages of the next item in stack
+        const path = /** @type {Array<{lastChild:Object,parent:Object}>} */ [];
+        while (stack.length > 0) {
+          const page = stack.pop();
+          if (page.layout) {
+            // any page with a layout is navigable and will show something, use the first we find
+            const pathParts = path.map(p => pageToPathPart(p.parent));
+            pathParts.push(pageToPathPart(page));
+            return pathParts.join('/');
+          }
+          if (page.children && page.children.length > 0) {
+            const revChildren = page.children.toReversed();
+            path.push({lastChild: revChildren[0], parent: page});
+            stack.push(...revChildren);
+          }
+          // if we just checked the last child of the parent, we need to remove the parent from the path
+          if (path.length > 0 && path.at(-1).lastChild === page) {
+            path.pop()
+          }
+        }
+        return pageToPathPart(pages[0]); // fallback to the first page if none found
+      })();
+      return next(to.path + '/' + pagePath);
     }
   }
 ];
