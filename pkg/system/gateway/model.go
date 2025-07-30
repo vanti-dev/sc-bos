@@ -39,7 +39,7 @@ type remoteNode struct {
 	Self     *rx.Val[remoteDesc]
 	Systems  *rx.Val[remoteSystems]
 	Services *rx.Set[protoreflect.ServiceDescriptor]
-	Children *rx.Set[remoteDesc]
+	Devices  *rx.Set[remoteDesc]
 }
 
 func newRemoteNode(addr string, conn *grpc.ClientConn) *remoteNode {
@@ -51,7 +51,7 @@ func newRemoteNode(addr string, conn *grpc.ClientConn) *remoteNode {
 		Services: rx.NewSet(slices.NewSortedFunc[protoreflect.ServiceDescriptor](func(a, b protoreflect.ServiceDescriptor) int {
 			return strings.Compare(string(a.FullName()), string(b.FullName()))
 		})),
-		Children: rx.NewSet(slices.NewSortedFunc[remoteDesc](func(a, b remoteDesc) int {
+		Devices: rx.NewSet(slices.NewSortedFunc[remoteDesc](func(a, b remoteDesc) int {
 			return strings.Compare(a.name, b.name)
 		})),
 	}
