@@ -132,7 +132,7 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		ts = append(ts, traitFeature{name: trait.Metadata})
 	}
 	for _, t := range ts {
-		if !t.noAddChildTrait && name != n.name {
+		if name != n.name {
 			undo = append(undo, n.addChildTrait(a.name, t.name))
 		}
 	}
@@ -171,11 +171,7 @@ func (n *Node) logAnnouncement(a *announcement, services []service) Undo {
 	}
 	traitsString := make([]string, 0, len(a.traits))
 	for _, t := range a.traits {
-		n := t.name.Local()
-		if t.noAddChildTrait {
-			n = "-" + n
-		}
-		traitsString = append(traitsString, n)
+		traitsString = append(traitsString, t.name.Local())
 	}
 	var flags []string
 	if len(a.metadata) > 0 {

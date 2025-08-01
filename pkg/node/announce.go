@@ -166,8 +166,6 @@ type traitFeature struct {
 	name     trait.Name
 	services []service
 	metadata map[string]string
-
-	noAddChildTrait bool
 }
 
 // Feature describes some aspect of a named device.
@@ -337,13 +335,6 @@ func WithClients(clients ...wrap.ServiceUnwrapper) TraitOption {
 // ServiceUnwrapper will succeed.
 func WithOptClients(clients ...wrap.ServiceUnwrapper) TraitOption {
 	return WithClients(clients...)
-}
-
-// NoAddChildTrait instructs the Node not to add the trait to the nodes parent.Model.
-func NoAddChildTrait() TraitOption {
-	return func(t *traitFeature) {
-		t.noAddChildTrait = true
-	}
 }
 
 type capturingRegistrar struct {
