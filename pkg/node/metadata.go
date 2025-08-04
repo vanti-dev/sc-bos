@@ -5,8 +5,6 @@ import (
 	"errors"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
@@ -45,8 +43,4 @@ func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
 	})
 
 	return undo, nil
-}
-
-func (n *Node) isNotFound(err error) bool {
-	return status.Code(err) == codes.NotFound
 }
