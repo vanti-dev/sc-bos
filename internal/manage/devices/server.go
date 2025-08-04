@@ -4,20 +4,16 @@ package devices
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"sort"
-	"strings"
 	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -26,7 +22,6 @@ import (
 type Server struct {
 	gen.UnimplementedDevicesApiServer
 
-	parentName string
 	// ChildPageSize overrides the default page size used when querying the parent trait for children
 	ChildPageSize int32
 
@@ -44,7 +39,6 @@ type Server struct {
 
 func NewServer(n *node.Node, opts ...Option) *Server {
 	s := &Server{
-		parentName:           n.Name(),
 		node:                 n,
 		now:                  time.Now,
 		downloadUrlBase:      url.URL{Path: "/dl/devices"},
@@ -85,37 +79,30 @@ func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest)
 		}
 	}
 
-	// note: allMetadata is already sorted by name
-	allMetadata := s.node.ListAllMetadata(
-		resource.WithReadMask(subMask(request.ReadMask, "metadata")),
+	// note: allDevices is already sorted by name
+	allDevices := s.node.ListDevices(
+		resource.WithReadMask(request.ReadMask),
 		resource.WithInclude(func(id string, item proto.Message) bool {
 			if item == nil {
 				return false
 			}
-			device := &gen.Device{
-				Name:     id,
-				Metadata: item.(*traits.Metadata),
-			}
+			device := item.(*gen.Device)
 			return deviceMatchesQuery(request.Query, device)
 		}),
 	)
 	nextIndex := 0
 	if pageToken.LastName != "" {
-		nextIndex = sort.Search(len(allMetadata), func(i int) bool {
-			return allMetadata[i].Name >= pageToken.LastName
+		nextIndex = sort.Search(len(allDevices), func(i int) bool {
+			return allDevices[i].Name >= pageToken.LastName
 		})
-		if nextIndex < len(allMetadata) && allMetadata[nextIndex].Name == pageToken.LastName {
+		if nextIndex < len(allDevices) && allDevices[nextIndex].Name == pageToken.LastName {
 			nextIndex++
 		}
 		pageToken.LastName = ""
 	}
 
 	var devices []*gen.Device
-	for _, md := range allMetadata[nextIndex:] {
-		device := &gen.Device{
-			Name:     md.Name,
-			Metadata: md,
-		}
+	for _, device := range allDevices[nextIndex:] {
 		if len(devices) == pageSize {
 			// we found another device but we don't want to include it in the response,
 			// we'll use the info to know whether to populate the next page token
@@ -127,7 +114,7 @@ func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest)
 
 	res := &gen.ListDevicesResponse{
 		Devices:   devices,
-		TotalSize: int32(len(allMetadata)),
+		TotalSize: int32(len(allDevices)),
 	}
 	if pageToken.LastName != "" {
 		ptStr, err := pageToken.encode()
@@ -144,17 +131,14 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 		return err
 	}
 
-	changes := s.node.PullAllMetadata(server.Context(),
+	changes := s.node.PullDevices(server.Context(),
 		resource.WithUpdatesOnly(request.UpdatesOnly),
-		resource.WithReadMask(subMask(request.ReadMask, "metadata")),
+		resource.WithReadMask(request.ReadMask),
 		resource.WithInclude(func(id string, item proto.Message) bool {
 			if item == nil {
 				return false
 			}
-			device := &gen.Device{
-				Name:     id,
-				Metadata: item.(*traits.Metadata),
-			}
+			device := item.(*gen.Device)
 			return deviceMatchesQuery(request.Query, device)
 		}),
 	)
@@ -163,12 +147,8 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 			Name:       change.Name,
 			ChangeTime: timestamppb.New(change.ChangeTime),
 			Type:       change.ChangeType,
-		}
-		if change.OldValue != nil {
-			resChange.OldValue = &gen.Device{Name: change.Name, Metadata: change.OldValue}
-		}
-		if change.NewValue != nil {
-			resChange.NewValue = &gen.Device{Name: change.Name, Metadata: change.NewValue}
+			OldValue:   change.OldValue,
+			NewValue:   change.NewValue,
 		}
 		res := &gen.PullDevicesResponse{Changes: []*gen.PullDevicesResponse_Change{resChange}}
 		if err := server.Send(res); err != nil {
@@ -179,14 +159,11 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 }
 
 func (s *Server) GetDevicesMetadata(_ context.Context, request *gen.GetDevicesMetadataRequest) (*gen.DevicesMetadata, error) {
-	mds := s.node.ListAllMetadata()
+	devices := s.node.ListDevices()
 	var res *gen.DevicesMetadata
 	col := newMetadataCollector(request.GetIncludes().GetFields()...)
-	for _, md := range mds {
-		res = col.add(&gen.Device{
-			Name:     md.Name,
-			Metadata: md,
-		})
+	for _, device := range devices {
+		res = col.add(device)
 	}
 	return res, nil
 }
@@ -208,7 +185,7 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 	}
 
 	// do this before getting initial values
-	changes := s.node.PullAllMetadata(server.Context())
+	changes := s.node.PullDevices(server.Context())
 
 	// send initial values.
 	// Note we recalculate the metadata for the initial value and for updates separately. We can't guarantee data
@@ -229,10 +206,10 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 	for change := range changes {
 		var md *gen.DevicesMetadata
 		if change.OldValue != nil {
-			md = col.remove(&gen.Device{Name: change.OldValue.Name, Metadata: change.OldValue})
+			md = col.remove(change.OldValue)
 		}
 		if change.NewValue != nil {
-			md = col.add(&gen.Device{Name: change.NewValue.Name, Metadata: change.NewValue})
+			md = col.add(change.NewValue)
 		}
 
 		if change.LastSeedValue {
@@ -247,25 +224,6 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 		}
 	}
 
-	return nil
-}
-
-func subMask(mask *fieldmaskpb.FieldMask, prefix string) *fieldmaskpb.FieldMask {
-	pd := fmt.Sprintf("%s.", prefix)
-	if mask != nil {
-		// the request read mask is prefixed with "metadata.", we need to remove that
-		newMask := &fieldmaskpb.FieldMask{}
-		for _, path := range mask.Paths {
-			if path == prefix {
-				// need all fields
-				return nil
-			}
-			if strings.HasPrefix(path, pd) {
-				newMask.Paths = append(newMask.Paths, path[len("metadata."):])
-			}
-		}
-		return newMask
-	}
 	return nil
 }
 

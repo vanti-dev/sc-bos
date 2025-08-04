@@ -12,10 +12,12 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
-	"github.com/smart-core-os/sc-golang/pkg/trait/parentpb"
 	"github.com/vanti-dev/sc-bos/internal/router"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
+	"github.com/vanti-dev/sc-bos/pkg/node/internal/metadatadevices"
+	"github.com/vanti-dev/sc-bos/pkg/node/internal/parentdevices"
 )
 
 // Node represents a smart core node.
@@ -29,17 +31,12 @@ type Node struct {
 	name   string
 	router *router.Router
 
-	// mu protects writes to children and allMetadata to avoid concurrent modification errors.
-	// The models that back these fields are consistent when accessed concurrently,
-	// but return errors if they are modified concurrently instead of waiting.
-	// We want them to wait.
-	mu sync.Mutex
-	// children keeps track of all the names that have been announced to this node.
-	// Lazy, initialised when addChildTrait via Announce(HasTrait) or Register are called.
-	children *parentpb.Model
-	// allMetadata allows users of the node to be notified of any metadata changes via Announce or when
-	// that announcement is undone.
-	allMetadata *metadatapb.Collection
+	// mu protects writes to devices to avoid concurrent modification errors.
+	// The model that backs this field is consistent when accessed concurrently,
+	// but returns an error if its modified concurrently instead of waiting.
+	// We want it to wait.
+	mu      sync.Mutex
+	devices *devicespb.Collection
 
 	Logger *zap.Logger
 }
@@ -59,16 +56,15 @@ func New(name string) *Node {
 		router: router.New(router.WithKeyInterceptor(func(key string) (mappedKey string, err error) {
 			return mapID(key), nil
 		})),
-		children:    parentpb.NewModel(),
-		Logger:      zap.NewNop(),
-		allMetadata: metadatapb.NewCollection(resource.WithIDInterceptor(mapID)),
+		devices: devicespb.NewCollection(resource.WithIDInterceptor(mapID)),
+		Logger:  zap.NewNop(),
 	}
 
-	// metadata should be supported by default
-	traits.RegisterMetadataApiServer(node.router, metadatapb.NewCollectionServer(node.allMetadata))
-	_ = node.Announce(name, HasTrait(trait.Metadata))
+	// nodes implement the MetadataApi without using the router,
+	// the ParentApi is implemented for this nodes name only.
+	traits.RegisterMetadataApiServer(node.router, metadatadevices.NewServer(node.devices))
 	node.announceLocked(name,
-		HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parentpb.NewModelServer(node.children))),
+		HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parentdevices.NewServer(name, node.devices))),
 		HasTrait(trait.Parent),
 	)
 	return node
@@ -131,11 +127,6 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	if !a.noAutoMetadata {
 		ts = append(ts, traitFeature{name: trait.Metadata})
 	}
-	for _, t := range ts {
-		if name != n.name {
-			undo = append(undo, n.addChildTrait(a.name, t.name))
-		}
-	}
 
 	mds := a.metadata
 	if !a.noAutoMetadata && len(ts) > 0 {
@@ -146,17 +137,21 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		mds = append(mds, md)
 	}
 
-	for _, md := range mds {
-		// always need to set the name of the device in its metadata
-		md.Name = name
-		undoMd, err := n.mergeMetadata(name, md)
+	md := n.mergeAllMetadata(name, mds...)
+	if md != nil {
+		_, err := n.devices.Merge(&gen.Device{
+			Name:     name,
+			Metadata: md,
+		}, resource.WithCreateIfAbsent())
 		if err != nil {
-			if errors.Is(err, MetadataTraitNotSupported) {
-				log.Warnf("%v metadata: %v", name, err)
-			}
-			continue
+			log.Errorf("merge metadata %q: %v", name, err)
+		} else {
+			undo = append(undo, func() {
+				n.mu.Lock()
+				defer n.mu.Unlock()
+				_, _ = n.devices.Delete(name, resource.WithAllowMissing(true))
+			})
 		}
-		undo = append(undo, undoMd)
 	}
 
 	undo = append(undo, n.logAnnouncement(a, services))
@@ -196,20 +191,6 @@ func (n *Node) logAnnouncement(a *announcement, services []service) Undo {
 	log("name announced")
 	return func() {
 		log("name unannounced")
-	}
-}
-
-func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
-	n.children.AddChildTrait(name, traitName...)
-	return func() {
-		n.mu.Lock()
-		defer n.mu.Unlock()
-		child := n.children.RemoveChildTrait(name, traitName...)
-		// There's a huge assumption here that child was added via AddChildTrait,
-		// this should be true but isn't guaranteed
-		if child != nil && len(child.Traits) == 0 {
-			_, _ = n.children.RemoveChildByName(child.Name)
-		}
 	}
 }
 
