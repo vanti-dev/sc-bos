@@ -236,6 +236,19 @@ func (t *airTemperature) pollPeer(ctx context.Context) (*traits.AirTemperature, 
 		})
 	}
 
+	if t.config.AmbientHumidity != nil {
+		requestNames = append(requestNames, "ambientHumidity")
+		readValues = append(readValues, *t.config.AmbientHumidity)
+		resProcessors = append(resProcessors, func(response any) error {
+			ambientHumidity, err := comm.Float32Value(response)
+			if err != nil {
+				return comm.ErrReadProperty{Prop: "ambientHumidity", Cause: err}
+			}
+			data.AmbientHumidity = &ambientHumidity
+			return nil
+		})
+	}
+
 	if t.config.ModeConfig != nil {
 		modeData = t.getModePoints(&resProcessors, &readValues, &requestNames)
 	}
