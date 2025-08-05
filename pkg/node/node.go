@@ -13,7 +13,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/internal/router"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
 	"github.com/vanti-dev/sc-bos/pkg/node/internal/metadatadevices"
@@ -31,12 +30,14 @@ type Node struct {
 	name   string
 	router *router.Router
 
-	// mu protects writes to devices to avoid concurrent modification errors.
-	// The model that backs this field is consistent when accessed concurrently,
+	// mu protects writes to devices and mlLists.
+	// The devices model is consistent when accessed concurrently,
 	// but returns an error if its modified concurrently instead of waiting.
 	// We want it to wait.
+	// We also need devices and mlLists to be consistent with each other.
 	mu      sync.Mutex
 	devices *devicespb.Collection
+	mlLists map[string]*metadataList
 
 	Logger *zap.Logger
 }
@@ -57,6 +58,7 @@ func New(name string) *Node {
 			return mapID(key), nil
 		})),
 		devices: devicespb.NewCollection(resource.WithIDInterceptor(mapID)),
+		mlLists: make(map[string]*metadataList),
 		Logger:  zap.NewNop(),
 	}
 
@@ -137,19 +139,31 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		mds = append(mds, md)
 	}
 
-	md := n.mergeAllMetadata(name, mds...)
+	md := mergeAllMetadata(name, mds...)
 	if md != nil {
-		_, err := n.devices.Merge(&gen.Device{
-			Name:     name,
-			Metadata: md,
-		}, resource.WithCreateIfAbsent())
+		mlList, ok := n.mlLists[name]
+		if !ok {
+			mlList = &metadataList{}
+			n.mlLists[name] = mlList
+		}
+		id := mlList.add(md)
+		err := mlList.updateCollection(n.devices, resource.WithCreateIfAbsent())
 		if err != nil {
 			log.Errorf("merge metadata %q: %v", name, err)
 		} else {
 			undo = append(undo, func() {
 				n.mu.Lock()
 				defer n.mu.Unlock()
-				_, _ = n.devices.Delete(name, resource.WithAllowMissing(true))
+				mlList.remove(id)
+				if mlList.isEmpty() {
+					delete(n.mlLists, name)
+					_, _ = n.devices.Delete(name, resource.WithAllowMissing(true))
+				} else {
+					err := mlList.updateCollection(n.devices)
+					if err != nil {
+						log.Errorf("undo merge metadata %q: %v", name, err)
+					}
+				}
 			})
 		}
 	}
