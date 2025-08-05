@@ -99,6 +99,15 @@ func (c *Collection) Merge(d *gen.Device, opts ...resource.WriteOption) (*gen.De
 	return update.(*gen.Device), nil
 }
 
+// Update updates the device with the given name in the collection.
+func (c *Collection) Update(d *gen.Device, opts ...resource.WriteOption) (*gen.Device, error) {
+	update, err := c.names.Update(d.Name, d, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return update.(*gen.Device), nil
+}
+
 // Delete removes the device with the given name from the collection.
 func (c *Collection) Delete(name string, opts ...resource.WriteOption) (*gen.Device, error) {
 	old, err := c.names.Delete(name, opts...)
