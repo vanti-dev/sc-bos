@@ -61,3 +61,59 @@ func querySceneNames() string {
 func queryLoadLevel(addr string) string {
 	return fmt.Sprintf(">V:1,C:152,@%s#", addr)
 }
+
+// Emergency Function Test (Device)
+// Request an Emergency Function Test to an emergency lighting ballast.
+func deviceEmergencyFunctionTest(addr string) string {
+	return fmt.Sprintf(">V:1,C:20,@%s#", addr)
+}
+
+// Emergency Duration Test (Device)
+// Request an Emergency Duration Test to an emergency lighting ballast.
+func deviceEmergencyDurationTest(addr string) string {
+	return fmt.Sprintf(">V:1,C:22,@%s#", addr)
+}
+
+// Stop Emergency Tests (Device)
+// Stop any Emergency Test running in an emergency ballast.
+func deviceStopEmergencyTests(addr string) string {
+	return fmt.Sprintf(">V:1,C:24,@%s#", addr)
+}
+
+// Query Emergency Function Test State
+//
+// - Emergency State Values
+//
+// - Pass 0
+//
+// - Lamp Failure 1
+//
+// - Battery Failure 2
+//
+// - Faulty 4
+//
+// - Failure 8
+//
+// - Test Pending 16
+//
+// - Unknown 32
+func queryEmergencyFunctionTestState(addr string) string {
+	return fmt.Sprintf(">V:1,C:171,@%s#", addr)
+}
+
+// Query Emergency Duration Test State
+func queryEmergencyDurationTestState(addr string) string {
+	return fmt.Sprintf(">V:1,C:173,@%s#", addr)
+}
+
+// todo: the below commands are not used yet, the DALI trait needs to be updated first to support test result times
+
+// Query Emergency Duration Test Time
+func queryEmergencyDurationTestTime(addr string) string {
+	return fmt.Sprintf(">V:1,C:172,@%s#", addr)
+}
+
+// Query Emergency Function Test Time
+func queryEmergencyFunctionTestTime(addr string) string {
+	return fmt.Sprintf(">V:1,C:170,@%s#", addr)
+}

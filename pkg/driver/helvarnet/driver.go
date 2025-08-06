@@ -14,6 +14,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/helvarnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -29,7 +30,7 @@ type factory struct{}
 
 type Driver struct {
 	*service.Service[config.Root]
-	announcer node.Announcer
+	announcer *node.ReplaceAnnouncer
 	logger    *zap.Logger
 	clients   map[string]*tcpClient
 }
@@ -39,7 +40,7 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 
 	d := &Driver{
 		logger:    logger,
-		announcer: services.Node,
+		announcer: node.NewReplaceAnnouncer(services.Node),
 	}
 
 	d.Service = service.New(
@@ -55,7 +56,7 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 
 func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 
-	announcer, undo := node.AnnounceScope(d.announcer)
+	rootAnnouncer := d.announcer.Replace(ctx)
 	grp, ctx := errgroup.WithContext(ctx)
 	d.clients = make(map[string]*tcpClient)
 
@@ -79,7 +80,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		if err != nil {
 			d.logger.Error("getSceneNames error", zap.String("error", err.Error()))
 		}
-		announcer.Announce(l.Name,
+		rootAnnouncer.Announce(l.Name,
 			node.HasTrait(trait.Light,
 				node.WithClients(lightpb.WrapApi(lightingGroup)),
 				node.WithClients(lightpb.WrapInfo(lightingGroup))),
@@ -96,7 +97,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		lum := newLight(d.clients[l.IpAddress], d.logger, l)
 
-		announcer.Announce(l.Name,
+		rootAnnouncer.Announce(l.Name,
 			node.HasTrait(trait.Light,
 				node.WithClients(lightpb.WrapApi(lum))),
 			node.HasTrait(statuspb.TraitName,
@@ -116,12 +117,34 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			d.clients[pir.IpAddress] = newTcpClient(tcpAddr, d.logger, &cfg)
 		}
 		p := newPir(d.clients[pir.IpAddress], d.logger, pir)
-		announcer.Announce(pir.Name,
+		rootAnnouncer.Announce(pir.Name,
 			node.HasTrait(trait.OccupancySensor,
 				node.WithClients(occupancysensorpb.WrapApi(p))),
 			node.HasMetadata(pir.Meta))
 		grp.Go(func() error {
 			return p.runUpdateState(ctx, cfg.RefreshStatus.Duration)
+		})
+	}
+
+	for _, em := range cfg.EmergencyLights {
+		if _, ok := d.clients[em.IpAddress]; !ok {
+			tcpAddr, err := net.ResolveTCPAddr("tcp", em.IpAddress+*cfg.Port)
+			if err != nil {
+				return err
+			}
+			d.clients[em.IpAddress] = newTcpClient(tcpAddr, d.logger, &cfg)
+		}
+		emergencyLight := newLight(d.clients[em.IpAddress], d.logger, em)
+		rootAnnouncer.Announce(em.Name,
+			node.HasTrait(trait.Light,
+				node.WithClients(lightpb.WrapApi(emergencyLight))),
+			node.HasTrait(statuspb.TraitName,
+				node.WithClients(gen.WrapStatusApi(emergencyLight))),
+			node.HasTrait(dalipb.TraitName,
+				node.WithClients(gen.WrapDaliApi(emergencyLight))),
+			node.HasMetadata(em.Meta))
+		grp.Go(func() error {
+			return emergencyLight.runHealthCheck(ctx, cfg.RefreshStatus.Duration)
 		})
 	}
 
@@ -132,7 +155,6 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				client.close()
 			}
 		}
-		undo()
 		if err != nil {
 			d.logger.Error("run error", zap.String("error", err.Error()))
 		}
