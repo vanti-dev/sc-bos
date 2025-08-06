@@ -427,10 +427,7 @@ func (l *Light) GetTestResult(_ context.Context, req *gen.GetTestResultRequest) 
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unsupported test type %s", req.Test.String()))
 	}
 
-	pass := false
-	if eState != nil && *eState == Pass {
-		pass = true
-	}
+	pass := eState != nil && *eState == Pass
 	return &gen.TestResult{
 		Test: req.Test,
 		Pass: pass,
