@@ -1,6 +1,7 @@
 import * as jspb from 'google-protobuf'
 
 import * as google_protobuf_duration_pb from 'google-protobuf/google/protobuf/duration_pb'; // proto import: "google/protobuf/duration.proto"
+import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 
 
 export class GetGroupMembershipRequest extends jspb.Message {
@@ -423,6 +424,16 @@ export class TestResult extends jspb.Message {
   getEtag(): string;
   setEtag(value: string): TestResult;
 
+  getStartTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setStartTime(value?: google_protobuf_timestamp_pb.Timestamp): TestResult;
+  hasStartTime(): boolean;
+  clearStartTime(): TestResult;
+
+  getEndTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setEndTime(value?: google_protobuf_timestamp_pb.Timestamp): TestResult;
+  hasEndTime(): boolean;
+  clearEndTime(): TestResult;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): TestResult.AsObject;
   static toObject(includeInstance: boolean, msg: TestResult): TestResult.AsObject;
@@ -437,6 +448,8 @@ export namespace TestResult {
     pass: boolean,
     duration?: google_protobuf_duration_pb.Duration.AsObject,
     etag: string,
+    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 

@@ -5,6 +5,7 @@ package smartcore.bos.driver.dali;
 option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 service DaliApi {
   // Group commands
@@ -144,6 +145,10 @@ message TestResult {
   bool pass = 4;
   google.protobuf.Duration duration = 5; // only present for duration tests
   string etag = 6;
+  // the time the test was started (if known)
+  google.protobuf.Timestamp start_time = 7;
+  // the time the test was completed
+  google.protobuf.Timestamp end_time = 8;
 }
 
 message GetTestResultRequest {
