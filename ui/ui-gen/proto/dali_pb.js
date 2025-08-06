@@ -23,6 +23,8 @@ var global =
 
 var google_protobuf_duration_pb = require('google-protobuf/google/protobuf/duration_pb.js');
 goog.object.extend(proto, google_protobuf_duration_pb);
+var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
+goog.object.extend(proto, google_protobuf_timestamp_pb);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.AddToGroupRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.AddToGroupResponse', null, global);
 goog.exportSymbol('proto.smartcore.bos.driver.dali.ControlGearStatus', null, global);
@@ -3336,7 +3338,9 @@ proto.smartcore.bos.driver.dali.TestResult.toObject = function(includeInstance, 
 test: jspb.Message.getFieldWithDefault(msg, 1, 0),
 pass: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
 duration: (f = msg.getDuration()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f),
-etag: jspb.Message.getFieldWithDefault(msg, 6, "")
+etag: jspb.Message.getFieldWithDefault(msg, 6, ""),
+startTime: (f = msg.getStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3389,6 +3393,16 @@ proto.smartcore.bos.driver.dali.TestResult.deserializeBinaryFromReader = functio
     case 6:
       var value = /** @type {string} */ (reader.readString());
       msg.setEtag(value);
+      break;
+    case 7:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setStartTime(value);
+      break;
+    case 8:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setEndTime(value);
       break;
     default:
       reader.skipField();
@@ -3446,6 +3460,22 @@ proto.smartcore.bos.driver.dali.TestResult.serializeBinaryToWriter = function(me
     writer.writeString(
       6,
       f
+    );
+  }
+  f = message.getStartTime();
+  if (f != null) {
+    writer.writeMessage(
+      7,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getEndTime();
+  if (f != null) {
+    writer.writeMessage(
+      8,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
 };
@@ -3539,6 +3569,80 @@ proto.smartcore.bos.driver.dali.TestResult.prototype.getEtag = function() {
  */
 proto.smartcore.bos.driver.dali.TestResult.prototype.setEtag = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
+};
+
+
+/**
+ * optional google.protobuf.Timestamp start_time = 7;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.driver.dali.TestResult.prototype.getStartTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 7));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.driver.dali.TestResult} returns this
+*/
+proto.smartcore.bos.driver.dali.TestResult.prototype.setStartTime = function(value) {
+  return jspb.Message.setWrapperField(this, 7, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.driver.dali.TestResult} returns this
+ */
+proto.smartcore.bos.driver.dali.TestResult.prototype.clearStartTime = function() {
+  return this.setStartTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.driver.dali.TestResult.prototype.hasStartTime = function() {
+  return jspb.Message.getField(this, 7) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp end_time = 8;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.driver.dali.TestResult.prototype.getEndTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 8));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.driver.dali.TestResult} returns this
+*/
+proto.smartcore.bos.driver.dali.TestResult.prototype.setEndTime = function(value) {
+  return jspb.Message.setWrapperField(this, 8, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.driver.dali.TestResult} returns this
+ */
+proto.smartcore.bos.driver.dali.TestResult.prototype.clearEndTime = function() {
+  return this.setEndTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.driver.dali.TestResult.prototype.hasEndTime = function() {
+  return jspb.Message.getField(this, 8) != null;
 };
 
 
