@@ -149,7 +149,7 @@ function functionTest() {
 async function doTest(type) {
   const lightingTests = selectedLights.value.map((light) => {
     const req = {
-      name: light.name,
+      name: light,
       test: type
     };
     return runTest(req);
