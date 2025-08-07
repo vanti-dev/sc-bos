@@ -31,6 +31,9 @@ type Light struct {
 	conf       *config.Device
 	logger     *zap.Logger
 	status     *resource.Value // *gen.StatusLog
+	// these are not persistent, they will be lost on restart. I am not sure if we need the start time so best guess might be enough
+	fTestStart *time.Time // time when the last function test was started
+	dTestStart *time.Time // time when the last duration test was started
 }
 
 func newLight(client *tcpClient, l *zap.Logger, conf *config.Device) *Light {
@@ -315,6 +318,20 @@ const (
 	Unknown        EmergencyState = 32
 )
 
+func hasTestCompleted(state *EmergencyState) bool {
+	if state == nil {
+		return false
+	}
+	switch *state {
+	case Pass, LampFailure, BatteryFailure, Faulty, Failure:
+		return true
+	case TestPending, Unknown:
+		return false
+	default:
+		return false
+	}
+}
+
 func parseGetResultResponse(r string) (*EmergencyState, error) {
 	// example response ?V:1,C:171,@1.1.2.15=16#
 	split := strings.Split(r, "=")
@@ -351,7 +368,6 @@ func (l *Light) getFunctionTestResult() (*EmergencyState, error) {
 		return nil, err
 	}
 
-	// todo implement GetEmergencyStatus, if the response is bad we want it to show up
 	return parseGetResultResponse(r)
 }
 
@@ -370,6 +386,58 @@ func (l *Light) getDurationTestResult() (*EmergencyState, error) {
 	return parseGetResultResponse(r)
 }
 
+// parseGetCompletionTimeResponse parses the response from the device for the completion time of a function/duration test.
+func parseGetCompletionTimeResponse(r string) (*time.Time, error) {
+	// example response ?V:1,C:170,@10.106.4.40=1754495355#
+	// the time is seconds in the Linux epoch
+	split := strings.Split(r, "=")
+	if len(split) < 2 {
+		return nil, fmt.Errorf("invalid response in getFunctionTestCompletionTime: %s", r)
+	}
+	timeStr := strings.TrimSuffix(split[1], "#")
+	epochSeconds, err := strconv.ParseInt(timeStr, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse function test completion time: %w", err)
+	}
+	if epochSeconds == 0 {
+		// this means the test has never been run
+		return nil, fmt.Errorf("function test completion time is zero, test has never been run")
+	}
+	t := time.Unix(epochSeconds, 0)
+	if t.IsZero() {
+		return nil, fmt.Errorf("function test completion time is zero")
+	}
+	return &t, nil
+}
+
+// getFunctionTestCompletionTime queries the device for the finish time of the last function test.
+func (l *Light) getFunctionTestCompletionTime() (*time.Time, error) {
+
+	command := queryEmergencyFunctionTestTime(l.conf.Address)
+	want := "?" + command[1:len(command)-1]
+
+	r, err := l.client.sendAndReceive(command, want)
+	if err != nil {
+		return nil, err
+	}
+
+	return parseGetCompletionTimeResponse(r)
+}
+
+// getDurationTestCompletionTime queries the device for the finish time of the last duration test.
+func (l *Light) getDurationTestCompletionTime() (*time.Time, error) {
+
+	command := queryEmergencyDurationTestTime(l.conf.Address)
+	want := "?" + command[1:len(command)-1]
+
+	r, err := l.client.sendAndReceive(command, want)
+	if err != nil {
+		return nil, err
+	}
+
+	return parseGetCompletionTimeResponse(r)
+}
+
 // StartTest Attempt to start a function or duration test.
 func (l *Light) StartTest(_ context.Context, req *gen.StartTestRequest) (*gen.StartTestResponse, error) {
 
@@ -381,6 +449,8 @@ func (l *Light) StartTest(_ context.Context, req *gen.StartTestRequest) (*gen.St
 			l.logger.Error("Failed to start function test", zap.String("name", l.conf.Name), zap.Error(err))
 			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to start function test"))
 		}
+		now := time.Now()
+		l.fTestStart = &now
 	case gen.EmergencyStatus_DURATION_TEST:
 		l.logger.Info("Starting duration test for light", zap.String("name", l.conf.Name))
 		err := l.runDurationTest()
@@ -388,6 +458,8 @@ func (l *Light) StartTest(_ context.Context, req *gen.StartTestRequest) (*gen.St
 			l.logger.Error("Failed to start duration test", zap.String("name", l.conf.Name), zap.Error(err))
 			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to start duration test"))
 		}
+		now := time.Now()
+		l.dTestStart = &now
 	default:
 		l.logger.Error("Unsupported test type requested", zap.String("name", l.conf.Name), zap.String("test", req.Test.String()))
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unsupported test type %s", req.Test.String()))
@@ -407,6 +479,9 @@ func (l *Light) StopTest(context.Context, *gen.StopTestRequest) (*gen.StopTestRe
 
 func (l *Light) GetTestResult(_ context.Context, req *gen.GetTestResultRequest) (*gen.TestResult, error) {
 
+	result := &gen.TestResult{
+		Test: req.Test,
+	}
 	var eState *EmergencyState
 	var err error
 	switch req.Test {
@@ -416,20 +491,57 @@ func (l *Light) GetTestResult(_ context.Context, req *gen.GetTestResultRequest) 
 			l.logger.Error("Failed to get function test result", zap.String("name", l.conf.Name), zap.Error(err))
 			return nil, status.Error(codes.Internal, "failed to get function test result")
 		}
+		if hasTestCompleted(eState) {
+			t, _ := l.getFunctionTestCompletionTime()
+			if t != nil {
+				result.EndTime = timestamppb.New(*t)
+			}
+		}
+		if l.fTestStart != nil {
+			result.StartTime = timestamppb.New(*l.fTestStart)
+		}
 	case gen.EmergencyStatus_DURATION_TEST:
 		eState, err = l.getDurationTestResult()
 		if err != nil {
 			l.logger.Error("Failed to get duration test result", zap.String("name", l.conf.Name), zap.Error(err))
 			return nil, status.Error(codes.Internal, "failed to get duration test result")
 		}
+		if hasTestCompleted(eState) {
+			t, _ := l.getDurationTestCompletionTime()
+			if t != nil {
+				result.EndTime = timestamppb.New(*t)
+			}
+		}
+		if l.dTestStart != nil {
+			result.StartTime = timestamppb.New(*l.dTestStart)
+		}
 	default:
 		l.logger.Error("Unsupported test type requested", zap.String("name", l.conf.Name), zap.String("test", req.Test.String()))
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unsupported test type %s", req.Test.String()))
 	}
 
-	pass := eState != nil && *eState == Pass
-	return &gen.TestResult{
-		Test: req.Test,
-		Pass: pass,
-	}, nil
+	result.Pass = eState != nil && *eState == Pass
+	result.FailureReason = statusToFailureReason(eState, req.Test)
+	return result, nil
+}
+
+func statusToFailureReason(e *EmergencyState, t gen.EmergencyStatus_Test) gen.EmergencyStatus_Failure {
+	if e == nil {
+		return gen.EmergencyStatus_FAILURE_UNSPECIFIED
+	}
+	switch *e {
+	case LampFailure:
+		return gen.EmergencyStatus_LAMP_FAILURE
+	case BatteryFailure:
+		return gen.EmergencyStatus_BATTERY_FAILURE
+	case Faulty:
+		return gen.EmergencyStatus_CIRCUIT_FAILURE
+	case Failure:
+		if t == gen.EmergencyStatus_FUNCTION_TEST {
+			return gen.EmergencyStatus_FUNCTION_TEST_FAILED
+		} else if t == gen.EmergencyStatus_DURATION_TEST {
+			return gen.EmergencyStatus_DURATION_TEST_FAILED
+		}
+	}
+	return gen.EmergencyStatus_FAILURE_UNSPECIFIED
 }
