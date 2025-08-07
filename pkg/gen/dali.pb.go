@@ -1112,7 +1112,8 @@ type TestResult struct {
 	// the time the test was started (if known)
 	StartTime *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
 	// the time the test was completed
-	EndTime       *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	EndTime       *timestamppb.Timestamp  `protobuf:"bytes,8,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	FailureReason EmergencyStatus_Failure `protobuf:"varint,9,opt,name=failure_reason,json=failureReason,proto3,enum=smartcore.bos.driver.dali.EmergencyStatus_Failure" json:"failure_reason,omitempty"` // if the test failed, this will be set to the reason for failure
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1187,6 +1188,13 @@ func (x *TestResult) GetEndTime() *timestamppb.Timestamp {
 		return x.EndTime
 	}
 	return nil
+}
+
+func (x *TestResult) GetFailureReason() EmergencyStatus_Failure {
+	if x != nil {
+		return x.FailureReason
+	}
+	return EmergencyStatus_FAILURE_UNSPECIFIED
 }
 
 type GetTestResultRequest struct {
@@ -1377,7 +1385,7 @@ const file_dali_proto_rawDesc = "" +
 	"\x04test\x18\x02 \x01(\x0e2/.smartcore.bos.driver.dali.EmergencyStatus.TestR\x04test\x125\n" +
 	"\binterval\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\binterval\"S\n" +
 	"\x1aUpdateTestIntervalResponse\x125\n" +
-	"\binterval\x18\x01 \x01(\v2\x19.google.protobuf.DurationR\binterval\"\xa2\x02\n" +
+	"\binterval\x18\x01 \x01(\v2\x19.google.protobuf.DurationR\binterval\"\xfd\x02\n" +
 	"\n" +
 	"TestResult\x12C\n" +
 	"\x04test\x18\x01 \x01(\x0e2/.smartcore.bos.driver.dali.EmergencyStatus.TestR\x04test\x12\x12\n" +
@@ -1386,7 +1394,8 @@ const file_dali_proto_rawDesc = "" +
 	"\x04etag\x18\x06 \x01(\tR\x04etag\x129\n" +
 	"\n" +
 	"start_time\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
-	"\bend_time\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\"o\n" +
+	"\bend_time\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x12Y\n" +
+	"\x0efailure_reason\x18\t \x01(\x0e22.smartcore.bos.driver.dali.EmergencyStatus.FailureR\rfailureReason\"o\n" +
 	"\x14GetTestResultRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12C\n" +
 	"\x04test\x18\x02 \x01(\x0e2/.smartcore.bos.driver.dali.EmergencyStatus.TestR\x04test\"\x86\x01\n" +
@@ -1465,33 +1474,34 @@ var file_dali_proto_depIdxs = []int32{
 	25, // 11: smartcore.bos.driver.dali.TestResult.duration:type_name -> google.protobuf.Duration
 	26, // 12: smartcore.bos.driver.dali.TestResult.start_time:type_name -> google.protobuf.Timestamp
 	26, // 13: smartcore.bos.driver.dali.TestResult.end_time:type_name -> google.protobuf.Timestamp
-	0,  // 14: smartcore.bos.driver.dali.GetTestResultRequest.test:type_name -> smartcore.bos.driver.dali.EmergencyStatus.Test
-	0,  // 15: smartcore.bos.driver.dali.DeleteTestResultRequest.test:type_name -> smartcore.bos.driver.dali.EmergencyStatus.Test
-	6,  // 16: smartcore.bos.driver.dali.DaliApi.AddToGroup:input_type -> smartcore.bos.driver.dali.AddToGroupRequest
-	8,  // 17: smartcore.bos.driver.dali.DaliApi.RemoveFromGroup:input_type -> smartcore.bos.driver.dali.RemoveFromGroupRequest
-	4,  // 18: smartcore.bos.driver.dali.DaliApi.GetGroupMembership:input_type -> smartcore.bos.driver.dali.GetGroupMembershipRequest
-	13, // 19: smartcore.bos.driver.dali.DaliApi.GetControlGearStatus:input_type -> smartcore.bos.driver.dali.GetControlGearStatusRequest
-	11, // 20: smartcore.bos.driver.dali.DaliApi.GetEmergencyStatus:input_type -> smartcore.bos.driver.dali.GetEmergencyStatusRequest
-	14, // 21: smartcore.bos.driver.dali.DaliApi.Identify:input_type -> smartcore.bos.driver.dali.IdentifyRequest
-	16, // 22: smartcore.bos.driver.dali.DaliApi.StartTest:input_type -> smartcore.bos.driver.dali.StartTestRequest
-	18, // 23: smartcore.bos.driver.dali.DaliApi.StopTest:input_type -> smartcore.bos.driver.dali.StopTestRequest
-	23, // 24: smartcore.bos.driver.dali.DaliApi.GetTestResult:input_type -> smartcore.bos.driver.dali.GetTestResultRequest
-	24, // 25: smartcore.bos.driver.dali.DaliApi.DeleteTestResult:input_type -> smartcore.bos.driver.dali.DeleteTestResultRequest
-	7,  // 26: smartcore.bos.driver.dali.DaliApi.AddToGroup:output_type -> smartcore.bos.driver.dali.AddToGroupResponse
-	9,  // 27: smartcore.bos.driver.dali.DaliApi.RemoveFromGroup:output_type -> smartcore.bos.driver.dali.RemoveFromGroupResponse
-	5,  // 28: smartcore.bos.driver.dali.DaliApi.GetGroupMembership:output_type -> smartcore.bos.driver.dali.GetGroupMembershipResponse
-	12, // 29: smartcore.bos.driver.dali.DaliApi.GetControlGearStatus:output_type -> smartcore.bos.driver.dali.ControlGearStatus
-	10, // 30: smartcore.bos.driver.dali.DaliApi.GetEmergencyStatus:output_type -> smartcore.bos.driver.dali.EmergencyStatus
-	15, // 31: smartcore.bos.driver.dali.DaliApi.Identify:output_type -> smartcore.bos.driver.dali.IdentifyResponse
-	17, // 32: smartcore.bos.driver.dali.DaliApi.StartTest:output_type -> smartcore.bos.driver.dali.StartTestResponse
-	19, // 33: smartcore.bos.driver.dali.DaliApi.StopTest:output_type -> smartcore.bos.driver.dali.StopTestResponse
-	22, // 34: smartcore.bos.driver.dali.DaliApi.GetTestResult:output_type -> smartcore.bos.driver.dali.TestResult
-	22, // 35: smartcore.bos.driver.dali.DaliApi.DeleteTestResult:output_type -> smartcore.bos.driver.dali.TestResult
-	26, // [26:36] is the sub-list for method output_type
-	16, // [16:26] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	2,  // 14: smartcore.bos.driver.dali.TestResult.failure_reason:type_name -> smartcore.bos.driver.dali.EmergencyStatus.Failure
+	0,  // 15: smartcore.bos.driver.dali.GetTestResultRequest.test:type_name -> smartcore.bos.driver.dali.EmergencyStatus.Test
+	0,  // 16: smartcore.bos.driver.dali.DeleteTestResultRequest.test:type_name -> smartcore.bos.driver.dali.EmergencyStatus.Test
+	6,  // 17: smartcore.bos.driver.dali.DaliApi.AddToGroup:input_type -> smartcore.bos.driver.dali.AddToGroupRequest
+	8,  // 18: smartcore.bos.driver.dali.DaliApi.RemoveFromGroup:input_type -> smartcore.bos.driver.dali.RemoveFromGroupRequest
+	4,  // 19: smartcore.bos.driver.dali.DaliApi.GetGroupMembership:input_type -> smartcore.bos.driver.dali.GetGroupMembershipRequest
+	13, // 20: smartcore.bos.driver.dali.DaliApi.GetControlGearStatus:input_type -> smartcore.bos.driver.dali.GetControlGearStatusRequest
+	11, // 21: smartcore.bos.driver.dali.DaliApi.GetEmergencyStatus:input_type -> smartcore.bos.driver.dali.GetEmergencyStatusRequest
+	14, // 22: smartcore.bos.driver.dali.DaliApi.Identify:input_type -> smartcore.bos.driver.dali.IdentifyRequest
+	16, // 23: smartcore.bos.driver.dali.DaliApi.StartTest:input_type -> smartcore.bos.driver.dali.StartTestRequest
+	18, // 24: smartcore.bos.driver.dali.DaliApi.StopTest:input_type -> smartcore.bos.driver.dali.StopTestRequest
+	23, // 25: smartcore.bos.driver.dali.DaliApi.GetTestResult:input_type -> smartcore.bos.driver.dali.GetTestResultRequest
+	24, // 26: smartcore.bos.driver.dali.DaliApi.DeleteTestResult:input_type -> smartcore.bos.driver.dali.DeleteTestResultRequest
+	7,  // 27: smartcore.bos.driver.dali.DaliApi.AddToGroup:output_type -> smartcore.bos.driver.dali.AddToGroupResponse
+	9,  // 28: smartcore.bos.driver.dali.DaliApi.RemoveFromGroup:output_type -> smartcore.bos.driver.dali.RemoveFromGroupResponse
+	5,  // 29: smartcore.bos.driver.dali.DaliApi.GetGroupMembership:output_type -> smartcore.bos.driver.dali.GetGroupMembershipResponse
+	12, // 30: smartcore.bos.driver.dali.DaliApi.GetControlGearStatus:output_type -> smartcore.bos.driver.dali.ControlGearStatus
+	10, // 31: smartcore.bos.driver.dali.DaliApi.GetEmergencyStatus:output_type -> smartcore.bos.driver.dali.EmergencyStatus
+	15, // 32: smartcore.bos.driver.dali.DaliApi.Identify:output_type -> smartcore.bos.driver.dali.IdentifyResponse
+	17, // 33: smartcore.bos.driver.dali.DaliApi.StartTest:output_type -> smartcore.bos.driver.dali.StartTestResponse
+	19, // 34: smartcore.bos.driver.dali.DaliApi.StopTest:output_type -> smartcore.bos.driver.dali.StopTestResponse
+	22, // 35: smartcore.bos.driver.dali.DaliApi.GetTestResult:output_type -> smartcore.bos.driver.dali.TestResult
+	22, // 36: smartcore.bos.driver.dali.DaliApi.DeleteTestResult:output_type -> smartcore.bos.driver.dali.TestResult
+	27, // [27:37] is the sub-list for method output_type
+	17, // [17:27] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_dali_proto_init() }
