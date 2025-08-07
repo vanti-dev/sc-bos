@@ -30,9 +30,10 @@ type Root struct {
 
 	ConnectTimeout *jsontypes.Duration `json:"connectTimeout,omitempty"`
 
-	Lights         []*Device `json:"lights,omitempty"`
-	LightingGroups []*Device `json:"lightingGroups,omitempty"`
-	Pirs           []*Device `json:"pirs,omitempty"`
+	EmergencyLights []*Device `json:"emergencyLights,omitempty"`
+	Lights          []*Device `json:"lights,omitempty"`
+	LightingGroups  []*Device `json:"lightingGroups,omitempty"`
+	Pirs            []*Device `json:"pirs,omitempty"`
 	// RefreshOccupancy is the duration at which the pir sensors refresh their occupancy status
 	// Defaults to every 10 seconds
 	RefreshOccupancy *jsontypes.Duration `json:"refreshOccupancy,omitempty,omitzero"`
