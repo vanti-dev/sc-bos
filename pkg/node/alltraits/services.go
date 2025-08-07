@@ -58,7 +58,7 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	anprcamera.TraitName:     {gen.AnprCameraApi_ServiceDesc},
 	button.TraitName:         {gen.ButtonApi_ServiceDesc},
 	dalipb.TraitName:         {gen.DaliApi_ServiceDesc},
-	emergencylight.TraitName: {gen.DaliApi_ServiceDesc},
+	emergencylight.TraitName: {gen.DaliApi_ServiceDesc, gen.EmergencyLightApi_ServiceDesc},
 	meter.TraitName:          {gen.MeterApi_ServiceDesc, gen.MeterInfo_ServiceDesc, gen.MeterHistory_ServiceDesc},
 	mqttpb.TraitName:         {gen.MqttService_ServiceDesc},
 	report.TraitName:         {gen.ReportApi_ServiceDesc},

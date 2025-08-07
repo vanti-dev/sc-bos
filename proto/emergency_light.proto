@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+import "types/time/period.proto";
+
+service EmergencyLightApi {
+  // Attempt to start a function or duration test.
+  rpc StartTest(StartTestRequest) returns (StartTestResponse);
+  // Stop any test that is in progress.
+  rpc StopTest(StopTestRequest) returns (StopTestResponse);
+  // Get the result of the most recent function and duration test.
+  rpc GetTestResults(GetTestResultsRequest) returns (GetTestResultsResponse);
+  // List the results of all tests performed on the emergency light.
+  rpc ListTestResults(ListTestResultsRequest) returns (ListTestResultsResponse);
+}
+
+message EmergencyLight {
+  enum TestType {
+    TEST_UNKNOWN = 0;
+    NO_TEST = 1;
+    FUNCTION_TEST = 2;
+    DURATION_TEST = 3;
+  }
+
+  enum Result {
+    TEST_RESULT_UNSPECIFIED = 0;
+    TEST_PASSED = 1;
+    CIRCUIT_FAILURE = 2;
+    BATTERY_DURATION_FAILURE = 3;
+    BATTERY_FAILURE = 4;
+    LAMP_FAILURE = 5;
+    FUNCTION_TEST_FAILED = 6;
+    DURATION_TEST_FAILED = 7;
+    LIGHT_FAULTY = 8;
+    COMMUNICATION_FAILURE = 9;
+    OTHER_FAULT = 10;
+  }
+}
+
+message StartTestRequest {
+  string name = 1;
+  EmergencyLight.TestType test = 2;
+}
+message StartTestResponse {
+  // The type of test that was started.
+  EmergencyLight.TestType test = 1;
+  // The time at which the test was started.
+  google.protobuf.Timestamp start_time = 2;
+  // The duration of the test, if applicable.
+  google.protobuf.Duration duration = 3;
+}
+
+message StopTestRequest {
+  string name = 1;
+}
+message StopTestResponse {}
+
+message GetTestResultsRequest {
+  string name = 1;
+}
+
+message GetTestResultsResponse {
+    TestResult function_test_result = 1;
+    TestResult duration_test_result = 2;
+}
+
+message TestResult {
+  EmergencyLight.TestType test_type = 1;
+  google.protobuf.Timestamp function_test_start = 2;
+  google.protobuf.Timestamp function_test_completion = 3;
+  EmergencyLight.Result function_test_result = 4;
+  google.protobuf.Timestamp duration_test_start = 5;
+  google.protobuf.Timestamp duration_test_completion = 6;
+  EmergencyLight.Result duration_test_result = 7;
+  // Duration of the duration test, if applicable.
+  google.protobuf.Duration duration = 8;
+}
+
+message ListTestResultsRequest {
+  smartcore.types.time.Period period = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  // The maximum number of results to return.
+  // The service may return fewer than this value.
+  // If unspecified, at most 50 items will be returned.
+  // The maximum value is 1000; values above 1000 will be coerced to 1000.
+  int32 page_size = 3;
+  // A page token, received from a previous `ListTestResultsRequest` call.
+  // Provide this to retrieve the subsequent page.
+  string page_token = 4;
+}
+
+message ListTestResultsResponse {
+  repeated TestResult test_results = 1;
+
+  // A token, which can be sent as `page_token` to retrieve the next page.
+  // If this field is omitted, there are no subsequent pages.
+  string next_page_token = 2;
+  // If non-zero this is the total number of alerts after filtering is applied.
+  // This may be an estimate.
+  int32 total_size = 3;
+}
