@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"go.uber.org/zap"
-
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
@@ -26,19 +24,13 @@ func (n *Node) PullAllMetadata(ctx context.Context, opts ...resource.ReadOption)
 }
 
 func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
-	for i := range 5 {
-		_, err := n.allMetadata.MergeMetadata(name, md, resource.WithCreateIfAbsent())
-		if isConcurrentUpdateDetectedError(err) && i < 4 {
-			n.Logger.Debug("writing metadata, will try again", zap.Int("attempt", i), zap.String("name", name))
-			continue
-		}
-		if err != nil {
-			return NilUndo, err
-		}
-		break // no err
+	_, err := n.allMetadata.MergeMetadata(name, md, resource.WithCreateIfAbsent())
+	if err != nil {
+		return NilUndo, err
 	}
-
 	undo := Undo(func() {
+		n.mu.Lock()
+		defer n.mu.Unlock()
 		_, _ = n.allMetadata.DeleteMetadata(name, resource.WithAllowMissing(true))
 	})
 
