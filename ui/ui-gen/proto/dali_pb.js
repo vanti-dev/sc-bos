@@ -3340,7 +3340,8 @@ pass: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
 duration: (f = msg.getDuration()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f),
 etag: jspb.Message.getFieldWithDefault(msg, 6, ""),
 startTime: (f = msg.getStartTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
+endTime: (f = msg.getEndTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+failureReason: jspb.Message.getFieldWithDefault(msg, 9, 0)
   };
 
   if (includeInstance) {
@@ -3403,6 +3404,10 @@ proto.smartcore.bos.driver.dali.TestResult.deserializeBinaryFromReader = functio
       var value = new google_protobuf_timestamp_pb.Timestamp;
       reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
       msg.setEndTime(value);
+      break;
+    case 9:
+      var value = /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Failure} */ (reader.readEnum());
+      msg.setFailureReason(value);
       break;
     default:
       reader.skipField();
@@ -3476,6 +3481,13 @@ proto.smartcore.bos.driver.dali.TestResult.serializeBinaryToWriter = function(me
       8,
       f,
       google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getFailureReason();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      9,
+      f
     );
   }
 };
@@ -3643,6 +3655,24 @@ proto.smartcore.bos.driver.dali.TestResult.prototype.clearEndTime = function() {
  */
 proto.smartcore.bos.driver.dali.TestResult.prototype.hasEndTime = function() {
   return jspb.Message.getField(this, 8) != null;
+};
+
+
+/**
+ * optional EmergencyStatus.Failure failure_reason = 9;
+ * @return {!proto.smartcore.bos.driver.dali.EmergencyStatus.Failure}
+ */
+proto.smartcore.bos.driver.dali.TestResult.prototype.getFailureReason = function() {
+  return /** @type {!proto.smartcore.bos.driver.dali.EmergencyStatus.Failure} */ (jspb.Message.getFieldWithDefault(this, 9, 0));
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.driver.dali.EmergencyStatus.Failure} value
+ * @return {!proto.smartcore.bos.driver.dali.TestResult} returns this
+ */
+proto.smartcore.bos.driver.dali.TestResult.prototype.setFailureReason = function(value) {
+  return jspb.Message.setProto3EnumField(this, 9, value);
 };
 
 

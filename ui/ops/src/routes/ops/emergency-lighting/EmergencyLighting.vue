@@ -42,12 +42,27 @@
           {{ value.map((v) => faultToString(v)).join(', ') }}
         </span>
       </template>
-      <template #item.updateTime="{ value }">{{ parseDate(value.seconds) }}</template>
+      <template #item.updateTime="{ item }">
+        <span v-if="timestampToDate(item.updateTime)">
+          {{ timestampToDate(item.updateTime).toLocaleString() }}
+        </span>
+      </template>
+      <template #item.lastFunctionTest="{ item }">
+        <span v-if="timestampToDate(item.lastFunctionTest)">
+          {{ timestampToDate(item.lastFunctionTest).toLocaleString() }}
+        </span>
+      </template>
+      <template #item.lastDurationTest="{ item }">
+        <span v-if="timestampToDate(item.lastDurationTest)">
+          {{ timestampToDate(item.lastDurationTest).toLocaleString() }}
+        </span>
+      </template>
     </v-data-table>
   </content-card>
 </template>
 
 <script setup>
+import {timestampToDate} from '@/api/convpb.js';
 import {newActionTracker} from '@/api/resource';
 import {faultToString, getReportCSV, listLightHealth, runTest} from '@/api/sc/traits/lighting-test';
 import ContentCard from '@/components/ContentCard.vue';
@@ -60,8 +75,10 @@ const {blockActions} = useAuthSetup();
 
 const headers = [
   {title: 'Name', key: 'name'},
-  {title: 'Status', key: 'faultsList'}
-  // {title: 'Updated', key: 'updateTime'}
+  {title: 'Status', key: 'faultsList'},
+  {title: 'Updated', key: 'updateTime'},
+  {title: 'Last Function Test', key: 'lastFunctionTest'},
+  {title: 'Last Duration Test', key: 'lastDurationTest'}
 ];
 
 const selectedLights = ref([]);
@@ -101,16 +118,6 @@ async function refreshLightHealth() {
     if (!resp.nextPageToken) break;
     req.pageToken = resp.nextPageToken;
   }
-}
-
-/**
- *
- * @param {number} seconds
- * @return {string}
- */
-function parseDate(seconds) {
-  const d = new Date(seconds * 1000);
-  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
 }
 
 /**

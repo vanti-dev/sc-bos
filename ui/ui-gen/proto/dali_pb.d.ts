@@ -434,6 +434,9 @@ export class TestResult extends jspb.Message {
   hasEndTime(): boolean;
   clearEndTime(): TestResult;
 
+  getFailureReason(): EmergencyStatus.Failure;
+  setFailureReason(value: EmergencyStatus.Failure): TestResult;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): TestResult.AsObject;
   static toObject(includeInstance: boolean, msg: TestResult): TestResult.AsObject;
@@ -450,6 +453,7 @@ export namespace TestResult {
     etag: string,
     startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    failureReason: EmergencyStatus.Failure,
   }
 }
 

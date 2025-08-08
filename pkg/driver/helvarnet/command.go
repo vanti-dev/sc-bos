@@ -106,14 +106,14 @@ func queryEmergencyDurationTestState(addr string) string {
 	return fmt.Sprintf(">V:1,C:173,@%s#", addr)
 }
 
-// todo: the below commands are not used yet, the DALI trait needs to be updated first to support test result times
-
 // Query Emergency Duration Test Time
+// This is the time the test completed.
 func queryEmergencyDurationTestTime(addr string) string {
 	return fmt.Sprintf(">V:1,C:172,@%s#", addr)
 }
 
 // Query Emergency Function Test Time
+// This is the time the test completed.
 func queryEmergencyFunctionTestTime(addr string) string {
 	return fmt.Sprintf(">V:1,C:170,@%s#", addr)
 }

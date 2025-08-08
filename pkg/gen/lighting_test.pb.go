@@ -89,10 +89,12 @@ type LightHealth struct {
 	// The Smart Core device name of the emergency light.
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// The last time this data was updated.
-	UpdateTime    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
-	Faults        []LightFault           `protobuf:"varint,3,rep,packed,name=faults,proto3,enum=smartcore.bos.LightFault" json:"faults,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	UpdateTime       *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
+	Faults           []LightFault           `protobuf:"varint,3,rep,packed,name=faults,proto3,enum=smartcore.bos.LightFault" json:"faults,omitempty"`
+	LastFunctionTest *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=last_function_test,json=lastFunctionTest,proto3" json:"last_function_test,omitempty"`
+	LastDurationTest *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=last_duration_test,json=lastDurationTest,proto3" json:"last_duration_test,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *LightHealth) Reset() {
@@ -142,6 +144,20 @@ func (x *LightHealth) GetUpdateTime() *timestamppb.Timestamp {
 func (x *LightHealth) GetFaults() []LightFault {
 	if x != nil {
 		return x.Faults
+	}
+	return nil
+}
+
+func (x *LightHealth) GetLastFunctionTest() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastFunctionTest
+	}
+	return nil
+}
+
+func (x *LightHealth) GetLastDurationTest() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastDurationTest
 	}
 	return nil
 }
@@ -756,12 +772,14 @@ var File_lighting_test_proto protoreflect.FileDescriptor
 
 const file_lighting_test_proto_rawDesc = "" +
 	"\n" +
-	"\x13lighting_test.proto\x12\rsmartcore.bos\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\"\x91\x01\n" +
+	"\x13lighting_test.proto\x12\rsmartcore.bos\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\"\xa5\x02\n" +
 	"\vLightHealth\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12;\n" +
 	"\vupdate_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"updateTime\x121\n" +
-	"\x06faults\x18\x03 \x03(\x0e2\x19.smartcore.bos.LightFaultR\x06faults\"\xb9\x04\n" +
+	"\x06faults\x18\x03 \x03(\x0e2\x19.smartcore.bos.LightFaultR\x06faults\x12H\n" +
+	"\x12last_function_test\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x10lastFunctionTest\x12H\n" +
+	"\x12last_duration_test\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x10lastDurationTest\"\xb9\x04\n" +
 	"\rLightingEvent\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x0e\n" +
 	"\x02id\x18\x02 \x01(\tR\x02id\x128\n" +
@@ -846,27 +864,29 @@ var file_lighting_test_proto_goTypes = []any{
 var file_lighting_test_proto_depIdxs = []int32{
 	13, // 0: smartcore.bos.LightHealth.update_time:type_name -> google.protobuf.Timestamp
 	0,  // 1: smartcore.bos.LightHealth.faults:type_name -> smartcore.bos.LightFault
-	13, // 2: smartcore.bos.LightingEvent.timestamp:type_name -> google.protobuf.Timestamp
-	10, // 3: smartcore.bos.LightingEvent.duration_test_pass:type_name -> smartcore.bos.LightingEvent.DurationTestPass
-	11, // 4: smartcore.bos.LightingEvent.function_test_pass:type_name -> smartcore.bos.LightingEvent.FunctionTestPass
-	12, // 5: smartcore.bos.LightingEvent.status_report:type_name -> smartcore.bos.LightingEvent.StatusReport
-	1,  // 6: smartcore.bos.ListLightHealthResponse.emergency_lights:type_name -> smartcore.bos.LightHealth
-	2,  // 7: smartcore.bos.ListLightEventsResponse.events:type_name -> smartcore.bos.LightingEvent
-	14, // 8: smartcore.bos.LightingEvent.DurationTestPass.achieved_duration:type_name -> google.protobuf.Duration
-	0,  // 9: smartcore.bos.LightingEvent.StatusReport.faults:type_name -> smartcore.bos.LightFault
-	3,  // 10: smartcore.bos.LightingTestApi.GetLightHealth:input_type -> smartcore.bos.GetLightHealthRequest
-	4,  // 11: smartcore.bos.LightingTestApi.ListLightHealth:input_type -> smartcore.bos.ListLightHealthRequest
-	6,  // 12: smartcore.bos.LightingTestApi.ListLightEvents:input_type -> smartcore.bos.ListLightEventsRequest
-	8,  // 13: smartcore.bos.LightingTestApi.GetReportCSV:input_type -> smartcore.bos.GetReportCSVRequest
-	1,  // 14: smartcore.bos.LightingTestApi.GetLightHealth:output_type -> smartcore.bos.LightHealth
-	5,  // 15: smartcore.bos.LightingTestApi.ListLightHealth:output_type -> smartcore.bos.ListLightHealthResponse
-	7,  // 16: smartcore.bos.LightingTestApi.ListLightEvents:output_type -> smartcore.bos.ListLightEventsResponse
-	9,  // 17: smartcore.bos.LightingTestApi.GetReportCSV:output_type -> smartcore.bos.ReportCSV
-	14, // [14:18] is the sub-list for method output_type
-	10, // [10:14] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	13, // 2: smartcore.bos.LightHealth.last_function_test:type_name -> google.protobuf.Timestamp
+	13, // 3: smartcore.bos.LightHealth.last_duration_test:type_name -> google.protobuf.Timestamp
+	13, // 4: smartcore.bos.LightingEvent.timestamp:type_name -> google.protobuf.Timestamp
+	10, // 5: smartcore.bos.LightingEvent.duration_test_pass:type_name -> smartcore.bos.LightingEvent.DurationTestPass
+	11, // 6: smartcore.bos.LightingEvent.function_test_pass:type_name -> smartcore.bos.LightingEvent.FunctionTestPass
+	12, // 7: smartcore.bos.LightingEvent.status_report:type_name -> smartcore.bos.LightingEvent.StatusReport
+	1,  // 8: smartcore.bos.ListLightHealthResponse.emergency_lights:type_name -> smartcore.bos.LightHealth
+	2,  // 9: smartcore.bos.ListLightEventsResponse.events:type_name -> smartcore.bos.LightingEvent
+	14, // 10: smartcore.bos.LightingEvent.DurationTestPass.achieved_duration:type_name -> google.protobuf.Duration
+	0,  // 11: smartcore.bos.LightingEvent.StatusReport.faults:type_name -> smartcore.bos.LightFault
+	3,  // 12: smartcore.bos.LightingTestApi.GetLightHealth:input_type -> smartcore.bos.GetLightHealthRequest
+	4,  // 13: smartcore.bos.LightingTestApi.ListLightHealth:input_type -> smartcore.bos.ListLightHealthRequest
+	6,  // 14: smartcore.bos.LightingTestApi.ListLightEvents:input_type -> smartcore.bos.ListLightEventsRequest
+	8,  // 15: smartcore.bos.LightingTestApi.GetReportCSV:input_type -> smartcore.bos.GetReportCSVRequest
+	1,  // 16: smartcore.bos.LightingTestApi.GetLightHealth:output_type -> smartcore.bos.LightHealth
+	5,  // 17: smartcore.bos.LightingTestApi.ListLightHealth:output_type -> smartcore.bos.ListLightHealthResponse
+	7,  // 18: smartcore.bos.LightingTestApi.ListLightEvents:output_type -> smartcore.bos.ListLightEventsResponse
+	9,  // 19: smartcore.bos.LightingTestApi.GetReportCSV:output_type -> smartcore.bos.ReportCSV
+	16, // [16:20] is the sub-list for method output_type
+	12, // [12:16] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_lighting_test_proto_init() }

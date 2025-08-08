@@ -149,6 +149,7 @@ message TestResult {
   google.protobuf.Timestamp start_time = 7;
   // the time the test was completed
   google.protobuf.Timestamp end_time = 8;
+  EmergencyStatus.Failure failure_reason = 9; // if the test failed, this will be set to the reason for failure
 }
 
 message GetTestResultRequest {
