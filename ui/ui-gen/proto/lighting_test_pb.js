@@ -332,7 +332,9 @@ proto.smartcore.bos.LightHealth.toObject = function(includeInstance, msg) {
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
 updateTime: (f = msg.getUpdateTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
-faultsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
+faultsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+lastFunctionTest: (f = msg.getLastFunctionTest()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+lastDurationTest: (f = msg.getLastDurationTest()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -384,6 +386,16 @@ proto.smartcore.bos.LightHealth.deserializeBinaryFromReader = function(msg, read
         msg.addFaults(values[i]);
       }
       break;
+    case 4:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setLastFunctionTest(value);
+      break;
+    case 5:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setLastDurationTest(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -433,6 +445,22 @@ proto.smartcore.bos.LightHealth.serializeBinaryToWriter = function(message, writ
     writer.writePackedEnum(
       3,
       f
+    );
+  }
+  f = message.getLastFunctionTest();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getLastDurationTest();
+  if (f != null) {
+    writer.writeMessage(
+      5,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
 };
@@ -527,6 +555,80 @@ proto.smartcore.bos.LightHealth.prototype.addFaults = function(value, opt_index)
  */
 proto.smartcore.bos.LightHealth.prototype.clearFaultsList = function() {
   return this.setFaultsList([]);
+};
+
+
+/**
+ * optional google.protobuf.Timestamp last_function_test = 4;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.LightHealth.prototype.getLastFunctionTest = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 4));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.LightHealth} returns this
+*/
+proto.smartcore.bos.LightHealth.prototype.setLastFunctionTest = function(value) {
+  return jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.LightHealth} returns this
+ */
+proto.smartcore.bos.LightHealth.prototype.clearLastFunctionTest = function() {
+  return this.setLastFunctionTest(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.LightHealth.prototype.hasLastFunctionTest = function() {
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp last_duration_test = 5;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.LightHealth.prototype.getLastDurationTest = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 5));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.LightHealth} returns this
+*/
+proto.smartcore.bos.LightHealth.prototype.setLastDurationTest = function(value) {
+  return jspb.Message.setWrapperField(this, 5, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.LightHealth} returns this
+ */
+proto.smartcore.bos.LightHealth.prototype.clearLastDurationTest = function() {
+  return this.setLastDurationTest(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.LightHealth.prototype.hasLastDurationTest = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 

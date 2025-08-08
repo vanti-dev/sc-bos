@@ -34,6 +34,8 @@ message LightHealth {
   // The last time this data was updated.
   google.protobuf.Timestamp update_time = 2;
   repeated LightFault faults = 3;
+  google.protobuf.Timestamp last_function_test = 4;
+  google.protobuf.Timestamp last_duration_test = 5;
 }
 
 message LightingEvent {
