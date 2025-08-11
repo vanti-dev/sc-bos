@@ -606,6 +606,13 @@ func Test_conditionToCmpFunc(t *testing.T) {
 			t.Errorf("expected nil condition value to return false for any leaf, got true")
 		}
 	})
+
+	condTestName := func(cond *gen.Device_Query_Condition) string {
+		name := fmt.Sprintf("%T", cond.Value)
+		name = strings.TrimPrefix(name, "*gen.Device_Query_Condition_")
+		return name
+	}
+
 	t.Run("strings", func(t *testing.T) {
 		tests := []struct {
 			cond               *gen.Device_Query_Condition
@@ -656,9 +663,7 @@ func Test_conditionToCmpFunc(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			name := fmt.Sprintf("%T", tt.cond.Value)
-			name = strings.TrimPrefix(name, "*gen.Device_Query_Condition_")
-			t.Run(name, func(t *testing.T) {
+			t.Run(condTestName(tt.cond), func(t *testing.T) {
 				cmpFunc := conditionToCmpFunc(tt.cond)
 				for _, str := range tt.positive {
 					if !cmpFunc(strLeaf(str)) {
@@ -668,6 +673,76 @@ func Test_conditionToCmpFunc(t *testing.T) {
 				for _, str := range tt.negative {
 					if cmpFunc(strLeaf(str)) {
 						t.Errorf("expected %q to not match condition %s", str, tt.cond)
+					}
+				}
+			})
+		}
+	})
+
+	t.Run("timestamps", func(t *testing.T) {
+		now := time.Date(2025, 8, 10, 12, 5, 40, 111, time.UTC)
+		var zero time.Time // zero time is used to test empty timestamps
+		tests := []struct {
+			cond               *gen.Device_Query_Condition
+			positive, negative []time.Time
+		}{
+			{
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_TimestampEqual{TimestampEqual: timestamppb.New(now)}},
+				positive: []time.Time{now},
+				negative: []time.Time{zero, now.Add(1), now.Add(-1)},
+			},
+			{
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_TimestampLt{TimestampLt: timestamppb.New(now)}},
+				positive: []time.Time{now.Add(-1), now.Add(-10 * time.Second)},
+				negative: []time.Time{zero, now, now.Add(1), now.Add(10 * time.Second)},
+			},
+			{
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_TimestampLte{TimestampLte: timestamppb.New(now)}},
+				positive: []time.Time{now, now.Add(-1), now.Add(-10 * time.Second)},
+				negative: []time.Time{zero, now.Add(1), now.Add(10 * time.Second)},
+			},
+			{
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_TimestampGt{TimestampGt: timestamppb.New(now)}},
+				positive: []time.Time{now.Add(1), now.Add(10 * time.Second)},
+				negative: []time.Time{zero, now, now.Add(-1), now.Add(-10 * time.Second)},
+			},
+			{
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_TimestampGte{TimestampGte: timestamppb.New(now)}},
+				positive: []time.Time{now, now.Add(1), now.Add(10 * time.Second)},
+				negative: []time.Time{zero, now.Add(-1), now.Add(-10 * time.Second)},
+			},
+		}
+
+		timestampLeaf := func(val time.Time) leaf {
+			md := (&querypb.Result{}).ProtoReflect().Descriptor()
+			return leaf{
+				fd: md.Fields().ByName("timestamp_val"),
+				v:  protoreflect.ValueOfMessage(timestamppb.New(val).ProtoReflect()),
+			}
+		}
+
+		t.Run("not a timestamp", func(t *testing.T) {
+			l := leaf{
+				fd: (&querypb.Result{}).ProtoReflect().Descriptor().Fields().ByName("string_val"),
+				v:  protoreflect.ValueOfString("not a timestamp"),
+			}
+			cmpFunc := conditionToCmpFunc(&gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_TimestampEqual{TimestampEqual: timestamppb.New(now)}})
+			if cmpFunc(l) {
+				t.Errorf("expected condition to not match non-timestamp leaf, got true")
+			}
+		})
+
+		for _, tt := range tests {
+			t.Run(condTestName(tt.cond), func(t *testing.T) {
+				cmpFunc := conditionToCmpFunc(tt.cond)
+				for _, ts := range tt.positive {
+					if !cmpFunc(timestampLeaf(ts)) {
+						t.Errorf("expected %v to match condition %s", ts, tt.cond)
+					}
+				}
+				for _, ts := range tt.negative {
+					if cmpFunc(timestampLeaf(ts)) {
+						t.Errorf("expected %v to not match condition %s", ts, tt.cond)
 					}
 				}
 			})

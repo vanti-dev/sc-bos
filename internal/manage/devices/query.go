@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/reflect/protopath"
 	"google.golang.org/protobuf/reflect/protorange"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -59,6 +60,15 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
 			return f(s)
 		}
 	}
+	timestampCmp := func(f func(*timestamppb.Timestamp) bool) func(leaf) bool {
+		return func(v leaf) bool {
+			t, ok := v.toTimestamp()
+			if !ok {
+				return false
+			}
+			return f(t)
+		}
+	}
 
 	switch c := cond.Value.(type) {
 	case *gen.Device_Query_Condition_StringEqual:
@@ -95,6 +105,37 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
 		return strCmp(func(v string) bool {
 			_, ok := set[strings.ToLower(v)]
 			return ok
+		})
+
+	case *gen.Device_Query_Condition_TimestampEqual:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			return t.AsTime().Equal(c.TimestampEqual.AsTime())
+		})
+	case *gen.Device_Query_Condition_TimestampGt:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			return t.AsTime().After(c.TimestampGt.AsTime())
+		})
+	case *gen.Device_Query_Condition_TimestampGte:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			return !t.AsTime().Before(c.TimestampGte.AsTime())
+		})
+	case *gen.Device_Query_Condition_TimestampLt:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			// zero times shouldn't match
+			goT := t.AsTime()
+			if goT.IsZero() {
+				return false
+			}
+			return goT.Before(c.TimestampLt.AsTime())
+		})
+	case *gen.Device_Query_Condition_TimestampLte:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			// zero times shouldn't match
+			goT := t.AsTime()
+			if goT.IsZero() {
+				return false
+			}
+			return !goT.After(c.TimestampLte.AsTime())
 		})
 	}
 
@@ -439,6 +480,26 @@ func (l leaf) toString() (string, bool) {
 		// unsupported kinds
 		return "", false
 	}
+}
+
+// toTimestamp converts the leaf into a *timestamppb.Timestamp if it is a valid timestamp.
+func (l leaf) toTimestamp() (*timestamppb.Timestamp, bool) {
+	if l.fd == nil {
+		return nil, false
+	}
+	if l.fd.Message() == nil || l.fd.Message().FullName() != "google.protobuf.Timestamp" {
+		return nil, false
+	}
+	tm := l.v.Message()
+	if !tm.IsValid() {
+		return nil, false
+	}
+	t, ok := tm.Interface().(*timestamppb.Timestamp)
+	if !ok {
+		return nil, false
+	}
+
+	return t, true
 }
 
 // parseMapKey converts keyStr into a protoreflect.MapKey using fd to choose the correct conversion method to use.
