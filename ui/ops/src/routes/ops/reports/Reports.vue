@@ -5,7 +5,6 @@
       <v-data-table-server
           :headers="allHeaders"
           v-bind="tableAttrs"
-          :items-length="queryTotalCount"
           item-key="id"
           class="pt-4">
         <template #item.created="{ item }">
@@ -46,9 +45,6 @@ const reportOptions = computed(() => ({
 const reportsCollection = useReportsCollection(listReportsRequest, reportOptions);
 const tableAttrs = useDataTableCollection(wantCount, reportsCollection);
 
-const queryTotalCount = computed(() => {
-  return reportsCollection.totalItems.value;
-});
 
 /**
  * Downloads a report by its ID.
