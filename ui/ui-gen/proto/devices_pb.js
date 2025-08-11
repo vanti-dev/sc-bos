@@ -729,7 +729,7 @@ proto.smartcore.bos.Device.Query.serializeBinaryToWriter = function(message, wri
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.smartcore.bos.Device.Query.Condition.oneofGroups_ = [[2,3,4,5,6,7]];
+proto.smartcore.bos.Device.Query.Condition.oneofGroups_ = [[2,3,4,5,6,7,20,21,22,23,24]];
 
 /**
  * @enum {number}
@@ -741,7 +741,12 @@ proto.smartcore.bos.Device.Query.Condition.ValueCase = {
   STRING_CONTAINS: 4,
   STRING_CONTAINS_FOLD: 5,
   STRING_IN: 6,
-  STRING_IN_FOLD: 7
+  STRING_IN_FOLD: 7,
+  TIMESTAMP_EQUAL: 20,
+  TIMESTAMP_GT: 21,
+  TIMESTAMP_GTE: 22,
+  TIMESTAMP_LT: 23,
+  TIMESTAMP_LTE: 24
 };
 
 /**
@@ -788,7 +793,12 @@ stringEqualFold: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f,
 stringContains: (f = jspb.Message.getField(msg, 4)) == null ? undefined : f,
 stringContainsFold: (f = jspb.Message.getField(msg, 5)) == null ? undefined : f,
 stringIn: (f = msg.getStringIn()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f),
-stringInFold: (f = msg.getStringInFold()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f)
+stringInFold: (f = msg.getStringInFold()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f),
+timestampEqual: (f = msg.getTimestampEqual()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+timestampGt: (f = msg.getTimestampGt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+timestampGte: (f = msg.getTimestampGte()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+timestampLt: (f = msg.getTimestampLt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+timestampLte: (f = msg.getTimestampLte()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -854,6 +864,31 @@ proto.smartcore.bos.Device.Query.Condition.deserializeBinaryFromReader = functio
       var value = new proto.smartcore.bos.Device.Query.StringList;
       reader.readMessage(value,proto.smartcore.bos.Device.Query.StringList.deserializeBinaryFromReader);
       msg.setStringInFold(value);
+      break;
+    case 20:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampEqual(value);
+      break;
+    case 21:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampGt(value);
+      break;
+    case 22:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampGte(value);
+      break;
+    case 23:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampLt(value);
+      break;
+    case 24:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampLte(value);
       break;
     default:
       reader.skipField();
@@ -933,6 +968,46 @@ proto.smartcore.bos.Device.Query.Condition.serializeBinaryToWriter = function(me
       7,
       f,
       proto.smartcore.bos.Device.Query.StringList.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampEqual();
+  if (f != null) {
+    writer.writeMessage(
+      20,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampGt();
+  if (f != null) {
+    writer.writeMessage(
+      21,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampGte();
+  if (f != null) {
+    writer.writeMessage(
+      22,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampLt();
+  if (f != null) {
+    writer.writeMessage(
+      23,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampLte();
+  if (f != null) {
+    writer.writeMessage(
+      24,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
     );
   }
 };
@@ -1171,6 +1246,191 @@ proto.smartcore.bos.Device.Query.Condition.prototype.clearStringInFold = functio
  */
 proto.smartcore.bos.Device.Query.Condition.prototype.hasStringInFold = function() {
   return jspb.Message.getField(this, 7) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_equal = 20;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampEqual = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 20));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampEqual = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 20, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampEqual = function() {
+  return this.setTimestampEqual(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampEqual = function() {
+  return jspb.Message.getField(this, 20) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_gt = 21;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampGt = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 21));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampGt = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 21, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampGt = function() {
+  return this.setTimestampGt(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampGt = function() {
+  return jspb.Message.getField(this, 21) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_gte = 22;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampGte = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 22));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampGte = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 22, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampGte = function() {
+  return this.setTimestampGte(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampGte = function() {
+  return jspb.Message.getField(this, 22) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_lt = 23;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampLt = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 23));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampLt = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 23, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampLt = function() {
+  return this.setTimestampLt(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampLt = function() {
+  return jspb.Message.getField(this, 23) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_lte = 24;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampLte = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 24));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampLte = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 24, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampLte = function() {
+  return this.setTimestampLte(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampLte = function() {
+  return jspb.Message.getField(this, 24) != null;
 };
 
 

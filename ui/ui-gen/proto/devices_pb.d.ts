@@ -75,6 +75,31 @@ export namespace Device {
       hasStringInFold(): boolean;
       clearStringInFold(): Condition;
 
+      getTimestampEqual(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampEqual(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampEqual(): boolean;
+      clearTimestampEqual(): Condition;
+
+      getTimestampGt(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampGt(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampGt(): boolean;
+      clearTimestampGt(): Condition;
+
+      getTimestampGte(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampGte(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampGte(): boolean;
+      clearTimestampGte(): Condition;
+
+      getTimestampLt(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampLt(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampLt(): boolean;
+      clearTimestampLt(): Condition;
+
+      getTimestampLte(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampLte(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampLte(): boolean;
+      clearTimestampLte(): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -94,6 +119,11 @@ export namespace Device {
         stringContainsFold: string,
         stringIn?: Device.Query.StringList.AsObject,
         stringInFold?: Device.Query.StringList.AsObject,
+        timestampEqual?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        timestampGt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        timestampGte?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        timestampLt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        timestampLte?: google_protobuf_timestamp_pb.Timestamp.AsObject,
       }
 
       export enum ValueCase { 
@@ -104,6 +134,11 @@ export namespace Device {
         STRING_CONTAINS_FOLD = 5,
         STRING_IN = 6,
         STRING_IN_FOLD = 7,
+        TIMESTAMP_EQUAL = 20,
+        TIMESTAMP_GT = 21,
+        TIMESTAMP_GTE = 22,
+        TIMESTAMP_LT = 23,
+        TIMESTAMP_LTE = 24,
       }
     }
 
