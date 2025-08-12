@@ -151,7 +151,7 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		if err != nil {
 			log.Errorf("merge metadata %q: %v", name, err)
 		} else {
-			undo = append(undo, func() {
+			undo = append(undo, UndoOnce(func() {
 				n.mu.Lock()
 				defer n.mu.Unlock()
 				mlList.remove(id)
@@ -164,7 +164,7 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 						log.Errorf("undo merge metadata %q: %v", name, err)
 					}
 				}
-			})
+			}))
 		}
 	}
 
