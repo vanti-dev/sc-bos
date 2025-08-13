@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -106,6 +107,7 @@ func (l *light) UpdateBrightness(ctx context.Context, request *traits.UpdateBrig
 	}
 
 	return pollUntil(ctx, l.config.DefaultRWConsistencyTimeoutDuration(), l.pollPeer, func(brightness *traits.Brightness) bool {
+		fmt.Println(brightness)
 		return brightness.LevelPercent == scene.Brightness
 	})
 }
@@ -145,7 +147,7 @@ func (l *light) startPoll(init context.Context) (stop task.StopFn, err error) {
 }
 
 func (l *light) pollPeer(ctx context.Context) (*traits.Brightness, error) {
-	data := &traits.Brightness{}
+	data := &traits.Brightness{Preset: &traits.LightPreset{}}
 	var resProcessors []func(response any) error
 	var readValues []config.ValueSource
 	var requestNames []string
