@@ -123,7 +123,7 @@ import RoleAssignmentLink from '@/routes/auth/accounts/RoleAssignmentLink.vue';
 import {useSidebarStore} from '@/stores/sidebar.js';
 import {Account} from '@vanti-dev/sc-bos-ui-gen/proto/account_pb';
 import {computed, reactive, ref} from 'vue';
-import {useRouter} from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 
 const sidebar = useSidebarStore();
 const account = computed(() => sidebar.data?.account);
@@ -181,8 +181,9 @@ const onRotateSave = async () => {
 }
 
 const router = useRouter();
+const route = useRoute();
 const onCloseClick = () => {
-  router.push({name: 'accounts'});
+  router.push({name: route.name}); // remove props from the route
 }
 const onEditClick = () => {
   editDisplayNameModel.value = account.value?.displayName ?? '';

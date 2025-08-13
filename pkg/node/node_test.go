@@ -149,7 +149,7 @@ func TestNode_ListAllMetadata(t *testing.T) {
 
 	t.Run("HasTrait", func(t *testing.T) {
 		n := newNode()
-		n.Announce("d1", HasTrait(trait.Light, NoAddChildTrait()))
+		n.Announce("d1", HasTrait(trait.Light))
 		got := n.ListAllMetadata()
 		want := []*traits.Metadata{
 			nodeMd,
@@ -162,8 +162,8 @@ func TestNode_ListAllMetadata(t *testing.T) {
 
 	t.Run("HasTrait merges", func(t *testing.T) {
 		n := newNode()
-		n.Announce("d1", HasTrait(trait.Light, NoAddChildTrait()))
-		n.Announce("d1", HasTrait(trait.Booking, NoAddChildTrait()))
+		n.Announce("d1", HasTrait(trait.Light))
+		n.Announce("d1", HasTrait(trait.Booking))
 		got := n.ListAllMetadata()
 		want := []*traits.Metadata{
 			nodeMd,

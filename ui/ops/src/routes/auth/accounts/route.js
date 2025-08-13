@@ -4,7 +4,7 @@ export default [
     name: 'accounts',
     components: {
       default: () => import('./AccountsPage.vue'),
-      sidebar: () => import('./AccountsSidebar.vue')
+      sidebar: () => import('./AccountsSideBar.vue')
     },
     props: {
       default: true,

@@ -493,6 +493,44 @@ func (q *Queries) ListLegacyRolesForAccount(ctx context.Context, accountID int64
 	return items, nil
 }
 
+const listPermissionsForAccount = `-- name: ListPermissionsForAccount :many
+SELECT DISTINCT rp.permission, ra.scope_type, ra.scope_resource
+FROM role_assignments ra
+INNER JOIN role_permissions rp ON ra.role_id = rp.role_id
+WHERE ra.account_id = ?1
+  AND rp.permission IS NOT NULL
+ORDER BY rp.permission, ra.scope_type, ra.scope_resource
+`
+
+type ListPermissionsForAccountRow struct {
+	Permission    string
+	ScopeType     sql.NullString
+	ScopeResource sql.NullString
+}
+
+func (q *Queries) ListPermissionsForAccount(ctx context.Context, accountID int64) ([]ListPermissionsForAccountRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPermissionsForAccount, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPermissionsForAccountRow
+	for rows.Next() {
+		var i ListPermissionsForAccountRow
+		if err := rows.Scan(&i.Permission, &i.ScopeType, &i.ScopeResource); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listRoleAssignments = `-- name: ListRoleAssignments :many
 SELECT id, account_id, role_id, scope_type, scope_resource
 FROM role_assignments

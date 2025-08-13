@@ -43,6 +43,7 @@
 
 <script setup>
 import {isNamedPeriod} from '@/composables/time.js';
+import {addDays} from 'date-fns';
 import {computed, ref, watch} from 'vue';
 import {VDateInput} from 'vuetify/labs/components';
 
@@ -94,7 +95,7 @@ watch([periodSelected, periodSelectedDates], ([period, dates]) => {
   }
   if (dates.length === 0) return;
   start.value = dates[0];
-  end.value = dates[dates.length - 1];
+  end.value = addDays(dates[dates.length - 1], 1);
 })
 </script>
 

@@ -9,6 +9,7 @@ import (
 	"go.uber.org/multierr"
 
 	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
+	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
 )
 
@@ -61,7 +62,11 @@ func newStaticVerifier(ids []config.Identity) (accesstoken.Verifier, error) {
 	verifier := &accesstoken.MemoryVerifier{}
 	var allErrs error
 	for _, t := range ids {
-		err := verifier.AddRecord(accesstoken.SecretData{Title: t.Title, TenantID: t.ID, Zones: t.Zones, Roles: t.Roles})
+		permissions := make([]token.PermissionAssignment, 0, len(t.Zones))
+		for _, zone := range t.Zones {
+			permissions = append(permissions, accesstoken.LegacyZonePermission(zone))
+		}
+		err := verifier.AddRecord(accesstoken.SecretData{Title: t.Title, TenantID: t.ID, Permissions: permissions, SystemRoles: t.Roles})
 		if err != nil {
 			allErrs = multierr.Append(allErrs, err)
 			continue

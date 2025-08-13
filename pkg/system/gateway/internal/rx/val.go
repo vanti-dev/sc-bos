@@ -12,7 +12,6 @@ type Val[T any] struct {
 	m sync.Mutex
 	v T
 	b *minibus.Bus[T]
-	c <-chan struct{} // nil when not notifying, blocks when notifying, closed when done notifying
 }
 
 func NewVal[T any](v T) *Val[T] {
@@ -29,16 +28,12 @@ func (v *Val[T]) Get() T {
 }
 
 // Set sets the value of v to val, returning the old value.
-func (v *Val[T]) Set(val T) (old T, sent <-chan struct{}) {
+func (v *Val[T]) Set(val T) (old T) {
 	v.m.Lock()
 	defer v.m.Unlock()
 	old, v.v = v.v, val
-
-	// notify of change, make sure events are queued in order
-	// by waiting for all previous listeners before sending our update
-	v.c = send(v.b, val, v.c)
-
-	return old, v.c
+	v.b.Send(context.Background(), v.v)
+	return old
 }
 
 // Sub returns the current value of v and a channel that will receive updates to the value of v.

@@ -18,6 +18,16 @@ export class LightHealth extends jspb.Message {
   clearFaultsList(): LightHealth;
   addFaults(value: LightFault, index?: number): LightHealth;
 
+  getLastFunctionTest(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setLastFunctionTest(value?: google_protobuf_timestamp_pb.Timestamp): LightHealth;
+  hasLastFunctionTest(): boolean;
+  clearLastFunctionTest(): LightHealth;
+
+  getLastDurationTest(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setLastDurationTest(value?: google_protobuf_timestamp_pb.Timestamp): LightHealth;
+  hasLastDurationTest(): boolean;
+  clearLastDurationTest(): LightHealth;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): LightHealth.AsObject;
   static toObject(includeInstance: boolean, msg: LightHealth): LightHealth.AsObject;
@@ -31,6 +41,8 @@ export namespace LightHealth {
     name: string,
     updateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     faultsList: Array<LightFault>,
+    lastFunctionTest?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    lastDurationTest?: google_protobuf_timestamp_pb.Timestamp.AsObject,
   }
 }
 

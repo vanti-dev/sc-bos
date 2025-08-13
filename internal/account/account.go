@@ -12,3 +12,15 @@
 // The resources can be persistently stored using the Store. The Server uses the data in the Store
 // to implement the AccountApiService.
 package account
+
+import (
+	"strconv"
+)
+
+func ParseAccountID(id string) (int64, bool) {
+	accountID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return 0, false
+	}
+	return accountID, true
+}

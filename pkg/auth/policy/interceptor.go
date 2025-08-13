@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 
@@ -127,7 +126,7 @@ func (i *Interceptor) checkPolicyGrpc(ctx context.Context, creds *verifiedCreds,
 			tokenClaims, err = i.verifier.ValidateAccessToken(ctx, tkn)
 			if err != nil {
 				tokenClaims = nil
-				log.Printf("token failed verification: %s", err.Error())
+				i.logger.Error("token failed verification", zap.Error(err))
 			}
 		}
 

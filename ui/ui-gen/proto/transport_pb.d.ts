@@ -66,6 +66,11 @@ export class Transport extends jspb.Message {
   hasEtaToNextDestination(): boolean;
   clearEtaToNextDestination(): Transport;
 
+  getStoppedReason(): Transport.StoppedReason | undefined;
+  setStoppedReason(value?: Transport.StoppedReason): Transport;
+  hasStoppedReason(): boolean;
+  clearStoppedReason(): Transport;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Transport.AsObject;
   static toObject(includeInstance: boolean, msg: Transport): Transport.AsObject;
@@ -89,6 +94,7 @@ export namespace Transport {
     active: Transport.Active,
     payloadsList: Array<Transport.Payload.AsObject>,
     etaToNextDestination?: google_protobuf_duration_pb.Duration.AsObject,
+    stoppedReason?: Transport.StoppedReason.AsObject,
   }
 
   export class Alarm extends jspb.Message {
@@ -177,6 +183,9 @@ export namespace Transport {
       POSITION_LOST = 24,
       LOAD_MEASUREMENT_FAULT = 25,
       OVERCAPACITY = 26,
+      SHUTDOWN_FAULT = 27,
+      HANDRAIL_FAULT = 28,
+      STEPS_FAULT = 29,
     }
   }
 
@@ -292,6 +301,38 @@ export namespace Transport {
   }
 
 
+  export class StoppedReason extends jspb.Message {
+    getReason(): Transport.StoppedReason.Reason;
+    setReason(value: Transport.StoppedReason.Reason): StoppedReason;
+
+    getTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setTime(value?: google_protobuf_timestamp_pb.Timestamp): StoppedReason;
+    hasTime(): boolean;
+    clearTime(): StoppedReason;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): StoppedReason.AsObject;
+    static toObject(includeInstance: boolean, msg: StoppedReason): StoppedReason.AsObject;
+    static serializeBinaryToWriter(message: StoppedReason, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): StoppedReason;
+    static deserializeBinaryFromReader(message: StoppedReason, reader: jspb.BinaryReader): StoppedReason;
+  }
+
+  export namespace StoppedReason {
+    export type AsObject = {
+      reason: Transport.StoppedReason.Reason,
+      time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    }
+
+    export enum Reason { 
+      REASON_UNSPECIFIED = 0,
+      EMERGENCY_STOP_SENSOR = 1,
+      EMERGENCY_STOP_USER = 2,
+      REMOTE_STOP = 3,
+    }
+  }
+
+
   export class Payload extends jspb.Message {
     getPayloadId(): string;
     setPayloadId(value: string): Payload;
@@ -371,12 +412,16 @@ export namespace Transport {
     REDUCED_SPEED = 16,
     STORM_OPERATION = 17,
     HIGH_WIND_OPERATION = 18,
+    AUTOMATIC = 19,
+    CONTINUOUS = 20,
+    ENERGY_SAVING = 21,
   }
 
   export enum Active { 
     ACTIVE_UNSPECIFIED = 0,
     INACTIVE = 1,
     ACTIVE = 2,
+    STANDBY = 3,
   }
 
   export enum LoadCase { 

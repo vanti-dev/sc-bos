@@ -41,11 +41,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := a.Logger
 	logger = logger.With(zap.String("snmp.host", cfg.Destination.Host), zap.Int("snmp.port", cfg.Destination.Port))
 
-	var statusClient gen.StatusApiClient
-	err := a.Node.Client(&statusClient)
-	if err != nil {
-		return err
-	}
+	statusClient := gen.NewStatusApiClient(a.Node.ClientConn())
 
 	if cfg.DelayStart != nil {
 		time.Sleep(cfg.DelayStart.Duration)

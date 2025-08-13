@@ -16,6 +16,7 @@
 <script setup>
 import StatusAlert from '@/components/StatusAlert.vue';
 import {useElectricDemand} from '@/traits/electricDemand/electric.js';
+import {format} from '@/util/number.js';
 import {computed} from 'vue';
 
 const props = defineProps({
@@ -35,10 +36,7 @@ const props = defineProps({
 });
 
 const {realPower, realPowerUnit} = useElectricDemand(() => props.value);
-const powerUseStr = computed(() => {
-  if (!realPower.value) return '';
-  return `${realPower.value.toFixed(2)}${realPowerUnit.value}`;
-});
+const powerUseStr = computed(() => format(realPower.value, realPowerUnit.value));
 </script>
 
 <style scoped>

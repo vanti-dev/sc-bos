@@ -49,7 +49,7 @@ const displayMetrics = computed(() => {
     res.push({
       status: src[orderedMetric].status,
       title: metrics[orderedMetric].label,
-    })
+    });
   }
   return res;
 });
@@ -79,10 +79,10 @@ const hasScore = computed(() => !!score.value);
 .metrics {
   display: flex;
   column-gap: 1.5em;
+  grid-column: 1/1; /* display metrics on new line if circular gauge is missing */
   /* all these prevent overflow metrics from showing */
   row-gap: 2em;
   flex-wrap: wrap;
   max-height: 3.7em;
-  overflow: hidden;
 }
 </style>

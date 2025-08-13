@@ -3,8 +3,10 @@ package gateway
 import (
 	"context"
 	"iter"
+	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
@@ -12,10 +14,10 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/servicepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/rx"
-	"github.com/vanti-dev/sc-bos/pkg/util/slices"
+	"github.com/vanti-dev/sc-bos/pkg/util/chans"
+	scslices "github.com/vanti-dev/sc-bos/pkg/util/slices"
 )
 
 // announceCohort announces information about the cohort as if it were present on this system.
@@ -43,6 +45,7 @@ func (s *System) announceCohort(ctx context.Context, c *cohort) {
 			logger: s.logger.With(
 				zap.String("remoteAddr", n.addr),
 				zap.Bool("isHub", n.isHub),
+				// the remote node's name can change over time, can't add as a logger field
 			),
 			node:      n,
 			Announcer: scope,
@@ -52,10 +55,9 @@ func (s *System) announceCohort(ctx context.Context, c *cohort) {
 	}
 
 	nodes, nodeChanges := c.Nodes.Sub(ctx)
-	nodes.All(func(_ int, n *remoteNode) bool {
+	for _, n := range nodes.All {
 		runAnnouncer(n)
-		return true
-	})
+	}
 
 	for nodeChange := range nodeChanges {
 		if nodeChange.Old != nil {
@@ -83,31 +85,30 @@ type announcer struct {
 // All side effects are undone when the method returns.
 func (a *announcer) announceRemoteNode(ctx context.Context) {
 	self, selfChanges := a.node.Self.Sub(ctx)
-	undoSelf := a.announceName(self)
 
-	// Remote nodes that are a proxy will likely also be announcing all the same children and apis we will.
-	// To avoid circular routing we don't announce advertised children for remote nodes that are a proxy.
-	// To avoid extra dynamic proxying we also don't announce reflected services for remote nodes that are a proxy.
-	// As being a proxy is something that can change,
-	// we track and update our advertised children and services when the proxy status changes.
+	// Remote nodes that are gateways will likely also be announcing all the same devices and apis we will.
+	// To avoid circular routing we don't announce advertised devices for remote nodes that are gateways.
+	// To avoid extra dynamic proxying we also don't announce reflected services for remote nodes that are gateways.
+	// As being a gateway is something that can change,
+	// we track and update our advertised devices and services when the gateway status changes.
 	systems, systemChanges := a.node.Systems.Sub(ctx)
-	isProxy := func() bool {
-		// we are intentionally ignoring the loading state of the proxy system,
-		// under the assumption that whether the remote proxy system has loaded or not it's
-		// still intending to be a proxy eventually.
-		return systems.proxy.GetActive()
+	isGateway := func() bool {
+		// we are intentionally ignoring the loading state of the gateway system,
+		// under the assumption that whether the remote gateway system has loaded or not it's
+		// still intending to be a gateway eventually.
+		return systems.gateway.GetActive()
 	}
-	wasProxy := isProxy()
+	wasGateway := isGateway()
 
-	// The services we proxy are dependent on whether the remote node is a proxy or not.
-	// These track and update our advertised services when the proxy status changes.
+	// The services we proxy are dependent on whether the remote node is a gateway or not.
+	// These track and update our advertised services when the gateway status changes.
 	var serviceChanges <-chan rx.Change[protoreflect.ServiceDescriptor]
 	var stopServiceSub context.CancelFunc
 	var undoServices tasks
 	setupServiceSub := func() {
 		var serviceCtx context.Context
 		serviceCtx, stopServiceSub = context.WithCancel(ctx)
-		var services *slices.Sorted[protoreflect.ServiceDescriptor]
+		var services *scslices.Sorted[protoreflect.ServiceDescriptor]
 		services, serviceChanges = a.node.Services.Sub(serviceCtx)
 		undoServices = a.announceRemoteServices(services.All)
 	}
@@ -121,30 +122,45 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 	}
 	defer closeServiceSub()
 
-	// The children we proxy are dependent on whether the remote node is a proxy or not.
-	// These track and update our advertised children when the proxy status changes.
-	var childChanges <-chan rx.Change[remoteDesc]
-	var stopChildSub context.CancelFunc
-	var undoChildren tasks
-	setupChildSub := func() {
-		var childCtx context.Context
-		childCtx, stopChildSub = context.WithCancel(ctx)
-		var children *slices.Sorted[remoteDesc]
-		children, childChanges = a.node.Children.Sub(childCtx)
-		undoChildren = a.announceMetadataTraitsSet(children.All)
-	}
-	closeChildSub := func() {
-		if stopChildSub != nil {
-			stopChildSub()
+	// The devices we proxy are dependent on whether the remote node is a gateway or not.
+	// All nodes have some devices that get proxied, but gateway nodes only proxy a subset of them.
+	var deviceChanges <-chan rx.Change[remoteDesc]
+	var stopDevicesSub context.CancelFunc
+	var undoDevices tasks
+	shouldProxyDevice := func(c remoteDesc) bool {
+		if isGateway() {
+			// only special names get proxied for gateway nodes
+			suffix := strings.TrimPrefix(c.name, self.name+"/")
+			return c.name == self.name || isFixedServiceName(suffix)
+		} else {
+			return true
 		}
-		undoChildren.callAll()
-		childChanges = nil
-		undoChildren = nil
 	}
-	defer closeChildSub()
+	setupDevicesSub := func() {
+		var devicesCtx context.Context
+		devicesCtx, stopDevicesSub = context.WithCancel(ctx)
+		var devices *scslices.Sorted[remoteDesc]
+		devices, deviceChanges = a.node.Devices.Sub(devicesCtx)
+		undoDevices = a.announceNames(filter2(devices.All, func(_ int, v remoteDesc) bool {
+			return shouldProxyDevice(v)
+		}))
+	}
+	closeDevicesSub := func() {
+		if stopDevicesSub != nil {
+			stopDevicesSub()
+		}
+		undoDevices.callAll()
+		deviceChanges = nil
+		undoDevices = nil
+	}
+	renewDevicesSub := func() {
+		closeDevicesSub()
+		setupDevicesSub()
+	}
+	defer closeDevicesSub()
 
-	// The types and services we return via reflection depends on whether the remote node is a proxy or not.
-	// These update the reflection server when the proxy status changes.
+	// The types and services we return via reflection depends on whether the remote node is a gateway or not.
+	// These update the reflection server when the gateway status changes.
 	setupReflection := func() {
 		a.reflection.Add(a.node.conn)
 	}
@@ -153,20 +169,33 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 	}
 	defer closeReflection()
 
-	// helper for switching between proxy and non-proxy mode
-	switchProxyMode := func(isProxy bool) {
-		if isProxy {
-			closeChildSub()
+	// helper for switching between gateway and non-gateway mode
+	switchGatewayMode := func(isGateway bool) {
+		renewDevicesSub()
+		if isGateway {
 			closeServiceSub()
 			closeReflection()
 		} else {
-			setupChildSub()
 			setupServiceSub()
 			setupReflection()
 		}
 	}
 
-	switchProxyMode(isProxy())
+	// todo: remove both these waits once we have something that can tell us the origin node of a device.
+
+	// When the remote node is a gateway, the devices we proxy are dependent on the remote node's name.
+	// See shouldProxyDevice, TL;DR we need the name to identify the remote node and its fixed service names.
+	waitForFunc(ctx, &self, selfChanges, func(d remoteDesc) bool {
+		return d.name != ""
+	})
+	// Announcing a node that hasn't, but will eventually, be classified as a gateway is expensive.
+	// Delay our announcement a little bit to allow us to do an initial classification of the node,
+	// at least until we have a response from the remote node.
+	waitForFunc(ctx, &systems, systemChanges, func(s remoteSystems) bool {
+		return s.msgRecvd
+	})
+
+	switchGatewayMode(isGateway())
 
 	for {
 		select {
@@ -174,11 +203,6 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 			// a done ctx should clean up all the subscriptions and announced names
 			return
 		case self = <-selfChanges:
-			undoSelf()
-			undoSelf = node.UndoAll(
-				a.announceName(self),
-				a.announceServiceApi(self.name),
-			)
 		case c, ok := <-serviceChanges:
 			if !ok {
 				continue // we stopped watching
@@ -190,50 +214,37 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 				undoServices[string(c.New.FullName())] = a.announceRemoteService(c.New)
 			}
 		case systems = <-systemChanges:
-			isProxy := isProxy()
-			if isProxy != wasProxy {
-				switchProxyMode(isProxy)
-				wasProxy = isProxy
+			isGateway := isGateway()
+			if isGateway != wasGateway {
+				a.logger.Debug("switching gateway mode", zap.Bool("isGateway", isGateway))
+				switchGatewayMode(isGateway)
+				wasGateway = isGateway
 			}
-		case c, ok := <-childChanges:
+		case c, ok := <-deviceChanges:
 			if !ok {
 				continue // we stopped watching
 			}
 			if c.Type != rx.Add {
-				undoChildren.remove(c.Old.name)
+				undoDevices.remove(c.Old.name)
 			}
 			if c.Type != rx.Remove {
-				undoChildren[c.New.name] = a.announceName(c.New)
+				if !shouldProxyDevice(c.New) {
+					continue
+				}
+				undoDevices[c.New.name] = a.announceName(c.New)
 			}
 		}
 	}
-}
-
-// announceServiceApi adds proxying for the ServicesApi to a.node.
-// As services were historically named `drivers`, `automations`, `systems`, and `zones`,
-// we rename them to `{name}/drivers`, `{name}/automations`, etc. to avoid conflicts with
-// the same names from other remote nodes.
-func (a *announcer) announceServiceApi(name string) node.Undo {
-	servicesApi := servicepb.RenameApi(gen.NewServicesApiClient(a.node.conn), func(n string) string {
-		if strings.HasPrefix(n, name+"/") {
-			return n[len(name+"/"):]
-		}
-		return n
-	})
-	var undos []node.Undo
-	for _, bucket := range []string{"automations", "drivers", "systems", "zones"} {
-		undos = append(undos, a.Announce(name+"/"+bucket,
-			node.HasServer(gen.RegisterServicesApiServer, servicesApi),
-			node.HasNoAutoMetadata(),
-		))
-	}
-	return node.UndoAll(undos...)
 }
 
 // announceName allows this node to answer requests aimed at the given remoteDesc.
 // This includes named RPCs (like trait requests) and DeviceApi / ParentApi requests that would include this name in their responses.
 func (a *announcer) announceName(d remoteDesc) node.Undo {
 	if d.name == "" {
+		return node.NilUndo
+	}
+	// If the name is one of the ignored names, we don't announce it.
+	if isFixedServiceName(d.name) {
 		return node.NilUndo
 	}
 
@@ -243,8 +254,8 @@ func (a *announcer) announceName(d remoteDesc) node.Undo {
 	)
 }
 
-// announceMetadataTraitsSet announces the metadata traits for each remoteDesc in seq.
-func (a *announcer) announceMetadataTraitsSet(seq iter.Seq2[int, remoteDesc]) tasks {
+// announceNames calls announceName for each remoteDesc in seq, collecting the results into tasks keyed by remoteDesc.name.
+func (a *announcer) announceNames(seq iter.Seq2[int, remoteDesc]) tasks {
 	dst := tasks{}
 	for _, d := range seq {
 		dst[d.name] = a.announceName(d)
@@ -413,4 +424,41 @@ func (r *counts) Dec(k string) int {
 		delete(r.m, k)
 	}
 	return r.m[k]
+}
+
+var fixedServiceNames = []string{"automations", "drivers", "systems", "zones"}
+
+func isFixedServiceName(name string) bool {
+	_, found := slices.BinarySearch(fixedServiceNames, name)
+	return found
+}
+
+// filter2 returns an iterator that yields only the elements of seq for which f returns true.
+func filter2[K, V any](seq iter.Seq2[K, V], f func(K, V) bool) iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		for k, v := range seq {
+			if f(k, v) {
+				if !yield(k, v) {
+					return
+				}
+			}
+		}
+	}
+}
+
+// waitForFunc returns when a value received from c satisfies the function f, or a timeout has expired.
+// Each value received will be assigned to v, which is a pointer to the current value.
+func waitForFunc[T any](ctx context.Context, v *T, c <-chan T, f func(T) bool) {
+	if !f(*v) {
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		_, _ = chans.RecvContextFunc(ctx, c, func(new T) error {
+			*v = new
+			if !f(new) {
+				return chans.ErrSkip
+			}
+			return nil
+		})
+		cancel()
+	}
 }

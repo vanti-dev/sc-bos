@@ -42,10 +42,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := a.Logger
 	logger = logger.With(zap.String("snmp.host", cfg.Destination.Host), zap.Int("snmp.port", cfg.Destination.Port))
 
-	var ohClient gen.OccupancySensorHistoryClient
-	if err := a.Node.Client(&ohClient); err != nil {
-		return err
-	}
+	ohClient := gen.NewOccupancySensorHistoryClient(a.Node.ClientConn())
 	sendTime := cfg.Destination.SendTime
 	now := cfg.Now
 	if now == nil {

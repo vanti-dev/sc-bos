@@ -26,7 +26,8 @@
         "fileAccounts": true
       },
       "system": {
-        "tenantAccounts": true
+        "tenantAccounts": true,
+        "localAccounts": true
       }
     },
     "hub": {

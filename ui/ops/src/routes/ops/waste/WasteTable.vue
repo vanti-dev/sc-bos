@@ -16,13 +16,13 @@
           {{ timestampToDate(item.wasteCreateTime).toLocaleString() }}
         </template>
         <template #item.weight="{ item }">
-          {{ item.weight.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.unit ?? "kg" }}
+          {{ item.weight.toFixed(2) }} {{ unit }}
         </template>
         <template #item.co2Saved="{ item }">
-          {{ item.co2Saved.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.co2SavedUnit ?? "kg" }}
+          {{ item.co2Saved.toFixed(2) }} {{ co2SavedUnit }}
         </template>
         <template #item.landSaved="{ item }">
-          {{ item.landSaved.toFixed(2) }} {{ uiConfig.config?.ops?.waste?.landSavedUnit ?? "km²" }}
+          {{ item.landSaved.toFixed(2) }} {{ landSavedUnit }}
         </template>
         <template #item.treesSaved="{ item }">
           {{ item.treesSaved.toFixed(2) }}
@@ -44,9 +44,32 @@ import {useCohortStore} from '@/stores/cohort.js';
 import {useUiConfigStore} from '@/stores/uiConfig.js';
 import {computed, ref} from 'vue';
 
+const props = defineProps({
+  source: {
+    type: String,
+    default: ''
+  },
+  unit: {
+    type: String,
+    default: 'kg'
+  },
+  co2SavedUnit: {
+    type: String,
+    default: 'kg'
+  },
+  landSavedUnit: {
+    type: String,
+    default: 'km²'
+  }
+})
+
 const uiConfig = useUiConfigStore();
 const cohort = useCohortStore();
-const name = computed(() => uiConfig.config?.ops?.waste?.source ?? cohort.hubNode?.name ?? '');
+const name = computed(() => props.source || (uiConfig.config?.ops?.waste?.source ?? cohort.hubNode?.name ?? ''));
+
+const unit = computed(() => props.unit || uiConfig.config?.ops?.waste?.unit || 'kg');
+const co2SavedUnit = computed(() => props.co2SavedUnit || uiConfig.config?.ops?.waste?.co2SavedUnit || 'kg');
+const landSavedUnit = computed(() => props.landSavedUnit || uiConfig.config?.ops?.waste?.landSavedUnit || 'km²');
 
 const wasteRecordsRequest = computed(() => ({
   name: name.value

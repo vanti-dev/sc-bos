@@ -28,7 +28,7 @@
 // Some examples of this kind of API are the services API, the history admin API, and the tenant API.
 //
 // Node APIs are handled generically using gRPC reflection to discover available APIs.
-// Any node API this node implements via non-proxy mechanisms will take precedence over the proxy, for example the DevicesApi.
+// Any node API this node implements via non-gateway mechanisms will take precedence over the gateway, for example the DevicesApi.
 //
 // # Cohorts with Multiple Gateways
 //
@@ -89,8 +89,8 @@ type System struct {
 
 // applyConfig runs this system based on the given config.
 // This will query the hub for nodes,
-// for each node (not ignored) it will query for all children,
-// announcing each trait for each child.
+// for each node (not ignored) it will query for all devices,
+// announcing metadata for each.
 func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 	s.logger.Debug("applying config", zap.Any("config", cfg))
 	ignore := append([]string{}, s.ignore...)
@@ -110,10 +110,7 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 		}
 		go s.scanRemoteHub(ctx, c, hubConn)
 	case config.HubModeLocal:
-		var hubClient gen.HubApiClient
-		if err := s.self.Client(&hubClient); err != nil {
-			return fmt.Errorf("local hub proxying not available, the node does not support the hub api: %w", err)
-		}
+		hubClient := gen.NewHubApiClient(s.self.ClientConn())
 		go s.scanLocalHub(ctx, c, hubClient)
 	}
 
@@ -124,10 +121,11 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 
 func (s *System) retry(ctx context.Context, name string, t task.Task, logFields ...zap.Field) error {
 	attempt := 0
-	logger := s.logger.With(logFields...)
+	logger := s.logger
 	if name != "" {
 		logger = logger.With(zap.String("task", name))
 	}
+	logger = logger.With(logFields...)
 	return task.Run(ctx, func(taskCtx context.Context) (task.Next, error) {
 		attempt++
 		next, err := t(taskCtx)
@@ -146,11 +144,11 @@ func (s *System) retry(ctx context.Context, name string, t task.Task, logFields 
 
 		switch {
 		case attempt == 1:
-			logger.Warn("failed to run task, will retry", zap.Error(err), zap.Int("attempt", attempt))
+			logger.Warn("task failed, will retry", zap.Error(err), zap.Int("attempt", attempt))
 		case attempt == 5:
-			logger.Warn("failed to run task, reducing logging", zap.Error(err), zap.Int("attempt", attempt))
+			logger.Warn("task failed, reducing logging", zap.Error(err), zap.Int("attempt", attempt))
 		case attempt%10 == 0:
-			logger.Debug("failed to run task", zap.Error(err), zap.Int("attempt", attempt))
+			logger.Debug("task failed", zap.Error(err), zap.Int("attempt", attempt))
 		}
 
 		return next, err
@@ -181,11 +179,11 @@ func (s *System) poll(ctx context.Context, t func(context.Context) error, logFie
 			attempt := state.ErrorsSinceSuccess
 			switch {
 			case attempt == 1:
-				logger.Warn("failed to run poll task, will retry", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
+				logger.Warn("poll failed, will retry", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
 			case attempt == 5:
-				logger.Warn("failed to run poll task, reducing logging", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
+				logger.Warn("poll failed, reducing logging", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
 			case attempt%10 == 0:
-				logger.Debug("failed to run poll task", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
+				logger.Debug("poll failed", zap.Error(err), zap.Int("attempt", attempt), zap.Duration("nextAttempt", state.NextDelay))
 			}
 
 			return false

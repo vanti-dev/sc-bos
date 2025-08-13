@@ -44,8 +44,8 @@ func newTransport(n string, c config.RawTrait, l *zap.Logger) (*Transport, error
 	}
 	// initialise the doors as we know these from the config
 	tp := &gen.Transport{}
-	for _, _ = range cfg.Doors {
-		tp.Doors = append(tp.Doors, &gen.Transport_Door{})
+	for _, door := range cfg.Doors {
+		tp.Doors = append(tp.Doors, &gen.Transport_Door{Title: door.Title})
 	}
 	_, _ = t.transport.Set(tp)
 	return t, nil
@@ -128,11 +128,21 @@ func (t *Transport) handleTransportEvent(node *ua.NodeID, value any) {
 					t.logger.Error("failed to convert Door Status to trait enum", zap.Error(err))
 					return
 				}
-				d := &gen.Transport_Door{}
+				d := &gen.Transport_Door{
+					Title: door.Title,
+				}
 				d.Status = status
 				old.Doors[i] = d
 			}
 		}
+	}
+	if t.cfg.Speed != nil && NodeIdsAreEqual(t.cfg.Speed.NodeId, node) {
+		speed, err := conv.Float32Value(value)
+		if err != nil {
+			t.logger.Error("failed to convert Speed event", zap.Error(err))
+			return
+		}
+		old.Speed = &speed
 	}
 	_, _ = t.transport.Set(old)
 }

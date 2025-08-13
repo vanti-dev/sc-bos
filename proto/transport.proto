@@ -80,6 +80,11 @@ message Transport {
       REDUCED_SPEED = 16;
       STORM_OPERATION = 17;
       HIGH_WIND_OPERATION = 18;
+      // The transport is in automatic operation mode, i.e. based on some form of presence detection or scheduling.
+      AUTOMATIC = 19;
+      // The transport is in continuous operation mode, e.g. an escalator or moving walkway that is always on.
+      CONTINUOUS = 20;
+      ENERGY_SAVING = 21;
     }
 
     message Alarm {
@@ -98,6 +103,7 @@ message Transport {
       ACTIVE_UNSPECIFIED = 0;
       INACTIVE = 1;
       ACTIVE = 2;
+      STANDBY = 3;
     }
 
     message Fault {
@@ -135,6 +141,9 @@ message Transport {
         // The car load measurement system is in a fault condition.
         LOAD_MEASUREMENT_FAULT = 25;
         OVERCAPACITY = 26;
+        SHUTDOWN_FAULT = 27;
+        HANDRAIL_FAULT = 28;
+        STEPS_FAULT = 29;
       }
       // The type of fault.
       FaultType fault_type = 1;
@@ -190,6 +199,24 @@ message Transport {
       string description = 3;
       // Optional. The floor of the location.
       string floor = 4;
+    }
+
+    // StoppedReason describes the reason why the transport is stopped.
+    // Meant to describe abnormal stops not stops as part of normal operation.
+    message StoppedReason {
+      enum Reason {
+        REASON_UNSPECIFIED = 0;
+        // The transport is stopped because an E-stop has been activated by a sensor.
+        EMERGENCY_STOP_SENSOR = 1;
+        // The transport is stopped because an E-stop has been activated by a user.
+        EMERGENCY_STOP_USER = 2;
+        // The transport was stopped remotely by an operator.
+        REMOTE_STOP = 3;
+      }
+
+      Reason reason = 1;
+      // Optional. The time the transport was stopped.
+      google.protobuf.Timestamp time = 2;
     }
 
     // The actual position the transport. As the transport is moving towards its next destination,
@@ -249,6 +276,8 @@ message Transport {
     repeated Payload payloads = 12;
     // Optional. The estimated time the transport will take to arrive at it's next destination.
     google.protobuf.Duration eta_to_next_destination = 13;
+    // Optional. If the transport is stopped abnormally, this is the reason why it was stopped.
+    StoppedReason stopped_reason = 14;
 }
 
 message TransportSupport {

@@ -134,7 +134,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 			},
 		},
 		string(trait.AirTemperature): {
-			headers: []string{"airtemperature.temperature", "airtemperature.humidity", "airtemperature.setpoint"},
+			headers: []string{"airtemperature.temperature", "airtemperature.humidity", "airtemperature.setpoint", "airtemperature.mode"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
 				c := traits.NewAirTemperatureApiClient(s.node.ClientConn())
 				data, err := c.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: name})
@@ -399,6 +399,9 @@ func airTemperatureToRow(d *traits.AirTemperature) map[string]string {
 	}
 	if d.GetTemperatureSetPoint() != nil {
 		vals["airtemperature.setpoint"] = fmt.Sprintf("%.1f", d.GetTemperatureSetPoint().ValueCelsius)
+	}
+	if d.Mode != traits.AirTemperature_MODE_UNSPECIFIED {
+		vals["airtemperature.mode"] = d.Mode.String()
 	}
 	return vals
 }

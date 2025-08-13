@@ -47,6 +47,8 @@ type System struct {
 	// CohortAccounts causes the system to validate system tokens using the cohort manager, setup via enrollment.
 	// All tokens are deemed invalid if the manager is not known (i.e. the controller is not enrolled), or the manager doesn't support TenantApi.
 	CohortAccounts bool `json:"cohortAccounts,omitempty"`
+	// Enable service accounts stored in the local database to authenticate using client credentials.
+	LocalAccounts bool `json:"localAccounts,omitempty"`
 }
 
 type Keycloak struct {

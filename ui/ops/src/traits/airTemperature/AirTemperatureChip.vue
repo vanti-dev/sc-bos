@@ -14,6 +14,7 @@
 <script setup>
 import {useAirTemperatureValues} from '@/traits/airTemperature/airTemperature.js';
 import AirTemperatureIcon from '@/traits/airTemperature/AirTemperatureIcon.vue';
+import {roundTo} from '@/util/number.js';
 import {computed, ref} from 'vue';
 
 const props = defineProps({
@@ -53,8 +54,8 @@ const {
 } = useAirTemperatureValues(currentTempNum, setPointNum);
 const canTellDirection = computed(() => hasTemp.value && hasSetPoint.value);
 
-const isHeating = computed(() => props.currentTemp < props.setPoint);
-const isCooling = computed(() => props.currentTemp > props.setPoint);
+const isHeating = computed(() => roundTo(props.currentTemp, 1) < roundTo(props.setPoint, 1));
+const isCooling = computed(() => roundTo(props.currentTemp, 1) > roundTo(props.setPoint, 1));
 const iconStr = computed(() => {
   if (!canTellDirection.value) return 'mdi-thermometer';
   if (isHeating.value) return 'mdi-fire';

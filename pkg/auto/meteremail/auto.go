@@ -70,19 +70,16 @@ func (a *autoImpl) getMeterReadingAndSource(ctx context.Context, meterName strin
 		Name: meterName,
 	}
 
-	if err := a.Node.Client(&metadataClient); err == nil {
-		withTimeoutCtx, cancel := context.WithTimeout(ctx, timing.Timeout.Duration)
-		defer cancel()
-		metadataRes, err := metadataClient.GetMetadata(withTimeoutCtx, metadataReq)
-		if err != nil {
-			// not a major problem if we can't get metadata as we still have the name to ID the meter
-			a.Logger.Warn("failed to fetch meta data for meter", zap.String("meter", meterName), zap.Error(err))
-		}
-
-		if metadataRes.Location != nil {
-			source.Floor = metadataRes.Location.Floor
-			source.Zone = metadataRes.Location.Zone
-		}
+	withTimeoutCtx, cancel := context.WithTimeout(ctx, timing.Timeout.Duration)
+	defer cancel()
+	metadataRes, err := metadataClient.GetMetadata(withTimeoutCtx, metadataReq)
+	if err != nil {
+		// not a major problem if we can't get metadata as we still have the name to ID the meter
+		a.Logger.Warn("failed to fetch meta data for meter", zap.String("meter", meterName), zap.Error(err))
+	}
+	if metadataRes.Location != nil {
+		source.Floor = metadataRes.Location.Floor
+		source.Zone = metadataRes.Location.Zone
 	}
 	return source, meterReading, nil
 }
@@ -211,17 +208,8 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger = logger.With(zap.String("snmp.addr", cfg.Destination.Addr()))
 	applyDefaults(&cfg.Timing)
 
-	var meterClient gen.MeterApiClient
-	if err := a.Node.Client(&meterClient); err != nil {
-		a.Logger.Warn("failed to create gen.MeterApiClient", zap.Error(err))
-		return err
-	}
-
-	var metadataClient traits.MetadataApiClient
-	if err := a.Node.Client(&metadataClient); err != nil {
-		a.Logger.Warn("failed to create traits.MetadataApiClient", zap.Error(err))
-		return err
-	}
+	meterClient := gen.NewMeterApiClient(a.Node.ClientConn())
+	metadataClient := traits.NewMetadataApiClient(a.Node.ClientConn())
 
 	sendTime := cfg.Destination.SendTime
 	now := cfg.Now

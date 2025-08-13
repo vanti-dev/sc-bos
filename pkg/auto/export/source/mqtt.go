@@ -31,11 +31,7 @@ type mqtt struct {
 func (m *mqtt) applyConfig(ctx context.Context, cfg config.MqttServiceSource) error {
 	clients := m.services.Node
 
-	var client gen.MqttServiceClient
-	err := clients.Client(&client)
-	if err != nil {
-		return err
-	}
+	client := gen.NewMqttServiceClient(clients.ClientConn())
 
 	sent := allowDuplicates()
 	if cfg.Duplicates.TrackDuplicates() {

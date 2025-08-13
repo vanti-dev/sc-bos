@@ -1,6 +1,5 @@
 package smartcore
 
-import data.scutil.token.token_matches_zone
 import data.scutil.token.token_has_role
 import data.scutil.rpc.rpc_match_verbs
 import data.scutil.rpc.read_request
@@ -8,8 +7,6 @@ import data.scutil.rpc.write_request
 
 # Common rules for services that follow Smart Core conventions.
 
-# zone based access is unrestricted
-allow {token_matches_zone}
 # admin based access is unrestricted
 allow {token_has_role("admin")}
 allow {token_has_role("super-admin")}

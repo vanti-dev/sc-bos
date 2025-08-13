@@ -15,8 +15,8 @@ import (
 )
 
 func SeedAirQuality(ctx context.Context, db *pgxpool.Pool, name string, lookBack time.Duration) error {
-	current := time.Now()
-	now := current
+	now := time.Now()
+	current := now.Add(-lookBack)
 
 	source := fmt.Sprintf("%s[%s]", name, trait.AirQualitySensor)
 
@@ -25,7 +25,7 @@ func SeedAirQuality(ctx context.Context, db *pgxpool.Pool, name string, lookBack
 		return err
 	}
 
-	for current.After(now.Add(-lookBack)) {
+	for current.Before(now) {
 
 		co2 := rand.Float32() * 2000
 		voc := rand.Float32() * 500
@@ -60,7 +60,7 @@ func SeedAirQuality(ctx context.Context, db *pgxpool.Pool, name string, lookBack
 			return err
 		}
 
-		current = current.Add(-time.Duration(rand.Intn(60)) * time.Minute)
+		current = current.Add(time.Duration(rand.Intn(60)) * time.Minute)
 	}
 	return nil
 }
