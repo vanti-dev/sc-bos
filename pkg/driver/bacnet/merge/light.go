@@ -86,7 +86,7 @@ func newLight(client *gobacnet.Client, devices known.Context, statuses *statuspb
 }
 
 func (l *light) AnnounceSelf(a node.Announcer) node.Undo {
-	return a.Announce(l.config.Name, node.HasTrait(trait.Light, node.WithClients(lightpb.WrapApi(l))))
+	return a.Announce(l.config.Name, node.HasTrait(trait.Light, node.WithClients(lightpb.WrapApi(l), lightpb.WrapInfo(l))))
 }
 
 func (l *light) UpdateBrightness(ctx context.Context, request *traits.UpdateBrightnessRequest) (*traits.Brightness, error) {
