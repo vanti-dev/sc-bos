@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+service ValveApi {
+  rpc GetValve(GetValveRequest) returns (Valve) {}
+  rpc PullValve(PullValveRequest) returns (stream PullValveResponse) {}
+  rpc UpdateValve(UpdateValveRequest) returns (Valve) {}
+}
+
+message Valve {
+  // flow rate set point e.g. L/s
+  float flow_rate_set_point = 1;
+  // flow rate sensor e.g. L/s
+  // read_only
+  float flow_rate_sensor = 2;
+  // openness of the valve sensor, 0-100%
+  // read_only
+  float pumpage_sensor = 3;
+  // openness of the valve's pump set point, 0-100%
+  float pumpage_set_point = 4;
+  // temperature sensor e.g. C
+  // read_only
+  float temperature_sensor = 5;
+  // temperature set point e.g. C
+  float temperature_set_point = 6;
+  // pressure sensor e.g. bar
+  // read_only
+  float pressure_sensor = 7;
+  // pressure set point e.g. bar
+  float pressure_set_point = 8;
+  // drive frequency sensor e.g. Hz
+  // read_only
+  float drive_frequency_sensor = 9;
+  // drive frequency set point e.g. Hz
+  float drive_frequency_set_point = 10;
+
+  enum ValveMode {
+    VALVE_MODE_UNKNOWN = 0;
+    VALVE_MODE_FLOW = 1;
+    VALVE_MODE_RETURN = 2;
+    VALVE_MODE_BLOCKED = 3;
+  }
+
+  // the valve operation mode
+  ValveMode mode = 11;
+}
+
+message GetValveRequest {
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+}
+
+message PullValveRequest {
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  bool updates_only = 3;
+}
+
+message PullValveResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    string name = 1;
+    google.protobuf.Timestamp change_time = 2;
+    Valve valve = 3;
+  }
+}
+
+message UpdateValveRequest {
+  string name = 1;
+  Valve valve = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message UpdateValveResponse {
+  Valve valve = 1;
+}
