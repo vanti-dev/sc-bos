@@ -361,8 +361,8 @@ message PullHealthChecksRequest {
 }
 
 message PullHealthChecksResponse {
-  // The health checks for the device.
-  repeated HealthCheck changes = 1;
+  // Changes to the list of health checks for the device.
+  repeated Change changes = 1;
 
   message Change {
     // The name of the device the health check belongs to.
@@ -400,8 +400,8 @@ message PullHealthCheckRequest {
 }
 
 message PullHealthCheckResponse {
-  // The health check for the device.
-  HealthCheck health_check = 1;
+  // The changes to the health check for the device.
+  repeated Change changes = 1;
 
   message Change {
     // The name of the device the health check belongs to.
