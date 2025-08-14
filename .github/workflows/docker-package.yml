@@ -70,3 +70,8 @@ jobs:
           tags: ${{ inputs.override_tag || steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+          # although the packages we need are public, GitHub Packages requires you to be authenticated to access
+          # NPM packages.
+          secrets: |
+            "npmrc=//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}"
+            
