@@ -1,4 +1,4 @@
-package page
+package parentdevices
 
 import (
 	"encoding/base64"
@@ -12,16 +12,16 @@ import (
 	"github.com/smart-core-os/sc-api/go/types"
 )
 
-type ListRequest interface {
+type listRequest interface {
 	GetPageToken() string
 	GetPageSize() int32
 }
 
-type Namer interface {
+type namer interface {
 	GetName() string
 }
 
-func List[T Namer](req ListRequest, list func() []T) (_ []T, totalSize int, nextPageToken string, _ error) {
+func listPage[T namer](req listRequest, list func() []T) (_ []T, totalSize int, nextPageToken string, _ error) {
 	pageToken := &types.PageToken{}
 	if err := decodePageToken(req.GetPageToken(), pageToken); err != nil {
 		return nil, 0, "", err
