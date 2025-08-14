@@ -2,10 +2,10 @@ package accesspb
 
 import (
 	"context"
-	"time"
 
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
 
 type Model struct {
@@ -34,24 +34,7 @@ func (m *Model) UpdateLastAccessAttempt(accessAttempt *gen.AccessAttempt, opts .
 }
 
 func (m *Model) PullAccessAttempts(ctx context.Context, opts ...resource.ReadOption) <-chan PullAccessAttemptsChange {
-	send := make(chan PullAccessAttemptsChange)
-
-	recv := m.accessAttempt.Pull(ctx, opts...)
-	go func() {
-		defer close(send)
-		for change := range recv {
-			value := change.Value.(*gen.AccessAttempt)
-			send <- PullAccessAttemptsChange{
-				Value:      value,
-				ChangeTime: change.ChangeTime,
-			}
-		}
-	}()
-
-	return send
+	return resources.PullValue[*gen.AccessAttempt](ctx, m.accessAttempt.Pull(ctx, opts...))
 }
 
-type PullAccessAttemptsChange struct {
-	Value      *gen.AccessAttempt
-	ChangeTime time.Time
-}
+type PullAccessAttemptsChange = resources.ValueChange[*gen.AccessAttempt]
