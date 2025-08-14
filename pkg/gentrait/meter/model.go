@@ -2,13 +2,13 @@ package meter
 
 import (
 	"context"
-	"time"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
 
 type Model struct {
@@ -65,24 +65,7 @@ func (m *Model) Reset() (*gen.MeterReading, error) {
 }
 
 func (m *Model) PullMeterReadings(ctx context.Context, opts ...resource.ReadOption) <-chan PullMeterReadingChange {
-	send := make(chan PullMeterReadingChange)
-
-	recv := m.meterReading.Pull(ctx, opts...)
-	go func() {
-		defer close(send)
-		for change := range recv {
-			value := change.Value.(*gen.MeterReading)
-			send <- PullMeterReadingChange{
-				Value:      value,
-				ChangeTime: change.ChangeTime,
-			}
-		}
-	}()
-
-	return send
+	return resources.PullValue[*gen.MeterReading](ctx, m.meterReading.Pull(ctx, opts...))
 }
 
-type PullMeterReadingChange struct {
-	Value      *gen.MeterReading
-	ChangeTime time.Time
-}
+type PullMeterReadingChange = resources.ValueChange[*gen.MeterReading]
