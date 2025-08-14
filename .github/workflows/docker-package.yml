@@ -60,6 +60,16 @@ jobs:
             type=sha
             type=edge,branch=main
 
+      - name: Generate .npmrc for authentication to GitHub Packages
+        run: |
+          cat << EOF > .npmrc
+          //npm.pkg.github.com/:_authToken=$GITHUB_TOKEN
+          registry=https://npm.pkg.github.com
+          always-auth=true
+          EOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push Docker image (amd64)
         uses: docker/build-push-action@v6
         with:
@@ -72,6 +82,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           # although the packages we need are public, GitHub Packages requires you to be authenticated to access
           # NPM packages.
-          secrets: |
-            "npmrc=//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}"
-            
+          secret-files: |
+            npmrc=./.npmrc
