@@ -28,45 +28,45 @@ type EmergencyTestResult_Result int32
 
 const (
 	EmergencyTestResult_TEST_RESULT_UNSPECIFIED  EmergencyTestResult_Result = 0
-	EmergencyTestResult_TEST_PASSED              EmergencyTestResult_Result = 1
-	EmergencyTestResult_CIRCUIT_FAILURE          EmergencyTestResult_Result = 2
-	EmergencyTestResult_BATTERY_DURATION_FAILURE EmergencyTestResult_Result = 3
-	EmergencyTestResult_BATTERY_FAILURE          EmergencyTestResult_Result = 4
-	EmergencyTestResult_LAMP_FAILURE             EmergencyTestResult_Result = 5
-	EmergencyTestResult_TEST_FAILED              EmergencyTestResult_Result = 6
-	EmergencyTestResult_LIGHT_FAULTY             EmergencyTestResult_Result = 7
-	EmergencyTestResult_COMMUNICATION_FAILURE    EmergencyTestResult_Result = 8
-	EmergencyTestResult_OTHER_FAULT              EmergencyTestResult_Result = 9
-	EmergencyTestResult_TEST_RESULT_PENDING      EmergencyTestResult_Result = 10
+	EmergencyTestResult_TEST_RESULT_PENDING      EmergencyTestResult_Result = 1
+	EmergencyTestResult_TEST_PASSED              EmergencyTestResult_Result = 2
+	EmergencyTestResult_CIRCUIT_FAILURE          EmergencyTestResult_Result = 3
+	EmergencyTestResult_BATTERY_DURATION_FAILURE EmergencyTestResult_Result = 4
+	EmergencyTestResult_BATTERY_FAILURE          EmergencyTestResult_Result = 5
+	EmergencyTestResult_LAMP_FAILURE             EmergencyTestResult_Result = 6
+	EmergencyTestResult_TEST_FAILED              EmergencyTestResult_Result = 7
+	EmergencyTestResult_LIGHT_FAULTY             EmergencyTestResult_Result = 8
+	EmergencyTestResult_COMMUNICATION_FAILURE    EmergencyTestResult_Result = 9
+	EmergencyTestResult_OTHER_FAULT              EmergencyTestResult_Result = 10
 )
 
 // Enum value maps for EmergencyTestResult_Result.
 var (
 	EmergencyTestResult_Result_name = map[int32]string{
 		0:  "TEST_RESULT_UNSPECIFIED",
-		1:  "TEST_PASSED",
-		2:  "CIRCUIT_FAILURE",
-		3:  "BATTERY_DURATION_FAILURE",
-		4:  "BATTERY_FAILURE",
-		5:  "LAMP_FAILURE",
-		6:  "TEST_FAILED",
-		7:  "LIGHT_FAULTY",
-		8:  "COMMUNICATION_FAILURE",
-		9:  "OTHER_FAULT",
-		10: "TEST_RESULT_PENDING",
+		1:  "TEST_RESULT_PENDING",
+		2:  "TEST_PASSED",
+		3:  "CIRCUIT_FAILURE",
+		4:  "BATTERY_DURATION_FAILURE",
+		5:  "BATTERY_FAILURE",
+		6:  "LAMP_FAILURE",
+		7:  "TEST_FAILED",
+		8:  "LIGHT_FAULTY",
+		9:  "COMMUNICATION_FAILURE",
+		10: "OTHER_FAULT",
 	}
 	EmergencyTestResult_Result_value = map[string]int32{
 		"TEST_RESULT_UNSPECIFIED":  0,
-		"TEST_PASSED":              1,
-		"CIRCUIT_FAILURE":          2,
-		"BATTERY_DURATION_FAILURE": 3,
-		"BATTERY_FAILURE":          4,
-		"LAMP_FAILURE":             5,
-		"TEST_FAILED":              6,
-		"LIGHT_FAULTY":             7,
-		"COMMUNICATION_FAILURE":    8,
-		"OTHER_FAULT":              9,
-		"TEST_RESULT_PENDING":      10,
+		"TEST_RESULT_PENDING":      1,
+		"TEST_PASSED":              2,
+		"CIRCUIT_FAILURE":          3,
+		"BATTERY_DURATION_FAILURE": 4,
+		"BATTERY_FAILURE":          5,
+		"LAMP_FAILURE":             6,
+		"TEST_FAILED":              7,
+		"LIGHT_FAULTY":             8,
+		"COMMUNICATION_FAILURE":    9,
+		"OTHER_FAULT":              10,
 	}
 )
 
@@ -644,17 +644,17 @@ const file_emergency_light_proto_rawDesc = "" +
 	"\bend_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x125\n" +
 	"\bduration\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\bduration\"\xf8\x01\n" +
 	"\x06Result\x12\x1b\n" +
-	"\x17TEST_RESULT_UNSPECIFIED\x10\x00\x12\x0f\n" +
-	"\vTEST_PASSED\x10\x01\x12\x13\n" +
-	"\x0fCIRCUIT_FAILURE\x10\x02\x12\x1c\n" +
-	"\x18BATTERY_DURATION_FAILURE\x10\x03\x12\x13\n" +
-	"\x0fBATTERY_FAILURE\x10\x04\x12\x10\n" +
-	"\fLAMP_FAILURE\x10\x05\x12\x0f\n" +
-	"\vTEST_FAILED\x10\x06\x12\x10\n" +
-	"\fLIGHT_FAULTY\x10\a\x12\x19\n" +
-	"\x15COMMUNICATION_FAILURE\x10\b\x12\x0f\n" +
-	"\vOTHER_FAULT\x10\t\x12\x17\n" +
-	"\x13TEST_RESULT_PENDING\x10\n" +
+	"\x17TEST_RESULT_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13TEST_RESULT_PENDING\x10\x01\x12\x0f\n" +
+	"\vTEST_PASSED\x10\x02\x12\x13\n" +
+	"\x0fCIRCUIT_FAILURE\x10\x03\x12\x1c\n" +
+	"\x18BATTERY_DURATION_FAILURE\x10\x04\x12\x13\n" +
+	"\x0fBATTERY_FAILURE\x10\x05\x12\x10\n" +
+	"\fLAMP_FAILURE\x10\x06\x12\x0f\n" +
+	"\vTEST_FAILED\x10\a\x12\x10\n" +
+	"\fLIGHT_FAULTY\x10\b\x12\x19\n" +
+	"\x15COMMUNICATION_FAILURE\x10\t\x12\x0f\n" +
+	"\vOTHER_FAULT\x10\n" +
 	"\"/\n" +
 	"\x19StartEmergencyTestRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"\x8e\x01\n" +
