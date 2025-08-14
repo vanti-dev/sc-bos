@@ -91,7 +91,7 @@ func TestServer_ListDevices(t *testing.T) {
 			node.HasTrait(trait.AirTemperature))
 	}
 
-	server := &Server{parentName: "test", node: n}
+	server := &Server{node: n}
 	server.ChildPageSize = 5 // force multiple pages to be read from the parent
 
 	mdNamed := func(name string) *traits.Metadata {

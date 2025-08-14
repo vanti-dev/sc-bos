@@ -1,38 +1,39 @@
 package node
 
 import (
-	"context"
-	"errors"
+	"slices"
+	"strings"
+
+	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
 )
 
-var MetadataTraitNotSupported = errors.New("metadata is not supported")
-
-type MetadataChange = metadatapb.CollectionChange
-
-// ListAllMetadata returns a slice containing all metadata set via Announce.
-func (n *Node) ListAllMetadata(opts ...resource.ReadOption) []*traits.Metadata {
-	return n.allMetadata.ListMetadata(opts...)
-}
-
-// PullAllMetadata returns a chan that emits MetadataChange whenever Announce or that announcement is undone.
-func (n *Node) PullAllMetadata(ctx context.Context, opts ...resource.ReadOption) <-chan MetadataChange {
-	return n.allMetadata.PullAllMetadata(ctx, opts...)
-}
-
-func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
-	_, err := n.allMetadata.MergeMetadata(name, md, resource.WithCreateIfAbsent())
-	if err != nil {
-		return NilUndo, err
+// mergeAllMetadata uses the metadatapb.Merge algorithm to merge multiple metadata objects into one.
+// The input metadata objects will not be modified.
+// Metadata at higher indexes in the mds slice will override metadata at lower indexes.
+func (n *Node) mergeAllMetadata(name string, mds ...*traits.Metadata) *traits.Metadata {
+	if len(mds) == 0 {
+		return nil
 	}
-	undo := Undo(func() {
-		n.mu.Lock()
-		defer n.mu.Unlock()
-		_, _ = n.allMetadata.DeleteMetadata(name, resource.WithAllowMissing(true))
-	})
+	if len(mds) == 1 {
+		md := mds[0]
+		md.Name = name
+		// for consistency, sort the traits by name
+		slices.SortFunc(md.Traits, func(a, b *traits.TraitMetadata) int {
+			return strings.Compare(a.Name, b.Name)
+		})
+		return md
+	}
 
-	return undo, nil
+	md := &traits.Metadata{
+		Name: name,
+	}
+	for _, m := range mds {
+		m = proto.Clone(m).(*traits.Metadata)
+		metadatapb.Merge(md, m)
+		md = m
+	}
+	return md
 }

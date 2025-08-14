@@ -103,7 +103,7 @@ func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
 					return
 				default:
 				}
-				for change := range e.services.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits")) {
+				for change := range e.services.Node.PullDevices(ctx, resource.WithReadPaths(&traits.Metadata{}, "metadata.traits")) {
 					hadTrait, hasTrait := hasUDMITrait(change.OldValue), hasUDMITrait(change.NewValue)
 					if hadTrait && !hasTrait {
 						// remove
@@ -124,7 +124,8 @@ func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
 	return nil
 }
 
-func hasUDMITrait(md *traits.Metadata) bool {
+func hasUDMITrait(device *gen.Device) bool {
+	md := device.GetMetadata()
 	for _, t := range md.GetTraits() {
 		if t.Name == udmipb.TraitName.String() {
 			return true
