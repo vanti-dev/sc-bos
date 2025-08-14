@@ -4,8 +4,6 @@ package serviceapi
 import (
 	"context"
 	"errors"
-	"sort"
-	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -19,6 +17,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/vanti-dev/sc-bos/pkg/util/page"
 )
 
 // Api implements a gen.ServicesApiServer backed by service.Map.
@@ -134,58 +133,22 @@ func (a *Api) DeleteService(ctx context.Context, request *gen.DeleteServiceReque
 }
 
 func (a *Api) ListServices(_ context.Context, request *gen.ListServicesRequest) (*gen.ListServicesResponse, error) {
-	var page PageToken
-	if request.PageToken != "" {
-		var err error
-		page, err = DecodePageToken(request.PageToken)
-		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, "Invalid page token")
-		}
-	}
-
-	values := a.m.Values()
-	totalSize := len(values)
-	sort.Slice(values, func(i, j int) bool {
-		return values[i].Id < values[j].Id
+	idFunc := func(r *service.Record) string { return r.Id }
+	values, totalSize, nextPageToken, err := page.List(request, idFunc, func() []*service.Record {
+		return a.m.Values()
 	})
-
-	if page.NextId != "" {
-		i, _ := sort.Find(len(values), func(i int) int {
-			return strings.Compare(page.NextId, values[i].Id)
-		})
-		values = values[i:]
-	}
-
-	pageSize := request.PageSize
-	if pageSize == 0 {
-		pageSize = 50
-	}
-	if pageSize > 1000 {
-		pageSize = 1000
-	}
-	var nextId string
-	if len(values) > int(pageSize) {
-		if len(values) >= int(pageSize) {
-			nextId = values[pageSize].Id
-		}
-		values = values[:pageSize]
+	if err != nil {
+		return nil, err
 	}
 
 	res := &gen.ListServicesResponse{
-		Services:  make([]*gen.Service, len(values)),
-		TotalSize: int32(totalSize),
+		Services:      make([]*gen.Service, len(values)),
+		TotalSize:     int32(totalSize),
+		NextPageToken: nextPageToken,
 	}
 	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 	for i, value := range values {
 		res.Services[i] = filter.FilterClone(recordToProto(value)).(*gen.Service)
-	}
-	if nextId != "" {
-		nextPage := PageToken{NextId: nextId}
-		nextToken, err := nextPage.Encode()
-		if err != nil {
-			return nil, err
-		}
-		res.NextPageToken = nextToken
 	}
 
 	return res, nil
