@@ -18,7 +18,6 @@ COPY ui/panzoom-package/package.json ./panzoom-package/
 COPY ui/space/package.json ./space/
 COPY ui/ui-gen/package.json ./ui-gen/
 RUN --mount=type=cache,target=/yarn-cache \
-    --mount=type=secret,id=npmrc,required=true,target=$HOME/.npmrc \
     yarn install --frozen-lockfile --check-files
 
 COPY ui/ops ./ops/
