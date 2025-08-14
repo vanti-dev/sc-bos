@@ -15,7 +15,8 @@ service EmergencyLightApi {
   rpc StartFunctionTest(StartEmergencyTestRequest) returns (StartEmergencyTestResponse);
   // Attempt to start a duration test
   rpc StartDurationTest(StartEmergencyTestRequest) returns (StartEmergencyTestResponse);
-  // Stop any test that is in progress.
+  // Stop any test that is in progress. If no tests are running this has no effect.
+  // When a running test is stopped before completion, its EmergencyTestResult.Result MUST be updated to TEST_RESULT_UNSPECIFIED
   rpc StopEmergencyTest(StopEmergencyTestsRequest) returns (StopEmergencyTestsResponse);
   // Get the set of results of the most recent tests performed on the emergency light.
   rpc GetTestResultSet(GetTestResultSetRequest) returns (TestResultSet);
@@ -40,14 +41,18 @@ message EmergencyTestResult {
     LIGHT_FAULTY = 7;
     COMMUNICATION_FAILURE = 8;
     OTHER_FAULT = 9;
+    TEST_RESULT_PENDING = 10;
   }
 
-  // The result of the test.
+  // The result of the most recent test. If a test is currently in progress,
+  // result should be set to TEST_RESULT_PENDING or TEST_RESULT_UNSPECIFIED
   Result result = 1;
   // Optional. The time at which the most recent test was started, if known.
+  // This will be updated whenever a new test is successfully started with StartFunctionTest or StartDurationTest.
   google.protobuf.Timestamp start_time = 2;
   // Optional. The time at which the most recent test was completed.
-  // This should be populated whenever the test result is known, i.e. the test not 'in progress', 'unknown' or similar.
+  // This should be populated whenever the test has completed and the result is known.
+  // If the test result is still pending or unspecified, this field should not be set and should be ignored.
   google.protobuf.Timestamp end_time = 3;
   // Optional. Duration of the duration test, if applicable.
   google.protobuf.Duration duration = 4;
@@ -59,7 +64,7 @@ message StartEmergencyTestRequest {
 message StartEmergencyTestResponse {
   // The time at which the test was started.
   google.protobuf.Timestamp start_time = 1;
-  // The duration of the test, if applicable.
+  // Optional. The duration of the test, if applicable.
   google.protobuf.Duration duration = 2;
 }
 
@@ -69,18 +74,11 @@ message StopEmergencyTestsRequest {
 message StopEmergencyTestsResponse {}
 
 message GetTestResultSetRequest {
-  enum TestType {
-    TEST_UNKNOWN = 0;
-    NO_TEST = 1;
-    FUNCTION_TEST = 2;
-    DURATION_TEST = 3;
-  }
 
   string name = 1;
-  // Specify the test type to get results for. If omitted, results for all test types will be returned.
-  optional TestType test = 2;
-  // If an implementing driver supports caching of test results, this field can be set to true to use the cached results.
-  bool use_cache = 3;
+  google.protobuf.FieldMask read_mask = 2;
+  // If an implementing driver can query the emergency light for a result, use this to force a query instead of using any cached results.
+  bool query_device = 3;
 }
 
 message PullTestResultRequest {

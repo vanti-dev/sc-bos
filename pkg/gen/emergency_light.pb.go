@@ -37,21 +37,23 @@ const (
 	EmergencyTestResult_LIGHT_FAULTY             EmergencyTestResult_Result = 7
 	EmergencyTestResult_COMMUNICATION_FAILURE    EmergencyTestResult_Result = 8
 	EmergencyTestResult_OTHER_FAULT              EmergencyTestResult_Result = 9
+	EmergencyTestResult_TEST_RESULT_PENDING      EmergencyTestResult_Result = 10
 )
 
 // Enum value maps for EmergencyTestResult_Result.
 var (
 	EmergencyTestResult_Result_name = map[int32]string{
-		0: "TEST_RESULT_UNSPECIFIED",
-		1: "TEST_PASSED",
-		2: "CIRCUIT_FAILURE",
-		3: "BATTERY_DURATION_FAILURE",
-		4: "BATTERY_FAILURE",
-		5: "LAMP_FAILURE",
-		6: "TEST_FAILED",
-		7: "LIGHT_FAULTY",
-		8: "COMMUNICATION_FAILURE",
-		9: "OTHER_FAULT",
+		0:  "TEST_RESULT_UNSPECIFIED",
+		1:  "TEST_PASSED",
+		2:  "CIRCUIT_FAILURE",
+		3:  "BATTERY_DURATION_FAILURE",
+		4:  "BATTERY_FAILURE",
+		5:  "LAMP_FAILURE",
+		6:  "TEST_FAILED",
+		7:  "LIGHT_FAULTY",
+		8:  "COMMUNICATION_FAILURE",
+		9:  "OTHER_FAULT",
+		10: "TEST_RESULT_PENDING",
 	}
 	EmergencyTestResult_Result_value = map[string]int32{
 		"TEST_RESULT_UNSPECIFIED":  0,
@@ -64,6 +66,7 @@ var (
 		"LIGHT_FAULTY":             7,
 		"COMMUNICATION_FAILURE":    8,
 		"OTHER_FAULT":              9,
+		"TEST_RESULT_PENDING":      10,
 	}
 )
 
@@ -92,58 +95,6 @@ func (x EmergencyTestResult_Result) Number() protoreflect.EnumNumber {
 // Deprecated: Use EmergencyTestResult_Result.Descriptor instead.
 func (EmergencyTestResult_Result) EnumDescriptor() ([]byte, []int) {
 	return file_emergency_light_proto_rawDescGZIP(), []int{1, 0}
-}
-
-type GetTestResultSetRequest_TestType int32
-
-const (
-	GetTestResultSetRequest_TEST_UNKNOWN  GetTestResultSetRequest_TestType = 0
-	GetTestResultSetRequest_NO_TEST       GetTestResultSetRequest_TestType = 1
-	GetTestResultSetRequest_FUNCTION_TEST GetTestResultSetRequest_TestType = 2
-	GetTestResultSetRequest_DURATION_TEST GetTestResultSetRequest_TestType = 3
-)
-
-// Enum value maps for GetTestResultSetRequest_TestType.
-var (
-	GetTestResultSetRequest_TestType_name = map[int32]string{
-		0: "TEST_UNKNOWN",
-		1: "NO_TEST",
-		2: "FUNCTION_TEST",
-		3: "DURATION_TEST",
-	}
-	GetTestResultSetRequest_TestType_value = map[string]int32{
-		"TEST_UNKNOWN":  0,
-		"NO_TEST":       1,
-		"FUNCTION_TEST": 2,
-		"DURATION_TEST": 3,
-	}
-)
-
-func (x GetTestResultSetRequest_TestType) Enum() *GetTestResultSetRequest_TestType {
-	p := new(GetTestResultSetRequest_TestType)
-	*p = x
-	return p
-}
-
-func (x GetTestResultSetRequest_TestType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (GetTestResultSetRequest_TestType) Descriptor() protoreflect.EnumDescriptor {
-	return file_emergency_light_proto_enumTypes[1].Descriptor()
-}
-
-func (GetTestResultSetRequest_TestType) Type() protoreflect.EnumType {
-	return &file_emergency_light_proto_enumTypes[1]
-}
-
-func (x GetTestResultSetRequest_TestType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use GetTestResultSetRequest_TestType.Descriptor instead.
-func (GetTestResultSetRequest_TestType) EnumDescriptor() ([]byte, []int) {
-	return file_emergency_light_proto_rawDescGZIP(), []int{6, 0}
 }
 
 // TestResultSet contains the results of the most recent tests performed on the emergency light.
@@ -201,12 +152,15 @@ func (x *TestResultSet) GetDurationTest() *EmergencyTestResult {
 
 type EmergencyTestResult struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The result of the test.
+	// The result of the most recent test. If a test is currently in progress,
+	// result should be set to TEST_RESULT_PENDING or TEST_RESULT_UNSPECIFIED
 	Result EmergencyTestResult_Result `protobuf:"varint,1,opt,name=result,proto3,enum=smartcore.bos.EmergencyTestResult_Result" json:"result,omitempty"`
 	// Optional. The time at which the most recent test was started, if known.
+	// This will be updated whenever a new test is successfully started with StartFunctionTest or StartDurationTest.
 	StartTime *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
 	// Optional. The time at which the most recent test was completed.
-	// This should be populated whenever the test result is known, i.e. the test not 'in progress', 'unknown' or similar.
+	// This should be populated whenever the test has completed and the result is known.
+	// If the test result is still pending or unspecified, this field should not be set and should be ignored.
 	EndTime *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
 	// Optional. Duration of the duration test, if applicable.
 	Duration      *durationpb.Duration `protobuf:"bytes,4,opt,name=duration,proto3" json:"duration,omitempty"`
@@ -320,7 +274,7 @@ type StartEmergencyTestResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The time at which the test was started.
 	StartTime *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
-	// The duration of the test, if applicable.
+	// Optional. The duration of the test, if applicable.
 	Duration      *durationpb.Duration `protobuf:"bytes,2,opt,name=duration,proto3" json:"duration,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -451,12 +405,11 @@ func (*StopEmergencyTestsResponse) Descriptor() ([]byte, []int) {
 }
 
 type GetTestResultSetRequest struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Specify the test type to get results for. If omitted, results for all test types will be returned.
-	Test *GetTestResultSetRequest_TestType `protobuf:"varint,2,opt,name=test,proto3,enum=smartcore.bos.GetTestResultSetRequest_TestType,oneof" json:"test,omitempty"`
-	// If an implementing driver supports caching of test results, this field can be set to true to use the cached results.
-	UseCache      bool `protobuf:"varint,3,opt,name=use_cache,json=useCache,proto3" json:"use_cache,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Name     string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ReadMask *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=read_mask,json=readMask,proto3" json:"read_mask,omitempty"`
+	// If an implementing driver can query the emergency light for a result, use this to force a query instead of using any cached results.
+	QueryDevice   bool `protobuf:"varint,3,opt,name=query_device,json=queryDevice,proto3" json:"query_device,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -498,16 +451,16 @@ func (x *GetTestResultSetRequest) GetName() string {
 	return ""
 }
 
-func (x *GetTestResultSetRequest) GetTest() GetTestResultSetRequest_TestType {
-	if x != nil && x.Test != nil {
-		return *x.Test
+func (x *GetTestResultSetRequest) GetReadMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.ReadMask
 	}
-	return GetTestResultSetRequest_TEST_UNKNOWN
+	return nil
 }
 
-func (x *GetTestResultSetRequest) GetUseCache() bool {
+func (x *GetTestResultSetRequest) GetQueryDevice() bool {
 	if x != nil {
-		return x.UseCache
+		return x.QueryDevice
 	}
 	return false
 }
@@ -683,13 +636,13 @@ const file_emergency_light_proto_rawDesc = "" +
 	"\x15emergency_light.proto\x12\rsmartcore.bos\x1a\x1egoogle/protobuf/duration.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa1\x01\n" +
 	"\rTestResultSet\x12G\n" +
 	"\rfunction_test\x18\x01 \x01(\v2\".smartcore.bos.EmergencyTestResultR\ffunctionTest\x12G\n" +
-	"\rduration_test\x18\x02 \x01(\v2\".smartcore.bos.EmergencyTestResultR\fdurationTest\"\xe3\x03\n" +
+	"\rduration_test\x18\x02 \x01(\v2\".smartcore.bos.EmergencyTestResultR\fdurationTest\"\xfc\x03\n" +
 	"\x13EmergencyTestResult\x12A\n" +
 	"\x06result\x18\x01 \x01(\x0e2).smartcore.bos.EmergencyTestResult.ResultR\x06result\x129\n" +
 	"\n" +
 	"start_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
 	"\bend_time\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x125\n" +
-	"\bduration\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\bduration\"\xdf\x01\n" +
+	"\bduration\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\bduration\"\xf8\x01\n" +
 	"\x06Result\x12\x1b\n" +
 	"\x17TEST_RESULT_UNSPECIFIED\x10\x00\x12\x0f\n" +
 	"\vTEST_PASSED\x10\x01\x12\x13\n" +
@@ -700,7 +653,9 @@ const file_emergency_light_proto_rawDesc = "" +
 	"\vTEST_FAILED\x10\x06\x12\x10\n" +
 	"\fLIGHT_FAULTY\x10\a\x12\x19\n" +
 	"\x15COMMUNICATION_FAILURE\x10\b\x12\x0f\n" +
-	"\vOTHER_FAULT\x10\t\"/\n" +
+	"\vOTHER_FAULT\x10\t\x12\x17\n" +
+	"\x13TEST_RESULT_PENDING\x10\n" +
+	"\"/\n" +
 	"\x19StartEmergencyTestRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"\x8e\x01\n" +
 	"\x1aStartEmergencyTestResponse\x129\n" +
@@ -709,17 +664,11 @@ const file_emergency_light_proto_rawDesc = "" +
 	"\bduration\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\bduration\"/\n" +
 	"\x19StopEmergencyTestsRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"\x1c\n" +
-	"\x1aStopEmergencyTestsResponse\"\xee\x01\n" +
+	"\x1aStopEmergencyTestsResponse\"\x89\x01\n" +
 	"\x17GetTestResultSetRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12H\n" +
-	"\x04test\x18\x02 \x01(\x0e2/.smartcore.bos.GetTestResultSetRequest.TestTypeH\x00R\x04test\x88\x01\x01\x12\x1b\n" +
-	"\tuse_cache\x18\x03 \x01(\bR\buseCache\"O\n" +
-	"\bTestType\x12\x10\n" +
-	"\fTEST_UNKNOWN\x10\x00\x12\v\n" +
-	"\aNO_TEST\x10\x01\x12\x11\n" +
-	"\rFUNCTION_TEST\x10\x02\x12\x11\n" +
-	"\rDURATION_TEST\x10\x03B\a\n" +
-	"\x05_test\"\x87\x01\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
+	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\x12!\n" +
+	"\fquery_device\x18\x03 \x01(\bR\vqueryDevice\"\x87\x01\n" +
 	"\x15PullTestResultRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
 	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\x12!\n" +
@@ -751,49 +700,48 @@ func file_emergency_light_proto_rawDescGZIP() []byte {
 	return file_emergency_light_proto_rawDescData
 }
 
-var file_emergency_light_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_emergency_light_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_emergency_light_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_emergency_light_proto_goTypes = []any{
 	(EmergencyTestResult_Result)(0),        // 0: smartcore.bos.EmergencyTestResult.Result
-	(GetTestResultSetRequest_TestType)(0),  // 1: smartcore.bos.GetTestResultSetRequest.TestType
-	(*TestResultSet)(nil),                  // 2: smartcore.bos.TestResultSet
-	(*EmergencyTestResult)(nil),            // 3: smartcore.bos.EmergencyTestResult
-	(*StartEmergencyTestRequest)(nil),      // 4: smartcore.bos.StartEmergencyTestRequest
-	(*StartEmergencyTestResponse)(nil),     // 5: smartcore.bos.StartEmergencyTestResponse
-	(*StopEmergencyTestsRequest)(nil),      // 6: smartcore.bos.StopEmergencyTestsRequest
-	(*StopEmergencyTestsResponse)(nil),     // 7: smartcore.bos.StopEmergencyTestsResponse
-	(*GetTestResultSetRequest)(nil),        // 8: smartcore.bos.GetTestResultSetRequest
-	(*PullTestResultRequest)(nil),          // 9: smartcore.bos.PullTestResultRequest
-	(*PullTestResultsResponse)(nil),        // 10: smartcore.bos.PullTestResultsResponse
-	(*PullTestResultsResponse_Change)(nil), // 11: smartcore.bos.PullTestResultsResponse.Change
-	(*timestamppb.Timestamp)(nil),          // 12: google.protobuf.Timestamp
-	(*durationpb.Duration)(nil),            // 13: google.protobuf.Duration
-	(*fieldmaskpb.FieldMask)(nil),          // 14: google.protobuf.FieldMask
+	(*TestResultSet)(nil),                  // 1: smartcore.bos.TestResultSet
+	(*EmergencyTestResult)(nil),            // 2: smartcore.bos.EmergencyTestResult
+	(*StartEmergencyTestRequest)(nil),      // 3: smartcore.bos.StartEmergencyTestRequest
+	(*StartEmergencyTestResponse)(nil),     // 4: smartcore.bos.StartEmergencyTestResponse
+	(*StopEmergencyTestsRequest)(nil),      // 5: smartcore.bos.StopEmergencyTestsRequest
+	(*StopEmergencyTestsResponse)(nil),     // 6: smartcore.bos.StopEmergencyTestsResponse
+	(*GetTestResultSetRequest)(nil),        // 7: smartcore.bos.GetTestResultSetRequest
+	(*PullTestResultRequest)(nil),          // 8: smartcore.bos.PullTestResultRequest
+	(*PullTestResultsResponse)(nil),        // 9: smartcore.bos.PullTestResultsResponse
+	(*PullTestResultsResponse_Change)(nil), // 10: smartcore.bos.PullTestResultsResponse.Change
+	(*timestamppb.Timestamp)(nil),          // 11: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),            // 12: google.protobuf.Duration
+	(*fieldmaskpb.FieldMask)(nil),          // 13: google.protobuf.FieldMask
 }
 var file_emergency_light_proto_depIdxs = []int32{
-	3,  // 0: smartcore.bos.TestResultSet.function_test:type_name -> smartcore.bos.EmergencyTestResult
-	3,  // 1: smartcore.bos.TestResultSet.duration_test:type_name -> smartcore.bos.EmergencyTestResult
+	2,  // 0: smartcore.bos.TestResultSet.function_test:type_name -> smartcore.bos.EmergencyTestResult
+	2,  // 1: smartcore.bos.TestResultSet.duration_test:type_name -> smartcore.bos.EmergencyTestResult
 	0,  // 2: smartcore.bos.EmergencyTestResult.result:type_name -> smartcore.bos.EmergencyTestResult.Result
-	12, // 3: smartcore.bos.EmergencyTestResult.start_time:type_name -> google.protobuf.Timestamp
-	12, // 4: smartcore.bos.EmergencyTestResult.end_time:type_name -> google.protobuf.Timestamp
-	13, // 5: smartcore.bos.EmergencyTestResult.duration:type_name -> google.protobuf.Duration
-	12, // 6: smartcore.bos.StartEmergencyTestResponse.start_time:type_name -> google.protobuf.Timestamp
-	13, // 7: smartcore.bos.StartEmergencyTestResponse.duration:type_name -> google.protobuf.Duration
-	1,  // 8: smartcore.bos.GetTestResultSetRequest.test:type_name -> smartcore.bos.GetTestResultSetRequest.TestType
-	14, // 9: smartcore.bos.PullTestResultRequest.read_mask:type_name -> google.protobuf.FieldMask
-	11, // 10: smartcore.bos.PullTestResultsResponse.changes:type_name -> smartcore.bos.PullTestResultsResponse.Change
-	12, // 11: smartcore.bos.PullTestResultsResponse.Change.change_time:type_name -> google.protobuf.Timestamp
-	2,  // 12: smartcore.bos.PullTestResultsResponse.Change.test_result:type_name -> smartcore.bos.TestResultSet
-	4,  // 13: smartcore.bos.EmergencyLightApi.StartFunctionTest:input_type -> smartcore.bos.StartEmergencyTestRequest
-	4,  // 14: smartcore.bos.EmergencyLightApi.StartDurationTest:input_type -> smartcore.bos.StartEmergencyTestRequest
-	6,  // 15: smartcore.bos.EmergencyLightApi.StopEmergencyTest:input_type -> smartcore.bos.StopEmergencyTestsRequest
-	8,  // 16: smartcore.bos.EmergencyLightApi.GetTestResultSet:input_type -> smartcore.bos.GetTestResultSetRequest
-	9,  // 17: smartcore.bos.EmergencyLightApi.PullTestResultSets:input_type -> smartcore.bos.PullTestResultRequest
-	5,  // 18: smartcore.bos.EmergencyLightApi.StartFunctionTest:output_type -> smartcore.bos.StartEmergencyTestResponse
-	5,  // 19: smartcore.bos.EmergencyLightApi.StartDurationTest:output_type -> smartcore.bos.StartEmergencyTestResponse
-	7,  // 20: smartcore.bos.EmergencyLightApi.StopEmergencyTest:output_type -> smartcore.bos.StopEmergencyTestsResponse
-	2,  // 21: smartcore.bos.EmergencyLightApi.GetTestResultSet:output_type -> smartcore.bos.TestResultSet
-	10, // 22: smartcore.bos.EmergencyLightApi.PullTestResultSets:output_type -> smartcore.bos.PullTestResultsResponse
+	11, // 3: smartcore.bos.EmergencyTestResult.start_time:type_name -> google.protobuf.Timestamp
+	11, // 4: smartcore.bos.EmergencyTestResult.end_time:type_name -> google.protobuf.Timestamp
+	12, // 5: smartcore.bos.EmergencyTestResult.duration:type_name -> google.protobuf.Duration
+	11, // 6: smartcore.bos.StartEmergencyTestResponse.start_time:type_name -> google.protobuf.Timestamp
+	12, // 7: smartcore.bos.StartEmergencyTestResponse.duration:type_name -> google.protobuf.Duration
+	13, // 8: smartcore.bos.GetTestResultSetRequest.read_mask:type_name -> google.protobuf.FieldMask
+	13, // 9: smartcore.bos.PullTestResultRequest.read_mask:type_name -> google.protobuf.FieldMask
+	10, // 10: smartcore.bos.PullTestResultsResponse.changes:type_name -> smartcore.bos.PullTestResultsResponse.Change
+	11, // 11: smartcore.bos.PullTestResultsResponse.Change.change_time:type_name -> google.protobuf.Timestamp
+	1,  // 12: smartcore.bos.PullTestResultsResponse.Change.test_result:type_name -> smartcore.bos.TestResultSet
+	3,  // 13: smartcore.bos.EmergencyLightApi.StartFunctionTest:input_type -> smartcore.bos.StartEmergencyTestRequest
+	3,  // 14: smartcore.bos.EmergencyLightApi.StartDurationTest:input_type -> smartcore.bos.StartEmergencyTestRequest
+	5,  // 15: smartcore.bos.EmergencyLightApi.StopEmergencyTest:input_type -> smartcore.bos.StopEmergencyTestsRequest
+	7,  // 16: smartcore.bos.EmergencyLightApi.GetTestResultSet:input_type -> smartcore.bos.GetTestResultSetRequest
+	8,  // 17: smartcore.bos.EmergencyLightApi.PullTestResultSets:input_type -> smartcore.bos.PullTestResultRequest
+	4,  // 18: smartcore.bos.EmergencyLightApi.StartFunctionTest:output_type -> smartcore.bos.StartEmergencyTestResponse
+	4,  // 19: smartcore.bos.EmergencyLightApi.StartDurationTest:output_type -> smartcore.bos.StartEmergencyTestResponse
+	6,  // 20: smartcore.bos.EmergencyLightApi.StopEmergencyTest:output_type -> smartcore.bos.StopEmergencyTestsResponse
+	1,  // 21: smartcore.bos.EmergencyLightApi.GetTestResultSet:output_type -> smartcore.bos.TestResultSet
+	9,  // 22: smartcore.bos.EmergencyLightApi.PullTestResultSets:output_type -> smartcore.bos.PullTestResultsResponse
 	18, // [18:23] is the sub-list for method output_type
 	13, // [13:18] is the sub-list for method input_type
 	13, // [13:13] is the sub-list for extension type_name
@@ -806,13 +754,12 @@ func file_emergency_light_proto_init() {
 	if File_emergency_light_proto != nil {
 		return
 	}
-	file_emergency_light_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_emergency_light_proto_rawDesc), len(file_emergency_light_proto_rawDesc)),
-			NumEnums:      2,
+			NumEnums:      1,
 			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,

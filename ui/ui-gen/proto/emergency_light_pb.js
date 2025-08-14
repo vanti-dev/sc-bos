@@ -30,7 +30,6 @@ goog.object.extend(proto, google_protobuf_timestamp_pb);
 goog.exportSymbol('proto.smartcore.bos.EmergencyTestResult', null, global);
 goog.exportSymbol('proto.smartcore.bos.EmergencyTestResult.Result', null, global);
 goog.exportSymbol('proto.smartcore.bos.GetTestResultSetRequest', null, global);
-goog.exportSymbol('proto.smartcore.bos.GetTestResultSetRequest.TestType', null, global);
 goog.exportSymbol('proto.smartcore.bos.PullTestResultRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.PullTestResultsResponse', null, global);
 goog.exportSymbol('proto.smartcore.bos.PullTestResultsResponse.Change', null, global);
@@ -618,7 +617,8 @@ proto.smartcore.bos.EmergencyTestResult.Result = {
   TEST_FAILED: 6,
   LIGHT_FAULTY: 7,
   COMMUNICATION_FAILURE: 8,
-  OTHER_FAULT: 9
+  OTHER_FAULT: 9,
+  TEST_RESULT_PENDING: 10
 };
 
 /**
@@ -1346,8 +1346,8 @@ proto.smartcore.bos.GetTestResultSetRequest.prototype.toObject = function(opt_in
 proto.smartcore.bos.GetTestResultSetRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
-test: (f = jspb.Message.getField(msg, 2)) == null ? undefined : f,
-useCache: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
+queryDevice: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -1389,12 +1389,13 @@ proto.smartcore.bos.GetTestResultSetRequest.deserializeBinaryFromReader = functi
       msg.setName(value);
       break;
     case 2:
-      var value = /** @type {!proto.smartcore.bos.GetTestResultSetRequest.TestType} */ (reader.readEnum());
-      msg.setTest(value);
+      var value = new google_protobuf_field_mask_pb.FieldMask;
+      reader.readMessage(value,google_protobuf_field_mask_pb.FieldMask.deserializeBinaryFromReader);
+      msg.setReadMask(value);
       break;
     case 3:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setUseCache(value);
+      msg.setQueryDevice(value);
       break;
     default:
       reader.skipField();
@@ -1432,14 +1433,15 @@ proto.smartcore.bos.GetTestResultSetRequest.serializeBinaryToWriter = function(m
       f
     );
   }
-  f = /** @type {!proto.smartcore.bos.GetTestResultSetRequest.TestType} */ (jspb.Message.getField(message, 2));
+  f = message.getReadMask();
   if (f != null) {
-    writer.writeEnum(
+    writer.writeMessage(
       2,
-      f
+      f,
+      google_protobuf_field_mask_pb.FieldMask.serializeBinaryToWriter
     );
   }
-  f = message.getUseCache();
+  f = message.getQueryDevice();
   if (f) {
     writer.writeBool(
       3,
@@ -1448,16 +1450,6 @@ proto.smartcore.bos.GetTestResultSetRequest.serializeBinaryToWriter = function(m
   }
 };
 
-
-/**
- * @enum {number}
- */
-proto.smartcore.bos.GetTestResultSetRequest.TestType = {
-  TEST_UNKNOWN: 0,
-  NO_TEST: 1,
-  FUNCTION_TEST: 2,
-  DURATION_TEST: 3
-};
 
 /**
  * optional string name = 1;
@@ -1478,29 +1470,30 @@ proto.smartcore.bos.GetTestResultSetRequest.prototype.setName = function(value) 
 
 
 /**
- * optional TestType test = 2;
- * @return {!proto.smartcore.bos.GetTestResultSetRequest.TestType}
+ * optional google.protobuf.FieldMask read_mask = 2;
+ * @return {?proto.google.protobuf.FieldMask}
  */
-proto.smartcore.bos.GetTestResultSetRequest.prototype.getTest = function() {
-  return /** @type {!proto.smartcore.bos.GetTestResultSetRequest.TestType} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+proto.smartcore.bos.GetTestResultSetRequest.prototype.getReadMask = function() {
+  return /** @type{?proto.google.protobuf.FieldMask} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_field_mask_pb.FieldMask, 2));
 };
 
 
 /**
- * @param {!proto.smartcore.bos.GetTestResultSetRequest.TestType} value
+ * @param {?proto.google.protobuf.FieldMask|undefined} value
  * @return {!proto.smartcore.bos.GetTestResultSetRequest} returns this
- */
-proto.smartcore.bos.GetTestResultSetRequest.prototype.setTest = function(value) {
-  return jspb.Message.setField(this, 2, value);
+*/
+proto.smartcore.bos.GetTestResultSetRequest.prototype.setReadMask = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
- * Clears the field making it undefined.
+ * Clears the message field making it undefined.
  * @return {!proto.smartcore.bos.GetTestResultSetRequest} returns this
  */
-proto.smartcore.bos.GetTestResultSetRequest.prototype.clearTest = function() {
-  return jspb.Message.setField(this, 2, undefined);
+proto.smartcore.bos.GetTestResultSetRequest.prototype.clearReadMask = function() {
+  return this.setReadMask(undefined);
 };
 
 
@@ -1508,16 +1501,16 @@ proto.smartcore.bos.GetTestResultSetRequest.prototype.clearTest = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.smartcore.bos.GetTestResultSetRequest.prototype.hasTest = function() {
+proto.smartcore.bos.GetTestResultSetRequest.prototype.hasReadMask = function() {
   return jspb.Message.getField(this, 2) != null;
 };
 
 
 /**
- * optional bool use_cache = 3;
+ * optional bool query_device = 3;
  * @return {boolean}
  */
-proto.smartcore.bos.GetTestResultSetRequest.prototype.getUseCache = function() {
+proto.smartcore.bos.GetTestResultSetRequest.prototype.getQueryDevice = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
 };
 
@@ -1526,7 +1519,7 @@ proto.smartcore.bos.GetTestResultSetRequest.prototype.getUseCache = function() {
  * @param {boolean} value
  * @return {!proto.smartcore.bos.GetTestResultSetRequest} returns this
  */
-proto.smartcore.bos.GetTestResultSetRequest.prototype.setUseCache = function(value) {
+proto.smartcore.bos.GetTestResultSetRequest.prototype.setQueryDevice = function(value) {
   return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 

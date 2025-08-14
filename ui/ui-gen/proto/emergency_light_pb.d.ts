@@ -77,6 +77,7 @@ export namespace EmergencyTestResult {
     LIGHT_FAULTY = 7,
     COMMUNICATION_FAILURE = 8,
     OTHER_FAULT = 9,
+    TEST_RESULT_PENDING = 10,
   }
 }
 
@@ -160,13 +161,13 @@ export class GetTestResultSetRequest extends jspb.Message {
   getName(): string;
   setName(value: string): GetTestResultSetRequest;
 
-  getTest(): GetTestResultSetRequest.TestType;
-  setTest(value: GetTestResultSetRequest.TestType): GetTestResultSetRequest;
-  hasTest(): boolean;
-  clearTest(): GetTestResultSetRequest;
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetTestResultSetRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): GetTestResultSetRequest;
 
-  getUseCache(): boolean;
-  setUseCache(value: boolean): GetTestResultSetRequest;
+  getQueryDevice(): boolean;
+  setQueryDevice(value: boolean): GetTestResultSetRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetTestResultSetRequest.AsObject;
@@ -179,20 +180,8 @@ export class GetTestResultSetRequest extends jspb.Message {
 export namespace GetTestResultSetRequest {
   export type AsObject = {
     name: string,
-    test?: GetTestResultSetRequest.TestType,
-    useCache: boolean,
-  }
-
-  export enum TestType { 
-    TEST_UNKNOWN = 0,
-    NO_TEST = 1,
-    FUNCTION_TEST = 2,
-    DURATION_TEST = 3,
-  }
-
-  export enum TestCase { 
-    _TEST_NOT_SET = 0,
-    TEST = 2,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    queryDevice: boolean,
   }
 }
 

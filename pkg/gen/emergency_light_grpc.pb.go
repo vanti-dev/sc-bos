@@ -37,7 +37,8 @@ type EmergencyLightApiClient interface {
 	StartFunctionTest(ctx context.Context, in *StartEmergencyTestRequest, opts ...grpc.CallOption) (*StartEmergencyTestResponse, error)
 	// Attempt to start a duration test
 	StartDurationTest(ctx context.Context, in *StartEmergencyTestRequest, opts ...grpc.CallOption) (*StartEmergencyTestResponse, error)
-	// Stop any test that is in progress.
+	// Stop any test that is in progress. If no tests are running this has no effect.
+	// When a running test is stopped before completion, its EmergencyTestResult.Result MUST be updated to TEST_RESULT_UNSPECIFIED
 	StopEmergencyTest(ctx context.Context, in *StopEmergencyTestsRequest, opts ...grpc.CallOption) (*StopEmergencyTestsResponse, error)
 	// Get the set of results of the most recent tests performed on the emergency light.
 	GetTestResultSet(ctx context.Context, in *GetTestResultSetRequest, opts ...grpc.CallOption) (*TestResultSet, error)
@@ -122,7 +123,8 @@ type EmergencyLightApiServer interface {
 	StartFunctionTest(context.Context, *StartEmergencyTestRequest) (*StartEmergencyTestResponse, error)
 	// Attempt to start a duration test
 	StartDurationTest(context.Context, *StartEmergencyTestRequest) (*StartEmergencyTestResponse, error)
-	// Stop any test that is in progress.
+	// Stop any test that is in progress. If no tests are running this has no effect.
+	// When a running test is stopped before completion, its EmergencyTestResult.Result MUST be updated to TEST_RESULT_UNSPECIFIED
 	StopEmergencyTest(context.Context, *StopEmergencyTestsRequest) (*StopEmergencyTestsResponse, error)
 	// Get the set of results of the most recent tests performed on the emergency light.
 	GetTestResultSet(context.Context, *GetTestResultSetRequest) (*TestResultSet, error)
