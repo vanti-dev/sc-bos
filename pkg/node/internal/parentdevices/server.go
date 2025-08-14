@@ -14,6 +14,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
+	"github.com/vanti-dev/sc-bos/pkg/util/page"
 )
 
 // Server implements the ParentApi where children are devices in a devicespb.Collection.
@@ -40,7 +41,7 @@ func (s *Server) ListChildren(_ context.Context, request *traits.ListChildrenReq
 	if err := s.validateRequest(request); err != nil {
 		return nil, err
 	}
-	devices, totalSize, nextPageToken, err := listPage(request, func() []*gen.Device {
+	devices, totalSize, nextPageToken, err := page.List(request, (*gen.Device).GetName, func() []*gen.Device {
 		return s.devices.ListDevices(resource.WithInclude(s.deviceIncludeFunc))
 	})
 	if err != nil {
