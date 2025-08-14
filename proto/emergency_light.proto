@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+// EmergencyLightApi provides methods to start and stop tests on emergency lights, and to retrieve test results.
+// The API is designed to be implemented by emergency lights.
+service EmergencyLightApi {
+  // Attempt to start a function test
+  rpc StartFunctionTest(StartEmergencyTestRequest) returns (StartEmergencyTestResponse);
+  // Attempt to start a duration test
+  rpc StartDurationTest(StartEmergencyTestRequest) returns (StartEmergencyTestResponse);
+  // Stop any test that is in progress.
+  rpc StopEmergencyTest(StopEmergencyTestsRequest) returns (StopEmergencyTestsResponse);
+  // Get the set of results of the most recent tests performed on the emergency light.
+  rpc GetTestResultSet(GetTestResultSetRequest) returns (TestResultSet);
+  rpc PullTestResultSets(PullTestResultRequest) returns (stream PullTestResultsResponse);
+}
+
+// TestResultSet contains the results of the most recent tests performed on the emergency light.
+message TestResultSet {
+  EmergencyTestResult function_test = 1;
+  EmergencyTestResult duration_test = 2;
+}
+
+message EmergencyTestResult {
+  enum Result {
+    TEST_RESULT_UNSPECIFIED = 0;
+    TEST_PASSED = 1;
+    CIRCUIT_FAILURE = 2;
+    BATTERY_DURATION_FAILURE = 3;
+    BATTERY_FAILURE = 4;
+    LAMP_FAILURE = 5;
+    TEST_FAILED = 6;
+    LIGHT_FAULTY = 7;
+    COMMUNICATION_FAILURE = 8;
+    OTHER_FAULT = 9;
+  }
+
+  // The result of the test.
+  Result result = 1;
+  // Optional. The time at which the most recent test was started, if known.
+  google.protobuf.Timestamp start_time = 2;
+  // Optional. The time at which the most recent test was completed.
+  // This should be populated whenever the test result is known, i.e. the test not 'in progress', 'unknown' or similar.
+  google.protobuf.Timestamp end_time = 3;
+  // Optional. Duration of the duration test, if applicable.
+  google.protobuf.Duration duration = 4;
+}
+
+message StartEmergencyTestRequest {
+  string name = 1;
+}
+message StartEmergencyTestResponse {
+  // The time at which the test was started.
+  google.protobuf.Timestamp start_time = 1;
+  // The duration of the test, if applicable.
+  google.protobuf.Duration duration = 2;
+}
+
+message StopEmergencyTestsRequest {
+  string name = 1;
+}
+message StopEmergencyTestsResponse {}
+
+message GetTestResultSetRequest {
+  enum TestType {
+    TEST_UNKNOWN = 0;
+    NO_TEST = 1;
+    FUNCTION_TEST = 2;
+    DURATION_TEST = 3;
+  }
+
+  string name = 1;
+  // Specify the test type to get results for. If omitted, results for all test types will be returned.
+  optional TestType test = 2;
+  // If an implementing driver supports caching of test results, this field can be set to true to use the cached results.
+  bool use_cache = 3;
+}
+
+message PullTestResultRequest {
+  string name = 1;
+  google.protobuf.FieldMask read_mask = 2;
+  bool updates_only = 3;
+}
+
+message PullTestResultsResponse {
+  repeated Change changes = 1;
+
+  message Change {
+    string name = 1;
+    google.protobuf.Timestamp change_time = 2;
+    TestResultSet test_result = 3;
+  }
+}
