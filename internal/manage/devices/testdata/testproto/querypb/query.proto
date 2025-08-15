@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package smartcore.bos.devices;
+
+option go_package = "github.com/vanti-dev/sc-bos/internal/manage/devices/testdata/testproto/querypb";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+enum ResultEnum {
+  RESULT_ENUM_UNSPECIFIED = 0; // default value
+  RESULT_ENUM_A = 1;
+  RESULT_ENUM_B = 2;
+  RESULT_ENUM_C = 3;
+}
+
+message Result {
+  // single and repeated scalar values
+  double double_val = 1;
+  repeated double r_double = 2;
+  float float_val = 3;
+  repeated float r_float = 4;
+  int32 int32_val = 5;
+  repeated int32 r_int32 = 6;
+  int64 int64_val = 7;
+  repeated int64 r_int64 = 8;
+  uint32 uint32_val = 9;
+  repeated uint32 r_uint32 = 10;
+  uint64 uint64_val = 11;
+  repeated uint64 r_uint64 = 12;
+  sint32 sint32_val = 13;
+  repeated sint32 r_sint32 = 14;
+  sint64 sint64_val = 15;
+  repeated sint64 r_sint64 = 16;
+  fixed32 fixed32_val = 17;
+  repeated fixed32 r_fixed32 = 18;
+  fixed64 fixed64_val = 19;
+  repeated fixed64 r_fixed64 = 20;
+  sfixed32 sfixed32_val = 21;
+  repeated sfixed32 r_sfixed32 = 22;
+  sfixed64 sfixed64_val = 23;
+  repeated sfixed64 r_sfixed64 = 24;
+  bool bool_val = 25;
+  repeated bool r_bool = 26;
+  string string_val = 27;
+  repeated string r_string = 28;
+  bytes bytes_val = 29;
+  repeated bytes r_bytes = 30;
+  ResultEnum enum_val = 31;
+  repeated ResultEnum r_enum = 32;
+  // scalar messages
+  google.protobuf.Duration duration_val = 33;
+  repeated google.protobuf.Duration r_duration = 34;
+  google.protobuf.Timestamp timestamp_val = 35;
+  repeated google.protobuf.Timestamp r_timestamp = 36;
+
+  // maps of scalar value
+  map<int32, string> m_int32_string = 50;
+  map<int64, string> m_int64_string = 51;
+  map<uint32, string> m_uint32_string = 52;
+  map<uint64, string> m_uint64_string = 53;
+  map<sint32, string> m_sint32_string = 54;
+  map<sint64, string> m_sint64_string = 55;
+  map<fixed32, string> m_fixed32_string = 56;
+  map<fixed64, string> m_fixed64_string = 57;
+  map<sfixed32, string> m_sfixed32_string = 58;
+  map<sfixed64, string> m_sfixed64_string = 59;
+  map<bool, string> m_bool_string = 60;
+  map<string, string> m_string_string = 61;
+  map<string, ResultEnum> m_string_enum = 62;
+  // maps of scalar message value
+  map<string, google.protobuf.Duration> m_string_duration = 63;
+  map<string, google.protobuf.Timestamp> m_string_timestamp = 64;
+
+  // nested objects
+  Result result = 100;
+  repeated Result r_result = 101;
+  map<string, Result> m_string_result = 102;
+}

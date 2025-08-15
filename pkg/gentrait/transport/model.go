@@ -2,10 +2,10 @@ package transport
 
 import (
 	"context"
-	"time"
 
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
 
 type Model struct {
@@ -34,24 +34,7 @@ func (m *Model) UpdateTransport(transport *gen.Transport, opts ...resource.Write
 }
 
 func (m *Model) PullTransport(ctx context.Context, opts ...resource.ReadOption) <-chan PullTransportChange {
-	send := make(chan PullTransportChange)
-
-	go func() {
-		defer close(send)
-		for change := range m.transport.Pull(ctx, opts...) {
-			val := change.Value.(*gen.Transport)
-			select {
-			case <-ctx.Done():
-				return
-			case send <- PullTransportChange{Value: val, ChangeTime: change.ChangeTime}:
-			}
-		}
-	}()
-
-	return send
+	return resources.PullValue[*gen.Transport](ctx, m.transport.Pull(ctx, opts...))
 }
 
-type PullTransportChange struct {
-	Value      *gen.Transport
-	ChangeTime time.Time
-}
+type PullTransportChange = resources.ValueChange[*gen.Transport]

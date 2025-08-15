@@ -29,7 +29,6 @@ message Device {
     message Condition {
       // The name of a field relative to Device using '.' as a path separator.
       // For example "metadata.membership.group".
-      // If absent then any field may be matched against the value.
       string field = 1;
       oneof value {
         // Compare the field to this string using a case sensitive comparison
@@ -48,6 +47,17 @@ message Device {
         // Compare the field to any of these strings using a simple unicode case folding comparison.
         // The server may have limits on the number of strings that can be compared.
         StringList string_in_fold = 7;
+
+        // The condition matches if the field is equal to this timestamp.
+        google.protobuf.Timestamp timestamp_equal = 20;
+        // The condition matches if the field is greater than this timestamp.
+        google.protobuf.Timestamp timestamp_gt = 21;
+        // The condition matches if the field is greater than or equal to this timestamp.
+        google.protobuf.Timestamp timestamp_gte = 22;
+        // The condition matches if the field is less than this timestamp.
+        google.protobuf.Timestamp timestamp_lt = 23;
+        // The condition matches if the field is less than or equal to this timestamp.
+        google.protobuf.Timestamp timestamp_lte = 24;
 
         // there's room here for additional rhs values for the field, but we don't need any
       }

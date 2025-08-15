@@ -2,10 +2,10 @@ package soundsensorpb
 
 import (
 	"context"
-	"time"
 
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
 
 type Model struct {
@@ -26,24 +26,7 @@ func (m *Model) GetSoundLevel(opts ...resource.ReadOption) (*gen.SoundLevel, err
 }
 
 func (m *Model) PullSoundLevel(ctx context.Context, opts ...resource.ReadOption) <-chan PullSoundLevelChange {
-	send := make(chan PullSoundLevelChange)
-
-	go func() {
-		defer close(send)
-		for change := range m.soundLevel.Pull(ctx, opts...) {
-			val := change.Value.(*gen.SoundLevel)
-			select {
-			case <-ctx.Done():
-				return
-			case send <- PullSoundLevelChange{Value: val, ChangeTime: change.ChangeTime}:
-			}
-		}
-	}()
-
-	return send
+	return resources.PullValue[*gen.SoundLevel](ctx, m.soundLevel.Pull(ctx, opts...))
 }
 
-type PullSoundLevelChange struct {
-	Value      *gen.SoundLevel
-	ChangeTime time.Time
-}
+type PullSoundLevelChange = resources.ValueChange[*gen.SoundLevel]

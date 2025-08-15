@@ -1,19 +1,23 @@
 package devices
 
 import (
+	"bytes"
+	"fmt"
 	"iter"
-	"log"
 	"strconv"
 	"strings"
 
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protopath"
 	"google.golang.org/protobuf/reflect/protorange"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
+// deviceMatchesQuery returns true if all of the conditions in query match fields of device.
 func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 	if query == nil {
 		return true
@@ -28,239 +32,411 @@ func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 	return true
 }
 
+// conditionMatches returns true if the condition matches leaf values in device.
+// If the condition has a path, only leafs matching the path are considered,
+// otherwise all leafs in device are considered.
 func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool {
-	// everything is a string comparison, for now. Can rework this later if that no longer is the case
-	var cmp func(v string) bool
-	switch c := cond.Value.(type) {
-	case *gen.Device_Query_Condition_StringEqual:
-		cmp = func(v string) bool {
-			return v == c.StringEqual
-		}
-	case *gen.Device_Query_Condition_StringEqualFold:
-		cmp = func(v string) bool {
-			return strings.EqualFold(v, c.StringEqualFold)
-		}
-	case *gen.Device_Query_Condition_StringContains:
-		cmp = func(v string) bool {
-			return strings.Contains(v, c.StringContains)
-		}
-	case *gen.Device_Query_Condition_StringContainsFold:
-		ls := strings.ToLower(c.StringContainsFold)
-		cmp = func(v string) bool {
-			return strings.Contains(strings.ToLower(v), ls)
-		}
-	case *gen.Device_Query_Condition_StringIn:
-		set := make(map[string]struct{}, len(c.StringIn.Strings))
-		for _, s := range c.StringIn.Strings {
-			set[s] = struct{}{}
-		}
-		cmp = func(v string) bool {
-			_, ok := set[v]
-			return ok
-		}
-	case *gen.Device_Query_Condition_StringInFold:
-		set := make(map[string]struct{}, len(c.StringInFold.Strings))
-		for _, s := range c.StringInFold.Strings {
-			set[strings.ToLower(s)] = struct{}{}
-		}
-		cmp = func(v string) bool {
-			_, ok := set[strings.ToLower(v)]
-			return ok
-		}
-	default:
+	cmp := conditionToCmpFunc(cond)
+	leafs, err := rangeLeafs(cond.Field, device)
+	if err != nil {
 		return false
 	}
-
-	if cond.Field == "" {
-		// any field
-		return messageHasValueStringFunc(device, cmp)
-	}
-
-	for val := range getMessageString(cond.Field, device) {
-		if cmp(val) {
+	for v := range leafs {
+		if cmp(v) {
 			return true
 		}
 	}
 	return false
 }
 
-// messageHasValueStringFunc returns whether any value in msg returns true when converted to a string and passed to f.
-// See valueString for the string conversion mechanism.
-func messageHasValueStringFunc(msg proto.Message, f func(v string) bool) bool {
-	if msg == nil {
-		return false
+// conditionToCmpFunc converts a Device_Query_Condition into a function that checks if leaf values match the condition.
+func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
+	strCmp := func(f func(string) bool) func(v leaf) bool {
+		return func(v leaf) bool {
+			s, ok := v.toString()
+			if !ok {
+				return false
+			}
+			return f(s)
+		}
 	}
-	var match bool
-	err := protorange.Range(msg.ProtoReflect(), func(values protopath.Values) error {
-		last := values.Index(-1)
-
-		var fd protoreflect.FieldDescriptor
-		switch last.Step.Kind() {
-		case protopath.FieldAccessStep:
-			fd = last.Step.FieldDescriptor()
-		case protopath.MapIndexStep:
-			fd = values.Index(-2).Step.FieldDescriptor().MapValue()
-		case protopath.ListIndexStep:
-			fd = values.Index(-2).Step.FieldDescriptor()
+	timestampCmp := func(f func(*timestamppb.Timestamp) bool) func(leaf) bool {
+		return func(v leaf) bool {
+			t, ok := v.toTimestamp()
+			if !ok {
+				return false
+			}
+			return f(t)
 		}
-
-		str, ok := valueString(fd, last.Value)
-		if !ok {
-			return nil
-		}
-		if f(str) {
-			match = true
-			return protorange.Terminate
-		}
-		return nil
-	})
-	if err != nil {
-		// this shouldn't happen as our Range func doesn't return unexpected errors
-		log.Printf("Unexpected error during device query processing: %v", err)
-		return false
 	}
-	return match
+
+	switch c := cond.Value.(type) {
+	case *gen.Device_Query_Condition_StringEqual:
+		return strCmp(func(v string) bool {
+			return v == c.StringEqual
+		})
+	case *gen.Device_Query_Condition_StringEqualFold:
+		return strCmp(func(v string) bool {
+			return strings.EqualFold(v, c.StringEqualFold)
+		})
+	case *gen.Device_Query_Condition_StringContains:
+		return strCmp(func(v string) bool {
+			return strings.Contains(v, c.StringContains)
+		})
+	case *gen.Device_Query_Condition_StringContainsFold:
+		ls := strings.ToLower(c.StringContainsFold)
+		return strCmp(func(v string) bool {
+			return strings.Contains(strings.ToLower(v), ls)
+		})
+	case *gen.Device_Query_Condition_StringIn:
+		set := make(map[string]struct{}, len(c.StringIn.Strings))
+		for _, s := range c.StringIn.Strings {
+			set[s] = struct{}{}
+		}
+		return strCmp(func(v string) bool {
+			_, ok := set[v]
+			return ok
+		})
+	case *gen.Device_Query_Condition_StringInFold:
+		set := make(map[string]struct{}, len(c.StringInFold.Strings))
+		for _, s := range c.StringInFold.Strings {
+			set[strings.ToLower(s)] = struct{}{}
+		}
+		return strCmp(func(v string) bool {
+			_, ok := set[strings.ToLower(v)]
+			return ok
+		})
+
+	case *gen.Device_Query_Condition_TimestampEqual:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			return t.AsTime().Equal(c.TimestampEqual.AsTime())
+		})
+	case *gen.Device_Query_Condition_TimestampGt:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			return t.AsTime().After(c.TimestampGt.AsTime())
+		})
+	case *gen.Device_Query_Condition_TimestampGte:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			return !t.AsTime().Before(c.TimestampGte.AsTime())
+		})
+	case *gen.Device_Query_Condition_TimestampLt:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			// zero times shouldn't match
+			goT := t.AsTime()
+			if goT.IsZero() {
+				return false
+			}
+			return goT.Before(c.TimestampLt.AsTime())
+		})
+	case *gen.Device_Query_Condition_TimestampLte:
+		return timestampCmp(func(t *timestamppb.Timestamp) bool {
+			// zero times shouldn't match
+			goT := t.AsTime()
+			if goT.IsZero() {
+				return false
+			}
+			return !goT.After(c.TimestampLte.AsTime())
+		})
+	}
+
+	return func(v leaf) bool {
+		return false // no condition matches, return false
+	}
 }
 
 // getMessageString returns an iterator over the string values identified by path from msg.
 // See valueString for details of string conversion.
 func getMessageString(path string, msg proto.Message) iter.Seq[string] {
-	if msg == nil {
-		return func(yield func(string) bool) {}
-	}
-	segments, err := parsePath(path)
-	if err != nil || len(segments) == 0 {
-		return func(yield func(string) bool) {}
-	}
-	return getMessageValue(segments, msg.ProtoReflect())
-}
-
-// getMessageValue returns an iterator over the string values identified by path.
-// The first path segment should refer to a field in msg.
-func getMessageValue(path []pathSegment, msg protoreflect.Message) iter.Seq[string] {
-	head := path[0]
-	fieldDesc := msg.Descriptor().Fields().ByName(protoreflect.Name(head.Name))
-	if fieldDesc == nil {
-		return func(yield func(string) bool) {}
-	}
-
-	if head.IsIndex {
-		return func(yield func(string) bool) {}
-	}
-	val := msg.Get(fieldDesc)
-	if len(path) == 1 {
-		// end of the path
-		if fieldDesc.IsList() {
-			return getListValue(path, fieldDesc, val.List())
-		}
-		return func(yield func(string) bool) {
-			if str, got := valueString(fieldDesc, val); got && str != "" {
-				yield(str)
-			}
-		}
-	}
-
-	return nextValue(path[1:], fieldDesc, val)
-}
-
-// getMapValue returns an iterator over the string values identified by path in the map m.
-// The first path segment should refer to a key in the map.
-func getMapValue(path []pathSegment, keyDesc, valueDesc protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[string] {
-	head := path[0]
-	key, ok := parseMapKey(head.Name, keyDesc)
-	if !ok {
-		return func(yield func(string) bool) {}
-	}
-	value := m.Get(key)
-	if !value.IsValid() { // means the key doesn't exist in the map
-		return func(yield func(string) bool) {}
-	}
-
-	if len(path) == 1 {
-		return func(yield func(string) bool) {
-			if str, got := valueString(valueDesc, value); got && str != "" {
-				yield(str)
-			}
-		}
-	}
-
-	return nextValue(path[1:], valueDesc, value)
-}
-
-// getListValue returns an iterator over the string values identified by path in the list l.
-// The first path segment can either be an index segment, in which case it refers to a specific element in the list,
-// or a non-index segment in which case it is ignored and all elements in the list are matched.
-func getListValue(path []pathSegment, entryDesc protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[string] {
-	head := path[0]
-	if head.IsIndex {
-		// search for a specific element
-		idx := head.Index
-		if idx < 0 {
-			// [-1] is the last element
-			idx = l.Len() + idx
-		}
-		if idx < 0 || idx >= l.Len() {
-			// index out of range
-			return func(yield func(string) bool) {}
-		}
-		item := l.Get(idx)
-		return func(yield func(string) bool) {
-			if str, got := valueString(entryDesc, item); got {
-				if str != "" {
-					yield(str)
-				}
-				return
-			}
-			for v := range getMessageValue(path[1:], item.Message()) {
-				if !yield(v) {
-					return
-				}
-			}
-		}
-	}
-	// search all elements
 	return func(yield func(string) bool) {
-		for i := 0; i < l.Len(); i++ {
-			item := l.Get(i)
-			// this handles all scalars
-			if str, got := valueString(entryDesc, item); got {
-				if str != "" {
-					if !yield(str) {
-						return
-					}
-				}
-				continue
+		leafs, err := rangeLeafs(path, msg)
+		if err != nil {
+			return
+		}
+		for v := range leafs {
+			str, got := v.toString()
+			if !got || str == "" {
+				continue // not a string or empty
 			}
-			// this deals with groups/messages
-			for v := range getMessageValue(path, item.Message()) {
-				if !yield(v) {
+			if !yield(str) {
+				return // stop iterating
+			}
+		}
+	}
+}
+
+// leaf is a searchable value in a proto message.
+// Searchable values are scalars and scalar-like messages including google.protobuf.Timestamp and google.protobuf.Duration.
+type leaf struct {
+	fd protoreflect.FieldDescriptor
+	v  protoreflect.Value
+}
+
+// rangeLeafsOptions defines options for the rangeLeafs function.
+// Useful for testing where stable order is important, search matching doesn't need to be stable.
+type rangeLeafsOptions struct {
+	// If true, the iterator will yield values in the same order as a stable protorange.Range.
+	Stable bool
+}
+
+var emptyLeafs = func(yield func(leaf) bool) {}
+
+func (opts rangeLeafsOptions) Range(path string, msg proto.Message) (iter.Seq[leaf], error) {
+	if msg == nil {
+		return emptyLeafs, nil
+	}
+
+	if path == "" {
+		rangeOpts := protorange.Options{
+			Stable: opts.Stable,
+		}
+		return func(yield func(leaf) bool) {
+			// we never return an error from the Range, so we can ignore the error return value
+			_ = rangeOpts.Range(msg.ProtoReflect(), func(values protopath.Values) error {
+				fd, isLeaf := getLeafDescriptor(values)
+				if !isLeaf {
+					return nil
+				}
+				if !yield(leaf{fd, values.Index(-1).Value}) {
+					return protorange.Terminate
+				}
+				return nil
+			}, nil)
+		}, nil
+	}
+
+	segments, err := parsePath(path)
+	if err != nil {
+		return nil, fmt.Errorf("path: %w", err)
+	}
+	return scanMessage(segments, msg.ProtoReflect()), nil
+}
+
+// rangeLeafs returns an iterator over leaf values of msg matching path.
+// If path is empty, it returns all leaf values in msg.
+// See isLeaf for details on what a leaf is.
+// If path is not empty and resolves to a non-leaf value, it returns an empty iterator.
+// An error is returned if the path is invalid.
+func rangeLeafs(path string, msg proto.Message) (iter.Seq[leaf], error) {
+	return rangeLeafsOptions{}.Range(path, msg)
+}
+
+// scanMessage returns all leafs identified by path in msg.
+// The first entry of path should be a field name in msg, otherwise an empty iterator is returned.
+func scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[leaf] {
+	if len(path) == 0 {
+		return emptyLeafs // callers should handle empty paths
+	}
+	head := path[0]
+	if head.IsIndex {
+		return emptyLeafs // path doesn't match the message structure
+	}
+
+	fd := msg.Descriptor().Fields().ByName(protoreflect.Name(head.Name))
+	if fd == nil {
+		return emptyLeafs // field doesn't exist in the message
+	}
+
+	v := msg.Get(fd)
+	if v.Equal(fd.Default()) {
+		return emptyLeafs // field exists but has no value
+	}
+
+	switch {
+	case fd.IsMap():
+		return scanMap(path[1:], fd, v.Map())
+	case fd.IsList():
+		return scanList(path[1:], fd, v.List())
+	case fd.Message() != nil:
+		vm := v.Message()
+		if !vm.IsValid() {
+			return emptyLeafs // field exists but has no value
+		}
+		if isLeaf(fd) {
+			if len(path) == 1 {
+				// end of the path, return the leaf
+				return func(yield func(leaf) bool) {
+					yield(leaf{fd, v})
+				}
+			}
+			// path has more segments, but the value is a leaf
+			return emptyLeafs
+		}
+		return scanMessage(path[1:], vm)
+	case isLeaf(fd) && len(path) == 1:
+		return func(yield func(leaf) bool) {
+			yield(leaf{fd, v})
+		}
+	default:
+		return emptyLeafs // the field value is of an unknown type
+
+	}
+}
+
+// scanMap returns all leafs identified by path in the map m.
+func scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[leaf] {
+	if len(path) == 0 {
+		return emptyLeafs // no more path segments, nothing to return
+	}
+
+	head := path[0]
+	if head.IsIndex {
+		return emptyLeafs // path expects a list, got a map
+	}
+
+	k, ok := parseMapKey(head.Name, fd.MapKey())
+	if !ok {
+		return emptyLeafs // invalid map key
+	}
+	v := m.Get(k)
+	if !v.IsValid() || v.Equal(fd.MapValue().Default()) {
+		return emptyLeafs // key doesn't exist in the map
+	}
+
+	// more to the path
+	if len(path) > 1 {
+		if isLeaf(fd.MapValue()) {
+			return emptyLeafs // path has more segments, but the map value is a leaf
+		}
+		if md := fd.MapValue().Message(); md != nil {
+			return scanMessage(path[1:], v.Message())
+		}
+		return emptyLeafs // there's more to the path but the value has no properties
+	}
+
+	// end of the path
+	if !isLeaf(fd.MapValue()) {
+		return emptyLeafs // path ends at a map value, but the map value is not a leaf
+	}
+	return func(yield func(leaf) bool) {
+		yield(leaf{fd.MapValue(), v})
+	}
+}
+
+// scanList returns all leafs identified by path in the list l.
+func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[leaf] {
+	if len(path) == 0 {
+		if !isLeaf(fd) {
+			return emptyLeafs // path ends at this list, but the list contains non-leaf values
+		}
+		return func(yield func(leaf) bool) {
+			for i := 0; i < l.Len(); i++ {
+				if !yield(leaf{fd, l.Get(i)}) {
 					return
 				}
 			}
 		}
 	}
 
-}
+	head := path[0]
+	if head.IsIndex {
+		i := head.Index
+		if i < 0 {
+			// negative index means counting from the end
+			i = l.Len() + i
+		}
+		if i < 0 || i >= l.Len() {
+			return emptyLeafs // index out of range
+		}
+		v := l.Get(i)
+		if isLeaf(fd) {
+			if len(path) == 1 {
+				// end of the path, return the leaf
+				return func(yield func(leaf) bool) {
+					yield(leaf{fd, v})
+				}
+			}
+			// path has more segments, but the value is a leaf
+			return emptyLeafs
+		}
 
-// nextValue calls the correct getXxxValue func for the given field descriptor.
-func nextValue(path []pathSegment, fieldDesc protoreflect.FieldDescriptor, val protoreflect.Value) iter.Seq[string] {
-	switch {
-	case fieldDesc.IsMap():
-		return getMapValue(path, fieldDesc.MapKey(), fieldDesc.MapValue(), val.Map())
-	case fieldDesc.IsList():
-		return getListValue(path, fieldDesc, val.List())
-	case fieldDesc.Message() != nil: // note this is true for map types, so check that first
-		return getMessageValue(path, val.Message())
-	default:
-		return func(yield func(string) bool) {} // there's more to the path but the value has no properties
+		if fd.Message() == nil {
+			return emptyLeafs // it's not a leaf, but also not a message. Not sure what it is.
+		}
+
+		return scanMessage(path[1:], v.Message())
+	}
+
+	if isLeaf(fd) {
+		return emptyLeafs // path has more segments, but the list contains leaf values
+	}
+
+	return func(yield func(leaf) bool) {
+		for i := 0; i < l.Len(); i++ {
+			v := l.Get(i)
+			for leaf := range scanMessage(path, v.Message()) {
+				if !yield(leaf) {
+					return
+				}
+			}
+		}
 	}
 }
 
-// valueString converts a protoreflect.Value into a string ready for comparison to another string.
-// Unlike v.String() this converts enum values to their enum name where available,
+// getLeafDescriptor returns the most relevant FieldDescriptor for values, and whether values is a leaf or not.
+func getLeafDescriptor(values protopath.Values) (protoreflect.FieldDescriptor, bool) {
+	// getFd returns the most useful FieldDescriptor for values at index i.
+	getFd := func(i int) protoreflect.FieldDescriptor {
+		step := values.Index(i).Step
+		switch step.Kind() {
+		case protopath.FieldAccessStep:
+			return step.FieldDescriptor()
+		case protopath.MapIndexStep:
+			return values.Index(i - 1).Step.FieldDescriptor().MapValue()
+		case protopath.ListIndexStep:
+			return values.Index(i - 1).Step.FieldDescriptor()
+		default:
+			return nil // unsupported step kind
+		}
+	}
+
+	fd := getFd(-1)
+	if fd == nil {
+		return nil, false
+	}
+
+	switch values.Index(-1).Step.Kind() {
+	case protopath.FieldAccessStep:
+		// check the parent isn't a leaf
+		if parentFd := getFd(-2); parentFd != nil && isLeaf(parentFd) {
+			return nil, false
+		}
+		fd := getFd(-1)
+		return fd, isLeaf(fd) && !fd.IsList()
+	case protopath.MapIndexStep:
+		fd := getFd(-1)
+		return fd, isLeaf(fd)
+	case protopath.ListIndexStep:
+		fd := getFd(-1)
+		return fd, isLeaf(fd)
+	default:
+		return nil, false
+	}
+}
+
+// isLeaf returns true if fd is a leaf.
+// A leaf is a scalar value, or a well known value type.
+func isLeaf(fd protoreflect.FieldDescriptor) bool {
+	if fd == nil {
+		return false
+	}
+	if msg := fd.Message(); msg != nil {
+		switch msg.FullName() {
+		case "google.protobuf.Timestamp",
+			"google.protobuf.Duration":
+			return true // treat special messages as leafs
+		default:
+			return false
+		}
+	}
+	return true // all other types are scalars, aka leafs
+}
+
+// toString converts the leaf into a string ready for comparison to another string.
+// Unlike l.v.String() this converts enum values to their enum name where available,
 // otherwise converts them to a string representation of the enum number.
 // Bytes are converted to string.
-func valueString(fd protoreflect.FieldDescriptor, v protoreflect.Value) (string, bool) {
+func (l leaf) toString() (string, bool) {
+	fd, v := l.fd, l.v
 	if fd == nil {
 		return "", false
 	}
@@ -291,9 +467,39 @@ func valueString(fd protoreflect.FieldDescriptor, v protoreflect.Value) (string,
 	case protoreflect.BytesKind:
 		return string(v.Bytes()), true
 	default:
-		// MessageKind, GroupKind
+		// for leaf messages, we rely on the json representation to turn them into strings.
+		if msg := v.Message(); msg != nil {
+			bs, err := protojson.Marshal(msg.Interface())
+			if err != nil {
+				// if we can't marshal the message, we can't convert it to a string
+				return "", false
+			}
+			bs = bytes.Trim(bs, `"`) // remove quotes around the string
+			return string(bs), true
+		}
+		// unsupported kinds
 		return "", false
 	}
+}
+
+// toTimestamp converts the leaf into a *timestamppb.Timestamp if it is a valid timestamp.
+func (l leaf) toTimestamp() (*timestamppb.Timestamp, bool) {
+	if l.fd == nil {
+		return nil, false
+	}
+	if l.fd.Message() == nil || l.fd.Message().FullName() != "google.protobuf.Timestamp" {
+		return nil, false
+	}
+	tm := l.v.Message()
+	if !tm.IsValid() {
+		return nil, false
+	}
+	t, ok := tm.Interface().(*timestamppb.Timestamp)
+	if !ok {
+		return nil, false
+	}
+
+	return t, true
 }
 
 // parseMapKey converts keyStr into a protoreflect.MapKey using fd to choose the correct conversion method to use.

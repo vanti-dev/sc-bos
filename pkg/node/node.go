@@ -12,10 +12,11 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
-	"github.com/smart-core-os/sc-golang/pkg/trait/parentpb"
 	"github.com/vanti-dev/sc-bos/internal/router"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
+	"github.com/vanti-dev/sc-bos/pkg/node/internal/metadatadevices"
+	"github.com/vanti-dev/sc-bos/pkg/node/internal/parentdevices"
 )
 
 // Node represents a smart core node.
@@ -29,17 +30,14 @@ type Node struct {
 	name   string
 	router *router.Router
 
-	// mu protects writes to children and allMetadata to avoid concurrent modification errors.
-	// The models that back these fields are consistent when accessed concurrently,
-	// but return errors if they are modified concurrently instead of waiting.
-	// We want them to wait.
-	mu sync.Mutex
-	// children keeps track of all the names that have been announced to this node.
-	// Lazy, initialised when addChildTrait via Announce(HasTrait) or Register are called.
-	children *parentpb.Model
-	// allMetadata allows users of the node to be notified of any metadata changes via Announce or when
-	// that announcement is undone.
-	allMetadata *metadatapb.Collection
+	// mu protects writes to devices and mlLists.
+	// The devices model is consistent when accessed concurrently,
+	// but returns an error if its modified concurrently instead of waiting.
+	// We want it to wait.
+	// We also need devices and mlLists to be consistent with each other.
+	mu      sync.Mutex
+	devices *devicespb.Collection
+	mlLists map[string]*metadataList
 
 	Logger *zap.Logger
 }
@@ -59,16 +57,16 @@ func New(name string) *Node {
 		router: router.New(router.WithKeyInterceptor(func(key string) (mappedKey string, err error) {
 			return mapID(key), nil
 		})),
-		children:    parentpb.NewModel(),
-		Logger:      zap.NewNop(),
-		allMetadata: metadatapb.NewCollection(resource.WithIDInterceptor(mapID)),
+		devices: devicespb.NewCollection(resource.WithIDInterceptor(mapID)),
+		mlLists: make(map[string]*metadataList),
+		Logger:  zap.NewNop(),
 	}
 
-	// metadata should be supported by default
-	traits.RegisterMetadataApiServer(node.router, metadatapb.NewCollectionServer(node.allMetadata))
-	_ = node.Announce(name, HasTrait(trait.Metadata))
+	// nodes implement the MetadataApi without using the router,
+	// the ParentApi is implemented for this nodes name only.
+	traits.RegisterMetadataApiServer(node.router, metadatadevices.NewServer(node.devices))
 	node.announceLocked(name,
-		HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parentpb.NewModelServer(node.children))),
+		HasServer(traits.RegisterParentApiServer, traits.ParentApiServer(parentdevices.NewServer(name, node.devices))),
 		HasTrait(trait.Parent),
 	)
 	return node
@@ -131,11 +129,6 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 	if !a.noAutoMetadata {
 		ts = append(ts, traitFeature{name: trait.Metadata})
 	}
-	for _, t := range ts {
-		if name != n.name {
-			undo = append(undo, n.addChildTrait(a.name, t.name))
-		}
-	}
 
 	mds := a.metadata
 	if !a.noAutoMetadata && len(ts) > 0 {
@@ -146,17 +139,33 @@ func (n *Node) announceLocked(name string, features ...Feature) Undo {
 		mds = append(mds, md)
 	}
 
-	for _, md := range mds {
-		// always need to set the name of the device in its metadata
-		md.Name = name
-		undoMd, err := n.mergeMetadata(name, md)
-		if err != nil {
-			if errors.Is(err, MetadataTraitNotSupported) {
-				log.Warnf("%v metadata: %v", name, err)
-			}
-			continue
+	md := mergeAllMetadata(name, mds...)
+	if md != nil {
+		mlList, ok := n.mlLists[name]
+		if !ok {
+			mlList = &metadataList{}
+			n.mlLists[name] = mlList
 		}
-		undo = append(undo, undoMd)
+		id := mlList.add(md)
+		err := mlList.updateCollection(n.devices, resource.WithCreateIfAbsent())
+		if err != nil {
+			log.Errorf("merge metadata %q: %v", name, err)
+		} else {
+			undo = append(undo, UndoOnce(func() {
+				n.mu.Lock()
+				defer n.mu.Unlock()
+				mlList.remove(id)
+				if mlList.isEmpty() {
+					delete(n.mlLists, name)
+					_, _ = n.devices.Delete(name, resource.WithAllowMissing(true))
+				} else {
+					err := mlList.updateCollection(n.devices)
+					if err != nil {
+						log.Errorf("undo merge metadata %q: %v", name, err)
+					}
+				}
+			}))
+		}
 	}
 
 	undo = append(undo, n.logAnnouncement(a, services))
@@ -196,20 +205,6 @@ func (n *Node) logAnnouncement(a *announcement, services []service) Undo {
 	log("name announced")
 	return func() {
 		log("name unannounced")
-	}
-}
-
-func (n *Node) addChildTrait(name string, traitName ...trait.Name) Undo {
-	n.children.AddChildTrait(name, traitName...)
-	return func() {
-		n.mu.Lock()
-		defer n.mu.Unlock()
-		child := n.children.RemoveChildTrait(name, traitName...)
-		// There's a huge assumption here that child was added via AddChildTrait,
-		// this should be true but isn't guaranteed
-		if child != nil && len(child.Traits) == 0 {
-			_, _ = n.children.RemoveChildByName(child.Name)
-		}
 	}
 }
 

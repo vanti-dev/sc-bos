@@ -1,4 +1,4 @@
-import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
+import {convertProperties, fieldMaskFromObject, setProperties, timestampFromObject} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, setValue} from '@/api/resource';
 import {trackAction} from '@/api/resource.js';
@@ -150,6 +150,8 @@ function deviceQueryConditionFromObject(obj) {
   if (obj.stringInFold) {
     dst.setStringInFold(new Device.Query.StringList().setStringsList(obj.stringInFold.stringsList));
   }
+  convertProperties(dst, obj, timestampFromObject,
+      'timestampEqual', 'timestampGt', 'timestampGte', 'timestampLt', 'timestampLte');
   return dst;
 }
 

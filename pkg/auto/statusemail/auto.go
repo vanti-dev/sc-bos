@@ -97,7 +97,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					return
 				default:
 				}
-				for change := range a.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits", "appearance", "location", "membership")) {
+				for change := range a.Node.PullDevices(ctx, resource.WithReadPaths(&traits.Metadata{}, "metadata.traits", "metadata.appearance", "metadata.location", "metadata.membership")) {
 					if s := ignore.Replace(change.Name); len(s) == 0 || s[0] == '!' {
 						continue // ignore
 					}
@@ -111,10 +111,10 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					case !hadTrait && hasTrait: // add
 						source := config.Source{
 							Name:      change.Name,
-							Title:     change.NewValue.GetAppearance().GetTitle(),
-							Floor:     change.NewValue.GetLocation().GetFloor(),
-							Zone:      change.NewValue.GetLocation().GetZone(),
-							Subsystem: change.NewValue.GetMembership().GetSubsystem(),
+							Title:     change.NewValue.GetMetadata().GetAppearance().GetTitle(),
+							Floor:     change.NewValue.GetMetadata().GetLocation().GetFloor(),
+							Zone:      change.NewValue.GetMetadata().GetLocation().GetZone(),
+							Subsystem: change.NewValue.GetMetadata().GetMembership().GetSubsystem(),
 						}
 						activePullers.Add(1)
 						go pullFrom(source)
@@ -135,7 +135,8 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	return nil
 }
 
-func hasStatusTrait(md *traits.Metadata) bool {
+func hasStatusTrait(device *gen.Device) bool {
+	md := device.GetMetadata()
 	for _, t := range md.GetTraits() {
 		if t.Name == statuspb.TraitName.String() {
 			return true
