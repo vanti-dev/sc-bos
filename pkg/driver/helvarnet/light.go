@@ -3,13 +3,17 @@ package helvarnet
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -22,27 +26,25 @@ import (
 type Light struct {
 	gen.UnimplementedStatusApiServer
 	traits.UnimplementedLightApiServer
-	// Helvarnet is not really DALI, but it is really just a wrapper around DALI devices
-	// the DALI API has the stuff in for emergency lighting tests, so just use it for now.
-	gen.UnimplementedDaliApiServer
+	gen.UnimplementedEmergencyLightApiServer
 
 	brightness *resource.Value // *traits.Brightness
 	client     *tcpClient
 	conf       *config.Device
 	logger     *zap.Logger
 	status     *resource.Value // *gen.StatusLog
-	// these are not persistent, they will be lost on restart. I am not sure if we need the start time so best guess might be enough
-	fTestStart *time.Time // time when the last function test was started
-	dTestStart *time.Time // time when the last duration test was started
+
+	testResultSet *resource.Value // *gen.TestResultSet
 }
 
 func newLight(client *tcpClient, l *zap.Logger, conf *config.Device) *Light {
 	return &Light{
-		brightness: resource.NewValue(resource.WithInitialValue(&traits.Brightness{}), resource.WithNoDuplicates()),
-		client:     client,
-		conf:       conf,
-		logger:     l,
-		status:     resource.NewValue(resource.WithInitialValue(&gen.StatusLog{}), resource.WithNoDuplicates()),
+		brightness:    resource.NewValue(resource.WithInitialValue(&traits.Brightness{}), resource.WithNoDuplicates()),
+		client:        client,
+		conf:          conf,
+		logger:        l,
+		status:        resource.NewValue(resource.WithInitialValue(&gen.StatusLog{}), resource.WithNoDuplicates()),
+		testResultSet: resource.NewValue(resource.WithInitialValue(&gen.TestResultSet{}), resource.WithNoDuplicates()),
 	}
 }
 
@@ -438,110 +440,147 @@ func (l *Light) getDurationTestCompletionTime() (*time.Time, error) {
 	return parseGetCompletionTimeResponse(r)
 }
 
-// StartTest Attempt to start a function or duration test.
-func (l *Light) StartTest(_ context.Context, req *gen.StartTestRequest) (*gen.StartTestResponse, error) {
-
-	switch req.Test {
-	case gen.EmergencyStatus_FUNCTION_TEST:
-		l.logger.Info("Starting function test for light", zap.String("name", l.conf.Name))
-		err := l.runFunctionTest()
-		if err != nil {
-			l.logger.Error("Failed to start function test", zap.String("name", l.conf.Name), zap.Error(err))
-			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to start function test"))
-		}
-		now := time.Now()
-		l.fTestStart = &now
-	case gen.EmergencyStatus_DURATION_TEST:
-		l.logger.Info("Starting duration test for light", zap.String("name", l.conf.Name))
-		err := l.runDurationTest()
-		if err != nil {
-			l.logger.Error("Failed to start duration test", zap.String("name", l.conf.Name), zap.Error(err))
-			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to start duration test"))
-		}
-		now := time.Now()
-		l.dTestStart = &now
-	default:
-		l.logger.Error("Unsupported test type requested", zap.String("name", l.conf.Name), zap.String("test", req.Test.String()))
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unsupported test type %s", req.Test.String()))
+func (l *Light) StartFunctionTest(context.Context, *gen.StartEmergencyTestRequest) (*gen.StartEmergencyTestResponse, error) {
+	l.logger.Info("Starting function test for light", zap.String("name", l.conf.Name))
+	err := l.runFunctionTest()
+	if err != nil {
+		l.logger.Error("Failed to start function test", zap.String("name", l.conf.Name), zap.Error(err))
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to start function test"))
 	}
-	return &gen.StartTestResponse{}, nil
+	_, _ = l.testResultSet.Set(&gen.TestResultSet{
+		FunctionTest: &gen.EmergencyTestResult{
+			StartTime: timestamppb.Now(),
+		},
+	}, resource.WithUpdateMask(&fieldmaskpb.FieldMask{Paths: []string{"function_test.start_time"}}))
+	return &gen.StartEmergencyTestResponse{
+		StartTime: timestamppb.Now(),
+	}, nil
 }
 
-func (l *Light) StopTest(context.Context, *gen.StopTestRequest) (*gen.StopTestResponse, error) {
+func (l *Light) StartDurationTest(context.Context, *gen.StartEmergencyTestRequest) (*gen.StartEmergencyTestResponse, error) {
+	l.logger.Info("Starting duration test for light", zap.String("name", l.conf.Name))
+	err := l.runDurationTest()
+	if err != nil {
+		l.logger.Error("Failed to start duration test", zap.String("name", l.conf.Name), zap.Error(err))
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to start duration test"))
+	}
+	_, _ = l.testResultSet.Set(&gen.TestResultSet{
+		DurationTest: &gen.EmergencyTestResult{
+			StartTime: timestamppb.Now(),
+		},
+	}, resource.WithUpdateMask(&fieldmaskpb.FieldMask{Paths: []string{"duration_test.start_time"}}))
+	var duration *durationpb.Duration
+	if l.conf.DurationTestLength != nil {
+		duration = durationpb.New(l.conf.DurationTestLength.Duration)
+	}
+	return &gen.StartEmergencyTestResponse{
+		StartTime: timestamppb.Now(),
+		Duration:  duration,
+	}, nil
+}
+
+func (l *Light) StopEmergencyTest(context.Context, *gen.StopEmergencyTestsRequest) (*gen.StopEmergencyTestsResponse, error) {
 	l.logger.Info("Stopping test for light", zap.String("name", l.conf.Name))
 	err := l.stopTest()
 	if err != nil {
 		l.logger.Error("Failed to stop test", zap.String("name", l.conf.Name), zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to stop test")
 	}
-	return &gen.StopTestResponse{}, nil
+	// when we stop tests clear any current data
+	_, _ = l.testResultSet.Set(&gen.TestResultSet{})
+	return &gen.StopEmergencyTestsResponse{}, nil
 }
 
-func (l *Light) GetTestResult(_ context.Context, req *gen.GetTestResultRequest) (*gen.TestResult, error) {
+func (l *Light) GetTestResultSet(_ context.Context, req *gen.GetTestResultSetRequest) (*gen.TestResultSet, error) {
 
-	result := &gen.TestResult{
-		Test: req.Test,
-	}
-	var eState *EmergencyState
-	var err error
-	switch req.Test {
-	case gen.EmergencyStatus_FUNCTION_TEST:
-		eState, err = l.getFunctionTestResult()
-		if err != nil {
-			l.logger.Error("Failed to get function test result", zap.String("name", l.conf.Name), zap.Error(err))
-			return nil, status.Error(codes.Internal, "failed to get function test result")
-		}
-		if hasTestCompleted(eState) {
-			t, _ := l.getFunctionTestCompletionTime()
-			if t != nil {
-				result.EndTime = timestamppb.New(*t)
-			}
-		}
-		if l.fTestStart != nil {
-			result.StartTime = timestamppb.New(*l.fTestStart)
-		}
-	case gen.EmergencyStatus_DURATION_TEST:
-		eState, err = l.getDurationTestResult()
-		if err != nil {
-			l.logger.Error("Failed to get duration test result", zap.String("name", l.conf.Name), zap.Error(err))
-			return nil, status.Error(codes.Internal, "failed to get duration test result")
-		}
-		if hasTestCompleted(eState) {
-			t, _ := l.getDurationTestCompletionTime()
-			if t != nil {
-				result.EndTime = timestamppb.New(*t)
-			}
-		}
-		if l.dTestStart != nil {
-			result.StartTime = timestamppb.New(*l.dTestStart)
-		}
-	default:
-		l.logger.Error("Unsupported test type requested", zap.String("name", l.conf.Name), zap.String("test", req.Test.String()))
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unsupported test type %s", req.Test.String()))
-	}
+	result := &gen.TestResultSet{}
 
-	result.Pass = eState != nil && *eState == Pass
-	result.FailureReason = statusToFailureReason(eState, req.Test)
+	if req.ReadMask == nil || (req.ReadMask.Paths != nil && slices.Contains(req.ReadMask.Paths, "function_test")) {
+		result.FunctionTest = l.testResultSet.Get().(*gen.TestResultSet).FunctionTest
+		if req.QueryDevice {
+			fRes, err := getTestResult(l.getFunctionTestResult, l.getFunctionTestCompletionTime)
+			if err != nil {
+				l.logger.Error("Failed to get function test result", zap.String("name", l.conf.Name), zap.Error(err))
+				return nil, err
+			}
+			result.FunctionTest = fRes
+			// update the stored test result set with the new result
+			_, _ = l.testResultSet.Set(result, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
+				Paths: []string{"function_test"},
+			}))
+		}
+	}
+	if req.ReadMask == nil || (req.ReadMask.Paths != nil && slices.Contains(req.ReadMask.Paths, "duration_test")) {
+		result.DurationTest = l.testResultSet.Get().(*gen.TestResultSet).DurationTest
+		if req.QueryDevice {
+			dRes, err := getTestResult(l.getDurationTestResult, l.getDurationTestCompletionTime)
+			if err != nil {
+				l.logger.Error("Failed to get duration test result", zap.String("name", l.conf.Name), zap.Error(err))
+				return nil, err
+			}
+			result.DurationTest = dRes
+			// update the stored test result set with the new result
+			_, _ = l.testResultSet.Set(result, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
+				Paths: []string{"duration_test"},
+			}))
+		}
+	}
 	return result, nil
 }
 
-func statusToFailureReason(e *EmergencyState, t gen.EmergencyStatus_Test) gen.EmergencyStatus_Failure {
-	if e == nil {
-		return gen.EmergencyStatus_FAILURE_UNSPECIFIED
-	}
-	switch *e {
-	case LampFailure:
-		return gen.EmergencyStatus_LAMP_FAILURE
-	case BatteryFailure:
-		return gen.EmergencyStatus_BATTERY_FAILURE
-	case Faulty:
-		return gen.EmergencyStatus_CIRCUIT_FAILURE
-	case Failure:
-		if t == gen.EmergencyStatus_FUNCTION_TEST {
-			return gen.EmergencyStatus_FUNCTION_TEST_FAILED
-		} else if t == gen.EmergencyStatus_DURATION_TEST {
-			return gen.EmergencyStatus_DURATION_TEST_FAILED
+func (l *Light) PullTestResultSets(_ *gen.PullTestResultRequest, server grpc.ServerStreamingServer[gen.PullTestResultsResponse]) error {
+	for value := range l.testResultSet.Pull(server.Context()) {
+		resultSet := value.Value.(*gen.TestResultSet)
+		err := server.Send(&gen.PullTestResultsResponse{Changes: []*gen.PullTestResultsResponse_Change{
+			{
+				Name:       l.conf.Name,
+				ChangeTime: timestamppb.New(value.ChangeTime),
+				TestResult: resultSet,
+			},
+		}})
+		if err != nil {
+			return err
 		}
 	}
-	return gen.EmergencyStatus_FAILURE_UNSPECIFIED
+	return nil
+}
+
+func getTestResult(getResult func() (*EmergencyState, error), getTime func() (*time.Time, error)) (*gen.EmergencyTestResult, error) {
+
+	eState, err := getResult()
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to getResult test result")
+	}
+	result := &gen.EmergencyTestResult{}
+	result.Result = helvarResultToTrait(eState)
+	if hasTestCompleted(eState) {
+		t, _ := getTime()
+		if t != nil {
+			result.EndTime = timestamppb.New(*t)
+		}
+	}
+	return result, nil
+}
+
+func helvarResultToTrait(e *EmergencyState) gen.EmergencyTestResult_Result {
+	if e == nil {
+		return gen.EmergencyTestResult_TEST_RESULT_UNSPECIFIED
+	}
+	switch *e {
+	case Pass:
+		return gen.EmergencyTestResult_TEST_PASSED
+	case LampFailure:
+		return gen.EmergencyTestResult_LAMP_FAILURE
+	case BatteryFailure:
+		return gen.EmergencyTestResult_BATTERY_FAILURE
+	case Faulty:
+		return gen.EmergencyTestResult_LIGHT_FAULTY
+	case Failure:
+		return gen.EmergencyTestResult_TEST_FAILED
+	case TestPending:
+		return gen.EmergencyTestResult_TEST_RESULT_PENDING
+	case Unknown:
+		return gen.EmergencyTestResult_TEST_RESULT_UNSPECIFIED
+	}
+	return gen.EmergencyTestResult_TEST_RESULT_UNSPECIFIED
 }
