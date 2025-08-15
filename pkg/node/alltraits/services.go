@@ -10,7 +10,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/anprcamera"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylight"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylightpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/mqttpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/report"
@@ -54,20 +54,20 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	trait.Waste:            {traits.WasteApi_ServiceDesc, traits.WasteInfo_ServiceDesc},
 
 	// sc-bos private traits
-	accesspb.TraitName:       {gen.AccessApi_ServiceDesc},
-	anprcamera.TraitName:     {gen.AnprCameraApi_ServiceDesc},
-	button.TraitName:         {gen.ButtonApi_ServiceDesc},
-	dalipb.TraitName:         {gen.DaliApi_ServiceDesc},
-	emergencylight.TraitName: {gen.DaliApi_ServiceDesc},
-	meter.TraitName:          {gen.MeterApi_ServiceDesc, gen.MeterInfo_ServiceDesc, gen.MeterHistory_ServiceDesc},
-	mqttpb.TraitName:         {gen.MqttService_ServiceDesc},
-	report.TraitName:         {gen.ReportApi_ServiceDesc},
-	securityevent.TraitName:  {gen.SecurityEventApi_ServiceDesc},
-	serviceticket.TraitName:  {gen.ServiceTicketApi_ServiceDesc},
-	soundsensorpb.TraitName:  {gen.SoundSensorApi_ServiceDesc, gen.SoundSensorInfo_ServiceDesc},
-	statusTraitName:          {gen.StatusApi_ServiceDesc, gen.StatusHistory_ServiceDesc},
-	transport.TraitName:      {gen.TransportApi_ServiceDesc, gen.TransportInfo_ServiceDesc},
-	udmipb.TraitName:         {gen.UdmiService_ServiceDesc},
+	accesspb.TraitName:         {gen.AccessApi_ServiceDesc},
+	anprcamera.TraitName:       {gen.AnprCameraApi_ServiceDesc},
+	button.TraitName:           {gen.ButtonApi_ServiceDesc},
+	dalipb.TraitName:           {gen.DaliApi_ServiceDesc},
+	emergencylightpb.TraitName: {gen.DaliApi_ServiceDesc, gen.EmergencyLightApi_ServiceDesc},
+	meter.TraitName:            {gen.MeterApi_ServiceDesc, gen.MeterInfo_ServiceDesc, gen.MeterHistory_ServiceDesc},
+	mqttpb.TraitName:           {gen.MqttService_ServiceDesc},
+	report.TraitName:           {gen.ReportApi_ServiceDesc},
+	securityevent.TraitName:    {gen.SecurityEventApi_ServiceDesc},
+	serviceticket.TraitName:    {gen.ServiceTicketApi_ServiceDesc},
+	soundsensorpb.TraitName:    {gen.SoundSensorApi_ServiceDesc, gen.SoundSensorInfo_ServiceDesc},
+	statusTraitName:            {gen.StatusApi_ServiceDesc, gen.StatusHistory_ServiceDesc},
+	transport.TraitName:        {gen.TransportApi_ServiceDesc, gen.TransportInfo_ServiceDesc},
+	udmipb.TraitName:           {gen.UdmiService_ServiceDesc},
 }
 
 // ServiceDesc returns the gRPC service descriptors for all services associated with the given trait.

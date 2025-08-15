@@ -33,6 +33,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylightpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -247,6 +248,11 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		return []wrap.ServiceUnwrapper{gen.WrapAccessApi(accesspb.NewModelServer(model))}, auto.Access(model)
 	case button.TraitName:
 		return []wrap.ServiceUnwrapper{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
+	case emergencylightpb.TraitName:
+		model := emergencylightpb.NewModel()
+		model.SetLastDurationTest(gen.EmergencyTestResult_TEST_PASSED)
+		model.SetLastFunctionalTest(gen.EmergencyTestResult_TEST_PASSED)
+		return []wrap.ServiceUnwrapper{gen.WrapEmergencyLightApi(emergencylightpb.NewModelServer(model))}, nil
 	case meter.TraitName:
 		var (
 			unit string
