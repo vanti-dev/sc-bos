@@ -3,13 +3,13 @@ package emergencylightpb
 import (
 	"context"
 	"math/rand"
-	"time"
 
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
 
 type Model struct {
@@ -68,24 +68,7 @@ func getRandomEmergencyLightResult() gen.EmergencyTestResult_Result {
 }
 
 func (m *Model) PullTestResults(ctx context.Context, opts ...resource.ReadOption) <-chan PullTestResultSetChange {
-	send := make(chan PullTestResultSetChange)
-
-	recv := m.testResultSet.Pull(ctx, opts...)
-	go func() {
-		defer close(send)
-		for change := range recv {
-			value := change.Value.(*gen.TestResultSet)
-			send <- PullTestResultSetChange{
-				Value:      value,
-				ChangeTime: change.ChangeTime,
-			}
-		}
-	}()
-
-	return send
+	return resources.PullValue[*gen.TestResultSet](ctx, m.testResultSet.Pull(ctx, opts...))
 }
 
-type PullTestResultSetChange struct {
-	Value      *gen.TestResultSet
-	ChangeTime time.Time
-}
+type PullTestResultSetChange = resources.ValueChange[*gen.TestResultSet]
