@@ -15,10 +15,7 @@
     }
   },
   "systems": {
-    "alerts": {
-      "disabled": false,
-      "storage": {"type": "postgres"}
-    },
+    "alerts": {"storage": {"type": "postgres"}},
     "authn": {
       "user": {
         "localAccounts": true,
@@ -30,18 +27,7 @@
         "localAccounts": true
       }
     },
-    "hub": {
-      "disabled": true,
-      "storage": {"type": "postgres"}
-    },
-    "publications": {
-      "disabled": true,
-      "storage": {"type": "postgres"}
-    },
-    "tenants": {
-      "disabled": false,
-      "storage": {"type": "postgres"}
-    }
+    "tenants": {"storage": {"type": "postgres"}}
   },
   "experimental": {
     "accounts": true
