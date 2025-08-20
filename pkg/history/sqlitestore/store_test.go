@@ -2,12 +2,15 @@ package sqlitestore
 
 import (
 	"context"
+	"crypto/rand"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestDatabase_Insert(t *testing.T) {
@@ -199,7 +202,126 @@ func TestDatabase_Size(t *testing.T) {
 	}
 }
 
-func newTestDB(t *testing.T) *Database {
+func TestDatabase_LargeScale(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping large scale test in short mode")
+	}
+
+	db := newTestDB(t)
+	ctx := context.Background()
+
+	const (
+		totalRecords = 1_000_000
+		numSources   = 50
+		batchSize    = 10_000 // insert in batches for efficiency
+		payloadSize  = 100    // size of each payload in bytes
+	)
+
+	logger := zaptest.NewLogger(t)
+
+	logger.Info("Starting large scale database test",
+		zap.Int("total_records", totalRecords),
+		zap.Int("num_sources", numSources),
+		zap.Int("batch_size", batchSize))
+
+	start := time.Now()
+	baseTime := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	// Insert records in batches
+	var expected []Record
+	for batch := 0; batch < totalRecords/batchSize; batch++ {
+		records := make([]Record, batchSize)
+
+		for i := 0; i < batchSize; i++ {
+			recordNum := batch*batchSize + i
+			sourceID := recordNum % numSources
+			record := Record{
+				Source:     fmt.Sprintf("source-%d", sourceID),
+				CreateTime: baseTime.Add(time.Duration(recordNum) * time.Millisecond),
+				Payload:    generateRandomPayload(200),
+			}
+			records[i] = record
+			expected = append(expected, record)
+		}
+
+		err := db.InsertBulk(ctx, records)
+		if err != nil {
+			t.Fatalf("failed to insert batch %d: %v", batch, err)
+		}
+
+		// Log progress every 20 batches
+		if batch%20 == 0 {
+			elapsed := time.Since(start)
+			recordsInserted := (batch + 1) * batchSize
+			rate := float64(recordsInserted) / elapsed.Seconds()
+			logger.Info("Insertion progress",
+				zap.Int("records_inserted", recordsInserted),
+				zap.Duration("elapsed", elapsed),
+				zap.Float64("records_per_second", rate))
+		}
+	}
+
+	insertDuration := time.Since(start)
+	logger.Info("Insertion completed",
+		zap.Duration("total_time", insertDuration),
+		zap.Float64("avg_records_per_second", float64(totalRecords)/insertDuration.Seconds()))
+
+	// Verify record count
+	count, err := db.Count(ctx, "", 0, 0)
+	if err != nil {
+		t.Fatalf("failed to count records: %v", err)
+	}
+
+	if count != totalRecords {
+		t.Errorf("expected %d records, got %d", totalRecords, count)
+	}
+
+	// Measure database size
+	err = db.Compact(ctx)
+	if err != nil {
+		t.Fatalf("failed to compact database: %v", err)
+	}
+	dbSize, err := db.Size(ctx)
+	if err != nil {
+		t.Fatalf("failed to get database size: %v", err)
+	}
+
+	avgSizePerRecord := float64(dbSize) / float64(totalRecords)
+	overheadPerRecord := avgSizePerRecord - float64(payloadSize)
+
+	logger.Info("Database size analysis",
+		zap.Int64("total_size_bytes", dbSize),
+		zap.Float64("total_size_mb", float64(dbSize)/(1024*1024)),
+		zap.Float64("avg_bytes_per_record", avgSizePerRecord),
+		zap.Float64("overhead_bytes_per_record", overheadPerRecord),
+		zap.Int("total_records", count))
+
+	// Verify we can still read records efficiently
+	readStart := time.Now()
+	into := make([]Record, 1000)
+	readCount, err := db.Read(ctx, "source-0", 0, 0, false, into)
+	if err != nil {
+		t.Fatalf("failed to read records: %v", err)
+	}
+	readDuration := time.Since(readStart)
+
+	logger.Info("Read performance test",
+		zap.Int("records_read", readCount),
+		zap.Duration("read_time", readDuration))
+
+	verifyRecords(t, db, ctx, expected)
+}
+
+func generateRandomPayload(size int) []byte {
+	payload := make([]byte, size)
+	_, err := rand.Read(payload)
+	if err != nil {
+		panic(fmt.Sprintf("failed to generate random payload: %v", err))
+	}
+	return payload
+}
+
+func newTestDB(t testing.TB) *Database {
 	t.Helper()
 	dir := t.TempDir()
 	dbPath := filepath.Join(dir, "test.db")
@@ -213,6 +335,7 @@ func newTestDB(t *testing.T) *Database {
 	if err != nil {
 		t.Fatalf("failed to open test database: %v", err)
 	}
+	t.Logf("created test database %s", dbPath)
 	t.Cleanup(func() {
 		if err := db.Close(); err != nil {
 			t.Errorf("failed to close test database: %v", err)
