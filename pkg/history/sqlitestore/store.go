@@ -49,6 +49,7 @@ func Open(ctx context.Context, path string, options ...Option) (*Database, error
 	db, err := sqlite.Open(ctx, path,
 		sqlite.WithApplicationID(appID),
 		sqlite.WithLogger(o.logger),
+		sqlite.WithWriterPragma("auto_vacuum", "INCREMENTAL"),
 	)
 	if err != nil {
 		return nil, err
@@ -131,14 +132,18 @@ func (d *Database) InsertBulk(ctx context.Context, records []Record) error {
 // Returns number of records read and any error encountered.
 // Size of the slice limits the number of records to read.
 func (d *Database) Read(ctx context.Context, source string, from, to RecordID, desc bool, into []Record) (n int, err error) {
-	err = d.read(ctx, source, from, to, desc, func(record Record) {
+	err = d.read(ctx, source, from, to, desc, func(record Record) bool {
+		if n >= len(into) {
+			return false
+		}
 		into[n] = record
 		n++
+		return true
 	})
 	return n, err
 }
 
-func (d *Database) read(ctx context.Context, source string, from, to RecordID, desc bool, cb func(Record)) error {
+func (d *Database) read(ctx context.Context, source string, from, to RecordID, desc bool, cb func(Record) bool) error {
 	err := d.db.ReadTx(ctx, func(tx *sql.Tx) error {
 		filters, args := buildFilters(source, from, to)
 
@@ -173,7 +178,10 @@ func (d *Database) read(ctx context.Context, source string, from, to RecordID, d
 			if err != nil {
 				return err
 			}
-			cb(Record{ID: id, CreateTime: id.Timestamp(), Source: src, Payload: payload})
+			if !cb(Record{ID: id, CreateTime: id.Timestamp(), Source: src, Payload: payload}) {
+				// Callback returned false, stop reading more records
+				break
+			}
 		}
 		return rows.Err()
 	})
@@ -265,13 +273,18 @@ func (s *Store) read(ctx context.Context, into []history.Record, desc bool) (int
 	}
 
 	var n int
-	err = s.database.read(ctx, s.source, fromBound, toBound, desc, func(record Record) {
+	err = s.database.read(ctx, s.source, fromBound, toBound, desc, func(record Record) bool {
+		if n >= len(into) {
+			// No more space in the slice, stop reading
+			return false
+		}
 		into[n] = history.Record{
 			ID:         record.ID.String(),
 			CreateTime: record.CreateTime,
 			Payload:    record.Payload,
 		}
 		n++
+		return true
 	})
 	return n, err
 }
