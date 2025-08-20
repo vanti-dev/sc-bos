@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-
-	"github.com/vanti-dev/sc-bos/pkg/history"
 )
 
 func TestDatabase_Insert(t *testing.T) {
@@ -21,52 +19,46 @@ func TestDatabase_Insert(t *testing.T) {
 	source := "test-source"
 
 	// Insert multiple records sequentially
-	records := []struct {
-		payload []byte
-		at      time.Time
-	}{
-		{[]byte("test-payload-1"), originTime.Add(-2 * time.Hour)},
-		{[]byte("test-payload-2"), originTime.Add(-1 * time.Hour)},
-		{[]byte("test-payload-3"), originTime},
+	records := []Record{
+		{Source: source, Payload: []byte("test-payload-1"), CreateTime: originTime.Add(-2 * time.Hour)},
+		{Source: source, Payload: []byte("test-payload-2"), CreateTime: originTime.Add(-1 * time.Hour)},
+		{Source: source, Payload: []byte("test-payload-3"), CreateTime: originTime},
 	}
 
 	// Use zero-sized slice with capacity
-	insertedRecords := make([]history.Record, 0, len(records))
+	insertedRecords := make([]Record, 0, len(records))
 
 	// Insert all records and collect the results
 	for _, r := range records {
-		record, err := db.Insert(ctx, source, r.at, r.payload)
+		record, err := db.Insert(ctx, r)
 		if err != nil {
 			t.Fatalf("unexpected error inserting record: %v", err)
 		}
 
-		if record.ID == "" {
+		if record.ID == 0 {
 			t.Errorf("expected valid record ID, got record.ID=%q", record.ID)
 		}
 
-		if record.Payload == nil || string(record.Payload) != string(r.payload) {
-			t.Errorf("expected payload to match %q, got %q", r.payload, record.Payload)
+		if record.Payload == nil || string(record.Payload) != string(r.Payload) {
+			t.Errorf("expected payload to match %q, got %q", r.Payload, record.Payload)
 		}
 
 		insertedRecords = append(insertedRecords, record)
 	}
 
 	// Verify all records were stored correctly
-	verifyRecords(t, db, ctx, source, records)
+	verifyRecords(t, db, ctx, records)
 }
 
 // verifyRecords retrieves all records for a source from the database and verifies they match expected records.
-func verifyRecords(t *testing.T, db *Database, ctx context.Context, source string, expected []struct {
-	payload []byte
-	at      time.Time
-}) {
+func verifyRecords(t *testing.T, db *Database, ctx context.Context, expected []Record) {
 	t.Helper()
 
 	// Create a slice with capacity to hold all expected records
-	retrievedRecords := make([]history.Record, len(expected))
+	retrievedRecords := make([]Record, len(expected)+1)
 
 	// Fetch all records using zero-value Records to indicate full range
-	count, err := db.Read(ctx, source, history.Record{}, history.Record{}, retrievedRecords, false)
+	count, err := db.Read(ctx, "", 0, 0, false, retrievedRecords)
 	if err != nil {
 		t.Fatalf("unexpected error reading records: %v", err)
 	}
@@ -76,21 +68,21 @@ func verifyRecords(t *testing.T, db *Database, ctx context.Context, source strin
 	}
 
 	// Verify each record has correct data
-	for i := 0; i < count; i++ {
-		if retrievedRecords[i].ID == "" {
+	for i := range count {
+		if retrievedRecords[i].ID == 0 {
 			t.Errorf("record %d: missing ID", i)
 		}
 
 		// Verify the payload matches what we inserted
-		expectedPayload := string(expected[i].payload)
+		expectedPayload := string(expected[i].Payload)
 		actualPayload := string(retrievedRecords[i].Payload)
 		if actualPayload != expectedPayload {
 			t.Errorf("record %d: expected payload %q, got %q", i, expectedPayload, actualPayload)
 		}
 
 		// Verify timestamps are close (within 1 second)
-		timeDiff := retrievedRecords[i].CreateTime.Sub(expected[i].at).Abs()
-		if timeDiff > time.Second {
+		timeDiff := retrievedRecords[i].CreateTime.Sub(expected[i].CreateTime).Abs()
+		if timeDiff > time.Millisecond {
 			t.Errorf("record %d: timestamp difference too large: %v", i, timeDiff)
 		}
 	}
@@ -100,23 +92,19 @@ func TestDatabase_InsertBulk(t *testing.T) {
 	db := newTestDB(t)
 	ctx := context.Background()
 
-	records := []InsertRecord{
+	records := []Record{
 		{Source: "source-1", CreateTime: time.Now(), Payload: []byte("payload-1")},
 		{Source: "source-2", CreateTime: time.Now(), Payload: []byte("payload-2")},
 	}
 
-	ids, err := db.InsertBulk(ctx, records)
+	err := db.InsertBulk(ctx, records)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if len(ids) != len(records) {
-		t.Errorf("expected %d IDs, got %d", len(records), len(ids))
-	}
-
-	for i, id := range ids {
-		if id == "" {
-			t.Errorf("expected valid ID for record %d, got empty string", i)
+	for i, record := range records {
+		if record.ID == 0 {
+			t.Errorf("expected valid ID for record %d, got zero", i)
 		}
 	}
 }
@@ -125,19 +113,16 @@ func TestDatabase_InsertBulk_DuplicateSources(t *testing.T) {
 	db := newTestDB(t)
 	ctx := context.Background()
 
-	records := []InsertRecord{
+	records := []Record{
 		{Source: "duplicate-source", CreateTime: time.Now(), Payload: []byte("payload-1")},
 		{Source: "duplicate-source", CreateTime: time.Now(), Payload: []byte("payload-2")},
 	}
 
-	ids, err := db.InsertBulk(ctx, records)
+	err := db.InsertBulk(ctx, records)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if len(ids) != len(records) {
-		t.Errorf("expected %d IDs, got %d", len(records), len(ids))
-	}
 }
 
 func TestDatabase_Read(t *testing.T) {
@@ -148,17 +133,21 @@ func TestDatabase_Read(t *testing.T) {
 	payload := []byte("test-payload")
 	at := time.Now()
 
-	_, err := db.Insert(ctx, source, at, payload)
+	_, err := db.Insert(ctx, Record{
+		Source:     source,
+		CreateTime: at,
+		Payload:    payload,
+	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	// Using zero-value Records to read the entire dataset
-	from := history.Record{} // zero value = beginning of dataset
-	to := history.Record{}   // zero value = end of dataset
-	into := make([]history.Record, 1)
+	from := RecordID(0) // zero value = beginning of dataset
+	to := RecordID(0)   // zero value = end of dataset
+	into := make([]Record, 1)
 
-	count, err := db.Read(ctx, source, from, to, into, false)
+	count, err := db.Read(ctx, source, from, to, false, into)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -176,13 +165,17 @@ func TestDatabase_Count(t *testing.T) {
 	payload := []byte("test-payload")
 	at := time.Now()
 
-	_, err := db.Insert(ctx, source, at, payload)
+	_, err := db.Insert(ctx, Record{
+		Source:     source,
+		CreateTime: at,
+		Payload:    payload,
+	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	// Using zero-value Records to count the entire dataset
-	count, err := db.Count(ctx, source, history.Record{}, history.Record{})
+	count, err := db.Count(ctx, source, 0, 0)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
