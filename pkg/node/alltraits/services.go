@@ -63,7 +63,7 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	mqttpb.TraitName:           {gen.MqttService_ServiceDesc},
 	report.TraitName:           {gen.ReportApi_ServiceDesc},
 	securityevent.TraitName:    {gen.SecurityEventApi_ServiceDesc},
-	serviceticket.TraitName:    {gen.ServiceTicketApi_ServiceDesc},
+	serviceticket.TraitName:    {gen.ServiceTicketApi_ServiceDesc, gen.ServiceTicketInfo_ServiceDesc},
 	soundsensorpb.TraitName:    {gen.SoundSensorApi_ServiceDesc, gen.SoundSensorInfo_ServiceDesc},
 	statusTraitName:            {gen.StatusApi_ServiceDesc, gen.StatusHistory_ServiceDesc},
 	transport.TraitName:        {gen.TransportApi_ServiceDesc, gen.TransportInfo_ServiceDesc},
