@@ -299,6 +299,9 @@ func calcBound(limit history.Record) (RecordID, error) {
 	return 0, nil
 }
 
+// builds an SQL term for filtering records based on source and ID range.
+// Also returns a slice of parameters to be passed when executing the query.
+// If no filtering is to be performed, returns a dummy condition to maintain valid SQL syntax.
 func buildFilters(source string, from, to RecordID) (string, []any) {
 	var filters []string
 	var args []any
@@ -317,7 +320,11 @@ func buildFilters(source string, from, to RecordID) (string, []any) {
 		args = append(args, to)
 	}
 
-	return strings.Join(filters, " AND "), args
+	if len(filters) > 0 {
+		return strings.Join(filters, " AND "), args
+	} else {
+		return "1 = 1", nil // no filtering, return a dummy condition
+	}
 }
 
 type RecordID int64
