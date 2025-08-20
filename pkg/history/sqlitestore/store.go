@@ -65,91 +65,74 @@ func (d *Database) Close() error {
 	return d.db.Close()
 }
 
-func (d *Database) Insert(ctx context.Context, source string, at time.Time, payload []byte) (history.Record, error) {
-	var id int64
-	err := d.db.WriteTx(ctx, func(tx *sql.Tx) error {
-		epoch, err := readEpoch(ctx, tx)
-		if err != nil {
-			return err
-		}
-
-		srcID, err := sourceID(ctx, tx, source, true)
-		if err != nil {
-			return err
-		}
-
-		offset := at.UTC().Sub(epoch).Milliseconds()
-
-		err = tx.QueryRowContext(ctx, "INSERT INTO history (source_id, epoch_offset_ms, payload) VALUES (?, ?, ?) RETURNING id",
-			srcID, offset, payload).Scan(&id)
-		return err
-	})
-	return history.Record{
-		ID:         strconv.FormatInt(id, 10),
-		CreateTime: at,
-		Payload:    payload,
-	}, err
-}
-
-type InsertRecord struct {
-	Source     string
-	CreateTime time.Time
-	Payload    []byte
+func (d *Database) Insert(ctx context.Context, record Record) (Record, error) {
+	toInsert := []Record{record}
+	err := d.InsertBulk(ctx, toInsert)
+	if err != nil {
+		return Record{}, err
+	}
+	return toInsert[0], nil
 }
 
 // InsertBulk inserts multiple records into the database in a single transaction.
-// Returns a slice of inserted record IDs in the same order as the input records.
-func (d *Database) InsertBulk(ctx context.Context, records []InsertRecord) (ids []string, err error) {
-	err = d.db.WriteTx(ctx, func(tx *sql.Tx) error {
-		epoch, err := readEpoch(ctx, tx)
+// Mutates records to set the ID field for each inserted record.
+func (d *Database) InsertBulk(ctx context.Context, records []Record) error {
+	err := d.db.WriteTx(ctx, func(tx *sql.Tx) (err error) {
+		sources, err := newSourceAllocator(ctx, tx)
+		if err != nil {
+			return err
+		}
+		idAlloc, err := newRecordIDAllocator(ctx, tx)
 		if err != nil {
 			return err
 		}
 
-		srcIDCache := make(map[string]int64)
-		getSourceID := func(source string) (int64, error) {
-			if id, ok := srcIDCache[source]; ok {
-				return id, nil
-			}
-			srcID, err := sourceID(ctx, tx, source, true)
-			if err != nil {
-				return 0, err
-			}
-			srcIDCache[source] = srcID
-			return srcID, nil
-		}
-
-		stmt, err := tx.PrepareContext(ctx, "INSERT INTO history (source_id, epoch_offset_ms, payload) VALUES (?, ?, ?) RETURNING id")
+		stmt, err := tx.PrepareContext(ctx, "INSERT INTO history (id, source_id, payload) VALUES (?, ?, ?);")
 		if err != nil {
 			return err
 		}
-		for _, record := range records {
-			var id int64
-			offset := record.CreateTime.UTC().Sub(epoch).Milliseconds()
-			srcID, err := getSourceID(record.Source)
+		defer func() {
+			err = errors.Join(err, stmt.Close())
+		}()
+
+		for i, record := range records {
+			srcID, err := sources.getOrInsertSource(ctx, record.Source)
 			if err != nil {
 				return err
 			}
-			err = stmt.QueryRowContext(ctx, srcID, offset, record.Payload).Scan(&id)
+			recordID, err := idAlloc.allocateRecordID(ctx, record.CreateTime)
 			if err != nil {
-				return errors.Join(err, stmt.Close())
+				return err
 			}
-			ids = append(ids, strconv.FormatInt(id, 10))
+
+			_, err = stmt.ExecContext(ctx, recordID, srcID, record.Payload)
+			if err != nil {
+				return err
+			}
+			records[i].ID = recordID
+			records[i].CreateTime = recordID.Timestamp() // truncated and without time zone
 		}
 		return stmt.Close()
 	})
-	return ids, err
+	return err
 }
 
-func (d *Database) Read(ctx context.Context, source string, from, to history.Record, into []history.Record, desc bool) (int, error) {
-	var count int
-	err := d.db.ReadTx(ctx, func(tx *sql.Tx) error {
-		epoch, err := readEpoch(ctx, tx)
-		if err != nil {
-			return err
-		}
+// Read reads records from the database into the provided slice.
+// If source is non-empty, it filters records by source.
+// If from and to are non-zero, it filters records by ID range, greater-or-equal-to from, and less-than to.
+// Returns number of records read and any error encountered.
+// Size of the slice limits the number of records to read.
+func (d *Database) Read(ctx context.Context, source string, from, to RecordID, desc bool, into []Record) (n int, err error) {
+	err = d.read(ctx, source, from, to, desc, func(record Record) {
+		into[n] = record
+		n++
+	})
+	return n, err
+}
 
-		filters, args := buildFilters(source, epoch, from, to)
+func (d *Database) read(ctx context.Context, source string, from, to RecordID, desc bool, cb func(Record)) error {
+	err := d.db.ReadTx(ctx, func(tx *sql.Tx) error {
+		filters, args := buildFilters(source, from, to)
 
 		order := "ASC"
 		if desc {
@@ -157,47 +140,42 @@ func (d *Database) Read(ctx context.Context, source string, from, to history.Rec
 		}
 
 		query := fmt.Sprintf(`
-			SELECT history.id, epoch_offset_ms, payload
+			SELECT history.id, history_sources.source, payload
             FROM history
             INNER JOIN history_sources ON history.source_id = history_sources.id
 			WHERE %s
-            ORDER BY history.id %s
-			LIMIT ?;
-        `, filters, order)
-		args = append(args, len(into))
+            ORDER BY history.id %s;
+            `, filters, order)
 
 		rows, err := tx.QueryContext(ctx, query, args...)
 		if err != nil {
 			return err
 		}
+		defer func() {
+			_ = rows.Close()
+		}()
 
 		for rows.Next() {
 			var (
-				id       int64
-				offsetMS int64
-				payload  []byte
+				id      RecordID
+				src     string
+				payload []byte
 			)
-			err = rows.Scan(&id, &offsetMS, &payload)
+			err = rows.Scan(&id, &src, &payload)
 			if err != nil {
 				return err
 			}
-			into[count] = buildRecord(id, epoch, offsetMS, payload)
-			count++
+			cb(Record{ID: id, CreateTime: id.Timestamp(), Source: src, Payload: payload})
 		}
 		return rows.Err()
 	})
-	return count, err
+	return err
 }
 
-func (d *Database) Count(ctx context.Context, source string, from, to history.Record) (int, error) {
+func (d *Database) Count(ctx context.Context, source string, from, to RecordID) (int, error) {
 	var count int
 	err := d.db.ReadTx(ctx, func(tx *sql.Tx) error {
-		epoch, err := readEpoch(ctx, tx)
-		if err != nil {
-			return err
-		}
-
-		filters, args := buildFilters(source, epoch, from, to)
+		filters, args := buildFilters(source, from, to)
 
 		query := fmt.Sprintf(`
 			SELECT COUNT(*)
@@ -206,7 +184,7 @@ func (d *Database) Count(ctx context.Context, source string, from, to history.Re
 			WHERE %s;
 		`, filters)
 
-		err = tx.QueryRowContext(ctx, query, args...).Scan(&count)
+		err := tx.QueryRowContext(ctx, query, args...).Scan(&count)
 		return err
 	})
 	return count, err
@@ -220,6 +198,13 @@ func (d *Database) Size(ctx context.Context) (int64, error) {
 	return size, err
 }
 
+type Record struct {
+	ID         RecordID
+	Source     string
+	CreateTime time.Time
+	Payload    []byte
+}
+
 type Store struct {
 	database *Database
 	source   string
@@ -229,11 +214,19 @@ type Store struct {
 
 func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, error) {
 	now := time.Now()
-	record, err := s.database.Insert(ctx, s.source, now, payload)
+	record, err := s.database.Insert(ctx, Record{
+		Source:     s.source,
+		CreateTime: now,
+		Payload:    payload,
+	})
 	if err != nil {
 		return history.Record{}, err
 	}
-	return record, nil
+	return history.Record{
+		ID:         record.ID.String(),
+		CreateTime: record.CreateTime,
+		Payload:    record.Payload,
+	}, nil
 }
 
 func (s *Store) Slice(from, to history.Record) history.Slice {
@@ -254,77 +247,221 @@ func (s *Store) ReadDesc(ctx context.Context, into []history.Record) (int, error
 }
 
 func (s *Store) read(ctx context.Context, into []history.Record, desc bool) (int, error) {
-	return s.database.Read(ctx, s.source, s.from, s.to, into, desc)
-}
-
-func (s *Store) Len(ctx context.Context) (int, error) {
-	return s.database.Count(ctx, s.source, s.from, s.to)
-}
-
-func readEpoch(ctx context.Context, tx *sql.Tx) (time.Time, error) {
-	var epochStr string
-	err := tx.QueryRowContext(ctx, "SELECT value FROM history_meta WHERE key = 'epoch'").Scan(&epochStr)
-	if err != nil {
-		return time.Time{}, err
-	}
-	return time.Parse(sqlite.DateTimeFormat, epochStr)
-}
-
-func sourceID(ctx context.Context, tx *sql.Tx, source string, create bool) (int64, error) {
-	if create {
-		_, err := tx.ExecContext(ctx, "INSERT OR IGNORE INTO history_sources (source) VALUES (?)", source)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	var id int64
-	err := tx.QueryRowContext(ctx, "SELECT id FROM history_sources WHERE source = ?", source).Scan(&id)
+	fromBound, err := calcBound(s.from)
 	if err != nil {
 		return 0, err
 	}
-	return id, nil
-}
-
-func buildFilters(source string, epoch time.Time, from, to history.Record) (string, []any) {
-	filters := []string{"history_sources.source = ?"}
-	args := []any{source}
-
-	if !from.IsZero() {
-		if from.ID != "" {
-			filters = append(filters, "history.id >= ?")
-			args = append(args, from.ID)
-		} else if !from.CreateTime.IsZero() {
-			filters = append(filters, "history.epoch_offset_ms >= ?")
-			args = append(args, toEpochOffset(epoch, from.CreateTime))
-		}
+	toBound, err := calcBound(s.to)
+	if err != nil {
+		return 0, err
 	}
 
-	if !to.IsZero() {
-		if to.ID != "" {
-			filters = append(filters, "history.id < ?")
-			args = append(args, to.ID)
-		} else if !to.CreateTime.IsZero() {
-			filters = append(filters, "history.epoch_offset_ms < ?")
-			args = append(args, toEpochOffset(epoch, to.CreateTime))
+	var n int
+	err = s.database.read(ctx, s.source, fromBound, toBound, desc, func(record Record) {
+		into[n] = history.Record{
+			ID:         record.ID.String(),
+			CreateTime: record.CreateTime,
+			Payload:    record.Payload,
 		}
+		n++
+	})
+	return n, err
+}
+
+func (s *Store) Len(ctx context.Context) (int, error) {
+	fromBound, err := calcBound(s.from)
+	if err != nil {
+		return 0, err
+	}
+	toBound, err := calcBound(s.to)
+	if err != nil {
+		return 0, err
+	}
+
+	return s.database.Count(ctx, s.source, fromBound, toBound)
+}
+
+func calcBound(limit history.Record) (RecordID, error) {
+	if limit.ID != "" {
+		id, err := ParseRecordID(limit.ID)
+		if err != nil {
+			return 0, err
+		}
+		return id, nil
+	}
+
+	if !limit.CreateTime.IsZero() {
+		id := MakeRecordID(limit.CreateTime, 0)
+		return id, nil
+	}
+
+	// zero value is sentinel meaning "no bound"
+	return 0, nil
+}
+
+func buildFilters(source string, from, to RecordID) (string, []any) {
+	var filters []string
+	var args []any
+	if source != "" {
+		filters = []string{"history_sources.source = ?"}
+		args = []any{source}
+	}
+
+	if from != 0 {
+		filters = append(filters, "history.id >= ?")
+		args = append(args, from)
+	}
+
+	if to != 0 {
+		filters = append(filters, "history.id < ?")
+		args = append(args, to)
 	}
 
 	return strings.Join(filters, " AND "), args
 }
 
-func buildRecord(id int64, epoch time.Time, offsetMS int64, payload []byte) history.Record {
-	return history.Record{
-		ID:         strconv.FormatInt(id, 10),
-		CreateTime: epoch.Add(time.Duration(offsetMS) * time.Millisecond),
-		Payload:    payload,
+type RecordID int64
+
+func MakeRecordID(ts time.Time, serial int) RecordID {
+	if serial < 0 || serial >= 1_000_000 {
+		panic("serial must be in range [0, 999999]")
 	}
+	return RecordID(ts.UnixMilli()*1_000_000 + int64(serial))
 }
 
-func toEpochOffset(epoch time.Time, at time.Time) int64 {
-	return at.UTC().Sub(epoch).Milliseconds()
+func ParseRecordID(s string) (RecordID, error) {
+	id, err := strconv.ParseInt(s, 16, 64)
+	if err != nil {
+		return 0, ErrInvalidRecordID
+	}
+	if id < 0 {
+		return 0, ErrInvalidRecordID
+	}
+	return RecordID(id), nil
 }
 
-func fromEpochOffset(epoch time.Time, offsetMS int64) time.Time {
-	return epoch.Add(time.Duration(offsetMS) * time.Millisecond)
+func (id RecordID) Timestamp() time.Time {
+	return time.UnixMilli(int64(id) / 1_000_000)
 }
+
+func (id RecordID) Serial() int {
+	return int(int64(id) % 1_000_000)
+}
+
+func (id RecordID) Next() (RecordID, bool) {
+	if id.Serial() == 1_000_000-1 {
+		// incrementing the serial number would overflow the millisecond timestamp
+		return 0, false
+	}
+	return RecordID(int64(id) + 1), true
+}
+
+func (id RecordID) String() string {
+	return fmt.Sprintf("%016X", int64(id))
+}
+
+type sourceAllocator struct {
+	sources    map[string]int64 // source name to ID mapping
+	insertStmt *sql.Stmt        // prepared statement for inserting new sources if they don't exist
+	queryStmt  *sql.Stmt        // prepared statement for querying source IDs
+}
+
+func newSourceAllocator(ctx context.Context, tx *sql.Tx) (*sourceAllocator, error) {
+	sc := &sourceAllocator{
+		sources: make(map[string]int64),
+	}
+
+	var err error
+	sc.insertStmt, err = tx.PrepareContext(ctx, "INSERT OR IGNORE INTO history_sources (source) VALUES (?)")
+	if err != nil {
+		return nil, err
+	}
+
+	sc.queryStmt, err = tx.PrepareContext(ctx, "SELECT id FROM history_sources WHERE source = ?")
+	if err != nil {
+		return nil, err
+	}
+
+	return sc, nil
+}
+
+func (sa *sourceAllocator) getOrInsertSource(ctx context.Context, source string) (int64, error) {
+	if id, ok := sa.sources[source]; ok {
+		return id, nil
+	}
+
+	// Insert the source if it doesn't exist
+	_, err := sa.insertStmt.ExecContext(ctx, source)
+	if err != nil {
+		return 0, err
+	}
+
+	// Query the ID of the source
+	var id int64
+	err = sa.queryStmt.QueryRowContext(ctx, source).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	sa.sources[source] = id
+	return id, nil
+}
+
+type recordIDAllocator struct {
+	maxRecordIDByTS map[int64]RecordID // map from millisecond timestamp to the max record ID within that ts
+	stmt            *sql.Stmt          // prepared statement for querying the max record ID for a given millisecond timestamp
+}
+
+func newRecordIDAllocator(ctx context.Context, tx *sql.Tx) (*recordIDAllocator, error) {
+	ra := &recordIDAllocator{
+		maxRecordIDByTS: make(map[int64]RecordID),
+	}
+
+	var err error
+	ra.stmt, err = tx.PrepareContext(ctx, "SELECT MAX(id) FROM history WHERE id >= (1000000 * ?1) AND id < (1000000 * (?1 + 1))")
+	if err != nil {
+		return nil, err
+	}
+
+	return ra, nil
+}
+
+func (ra *recordIDAllocator) allocateRecordID(ctx context.Context, ts time.Time) (RecordID, error) {
+	var (
+		anyExist bool
+		highest  RecordID
+	)
+
+	highest, ok := ra.maxRecordIDByTS[ts.UnixMilli()]
+	if ok {
+		anyExist = true
+	} else {
+		// Query the highest record ID for this millisecond timestamp
+		var id sql.NullInt64
+		err := ra.stmt.QueryRowContext(ctx, ts.UnixMilli()).Scan(&id)
+		if err != nil {
+			return 0, err
+		}
+		if id.Valid {
+			highest = RecordID(id.Int64)
+			anyExist = true
+		}
+	}
+
+	var next RecordID
+	if anyExist {
+		next, ok = highest.Next()
+		if !ok {
+			return 0, ErrTooManyRecords
+		}
+	} else {
+		next = MakeRecordID(ts, 0)
+	}
+	ra.maxRecordIDByTS[ts.UnixMilli()] = next
+	return next, nil
+}
+
+var (
+	ErrTooManyRecords  = errors.New("too many records")
+	ErrInvalidRecordID = errors.New("invalid record ID format")
+)
