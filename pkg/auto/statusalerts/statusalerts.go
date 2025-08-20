@@ -8,7 +8,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/statusalerts/config"
@@ -91,7 +90,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					return
 				default:
 				}
-				for change := range a.Node.PullDevices(ctx, resource.WithReadPaths(&traits.Metadata{}, "metadata.traits", "metadata.location", "metadata.membership")) {
+				for change := range a.Node.PullDevices(ctx, resource.WithReadPaths(&gen.Device{}, "metadata.traits", "metadata.location", "metadata.membership")) {
 					if s := ignore.Replace(change.Name); len(s) == 0 || s[0] == '!' {
 						continue // ignore
 					}

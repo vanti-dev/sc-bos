@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
@@ -103,7 +102,7 @@ func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
 					return
 				default:
 				}
-				for change := range e.services.Node.PullDevices(ctx, resource.WithReadPaths(&traits.Metadata{}, "metadata.traits")) {
+				for change := range e.services.Node.PullDevices(ctx, resource.WithReadPaths(&gen.Device{}, "metadata.traits")) {
 					hadTrait, hasTrait := hasUDMITrait(change.OldValue), hasUDMITrait(change.NewValue)
 					if hadTrait && !hasTrait {
 						// remove
