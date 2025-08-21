@@ -46,6 +46,11 @@ type Actor struct {
 	// The access zone the actor was last granted access to.
 	// The zone will be provided by the device and may not map to any Smart Core zone or device.
 	LastGrantZone string `protobuf:"bytes,16,opt,name=last_grant_zone,json=lastGrantZone,proto3" json:"last_grant_zone,omitempty"`
+	// The license plate or vehicle registration number of the actor's vehicle.
+	// should only contain alphanumeric characters and possibly, spaces.
+	VehicleRegistration string `protobuf:"bytes,17,opt,name=vehicle_registration,json=vehicleRegistration,proto3" json:"vehicle_registration,omitempty"`
+	// The company this actor is associated with.
+	Company string `protobuf:"bytes,18,opt,name=company,proto3" json:"company,omitempty"`
 	// IDs holds external actor ids.
 	// For example this might hold an id representing a person in an access control system.
 	// The map key should uniquely represent the domain for the id, for example "my-access-system/user-id", the use of uris is not
@@ -144,6 +149,20 @@ func (x *Actor) GetLastGrantZone() string {
 	return ""
 }
 
+func (x *Actor) GetVehicleRegistration() string {
+	if x != nil {
+		return x.VehicleRegistration
+	}
+	return ""
+}
+
+func (x *Actor) GetCompany() string {
+	if x != nil {
+		return x.Company
+	}
+	return ""
+}
+
 func (x *Actor) GetIds() map[string]string {
 	if x != nil {
 		return x.Ids
@@ -162,7 +181,7 @@ var File_actor_proto protoreflect.FileDescriptor
 
 const file_actor_proto_rawDesc = "" +
 	"\n" +
-	"\vactor.proto\x12\rsmartcore.bos\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x11types/image.proto\"\xf0\x03\n" +
+	"\vactor.proto\x12\rsmartcore.bos\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x11types/image.proto\"\xbd\x04\n" +
 	"\x05Actor\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05title\x18\n" +
@@ -172,7 +191,9 @@ const file_actor_proto_rawDesc = "" +
 	"\x03url\x18\r \x01(\tR\x03url\x12\x14\n" +
 	"\x05email\x18\x0e \x01(\tR\x05email\x12B\n" +
 	"\x0flast_grant_time\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\rlastGrantTime\x12&\n" +
-	"\x0flast_grant_zone\x18\x10 \x01(\tR\rlastGrantZone\x12/\n" +
+	"\x0flast_grant_zone\x18\x10 \x01(\tR\rlastGrantZone\x121\n" +
+	"\x14vehicle_registration\x18\x11 \x01(\tR\x13vehicleRegistration\x12\x18\n" +
+	"\acompany\x18\x12 \x01(\tR\acompany\x12/\n" +
 	"\x03ids\x18d \x03(\v2\x1d.smartcore.bos.Actor.IdsEntryR\x03ids\x122\n" +
 	"\x04more\x18e \x03(\v2\x1e.smartcore.bos.Actor.MoreEntryR\x04more\x1a6\n" +
 	"\bIdsEntry\x12\x10\n" +
