@@ -67,6 +67,8 @@ type Device struct {
 	GroupNumber *int             `json:"groupNumber,omitempty"`
 	IpAddress   string           `json:"ipAddress,omitempty"`
 	Meta        *traits.Metadata `json:"meta,omitempty"`
+	// The length of the duration test for emergency lights, if known
+	DurationTestLength *jsontypes.Duration `json:"durationTestLength,omitempty,omitzero"`
 }
 
 // Scene represents a HelvarNet lighting scene, which is a combination of a block (address), scene, and title.
