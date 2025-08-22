@@ -37,12 +37,13 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 		services.HTTPMux.Handle(TokenEndpointPath, f.server)
 	})
 	s := &System{
-		server:     f.server,
-		configDirs: services.ConfigDirs,
-		clienter:   services.Node,
-		logger:     services.Logger.Named("authn"),
-		validators: services.TokenValidators,
-		accounts:   services.Accounts,
+		server:        f.server,
+		configDirs:    services.ConfigDirs,
+		clienter:      services.Node,
+		cohortManager: services.CohortManager,
+		logger:        services.Logger.Named("authn"),
+		validators:    services.TokenValidators,
+		accounts:      services.Accounts,
 	}
 	s.Service = service.New(service.MonoApply(s.applyConfig),
 		service.WithParser(config.ReadConfig),
