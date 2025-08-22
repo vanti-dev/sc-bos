@@ -2,6 +2,7 @@ package token
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/vanti-dev/sc-bos/internal/auth/permission"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -30,10 +31,30 @@ func ParseResourceType(s string) (ResourceType, bool) {
 	return ResourceType(rt), true
 }
 
+//goland:noinspection GoMixedReceiverTypes
 func (rt ResourceType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(gen.RoleAssignment_ResourceType(rt))
+	return json.Marshal(gen.RoleAssignment_ResourceType(rt).String())
 }
 
+//goland:noinspection GoMixedReceiverTypes
+func (rt *ResourceType) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err == nil {
+		parsed, ok := ParseResourceType(s)
+		if !ok {
+			return errors.New("invalid role assignment type")
+		}
+		*rt = parsed
+		return nil
+	}
+	var i int32
+	if err := json.Unmarshal(b, &i); err == nil {
+		*rt = ResourceType(i)
+	}
+	return nil
+}
+
+//goland:noinspection GoMixedReceiverTypes
 func (rt ResourceType) String() string {
 	return gen.RoleAssignment_ResourceType(rt).String()
 }
