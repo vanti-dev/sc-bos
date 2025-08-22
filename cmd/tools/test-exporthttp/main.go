@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/auto"
@@ -45,22 +46,29 @@ func main() {
 		panic(err)
 	}
 
-	err = announceMeter(announcer, "smart-core/meters/01", "mWh", []float32{0, 1, 2, 12, 54, 100, 222, 654, 900, 1122, 1543})
+	err = announceMeter(announcer, "smart-core/meters/01", "mWh", time.Second, []float32{0, 1, 2, 12, 54, 100, 222, 654, 900, 1122, 1543})
 
 	if err != nil {
 		panic(err)
 	}
 
-	err = announceMeter(announcer, "smart-core/meters/03", "litres", []float32{0, 1, 11, 111, 222, 433, 566, 888, 1002, 1023, 2000})
+	err = announceMeter(announcer, "smart-core/meters/03", "litres", time.Second, []float32{0, 1, 11, 111, 222, 433, 566, 888, 1002, 1023, 2000})
 
+	if err != nil {
+		panic(err)
+	}
+
+	// run this script twice to test that the previous execution times are being read correctly
+	db, err := bolthold.Open("exporthttp-test.db", 0666, nil)
 	if err != nil {
 		panic(err)
 	}
 
 	srv := auto.Services{
-		Logger: logger,
-		Node:   announcer,
-		Now:    func() time.Time { return time.Now() },
+		Logger:   logger,
+		Database: db,
+		Node:     announcer,
+		Now:      func() time.Time { return time.Now() },
 	}
 
 	lifecycle := exporthttp.Factory.New(srv)
