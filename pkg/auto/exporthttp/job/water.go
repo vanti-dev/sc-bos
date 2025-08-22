@@ -71,11 +71,7 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	err = sendFn(ctx, w.GetUrl(), bytes)
-
-	w.PreviousExecution = time.Now().UTC()
-
-	return err
+	return sendFn(ctx, w.GetUrl(), bytes)
 }
 
 func (w *WaterJob) getUnitMultiplier(ctx context.Context, meter string) (float32, error) {

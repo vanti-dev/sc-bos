@@ -10,7 +10,6 @@ package exporthttp
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -42,7 +41,7 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	logger := a.Logger.Named(cfg.Name).With(zap.String("baseUrl", cfg.BaseUrl))
 
-	jobs := job.FromConfig(cfg, logger, a.Node)
+	jobs := job.FromConfig(cfg, a.Database, logger, a.Node)
 
 	if len(jobs) < 1 {
 		return nil
@@ -58,7 +57,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	}
 
 	go func() {
-		mulpx := job.Multiplex(ctx, jobs...)
+		mulpx := job.Multiplex(ctx, AutoName, cfg.Name, jobs...)
 
 		// tear down
 		defer mulpx.WaitForDone()
@@ -72,7 +71,6 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 						logger.Warn(fmt.Sprintf("failed to run %s", jb.GetName()), zap.Error(err))
 						return
 					}
-					jb.SetPreviousExecution(time.Now())
 				}()
 			case <-ctx.Done():
 				return

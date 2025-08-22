@@ -76,11 +76,7 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	err = sendFn(ctx, e.GetUrl(), bytes)
-
-	e.PreviousExecution = time.Now().UTC()
-
-	return err
+	return sendFn(ctx, e.GetUrl(), bytes)
 }
 
 func (e *EnergyJob) getUnitMultiplier(ctx context.Context, meter string) (float32, error) {
