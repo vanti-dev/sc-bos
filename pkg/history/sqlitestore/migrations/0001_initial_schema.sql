@@ -12,3 +12,12 @@ CREATE TABLE history (
 );
 
 CREATE INDEX history_source_idx ON history (source_id, id);
+
+-- expanded view of history data, useful when manually exploring data
+CREATE VIEW history_denorm (id, timestamp, source, payload) AS
+    SELECT h.id,
+           datetime(CAST((h.id / 1000000) AS REAL) / 1000.0, 'unixepoch', 'subsec'),
+           hs.source,
+           h.payload
+    FROM history h
+    LEFT OUTER JOIN history_sources hs ON h.source_id = hs.id;
