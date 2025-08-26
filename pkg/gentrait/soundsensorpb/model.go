@@ -29,4 +29,12 @@ func (m *Model) PullSoundLevel(ctx context.Context, opts ...resource.ReadOption)
 	return resources.PullValue[*gen.SoundLevel](ctx, m.soundLevel.Pull(ctx, opts...))
 }
 
+func (m *Model) UpdateSoundLevel(soundLevel *gen.SoundLevel, opts ...resource.WriteOption) (*gen.SoundLevel, error) {
+	res, err := m.soundLevel.Set(soundLevel, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return res.(*gen.SoundLevel), nil
+}
+
 type PullSoundLevelChange = resources.ValueChange[*gen.SoundLevel]
