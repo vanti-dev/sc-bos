@@ -495,7 +495,7 @@ func (l *Light) GetTestResultSet(_ context.Context, req *gen.GetTestResultSetReq
 
 	result := &gen.TestResultSet{}
 
-	if req.ReadMask == nil || (req.ReadMask.Paths != nil && slices.Contains(req.ReadMask.Paths, "function_test")) {
+	if req.ReadMask == nil || slices.Contains(req.ReadMask.Paths, "function_test") {
 		result.FunctionTest = l.testResultSet.Get().(*gen.TestResultSet).FunctionTest
 		if req.QueryDevice {
 			fRes, err := getTestResult(l.getFunctionTestResult, l.getFunctionTestCompletionTime)
@@ -510,7 +510,7 @@ func (l *Light) GetTestResultSet(_ context.Context, req *gen.GetTestResultSetReq
 			}))
 		}
 	}
-	if req.ReadMask == nil || (req.ReadMask.Paths != nil && slices.Contains(req.ReadMask.Paths, "duration_test")) {
+	if req.ReadMask == nil || slices.Contains(req.ReadMask.Paths, "duration_test") {
 		result.DurationTest = l.testResultSet.Get().(*gen.TestResultSet).DurationTest
 		if req.QueryDevice {
 			dRes, err := getTestResult(l.getDurationTestResult, l.getDurationTestCompletionTime)
@@ -528,8 +528,8 @@ func (l *Light) GetTestResultSet(_ context.Context, req *gen.GetTestResultSetReq
 	return result, nil
 }
 
-func (l *Light) PullTestResultSets(_ *gen.PullTestResultRequest, server grpc.ServerStreamingServer[gen.PullTestResultsResponse]) error {
-	for value := range l.testResultSet.Pull(server.Context()) {
+func (l *Light) PullTestResultSets(request *gen.PullTestResultRequest, server grpc.ServerStreamingServer[gen.PullTestResultsResponse]) error {
+	for value := range l.testResultSet.Pull(server.Context(), resource.WithReadMask(request.GetReadMask()), resource.WithUpdatesOnly(request.UpdatesOnly)) {
 		resultSet := value.Value.(*gen.TestResultSet)
 		err := server.Send(&gen.PullTestResultsResponse{Changes: []*gen.PullTestResultsResponse_Change{
 			{
