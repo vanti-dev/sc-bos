@@ -596,6 +596,11 @@ func nestedResultLeafs(leafs []leaf) []leaf {
 }
 
 func Test_conditionToCmpFunc(t *testing.T) {
+	// helper for making StringList values
+	sl := func(s ...string) *gen.Device_Query_StringList {
+		return &gen.Device_Query_StringList{Strings: s}
+	}
+
 	t.Run("nil", func(t *testing.T) {
 		cmpFunc := conditionToCmpFunc(&gen.Device_Query_Condition{})
 		if cmpFunc == nil {
@@ -639,16 +644,12 @@ func Test_conditionToCmpFunc(t *testing.T) {
 				negative: []string{"", "pple", "appl", "banana"},
 			},
 			{
-				cond: &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_StringIn{StringIn: &gen.Device_Query_StringList{Strings: []string{
-					"foo", "BAR",
-				}}}},
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_StringIn{StringIn: sl("foo", "BAR")}},
 				positive: []string{"foo", "BAR"},
 				negative: []string{"", "FOO", "bar", "foO", "fooo", "-foo", "10"},
 			},
 			{
-				cond: &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_StringInFold{StringInFold: &gen.Device_Query_StringList{Strings: []string{
-					"foo", "BAR",
-				}}}},
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_StringInFold{StringInFold: sl("foo", "BAR")}},
 				positive: []string{"foo", "BAR", "FOO", "bar", "foO"},
 				negative: []string{"", "fooo", "-foo", "10"},
 			},
@@ -743,6 +744,59 @@ func Test_conditionToCmpFunc(t *testing.T) {
 				for _, ts := range tt.negative {
 					if cmpFunc(timestampLeaf(ts)) {
 						t.Errorf("expected %v to not match condition %s", ts, tt.cond)
+					}
+				}
+			})
+		}
+	})
+
+	t.Run("names", func(t *testing.T) {
+		tests := []struct {
+			cond     *gen.Device_Query_Condition
+			positive []string
+			negative []string
+		}{
+			{
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_NameDescendant{NameDescendant: "a/b"}},
+				positive: []string{"a/b/c", "a/b/c/d"},
+				negative: []string{"", "a", "a/", "a/b", "a/bc", "a/b/", "x/b/c"},
+			},
+			{
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_NameDescendantInc{NameDescendantInc: "a/b"}},
+				positive: []string{"a/b", "a/b/c", "a/b/c/d"},
+				negative: []string{"", "a", "a/", "a/bc", "a/b/", "x/b/c"},
+			},
+			{
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_NameDescendantIn{NameDescendantIn: sl("a/b", "1/2")}},
+				positive: []string{"a/b/c", "a/b/c/d", "1/2/3", "1/2/3/4"},
+				negative: []string{"", "a", "a/", "a/b", "a/bc", "a/b/", "x/b/c", "1", "1/2"},
+			},
+			{
+				cond:     &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_NameDescendantIncIn{NameDescendantIncIn: sl("a/b", "1/2")}},
+				positive: []string{"a/b", "a/b/c", "a/b/c/d", "1/2", "1/2/3", "1/2/3/4"},
+				negative: []string{"", "a", "a/", "a/bc", "a/b/", "x/b/c", "1", "2"},
+			},
+		}
+
+		nameLeaf := func(val string) leaf {
+			md := (&querypb.Result{}).ProtoReflect().Descriptor()
+			return leaf{
+				fd: md.Fields().ByName("string_val"),
+				v:  protoreflect.ValueOfString(val),
+			}
+		}
+
+		for _, tt := range tests {
+			t.Run(condTestName(tt.cond), func(t *testing.T) {
+				cmpFunc := conditionToCmpFunc(tt.cond)
+				for _, str := range tt.positive {
+					if !cmpFunc(nameLeaf(str)) {
+						t.Errorf("expected %q to match condition %s", str, tt.cond)
+					}
+				}
+				for _, str := range tt.negative {
+					if cmpFunc(nameLeaf(str)) {
+						t.Errorf("expected %q to not match condition %s", str, tt.cond)
 					}
 				}
 			})
