@@ -59,6 +59,26 @@ message Device {
         // The condition matches if the field is less than or equal to this timestamp.
         google.protobuf.Timestamp timestamp_lte = 24;
 
+        // The condition matches if the field is a descendant of this name.
+        // For example "a/b" would match "a/b/c" but not "a/bc".
+        //
+        // Names are used to identify resources: devices, services, etc.
+        // Names are usually comprised of '/' separated path segments indicating a hierarchy,
+        // for example "a/b/c" is a child of "a/b".
+        // Some of the authorization claims use this hierarchy to grant access to collections of resources.
+        string name_descendant = 30;
+        // The condition matches if the field is equal to or a descendant of this name.
+        // For example "a/b" would match "a/b" and "a/b/c" but not "a/bc".
+        string name_descendant_inc = 31;
+        // The condition matches if the field is a descendant of any of these names.
+        // The server may have limits on the number of names that can be compared.
+        // See the name_descendant description for details of how descendant matching works.
+        StringList name_descendant_in = 32;
+        // The condition matches if the field is equal to or a descendant of any of these names.
+        // The server may have limits on the number of names that can be compared.
+        // See the name_descendant_inc description for details of how descendant matching works.
+        StringList name_descendant_inc_in = 33;
+
         // there's room here for additional rhs values for the field, but we don't need any
       }
     }
