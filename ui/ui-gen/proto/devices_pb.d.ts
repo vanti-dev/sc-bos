@@ -100,6 +100,22 @@ export namespace Device {
       hasTimestampLte(): boolean;
       clearTimestampLte(): Condition;
 
+      getNameDescendant(): string;
+      setNameDescendant(value: string): Condition;
+
+      getNameDescendantInc(): string;
+      setNameDescendantInc(value: string): Condition;
+
+      getNameDescendantIn(): Device.Query.StringList | undefined;
+      setNameDescendantIn(value?: Device.Query.StringList): Condition;
+      hasNameDescendantIn(): boolean;
+      clearNameDescendantIn(): Condition;
+
+      getNameDescendantIncIn(): Device.Query.StringList | undefined;
+      setNameDescendantIncIn(value?: Device.Query.StringList): Condition;
+      hasNameDescendantIncIn(): boolean;
+      clearNameDescendantIncIn(): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -124,6 +140,10 @@ export namespace Device {
         timestampGte?: google_protobuf_timestamp_pb.Timestamp.AsObject,
         timestampLt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
         timestampLte?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        nameDescendant: string,
+        nameDescendantInc: string,
+        nameDescendantIn?: Device.Query.StringList.AsObject,
+        nameDescendantIncIn?: Device.Query.StringList.AsObject,
       }
 
       export enum ValueCase { 
@@ -139,6 +159,10 @@ export namespace Device {
         TIMESTAMP_GTE = 22,
         TIMESTAMP_LT = 23,
         TIMESTAMP_LTE = 24,
+        NAME_DESCENDANT = 30,
+        NAME_DESCENDANT_INC = 31,
+        NAME_DESCENDANT_IN = 32,
+        NAME_DESCENDANT_INC_IN = 33,
       }
     }
 
