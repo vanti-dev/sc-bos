@@ -14,7 +14,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/driver/helvarnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/dalipb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylightpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -140,8 +140,8 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				node.WithClients(lightpb.WrapApi(emergencyLight))),
 			node.HasTrait(statuspb.TraitName,
 				node.WithClients(gen.WrapStatusApi(emergencyLight))),
-			node.HasTrait(dalipb.TraitName,
-				node.WithClients(gen.WrapDaliApi(emergencyLight))),
+			node.HasTrait(emergencylightpb.TraitName,
+				node.WithClients(gen.WrapEmergencyLightApi(emergencyLight))),
 			node.HasMetadata(em.Meta))
 		grp.Go(func() error {
 			return emergencyLight.runHealthCheck(ctx, cfg.RefreshStatus.Duration)
