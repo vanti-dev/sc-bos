@@ -69,6 +69,14 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
 			return f(t)
 		}
 	}
+	descendantCmp := func(f func(string) bool) func(v leaf) bool {
+		return strCmp(func(s string) bool {
+			if strings.HasSuffix(s, "/") {
+				return false // trailing /'s don't match, they'd result in an empty segment
+			}
+			return f(s)
+		})
+	}
 
 	switch c := cond.Value.(type) {
 	case *gen.Device_Query_Condition_StringEqual:
@@ -136,6 +144,27 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
 				return false
 			}
 			return !goT.After(c.TimestampLte.AsTime())
+		})
+
+	case *gen.Device_Query_Condition_NameDescendant:
+		return descendantCmp(func(v string) bool {
+			return strings.HasPrefix(v, c.NameDescendant+"/")
+		})
+	case *gen.Device_Query_Condition_NameDescendantInc:
+		return descendantCmp(func(v string) bool {
+			return v == c.NameDescendantInc || strings.HasPrefix(v, c.NameDescendantInc+"/")
+		})
+	case *gen.Device_Query_Condition_NameDescendantIn:
+		tree := newTreeFromPaths(c.NameDescendantIn.Strings...)
+		return descendantCmp(func(v string) bool {
+			n, self := tree.matchDescendant(v)
+			return n != nil && !self
+		})
+	case *gen.Device_Query_Condition_NameDescendantIncIn:
+		tree := newTreeFromPaths(c.NameDescendantIncIn.Strings...)
+		return descendantCmp(func(v string) bool {
+			n, _ := tree.matchDescendant(v)
+			return n != nil
 		})
 	}
 
