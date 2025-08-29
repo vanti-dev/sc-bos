@@ -25,19 +25,21 @@ func NewModel(opts ...resource.Option) *Model {
 }
 
 func (m *Model) SetLastDurationTest(result gen.EmergencyTestResult_Result) {
-	_, _ = m.testResultSet.Set(&gen.EmergencyTestResult{
-		EndTime: timestamppb.Now(),
-		Result:  result,
-	}, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
+	_, _ = m.testResultSet.Set(&gen.TestResultSet{
+		DurationTest: &gen.EmergencyTestResult{
+			EndTime: timestamppb.Now(),
+			Result:  result,
+		}}, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
 		Paths: []string{"duration_test"},
 	}))
 }
 
 func (m *Model) SetLastFunctionalTest(result gen.EmergencyTestResult_Result) {
-	_, _ = m.testResultSet.Set(&gen.EmergencyTestResult{
-		EndTime: timestamppb.Now(),
-		Result:  result,
-	}, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
+	_, _ = m.testResultSet.Set(&gen.TestResultSet{
+		FunctionTest: &gen.EmergencyTestResult{
+			EndTime: timestamppb.Now(),
+			Result:  result,
+		}}, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
 		Paths: []string{"function_test"},
 	}))
 }
