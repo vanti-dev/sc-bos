@@ -1,7 +1,10 @@
 package main
 
 import (
+	"time"
+
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
@@ -11,7 +14,7 @@ import (
 )
 
 // announceMeter with events in order
-func announceMeter(root node.Announcer, name, unit string, events []float32) error {
+func announceMeter(root node.Announcer, name, unit string, sleep time.Duration, events []float32) error {
 	model := meter.NewModel()
 
 	modelInfoServer := &meter.InfoServer{
@@ -26,7 +29,9 @@ func announceMeter(root node.Announcer, name, unit string, events []float32) err
 
 	for _, event := range events {
 		rec, err := proto.Marshal(&gen.MeterReading{
-			Usage: event,
+			Usage:     event,
+			EndTime:   timestamppb.Now(),
+			StartTime: timestamppb.Now(),
 		})
 		if err != nil {
 			return err
@@ -35,6 +40,7 @@ func announceMeter(root node.Announcer, name, unit string, events []float32) err
 		if err != nil {
 			return err
 		}
+		time.Sleep(sleep)
 	}
 
 	root.Announce(name, node.HasClient(gen.WrapMeterHistory(historypb.NewMeterServer(store))))
