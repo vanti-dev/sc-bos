@@ -1,0 +1,761 @@
+import * as jspb from 'google-protobuf'
+
+import * as google_protobuf_duration_pb from 'google-protobuf/google/protobuf/duration_pb'; // proto import: "google/protobuf/duration.proto"
+import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
+import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
+import * as actor_pb from './actor_pb'; // proto import: "actor.proto"
+import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb'; // proto import: "types/change.proto"
+
+
+export class HealthCheck extends jspb.Message {
+  getId(): string;
+  setId(value: string): HealthCheck;
+
+  getDisplayName(): string;
+  setDisplayName(value: string): HealthCheck;
+
+  getDescription(): string;
+  setDescription(value: string): HealthCheck;
+
+  getOccupantImpact(): HealthCheck.OccupantImpact;
+  setOccupantImpact(value: HealthCheck.OccupantImpact): HealthCheck;
+
+  getEquipmentImpact(): HealthCheck.EquipmentImpact;
+  setEquipmentImpact(value: HealthCheck.EquipmentImpact): HealthCheck;
+
+  getReliability(): HealthCheck.Reliability | undefined;
+  setReliability(value?: HealthCheck.Reliability): HealthCheck;
+  hasReliability(): boolean;
+  clearReliability(): HealthCheck;
+
+  getCheck(): HealthCheck.Check | undefined;
+  setCheck(value?: HealthCheck.Check): HealthCheck;
+  hasCheck(): boolean;
+  clearCheck(): HealthCheck;
+
+  getAckRequired(): number;
+  setAckRequired(value: number): HealthCheck;
+  hasAckRequired(): boolean;
+  clearAckRequired(): HealthCheck;
+
+  getToHealthyAck(): HealthCheck.Ack | undefined;
+  setToHealthyAck(value?: HealthCheck.Ack): HealthCheck;
+  hasToHealthyAck(): boolean;
+  clearToHealthyAck(): HealthCheck;
+
+  getToUnreliableAck(): HealthCheck.Ack | undefined;
+  setToUnreliableAck(value?: HealthCheck.Ack): HealthCheck;
+  hasToUnreliableAck(): boolean;
+  clearToUnreliableAck(): HealthCheck;
+
+  getToAbnormalAck(): HealthCheck.Ack | undefined;
+  setToAbnormalAck(value?: HealthCheck.Ack): HealthCheck;
+  hasToAbnormalAck(): boolean;
+  clearToAbnormalAck(): HealthCheck;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): HealthCheck.AsObject;
+  static toObject(includeInstance: boolean, msg: HealthCheck): HealthCheck.AsObject;
+  static serializeBinaryToWriter(message: HealthCheck, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): HealthCheck;
+  static deserializeBinaryFromReader(message: HealthCheck, reader: jspb.BinaryReader): HealthCheck;
+}
+
+export namespace HealthCheck {
+  export type AsObject = {
+    id: string,
+    displayName: string,
+    description: string,
+    occupantImpact: HealthCheck.OccupantImpact,
+    equipmentImpact: HealthCheck.EquipmentImpact,
+    reliability?: HealthCheck.Reliability.AsObject,
+    check?: HealthCheck.Check.AsObject,
+    ackRequired?: number,
+    toHealthyAck?: HealthCheck.Ack.AsObject,
+    toUnreliableAck?: HealthCheck.Ack.AsObject,
+    toAbnormalAck?: HealthCheck.Ack.AsObject,
+  }
+
+  export class Error extends jspb.Message {
+    getSummaryText(): string;
+    setSummaryText(value: string): Error;
+
+    getDetailsText(): string;
+    setDetailsText(value: string): Error;
+
+    getCode(): HealthCheck.Error.Code | undefined;
+    setCode(value?: HealthCheck.Error.Code): Error;
+    hasCode(): boolean;
+    clearCode(): Error;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Error.AsObject;
+    static toObject(includeInstance: boolean, msg: Error): Error.AsObject;
+    static serializeBinaryToWriter(message: Error, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Error;
+    static deserializeBinaryFromReader(message: Error, reader: jspb.BinaryReader): Error;
+  }
+
+  export namespace Error {
+    export type AsObject = {
+      summaryText: string,
+      detailsText: string,
+      code?: HealthCheck.Error.Code.AsObject,
+    }
+
+    export class Code extends jspb.Message {
+      getCode(): string;
+      setCode(value: string): Code;
+
+      getSystem(): string;
+      setSystem(value: string): Code;
+
+      serializeBinary(): Uint8Array;
+      toObject(includeInstance?: boolean): Code.AsObject;
+      static toObject(includeInstance: boolean, msg: Code): Code.AsObject;
+      static serializeBinaryToWriter(message: Code, writer: jspb.BinaryWriter): void;
+      static deserializeBinary(bytes: Uint8Array): Code;
+      static deserializeBinaryFromReader(message: Code, reader: jspb.BinaryReader): Code;
+    }
+
+    export namespace Code {
+      export type AsObject = {
+        code: string,
+        system: string,
+      }
+    }
+
+  }
+
+
+  export class Reliability extends jspb.Message {
+    getState(): HealthCheck.Reliability.State;
+    setState(value: HealthCheck.Reliability.State): Reliability;
+
+    getReliableTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setReliableTime(value?: google_protobuf_timestamp_pb.Timestamp): Reliability;
+    hasReliableTime(): boolean;
+    clearReliableTime(): Reliability;
+
+    getUnreliableTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setUnreliableTime(value?: google_protobuf_timestamp_pb.Timestamp): Reliability;
+    hasUnreliableTime(): boolean;
+    clearUnreliableTime(): Reliability;
+
+    getLastError(): HealthCheck.Error | undefined;
+    setLastError(value?: HealthCheck.Error): Reliability;
+    hasLastError(): boolean;
+    clearLastError(): Reliability;
+
+    getCause(): HealthCheck.Reliability.Cause | undefined;
+    setCause(value?: HealthCheck.Reliability.Cause): Reliability;
+    hasCause(): boolean;
+    clearCause(): Reliability;
+
+    getAffects(): HealthCheck.Reliability.Affects | undefined;
+    setAffects(value?: HealthCheck.Reliability.Affects): Reliability;
+    hasAffects(): boolean;
+    clearAffects(): Reliability;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Reliability.AsObject;
+    static toObject(includeInstance: boolean, msg: Reliability): Reliability.AsObject;
+    static serializeBinaryToWriter(message: Reliability, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Reliability;
+    static deserializeBinaryFromReader(message: Reliability, reader: jspb.BinaryReader): Reliability;
+  }
+
+  export namespace Reliability {
+    export type AsObject = {
+      state: HealthCheck.Reliability.State,
+      reliableTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      unreliableTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      lastError?: HealthCheck.Error.AsObject,
+      cause?: HealthCheck.Reliability.Cause.AsObject,
+      affects?: HealthCheck.Reliability.Affects.AsObject,
+    }
+
+    export class Cause extends jspb.Message {
+      getName(): string;
+      setName(value: string): Cause;
+
+      getError(): HealthCheck.Error | undefined;
+      setError(value?: HealthCheck.Error): Cause;
+      hasError(): boolean;
+      clearError(): Cause;
+
+      getDisplayName(): string;
+      setDisplayName(value: string): Cause;
+
+      serializeBinary(): Uint8Array;
+      toObject(includeInstance?: boolean): Cause.AsObject;
+      static toObject(includeInstance: boolean, msg: Cause): Cause.AsObject;
+      static serializeBinaryToWriter(message: Cause, writer: jspb.BinaryWriter): void;
+      static deserializeBinary(bytes: Uint8Array): Cause;
+      static deserializeBinaryFromReader(message: Cause, reader: jspb.BinaryReader): Cause;
+    }
+
+    export namespace Cause {
+      export type AsObject = {
+        name: string,
+        error?: HealthCheck.Error.AsObject,
+        displayName: string,
+      }
+    }
+
+
+    export class Affects extends jspb.Message {
+      getCount(): number;
+      setCount(value: number): Affects;
+
+      serializeBinary(): Uint8Array;
+      toObject(includeInstance?: boolean): Affects.AsObject;
+      static toObject(includeInstance: boolean, msg: Affects): Affects.AsObject;
+      static serializeBinaryToWriter(message: Affects, writer: jspb.BinaryWriter): void;
+      static deserializeBinary(bytes: Uint8Array): Affects;
+      static deserializeBinaryFromReader(message: Affects, reader: jspb.BinaryReader): Affects;
+    }
+
+    export namespace Affects {
+      export type AsObject = {
+        count: number,
+      }
+    }
+
+
+    export enum State { 
+      STATE_UNSPECIFIED = 0,
+      RELIABLE = 1,
+      UNRELIABLE = 2,
+      CONN_TRANSIENT_FAILURE = 3,
+      SEND_FAILURE = 4,
+      NO_RESPONSE = 5,
+      BAD_RESPONSE = 6,
+      NOT_FOUND = 7,
+      PERMISSION_DENIED = 8,
+    }
+  }
+
+
+  export class Value extends jspb.Message {
+    getBoolValue(): boolean;
+    setBoolValue(value: boolean): Value;
+
+    getStringValue(): string;
+    setStringValue(value: string): Value;
+
+    getIntValue(): number;
+    setIntValue(value: number): Value;
+
+    getUintValue(): number;
+    setUintValue(value: number): Value;
+
+    getFloatValue(): number;
+    setFloatValue(value: number): Value;
+
+    getTimestampValue(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setTimestampValue(value?: google_protobuf_timestamp_pb.Timestamp): Value;
+    hasTimestampValue(): boolean;
+    clearTimestampValue(): Value;
+
+    getDurationValue(): google_protobuf_duration_pb.Duration | undefined;
+    setDurationValue(value?: google_protobuf_duration_pb.Duration): Value;
+    hasDurationValue(): boolean;
+    clearDurationValue(): Value;
+
+    getValueCase(): Value.ValueCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Value.AsObject;
+    static toObject(includeInstance: boolean, msg: Value): Value.AsObject;
+    static serializeBinaryToWriter(message: Value, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Value;
+    static deserializeBinaryFromReader(message: Value, reader: jspb.BinaryReader): Value;
+  }
+
+  export namespace Value {
+    export type AsObject = {
+      boolValue: boolean,
+      stringValue: string,
+      intValue: number,
+      uintValue: number,
+      floatValue: number,
+      timestampValue?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      durationValue?: google_protobuf_duration_pb.Duration.AsObject,
+    }
+
+    export enum ValueCase { 
+      VALUE_NOT_SET = 0,
+      BOOL_VALUE = 1,
+      STRING_VALUE = 2,
+      INT_VALUE = 3,
+      UINT_VALUE = 4,
+      FLOAT_VALUE = 5,
+      TIMESTAMP_VALUE = 6,
+      DURATION_VALUE = 7,
+    }
+  }
+
+
+  export class ValueRange extends jspb.Message {
+    getLow(): HealthCheck.Value | undefined;
+    setLow(value?: HealthCheck.Value): ValueRange;
+    hasLow(): boolean;
+    clearLow(): ValueRange;
+
+    getHigh(): HealthCheck.Value | undefined;
+    setHigh(value?: HealthCheck.Value): ValueRange;
+    hasHigh(): boolean;
+    clearHigh(): ValueRange;
+
+    getDeadband(): HealthCheck.Value | undefined;
+    setDeadband(value?: HealthCheck.Value): ValueRange;
+    hasDeadband(): boolean;
+    clearDeadband(): ValueRange;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ValueRange.AsObject;
+    static toObject(includeInstance: boolean, msg: ValueRange): ValueRange.AsObject;
+    static serializeBinaryToWriter(message: ValueRange, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ValueRange;
+    static deserializeBinaryFromReader(message: ValueRange, reader: jspb.BinaryReader): ValueRange;
+  }
+
+  export namespace ValueRange {
+    export type AsObject = {
+      low?: HealthCheck.Value.AsObject,
+      high?: HealthCheck.Value.AsObject,
+      deadband?: HealthCheck.Value.AsObject,
+    }
+  }
+
+
+  export class Values extends jspb.Message {
+    getValuesList(): Array<HealthCheck.Value>;
+    setValuesList(value: Array<HealthCheck.Value>): Values;
+    clearValuesList(): Values;
+    addValues(value?: HealthCheck.Value, index?: number): HealthCheck.Value;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Values.AsObject;
+    static toObject(includeInstance: boolean, msg: Values): Values.AsObject;
+    static serializeBinaryToWriter(message: Values, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Values;
+    static deserializeBinaryFromReader(message: Values, reader: jspb.BinaryReader): Values;
+  }
+
+  export namespace Values {
+    export type AsObject = {
+      valuesList: Array<HealthCheck.Value.AsObject>,
+    }
+  }
+
+
+  export class Check extends jspb.Message {
+    getState(): HealthCheck.Check.State;
+    setState(value: HealthCheck.Check.State): Check;
+
+    getCurrentValue(): HealthCheck.Value | undefined;
+    setCurrentValue(value?: HealthCheck.Value): Check;
+    hasCurrentValue(): boolean;
+    clearCurrentValue(): Check;
+
+    getNormalValue(): HealthCheck.Value | undefined;
+    setNormalValue(value?: HealthCheck.Value): Check;
+    hasNormalValue(): boolean;
+    clearNormalValue(): Check;
+
+    getNormalRange(): HealthCheck.ValueRange | undefined;
+    setNormalRange(value?: HealthCheck.ValueRange): Check;
+    hasNormalRange(): boolean;
+    clearNormalRange(): Check;
+
+    getNormalValues(): HealthCheck.Values | undefined;
+    setNormalValues(value?: HealthCheck.Values): Check;
+    hasNormalValues(): boolean;
+    clearNormalValues(): Check;
+
+    getAbnormalValues(): HealthCheck.Values | undefined;
+    setAbnormalValues(value?: HealthCheck.Values): Check;
+    hasAbnormalValues(): boolean;
+    clearAbnormalValues(): Check;
+
+    getDisplayUnit(): string;
+    setDisplayUnit(value: string): Check;
+
+    getNormalTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setNormalTime(value?: google_protobuf_timestamp_pb.Timestamp): Check;
+    hasNormalTime(): boolean;
+    clearNormalTime(): Check;
+
+    getAbnormalTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setAbnormalTime(value?: google_protobuf_timestamp_pb.Timestamp): Check;
+    hasAbnormalTime(): boolean;
+    clearAbnormalTime(): Check;
+
+    getLastError(): HealthCheck.Error | undefined;
+    setLastError(value?: HealthCheck.Error): Check;
+    hasLastError(): boolean;
+    clearLastError(): Check;
+
+    getBoundsCase(): Check.BoundsCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Check.AsObject;
+    static toObject(includeInstance: boolean, msg: Check): Check.AsObject;
+    static serializeBinaryToWriter(message: Check, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Check;
+    static deserializeBinaryFromReader(message: Check, reader: jspb.BinaryReader): Check;
+  }
+
+  export namespace Check {
+    export type AsObject = {
+      state: HealthCheck.Check.State,
+      currentValue?: HealthCheck.Value.AsObject,
+      normalValue?: HealthCheck.Value.AsObject,
+      normalRange?: HealthCheck.ValueRange.AsObject,
+      normalValues?: HealthCheck.Values.AsObject,
+      abnormalValues?: HealthCheck.Values.AsObject,
+      displayUnit: string,
+      normalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      abnormalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      lastError?: HealthCheck.Error.AsObject,
+    }
+
+    export enum State { 
+      STATE_UNSPECIFIED = 0,
+      NORMAL = 1,
+      ABNORMAL = 2,
+      LOW = 3,
+      HIGH = 4,
+    }
+
+    export enum BoundsCase { 
+      BOUNDS_NOT_SET = 0,
+      NORMAL_VALUE = 4,
+      NORMAL_RANGE = 5,
+      NORMAL_VALUES = 6,
+      ABNORMAL_VALUES = 7,
+    }
+  }
+
+
+  export class Ack extends jspb.Message {
+    getAckTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setAckTime(value?: google_protobuf_timestamp_pb.Timestamp): Ack;
+    hasAckTime(): boolean;
+    clearAckTime(): Ack;
+
+    getActor(): actor_pb.Actor | undefined;
+    setActor(value?: actor_pb.Actor): Ack;
+    hasActor(): boolean;
+    clearActor(): Ack;
+
+    getSource(): string;
+    setSource(value: string): Ack;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Ack.AsObject;
+    static toObject(includeInstance: boolean, msg: Ack): Ack.AsObject;
+    static serializeBinaryToWriter(message: Ack, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Ack;
+    static deserializeBinaryFromReader(message: Ack, reader: jspb.BinaryReader): Ack;
+  }
+
+  export namespace Ack {
+    export type AsObject = {
+      ackTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      actor?: actor_pb.Actor.AsObject,
+      source: string,
+    }
+  }
+
+
+  export enum OccupantImpact { 
+    OCCUPANT_IMPACT_UNSPECIFIED = 0,
+    NO_OCCUPANT_IMPACT = 1,
+    COMFORT = 2,
+    HEALTH = 3,
+    LIFE = 4,
+  }
+
+  export enum EquipmentImpact { 
+    EQUIPMENT_IMPACT_UNSPECIFIED = 0,
+    NO_EQUIPMENT_IMPACT = 1,
+    WARRANTY = 2,
+    LIFESPAN = 3,
+  }
+
+  export enum HealthChange { 
+    HEALTH_CHANGE_UNSPECIFIED = 0,
+    TO_HEALTHY = 1,
+    TO_UNRELIABLE = 2,
+    TO_ABNORMAL = 4,
+  }
+
+  export enum AckRequiredCase { 
+    _ACK_REQUIRED_NOT_SET = 0,
+    ACK_REQUIRED = 20,
+  }
+}
+
+export class ListHealthChecksRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): ListHealthChecksRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): ListHealthChecksRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): ListHealthChecksRequest;
+
+  getPageSize(): number;
+  setPageSize(value: number): ListHealthChecksRequest;
+
+  getPageToken(): string;
+  setPageToken(value: string): ListHealthChecksRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListHealthChecksRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListHealthChecksRequest): ListHealthChecksRequest.AsObject;
+  static serializeBinaryToWriter(message: ListHealthChecksRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListHealthChecksRequest;
+  static deserializeBinaryFromReader(message: ListHealthChecksRequest, reader: jspb.BinaryReader): ListHealthChecksRequest;
+}
+
+export namespace ListHealthChecksRequest {
+  export type AsObject = {
+    name: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    pageSize: number,
+    pageToken: string,
+  }
+}
+
+export class ListHealthChecksResponse extends jspb.Message {
+  getHealthChecksList(): Array<HealthCheck>;
+  setHealthChecksList(value: Array<HealthCheck>): ListHealthChecksResponse;
+  clearHealthChecksList(): ListHealthChecksResponse;
+  addHealthChecks(value?: HealthCheck, index?: number): HealthCheck;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): ListHealthChecksResponse;
+
+  getTotalSize(): number;
+  setTotalSize(value: number): ListHealthChecksResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListHealthChecksResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListHealthChecksResponse): ListHealthChecksResponse.AsObject;
+  static serializeBinaryToWriter(message: ListHealthChecksResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListHealthChecksResponse;
+  static deserializeBinaryFromReader(message: ListHealthChecksResponse, reader: jspb.BinaryReader): ListHealthChecksResponse;
+}
+
+export namespace ListHealthChecksResponse {
+  export type AsObject = {
+    healthChecksList: Array<HealthCheck.AsObject>,
+    nextPageToken: string,
+    totalSize: number,
+  }
+}
+
+export class PullHealthChecksRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): PullHealthChecksRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullHealthChecksRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): PullHealthChecksRequest;
+
+  getUpdatesOnly(): boolean;
+  setUpdatesOnly(value: boolean): PullHealthChecksRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullHealthChecksRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PullHealthChecksRequest): PullHealthChecksRequest.AsObject;
+  static serializeBinaryToWriter(message: PullHealthChecksRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullHealthChecksRequest;
+  static deserializeBinaryFromReader(message: PullHealthChecksRequest, reader: jspb.BinaryReader): PullHealthChecksRequest;
+}
+
+export namespace PullHealthChecksRequest {
+  export type AsObject = {
+    name: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    updatesOnly: boolean,
+  }
+}
+
+export class PullHealthChecksResponse extends jspb.Message {
+  getChangesList(): Array<PullHealthChecksResponse.Change>;
+  setChangesList(value: Array<PullHealthChecksResponse.Change>): PullHealthChecksResponse;
+  clearChangesList(): PullHealthChecksResponse;
+  addChanges(value?: PullHealthChecksResponse.Change, index?: number): PullHealthChecksResponse.Change;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullHealthChecksResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PullHealthChecksResponse): PullHealthChecksResponse.AsObject;
+  static serializeBinaryToWriter(message: PullHealthChecksResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullHealthChecksResponse;
+  static deserializeBinaryFromReader(message: PullHealthChecksResponse, reader: jspb.BinaryReader): PullHealthChecksResponse;
+}
+
+export namespace PullHealthChecksResponse {
+  export type AsObject = {
+    changesList: Array<PullHealthChecksResponse.Change.AsObject>,
+  }
+
+  export class Change extends jspb.Message {
+    getName(): string;
+    setName(value: string): Change;
+
+    getType(): types_change_pb.ChangeType;
+    setType(value: types_change_pb.ChangeType): Change;
+
+    getNewValue(): HealthCheck | undefined;
+    setNewValue(value?: HealthCheck): Change;
+    hasNewValue(): boolean;
+    clearNewValue(): Change;
+
+    getOldValue(): HealthCheck | undefined;
+    setOldValue(value?: HealthCheck): Change;
+    hasOldValue(): boolean;
+    clearOldValue(): Change;
+
+    getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setChangeTime(value?: google_protobuf_timestamp_pb.Timestamp): Change;
+    hasChangeTime(): boolean;
+    clearChangeTime(): Change;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Change.AsObject;
+    static toObject(includeInstance: boolean, msg: Change): Change.AsObject;
+    static serializeBinaryToWriter(message: Change, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Change;
+    static deserializeBinaryFromReader(message: Change, reader: jspb.BinaryReader): Change;
+  }
+
+  export namespace Change {
+    export type AsObject = {
+      name: string,
+      type: types_change_pb.ChangeType,
+      newValue?: HealthCheck.AsObject,
+      oldValue?: HealthCheck.AsObject,
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    }
+  }
+
+}
+
+export class GetHealthCheckRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): GetHealthCheckRequest;
+
+  getId(): string;
+  setId(value: string): GetHealthCheckRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetHealthCheckRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): GetHealthCheckRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetHealthCheckRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetHealthCheckRequest): GetHealthCheckRequest.AsObject;
+  static serializeBinaryToWriter(message: GetHealthCheckRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetHealthCheckRequest;
+  static deserializeBinaryFromReader(message: GetHealthCheckRequest, reader: jspb.BinaryReader): GetHealthCheckRequest;
+}
+
+export namespace GetHealthCheckRequest {
+  export type AsObject = {
+    name: string,
+    id: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+  }
+}
+
+export class PullHealthCheckRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): PullHealthCheckRequest;
+
+  getId(): string;
+  setId(value: string): PullHealthCheckRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): PullHealthCheckRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): PullHealthCheckRequest;
+
+  getUpdatesOnly(): boolean;
+  setUpdatesOnly(value: boolean): PullHealthCheckRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullHealthCheckRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: PullHealthCheckRequest): PullHealthCheckRequest.AsObject;
+  static serializeBinaryToWriter(message: PullHealthCheckRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullHealthCheckRequest;
+  static deserializeBinaryFromReader(message: PullHealthCheckRequest, reader: jspb.BinaryReader): PullHealthCheckRequest;
+}
+
+export namespace PullHealthCheckRequest {
+  export type AsObject = {
+    name: string,
+    id: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    updatesOnly: boolean,
+  }
+}
+
+export class PullHealthCheckResponse extends jspb.Message {
+  getChangesList(): Array<PullHealthCheckResponse.Change>;
+  setChangesList(value: Array<PullHealthCheckResponse.Change>): PullHealthCheckResponse;
+  clearChangesList(): PullHealthCheckResponse;
+  addChanges(value?: PullHealthCheckResponse.Change, index?: number): PullHealthCheckResponse.Change;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): PullHealthCheckResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: PullHealthCheckResponse): PullHealthCheckResponse.AsObject;
+  static serializeBinaryToWriter(message: PullHealthCheckResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): PullHealthCheckResponse;
+  static deserializeBinaryFromReader(message: PullHealthCheckResponse, reader: jspb.BinaryReader): PullHealthCheckResponse;
+}
+
+export namespace PullHealthCheckResponse {
+  export type AsObject = {
+    changesList: Array<PullHealthCheckResponse.Change.AsObject>,
+  }
+
+  export class Change extends jspb.Message {
+    getName(): string;
+    setName(value: string): Change;
+
+    getHealthCheck(): HealthCheck | undefined;
+    setHealthCheck(value?: HealthCheck): Change;
+    hasHealthCheck(): boolean;
+    clearHealthCheck(): Change;
+
+    getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setChangeTime(value?: google_protobuf_timestamp_pb.Timestamp): Change;
+    hasChangeTime(): boolean;
+    clearChangeTime(): Change;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Change.AsObject;
+    static toObject(includeInstance: boolean, msg: Change): Change.AsObject;
+    static serializeBinaryToWriter(message: Change, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Change;
+    static deserializeBinaryFromReader(message: Change, reader: jspb.BinaryReader): Change;
+  }
+
+  export namespace Change {
+    export type AsObject = {
+      name: string,
+      healthCheck?: HealthCheck.AsObject,
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    }
+  }
+
+}
+
