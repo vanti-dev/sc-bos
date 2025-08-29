@@ -3,9 +3,31 @@
     <v-card-title class="d-flex">
       <h4 class="text-h4">Emergency Lighting</h4>
       <v-spacer/>
+      <v-progress-circular
+          :value="totalDevices > 0 ? (loadedResults / totalDevices) * 100 : 0"
+          color="primary"
+          class="mt-2"
+          striped
+          :active="loadedResults < totalDevices">
+        <template #default>
+          <span v-if="totalDevices > 0" class="caption">
+            {{ loadedResults }} / {{ totalDevices }} loaded
+          </span>
+        </template>
+      </v-progress-circular>
+      <v-spacer/>
       <v-btn
           color="primary"
-          :disabled="blockActions"
+          class="ml-2"
+          :disabled="loadedResults < totalDevices"
+          @click="refreshTable">
+        Refresh
+        <v-icon end>mdi-refresh</v-icon>
+      </v-btn>
+      <v-btn
+          color="primary"
+          class="ml-2"
+          :disabled="loadedResults < totalDevices"
           @click="downloadCSV">
         Download CSV
         <v-icon end>mdi-download</v-icon>
@@ -13,8 +35,8 @@
     </v-card-title>
     <v-data-table
         :headers="headers"
-        :items="lightHealth"
-        :loading="lightHealthTracker.loading"
+        :items="testResults"
+        :items-per-page="50"
         show-select
         item-value="name"
         v-model="selectedLights"
@@ -22,39 +44,36 @@
       <template #top>
         <span v-if="selectedLights.length > 0">
           <v-btn
-              color="accent-darken-1"
+              color="primary"
               class="ml-4"
-              :disabled="blockActions"
               @click="functionTest">Function Test</v-btn>
           <v-btn
-              color="accent-darken-1"
+              color="primary"
               class="ml-4"
-              :disabled="blockActions"
               @click="durationTest">Duration Test</v-btn>
           <span class="pl-4">
             {{ selectedLights.length }} light{{ selectedLights.length === 1 ? '' : 's' }} selected
           </span>
         </span>
       </template>
-      <template #item.faultsList="{ value }">
-        <span class="text-title-bold text-success-lighten-3" v-if="value.length === 0">OK</span>
-        <span class="text-title-bold text-error-lighten-1" v-else>
-          {{ value.map((v) => faultToString(v)).join(', ') }}
+      <template #item.functionTest.endTime="{ item }">
+        <span v-if="item.functionTest.endTime">
+          {{ timestampToDate(item.functionTest.endTime).toLocaleString() }}
         </span>
       </template>
-      <template #item.updateTime="{ item }">
-        <span v-if="timestampToDate(item.updateTime)">
-          {{ timestampToDate(item.updateTime).toLocaleString() }}
+      <template #item.functionTest.result="{ item }">
+        <span v-if="item.functionTest">
+          {{ emergencyLightResultToString(item.functionTest.result) }}
         </span>
       </template>
-      <template #item.lastFunctionTest="{ item }">
-        <span v-if="timestampToDate(item.lastFunctionTest)">
-          {{ timestampToDate(item.lastFunctionTest).toLocaleString() }}
+      <template #item.durationTest.endTime="{ item }">
+        <span v-if="item.durationTest.endTime">
+          {{ timestampToDate(item.durationTest.endTime).toLocaleString() }}
         </span>
       </template>
-      <template #item.lastDurationTest="{ item }">
-        <span v-if="timestampToDate(item.lastDurationTest)">
-          {{ timestampToDate(item.lastDurationTest).toLocaleString() }}
+      <template #item.durationTest.result="{ item }">
+        <span v-if="item.durationTest">
+          {{ emergencyLightResultToString(item.durationTest.result) }}
         </span>
       </template>
     </v-data-table>
@@ -63,107 +82,148 @@
 
 <script setup>
 import {timestampToDate} from '@/api/convpb.js';
-import {newActionTracker} from '@/api/resource';
-import {faultToString, getReportCSV, listLightHealth, runTest} from '@/api/sc/traits/lighting-test';
+import {
+  emergencyLightResultToString, getTestResultSet,
+  startDurationTest,
+  startFunctionTest
+} from '@/api/sc/traits/emergency-light.js';
+import {listDevices} from '@/api/ui/devices.js';
 import ContentCard from '@/components/ContentCard.vue';
-import {useErrorStore} from '@/components/ui-error/error';
-import useAuthSetup from '@/composables/useAuthSetup';
-import {EmergencyStatus} from '@vanti-dev/sc-bos-ui-gen/proto/dali_pb';
-import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
-
-const {blockActions} = useAuthSetup();
+import {ref, onMounted, computed} from 'vue';
 
 const headers = [
   {title: 'Name', key: 'name'},
-  {title: 'Status', key: 'faultsList'},
-  {title: 'Updated', key: 'updateTime'},
-  {title: 'Last Function Test', key: 'lastFunctionTest'},
-  {title: 'Last Duration Test', key: 'lastDurationTest'}
+  {title: 'Last Function Test', key: 'functionTest.endTime'},
+  {title: 'Function Test Result', key: 'functionTest.result'},
+  {title: 'Last Duration Test', key: 'durationTest.endTime'},
+  {title: 'Duration Test Result', key: 'durationTest.result'}
 ];
 
 const selectedLights = ref([]);
+const testResults = ref([]);
+const totalDevices = ref(0);
+const loadedResults = ref(0);
 
-const csvTracker = reactive(/** @type {ActionTracker<ReportCSV.AsObject>} */ newActionTracker());
-const lightHealthTracker = reactive(/** @type {ActionTracker<ListLightHealthResponse.AsObject>}*/ newActionTracker());
-const allLightsHealth = ref([]);
-
-const lightHealth = computed(() => {
-  return allLightsHealth.value;
+const findEmLightsQuery = computed(() => {
+  const q = {conditionsList: []};
+  q.conditionsList.push({field: 'metadata.traits.name', stringEqual: 'smartcore.bos.EmergencyLight'});
+  return q;
 });
 
-onMounted(() => refreshLightHealth().catch((err) => console.error('Error fetching light health: ', err)));
-onUnmounted(() => (allLightsHealth.value = []));
+const getDeviceTestResults = async () => {
+  testResults.value = [];
+  loadedResults.value = 0;
+  let pageToken = '';
+  let allDevices = [];
+  do {
+    const collection = await listDevices({
+      query: findEmLightsQuery.value,
+      pageSize: 100,
+      pageToken
+    });
+    pageToken = collection.nextPageToken;
+    allDevices = allDevices.concat(collection.devicesList);
+  } while (pageToken !== '');
 
-// Ui Error handling
-const errorStore = useErrorStore();
-let unwatchCsvErrors;
-let unwatchLightHealthErrors;
-onMounted(() => {
-  unwatchCsvErrors = errorStore.registerTracker(csvTracker);
-  unwatchLightHealthErrors = errorStore.registerTracker(lightHealthTracker);
-});
-onUnmounted(() => {
-  if (unwatchCsvErrors) unwatchCsvErrors();
-  if (unwatchLightHealthErrors) unwatchLightHealthErrors();
+  totalDevices.value = allDevices.length;
+
+  for (const item of allDevices) {
+    getTestResultSet({ name: item.name })
+        .then(testResult => {
+          testResults.value.push({
+            name: item.name,
+            functionTest: testResult.functionTest,
+            durationTest: testResult.durationTest
+          });
+          loadedResults.value++;
+        })
+        .catch(err => {
+          console.error('Error fetching test results for device: ', item.name, err);
+          testResults.value.push({
+            name: item.name,
+            functionTest: {
+              testResult: -1,
+            },
+            durationTest: {
+              testResult: -1,
+            }
+          });
+          loadedResults.value++;
+        });
+  }
+};
+
+onMounted(async () => {
+  await getDeviceTestResults();
 });
 
 /**
- *
+ * Refresh the table by fetching the latest emergency light results from the server.
  */
-async function refreshLightHealth() {
-  const req = {pageSize: 100};
-  while (true) {
-    const resp = await listLightHealth(req, lightHealthTracker);
-    allLightsHealth.value.push(...resp.emergencyLightsList);
-    if (!resp.nextPageToken) break;
-    req.pageToken = resp.nextPageToken;
-  }
+function refreshTable() {
+  getDeviceTestResults();
 }
 
 /**
  * download the CSV report, fetched from the server
  */
 async function downloadCSV() {
-  const csvObj = await getReportCSV(csvTracker);
-  // base64 decode contents
-  const csvContent = atob(csvObj.csv);
-  // create fake file to serve
-  const anchor = document.createElement('a');
-  anchor.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
-  anchor.target = '_blank';
-  anchor.download = 'emergency-lighting-report.csv';
-  anchor.click();
+  const csvHeaders = headers.map(h => h.title).join(',');
+  const getValue = (item, key) => key.split('.').reduce((o, k) => (o ? o[k] : ''), item);
+
+  const csvRows = testResults.value.map(item =>
+      headers.map(h => {
+        let val = getValue(item, h.key);
+        if (h.key.endsWith('result') && val !== undefined && val !== null) {
+          // Use the same formatting as in the table
+          val = emergencyLightResultToString(val);
+        }
+        if (h.key.endsWith('endTime') && val) {
+          val = timestampToDate(val).toLocaleString();
+        }
+        return `"${(val ?? '').toString().replace(/"/g, '""')}"`;
+      }).join(',')
+  );
+
+  const csvContent = [csvHeaders, ...csvRows].join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', 'emergency_lighting.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 /**
  * @return {Promise<void>}
  */
-function durationTest() {
-  return doTest(EmergencyStatus.Test.DURATION_TEST);
-}
-
-/**
- * @return {Promise<void>}
- */
-function functionTest() {
-  return doTest(EmergencyStatus.Test.FUNCTION_TEST);
-}
-
-/**
- *
- * @param {EmergencyStatus.Test} type
- */
-async function doTest(type) {
+async function durationTest() {
   const lightingTests = selectedLights.value.map((light) => {
     const req = {
-      name: light,
-      test: type
+      name: light
     };
-    return runTest(req);
+    return startDurationTest(req);
   });
   await Promise.all(lightingTests).catch((err) => console.error('Error running test: ', err));
   selectedLights.value = [];
 }
+
+/**
+ * @return {Promise<void>}
+ */
+async function functionTest() {
+  const lightingTests = selectedLights.value.map((light) => {
+    const req = {
+      name: light
+    };
+    return startFunctionTest(req);
+  });
+  await Promise.all(lightingTests).catch((err) => console.error('Error running test: ', err));
+  selectedLights.value = [];
+}
+
+
 </script>
 
 <style scoped></style>
