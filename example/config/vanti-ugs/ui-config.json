@@ -775,7 +775,7 @@
               "title": "Emergency Lighting",
               "icon": "mdi-alarm-light-outline",
               "path": "elt",
-              "layout": "builtin:page/EmergencyLighting"
+              "layout": "builtin:page/EmergencyLightingV2"
             },
             {
               "title": "Security",
