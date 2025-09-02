@@ -73,6 +73,24 @@ func TestMergeCheck(t *testing.T) {
 			},
 		},
 		{
+			name: "compliance_impact",
+			src: &gen.HealthCheck{
+				ComplianceImpacts: []*gen.HealthCheck_ComplianceImpact{
+					{Contribution: gen.HealthCheck_ComplianceImpact_FAIL},
+				},
+			},
+			dst: &gen.HealthCheck{
+				ComplianceImpacts: []*gen.HealthCheck_ComplianceImpact{
+					{Contribution: gen.HealthCheck_ComplianceImpact_RATING},
+				},
+			},
+			want: &gen.HealthCheck{
+				ComplianceImpacts: []*gen.HealthCheck_ComplianceImpact{
+					{Contribution: gen.HealthCheck_ComplianceImpact_FAIL},
+				},
+			},
+		},
+		{
 			ignore: "consistency with other merge functions",
 			name:   "timestamp",
 			src: &gen.HealthCheck{

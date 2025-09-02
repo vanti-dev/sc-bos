@@ -41,6 +41,16 @@ func mergeCheck(merge func(dst, src proto.Message), dst, src *gen.HealthCheck) {
 			v.Values = ov
 		})
 	}
+	if v := dst.GetComplianceImpacts(); len(v) > 0 {
+		ov := v
+		dst.ComplianceImpacts = nil
+		post = append(post, func() {
+			if len(dst.GetComplianceImpacts()) > 0 {
+				return // src updated the field
+			}
+			dst.ComplianceImpacts = ov
+		})
+	}
 
 	merge(dst, src)
 
