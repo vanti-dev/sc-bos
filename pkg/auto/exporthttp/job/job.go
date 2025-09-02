@@ -8,6 +8,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -28,14 +29,18 @@ var (
 	errNoSensorsRetrieved = errors.New("no sensors retrieved")
 )
 
+// boltKeyTemplate is the template string used to generate the bolt key
+// "${AutoName}_${config.Root.Name}_${Job.Name}"
+// It is used to store the job's last previous execution timestamp in the database.
+const boltKeyTemplate = "%s_%s_%s"
+
 const defaultTimeout = time.Second * 5
 
 // Job represents an exporthttp automation task that executes Do to send a POST request
 type Job interface {
 	GetName() string
-	GetUrl() string
-	GetSite() string
-	GetExecutionAfter(t time.Time) <-chan time.Time
+
+	GetNextExecution() <-chan time.Time
 	SetPreviousExecution(t time.Time)
 
 	Do(ctx context.Context, sendFn sender) error
@@ -68,13 +73,11 @@ func Multiplex(ctx context.Context, jobs ...Job) *Mulpx {
 		j := job
 
 		out.group.Go(func() error {
-			out.C <- j
-			current := time.Now().UTC()
 			for {
 				select {
-				case <-j.GetExecutionAfter(current):
+				case <-j.GetNextExecution():
 					out.C <- j
-					current = time.Now().UTC()
+					j.SetPreviousExecution(time.Now())
 				case <-ctx.Done():
 					return ctx.Err()
 				}
@@ -85,36 +88,69 @@ func Multiplex(ctx context.Context, jobs ...Job) *Mulpx {
 	return out
 }
 
+func shouldExecuteImmediately(schedule *jsontypes.Schedule, now, previous time.Time) bool {
+	if schedule == nil {
+		return false // no schedule means it should never execute
+	}
+	if previous.IsZero() {
+		return true // no previous execution means it should execute initially
+	}
+	if now.Equal(previous) {
+		return false
+	}
+	interval := schedule.Next(previous).Sub(previous)
+	return now.Sub(previous) >= interval // now is at least one interval after the previous execution
+}
+
 // BaseJob shared fields
 type BaseJob struct {
 	Url               string
 	Schedule          *jsontypes.Schedule
 	Timeout           *jsontypes.Duration
+	Db                *bolthold.Store
+	AutoName          string // the name of the automation e.g. "exporthttp"
+	ScName            string // the name of automation instance the job belongs to, e.g. "site-name"
+	Name              string // the name of the job, e.g. "occupancy"
 	PreviousExecution time.Time
 	Site              string
 	Logger            *zap.Logger
 }
 
-func (b *BaseJob) GetUrl() string {
-	return b.Url
+func (b *BaseJob) GetName() string {
+	return b.Name
 }
 
-func (b *BaseJob) GetExecutionAfter(t time.Time) <-chan time.Time {
-	if t.IsZero() {
-		t = time.Now().UTC()
+func (b *BaseJob) GetNextExecution() <-chan time.Time {
+	t := time.Now().UTC()
+	// check the previous execution timestamp
+	previous := time.Time{}
+	key := fmt.Sprintf(boltKeyTemplate, b.AutoName, b.ScName, b.Name)
+	if err := b.Db.Get(key, &previous); err != nil {
+		b.Logger.Error("failed to get previous execution time", zap.String("name", b.Name), zap.Error(err), zap.String("key", key))
 	}
+
+	executeImmediately := shouldExecuteImmediately(b.Schedule, t, previous.UTC())
+
+	b.Logger.Debug("previous execution time detected", zap.String("name", b.Name), zap.Time("previous", previous), zap.Time("current", t), zap.Bool("executeImmediately", executeImmediately))
+
+	if executeImmediately {
+		// execute immediately
+		// throttle to 1s to avoid a zero duration and spamming executions
+		return time.After(time.Second)
+	}
+
 	return time.After(time.Until(b.Schedule.Next(t)))
 }
 
 func (b *BaseJob) SetPreviousExecution(t time.Time) {
 	b.PreviousExecution = t
+	key := fmt.Sprintf(boltKeyTemplate, b.AutoName, b.ScName, b.Name)
+	if err := b.Db.Upsert(key, &t); err != nil {
+		b.Logger.Warn("failed to update execution time", zap.Error(err), zap.String("key", key))
+	}
 }
 
-func (b *BaseJob) GetSite() string {
-	return b.Site
-}
-
-func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
+func FromConfig(cfg config.Root, db *bolthold.Store, autoName, scName string, logger *zap.Logger, node *node.Node) []Job {
 	var jobs []Job
 
 	now := time.Now().UTC()
@@ -125,8 +161,12 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Site:              cfg.Site,
 				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Occupancy.Path),
 				Schedule:          cfg.Sources.Occupancy.Schedule,
-				Logger:            logger,
+				Db:                db,
 				PreviousExecution: now,
+				AutoName:          autoName,
+				Name:              "occupancy",
+				ScName:            scName,
+				Logger:            logger,
 				Timeout:           cfg.Sources.Occupancy.Timeout,
 			},
 			Sensors: cfg.Sources.Occupancy.Sensors,
@@ -141,7 +181,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Site:              cfg.Site,
 				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Temperature.Path),
 				Schedule:          cfg.Sources.Temperature.Schedule,
+				Db:                db,
 				PreviousExecution: now,
+				AutoName:          autoName,
+				ScName:            scName,
+				Name:              "temperature",
 				Logger:            logger,
 				Timeout:           cfg.Sources.Temperature.Timeout,
 			},
@@ -157,7 +201,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Site:              cfg.Site,
 				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Energy.Path),
 				Schedule:          cfg.Sources.Energy.Schedule,
+				Db:                db,
 				PreviousExecution: now,
+				AutoName:          autoName,
+				ScName:            scName,
+				Name:              "energy",
 				Logger:            logger,
 				Timeout:           cfg.Sources.Energy.Timeout,
 			},
@@ -174,7 +222,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Site:              cfg.Site,
 				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.AirQuality.Path),
 				Schedule:          cfg.Sources.AirQuality.Schedule,
+				Db:                db,
 				PreviousExecution: now,
+				AutoName:          autoName,
+				ScName:            scName,
+				Name:              "air_quality",
 				Logger:            logger,
 				Timeout:           cfg.Sources.AirQuality.Timeout,
 			},
@@ -190,7 +242,11 @@ func FromConfig(cfg config.Root, logger *zap.Logger, node *node.Node) []Job {
 				Site:              cfg.Site,
 				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Water.Path),
 				Schedule:          cfg.Sources.Water.Schedule,
+				Db:                db,
 				PreviousExecution: now,
+				AutoName:          autoName,
+				ScName:            scName,
+				Name:              "water",
 				Logger:            logger,
 				Timeout:           cfg.Sources.Water.Timeout,
 			},

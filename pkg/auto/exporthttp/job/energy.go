@@ -21,10 +21,6 @@ type EnergyJob struct {
 	Meters     []string
 }
 
-func (e *EnergyJob) GetName() string {
-	return "energy"
-}
-
 func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 	consumption := float32(.0)
 
@@ -62,7 +58,7 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 	body := &types.EnergyConsumption{
 		Meta: types.Meta{
 			Timestamp: now,
-			Site:      e.GetSite(),
+			Site:      e.Site,
 		},
 		TodaysEnergyConsumption: types.Float32Measure{
 			Value: roundedConsumption,
@@ -76,11 +72,7 @@ func (e *EnergyJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	err = sendFn(ctx, e.GetUrl(), bytes)
-
-	e.PreviousExecution = time.Now().UTC()
-
-	return err
+	return sendFn(ctx, e.Url, bytes)
 }
 
 func (e *EnergyJob) getUnitMultiplier(ctx context.Context, meter string) (float32, error) {

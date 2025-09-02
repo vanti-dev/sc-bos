@@ -18,10 +18,6 @@ type OccupancyJob struct {
 	Sensors []string
 }
 
-func (o *OccupancyJob) GetName() string {
-	return "occupancy"
-}
-
 func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
 	sum := int32(0)
 	hasCounted := false
@@ -53,7 +49,7 @@ func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
 
 	body := &types.TotalOccupancy{
 		Meta: types.Meta{
-			Site:      o.GetSite(),
+			Site:      o.Site,
 			Timestamp: time.Now(),
 		},
 		TotalOccupancy: types.IntMeasure{
@@ -67,5 +63,5 @@ func (o *OccupancyJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	return sendFn(ctx, o.GetUrl(), bytes)
+	return sendFn(ctx, o.Url, bytes)
 }
