@@ -13,9 +13,9 @@ import (
 
 var (
 	clientConn grpc.ClientConnInterface
+	checks     *Checks
 	ctx        = context.TODO()
 	deviceName = "MyDevice"
-	ns         = "healthpb"
 )
 
 // ExampleBoundsCheck shows how to create and use a BoundsCheck health check.
@@ -23,8 +23,8 @@ var (
 // to track how comfortable the environment is for its occupants.
 func ExampleBoundsCheck() {
 	// This bounds check monitors when a value exceeds a normal range.
-	tempCheck, err := NewBoundsCheck(&gen.HealthCheck{
-		Id:              fmt.Sprintf("%s:%s:%s", ns, "ExampleBoundsCheck", "ambient_temperature"),
+	tempCheck, _ := checks.NewBoundsCheck(deviceName, &gen.HealthCheck{
+		// Id can be absent if this owner only ever has one check per device
 		DisplayName:     "Ambient Temperature",
 		Description:     "Checks the ambient air temperature is within a comfortable range",
 		OccupantImpact:  gen.HealthCheck_COMFORT,
@@ -38,9 +38,6 @@ func ExampleBoundsCheck() {
 			DisplayUnit: "°C",
 		},
 	})
-	if err != nil {
-		panic(fmt.Errorf("failed to create temperature check: %w", err))
-	}
 
 	client := traits.NewAirTemperatureApiClient(clientConn)
 	stream, err := client.PullAirTemperature(ctx, &traits.PullAirTemperatureRequest{Name: deviceName})
@@ -64,8 +61,8 @@ func ExampleBoundsCheck() {
 // This example demonstrates how emergency lighting test results can be monitored
 // using two ErrorCheck health checks, one for function tests and one for duration tests.
 func ExampleErrorCheck() {
-	funcTest := NewErrorCheck(&gen.HealthCheck{
-		Id:              fmt.Sprintf("%s:%s:%s", ns, "ExampleErrorCheck", "el_function_test"),
+	funcTest, _ := checks.NewErrorCheck(deviceName, &gen.HealthCheck{
+		Id:              "el_function_test",
 		DisplayName:     "Emergency Light Function Test",
 		Description:     "Checks the emergency light function test status",
 		OccupantImpact:  gen.HealthCheck_LIFE,
@@ -75,8 +72,8 @@ func ExampleErrorCheck() {
 		},
 		AckExpected: AckBitset(gen.HealthCheck_TO_ABNORMAL),
 	})
-	durTest := NewErrorCheck(&gen.HealthCheck{
-		Id:              fmt.Sprintf("%s:%s:%s", ns, "ExampleErrorCheck", "el_duration_test"),
+	durTest, _ := checks.NewErrorCheck(deviceName, &gen.HealthCheck{
+		Id:              "el_duration_test",
 		DisplayName:     "Emergency Light Duration Test",
 		Description:     "Checks the emergency light duration test status",
 		OccupantImpact:  gen.HealthCheck_LIFE,

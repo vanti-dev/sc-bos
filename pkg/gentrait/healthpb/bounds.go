@@ -104,14 +104,14 @@ func less(x, y *gen.HealthCheck_Value) bool {
 
 // BoundsCheck updates a health check based on normal bounds and a measured value.
 type BoundsCheck struct {
-	checkBase
+	*checkBase
 	checker boundsChecker
 }
 
-// NewBoundsCheck creates a new bounds check from the given health check definition.
+// newBoundsCheck creates a new bounds check from the given health check definition.
 // An error is returned if the checks bounds are inconsistent with itself and the current value.
-func NewBoundsCheck(c *gen.HealthCheck) (*BoundsCheck, error) {
-	r := &BoundsCheck{checkBase: checkBase{check: c}}
+func newBoundsCheck(c *gen.HealthCheck) (*BoundsCheck, error) {
+	r := &BoundsCheck{checkBase: &checkBase{check: c}}
 	checker, err := r.prepareChecker(c.GetCheck())
 	if err != nil {
 		return nil, err
@@ -187,9 +187,6 @@ type normalValueCheck struct {
 }
 
 func newNormalValueCheck(v, nv *gen.HealthCheck_Value) (*normalValueCheck, error) {
-	if nv == nil {
-		return nil, fmt.Errorf("normal value is nil")
-	}
 	// normal value must be consistent with the value (if we have one)
 	if v != nil && !SameValueType(v, nv) {
 		return nil, fmt.Errorf("normal value oneof must match value type")

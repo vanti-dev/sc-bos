@@ -14,7 +14,8 @@ import (
 
 // checkBase provides common functionality for health checks of different types.
 type checkBase struct {
-	check *gen.HealthCheck
+	check          *gen.HealthCheck
+	onBeforeCommit func(c *gen.HealthCheck) (*gen.HealthCheck, error)
 }
 
 // write commits changes made by f as an atomic update.
@@ -23,6 +24,16 @@ func (cb *checkBase) write(f func(dst *gen.HealthCheck)) {
 	f(dst)
 	if !proto.Equal(cb.check, dst) {
 		// apply side effects
+		if cb.onBeforeCommit != nil {
+			hc, err := cb.onBeforeCommit(dst)
+			// todo: handle error
+			if err != nil {
+				panic(err)
+			}
+			if hc != nil {
+				dst = hc
+			}
+		}
 		cb.check = dst
 	}
 }

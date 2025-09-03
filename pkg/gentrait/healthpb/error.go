@@ -1,17 +1,33 @@
 package healthpb
 
 import (
+	"fmt"
+
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // ErrorCheck updates a health check based on a general error value.
 type ErrorCheck struct {
-	checkBase
+	*checkBase
 }
 
-// NewErrorCheck creates a new ErrorCheck for the given health check.
-func NewErrorCheck(c *gen.HealthCheck) *ErrorCheck {
-	return &ErrorCheck{checkBase: checkBase{check: c}}
+// newErrorCheck creates a new ErrorCheck for the given health check.
+func newErrorCheck(c *gen.HealthCheck) (*ErrorCheck, error) {
+	if err := validateErrorCheck(c); err != nil {
+		return nil, err
+	}
+	return &ErrorCheck{checkBase: &checkBase{check: c}}, nil
+}
+
+func validateErrorCheck(c *gen.HealthCheck) error {
+	// error checks shouldn't have bounds or a current value
+	if c.GetCheck().GetBounds() != nil {
+		return fmt.Errorf("bounds should be absent")
+	}
+	if c.GetCheck().GetCurrentValue() != nil {
+		return fmt.Errorf("current_value should be absent")
+	}
+	return nil
 }
 
 // UpdateError updates the health check state based on the given error.
