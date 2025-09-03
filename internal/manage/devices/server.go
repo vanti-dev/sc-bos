@@ -144,7 +144,7 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 	)
 	for change := range changes {
 		resChange := &gen.PullDevicesResponse_Change{
-			Name:       change.Name,
+			Name:       change.Id,
 			ChangeTime: timestamppb.New(change.ChangeTime),
 			Type:       change.ChangeType,
 			OldValue:   change.OldValue,

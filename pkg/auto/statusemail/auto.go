@@ -97,19 +97,19 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 				default:
 				}
 				for change := range a.Node.PullDevices(ctx, resource.WithReadPaths(&gen.Device{}, "metadata.traits", "metadata.appearance", "metadata.location", "metadata.membership")) {
-					if s := ignore.Replace(change.Name); len(s) == 0 || s[0] == '!' {
+					if s := ignore.Replace(change.Id); len(s) == 0 || s[0] == '!' {
 						continue // ignore
 					}
 					hadTrait, hasTrait := hasStatusTrait(change.OldValue), hasStatusTrait(change.NewValue)
 					switch {
 					case hadTrait && !hasTrait: // remove
-						err := tasks.Stop(change.Name)
+						err := tasks.Stop(change.Id)
 						if err != nil && !errors.Is(err, ErrNotRunning) {
-							logger.Debug("error during stop", zap.String("name", change.Name), zap.Error(err))
+							logger.Debug("error during stop", zap.String("name", change.Id), zap.Error(err))
 						}
 					case !hadTrait && hasTrait: // add
 						source := config.Source{
-							Name:      change.Name,
+							Name:      change.Id,
 							Title:     change.NewValue.GetMetadata().GetAppearance().GetTitle(),
 							Floor:     change.NewValue.GetMetadata().GetLocation().GetFloor(),
 							Zone:      change.NewValue.GetMetadata().GetLocation().GetZone(),

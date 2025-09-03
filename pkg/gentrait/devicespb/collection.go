@@ -2,16 +2,15 @@ package devicespb
 
 import (
 	"context"
-	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/smart-core-os/sc-api/go/types"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
 
 // Collection is a list of unique devices.
@@ -37,22 +36,12 @@ func (c *Collection) ListDevices(opts ...resource.ReadOption) []*gen.Device {
 	return devices
 }
 
+type DevicesChange = resources.CollectionChange[*gen.Device]
+
 // PullDevices returns a channel that will receive changes to the devices in the collection.
 // Unless [resource.WithUpdatesOnly] is true, the channel will receive all current devices as ADDs.
-func (c *Collection) PullDevices(ctx context.Context, opts ...resource.ReadOption) <-chan DevicesChange {
-	send := make(chan DevicesChange)
-	recv := c.names.Pull(ctx, opts...)
-	go func() {
-		defer close(send)
-		for change := range recv {
-			select {
-			case <-ctx.Done():
-				return
-			case send <- devicesChangeFromResource(change):
-			}
-		}
-	}()
-	return send
+func (c *Collection) PullDevices(ctx context.Context, opts ...resource.ReadOption) <-chan resources.CollectionChange[*gen.Device] {
+	return resources.PullCollection[*gen.Device](ctx, c.names.Pull(ctx, opts...))
 }
 
 // GetDevice returns the device with the given name from the collection.
@@ -65,22 +54,12 @@ func (c *Collection) GetDevice(name string, opts ...resource.ReadOption) (*gen.D
 	return res.(*gen.Device), nil
 }
 
+type DeviceChange = resources.ValueChange[*gen.Device]
+
 // PullDevice returns a channel that will receive changes to the device with the given name.
 // If the device is deleted, the channel will close.
-func (c *Collection) PullDevice(ctx context.Context, name string, opts ...resource.ReadOption) <-chan DeviceChange {
-	send := make(chan DeviceChange)
-	recv := c.names.PullID(ctx, name, opts...)
-	go func() {
-		defer close(send)
-		for d := range recv {
-			select {
-			case <-ctx.Done():
-				return
-			case send <- deviceChangeFromResource(name, d):
-			}
-		}
-	}()
-	return send
+func (c *Collection) PullDevice(ctx context.Context, name string, opts ...resource.ReadOption) <-chan resources.ValueChange[*gen.Device] {
+	return resources.PullValue[*gen.Device](ctx, c.names.PullID(ctx, name, opts...))
 }
 
 // Merge merges d with the existing device in the collection.
@@ -116,48 +95,6 @@ func (c *Collection) Delete(name string, opts ...resource.WriteOption) (*gen.Dev
 		oldDevice = old.(*gen.Device)
 	}
 	return oldDevice, err
-}
-
-type DevicesChange struct {
-	Name          string
-	ChangeTime    time.Time
-	ChangeType    types.ChangeType
-	OldValue      *gen.Device
-	NewValue      *gen.Device
-	LastSeedValue bool
-}
-
-func devicesChangeFromResource(change *resource.CollectionChange) DevicesChange {
-	dc := DevicesChange{
-		Name:          change.Id,
-		ChangeTime:    change.ChangeTime,
-		ChangeType:    change.ChangeType,
-		LastSeedValue: change.LastSeedValue,
-	}
-	if change.OldValue != nil {
-		dc.OldValue = change.OldValue.(*gen.Device)
-	}
-	if change.NewValue != nil {
-		dc.NewValue = change.NewValue.(*gen.Device)
-	}
-	return dc
-}
-
-type DeviceChange struct {
-	Name       string
-	ChangeTime time.Time
-	Device     *gen.Device
-}
-
-func deviceChangeFromResource(name string, change *resource.ValueChange) DeviceChange {
-	dc := DeviceChange{
-		Name:       name,
-		ChangeTime: change.ChangeTime,
-	}
-	if change.Value != nil {
-		dc.Device = change.Value.(*gen.Device)
-	}
-	return dc
 }
 
 func mergeInterceptor(old, new proto.Message) {
