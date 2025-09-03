@@ -103,6 +103,11 @@ export function useTransport(value, support = null) {
     all[id] = name;
     return all;
   }, {});
+  
+  const operatingModeById = Object.entries(Transport.OperatingMode).reduce((all, [name, id]) => {
+    all[id] = name;
+    return all;
+  }, {});
 
   const doorStatusById = Object.entries(Transport.Door.DoorStatus).reduce((all, [name, id]) => {
     all[id] = name;
@@ -132,6 +137,12 @@ export function useTransport(value, support = null) {
     const v = _v.value;
     if (!v) return '';
     return enumToDisplayName(movingDirectionById[v.movingDirection] ?? '');
+  });
+  
+  const operatingMode = computed(() => {
+    const v = _v.value;
+    if (!v) return '';
+    return enumToDisplayName(operatingModeById[v.operatingMode] ?? '');
   });
 
   const nextDestination = computed(() => {
@@ -174,7 +185,12 @@ export function useTransport(value, support = null) {
     {
       label: 'Next Destination',
       value: nextDestination.value
-    }];
+    },
+    {
+      label: 'Operating Mode',
+      value: operatingMode.value
+    }
+    ];
 
     for (const door of doorStatus.value) {
       t.push(door);
@@ -191,6 +207,7 @@ export function useTransport(value, support = null) {
     doorStatus,
     movingDirection,
     nextDestination,
+    operatingMode,
     loadStr,
     table
   };

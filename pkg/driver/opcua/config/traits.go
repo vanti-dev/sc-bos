@@ -115,6 +115,7 @@ type TransportConfig struct {
 	// this array should be ordered so that it matches the order of the physical transport stops.
 	// i.e [0] = first stop, [1] = second stop, etc.
 	NextDestinations []*Location  `json:"nextDestinations,omitempty"`
+	OperatingMode    *ValueSource `json:"operatingMode,omitempty"`
 	Speed            *ValueSource `json:"speed,omitempty"`
 	SpeedUnit        string       `json:"speedUnit,omitempty"`
 }
