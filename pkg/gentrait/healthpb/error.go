@@ -40,6 +40,10 @@ func (c *ErrorCheck) UpdateError(err error) {
 func (c *ErrorCheck) UpdateErrorPb(err *gen.HealthCheck_Error) {
 	c.write(func(dst *gen.HealthCheck) {
 		check := dst.GetCheck()
+		if check == nil {
+			check = &gen.HealthCheck_Check{}
+			dst.Check = check
+		}
 		oldState := check.GetState()
 		newState := gen.HealthCheck_Check_NORMAL
 		if err != nil {

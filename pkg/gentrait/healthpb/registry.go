@@ -19,6 +19,9 @@ var (
 type Registry struct {
 	mu     sync.RWMutex
 	byName map[string]*namedChecks
+
+	onCheckUpdate func(name string, c *gen.HealthCheck)
+	onCheckDelete func(name, id string)
 }
 
 // ForOwner returns a Checks instance that can create checks owned by the given owner.
@@ -42,7 +45,6 @@ func (r *Registry) addCheck(name, id string, c *checkBase) error {
 	if !ok {
 		nc = &namedChecks{
 			n:    name,
-			m:    NewModel(),
 			byId: make(map[string]*checkBase),
 		}
 		r.byName[name] = nc
@@ -51,8 +53,22 @@ func (r *Registry) addCheck(name, id string, c *checkBase) error {
 	if exists {
 		return fmt.Errorf("%w: %s[%s]", ErrAlreadyExists, name, id)
 	}
-	c.onBeforeCommit = func(c *gen.HealthCheck) (*gen.HealthCheck, error) {
-		return nc.m.UpdateHealthCheck(c)
+	c.onCommit = func(c *gen.HealthCheck) {
+		if r.onCheckUpdate != nil {
+			r.onCheckUpdate(name, c)
+		}
+	}
+	c.onDispose = func(c *gen.HealthCheck) {
+		// clean up our own state
+		r.mu.Lock()
+		delete(nc.byId, id)
+		if len(nc.byId) == 0 {
+			delete(r.byName, name)
+		}
+		r.mu.Unlock()
+		if r.onCheckDelete != nil {
+			r.onCheckDelete(name, id)
+		}
 	}
 	nc.byId[id] = c
 	return nil
@@ -106,6 +122,5 @@ func (hc *Checks) adjustId(c *gen.HealthCheck) {
 
 type namedChecks struct {
 	n    string
-	m    *Model
 	byId map[string]*checkBase
 }

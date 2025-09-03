@@ -85,6 +85,16 @@ func mergeChecks(merge func(dst, src proto.Message), dst []*gen.HealthCheck, src
 	return dst
 }
 
+// removeCheck removes the check with the given id from dst, returning the modified slice.
+// If no such check exists, dst is returned unmodified.
+func removeCheck(dst []*gen.HealthCheck, id string) []*gen.HealthCheck {
+	index, found := findCheck(id, dst)
+	if !found {
+		return dst
+	}
+	return slices.Delete(dst, index, index+1)
+}
+
 // sortChecks sorts the checks by their ID in ascending order.
 func sortChecks(checks []*gen.HealthCheck) {
 	slices.SortFunc(checks, func(a, b *gen.HealthCheck) int {

@@ -38,6 +38,7 @@ func ExampleBoundsCheck() {
 			DisplayUnit: "°C",
 		},
 	})
+	defer tempCheck.Dispose()
 
 	client := traits.NewAirTemperatureApiClient(clientConn)
 	stream, err := client.PullAirTemperature(ctx, &traits.PullAirTemperatureRequest{Name: deviceName})
@@ -72,6 +73,7 @@ func ExampleErrorCheck() {
 		},
 		AckExpected: AckBitset(gen.HealthCheck_TO_ABNORMAL),
 	})
+	defer funcTest.Dispose()
 	durTest, _ := checks.NewErrorCheck(deviceName, &gen.HealthCheck{
 		Id:              "el_duration_test",
 		DisplayName:     "Emergency Light Duration Test",
@@ -83,6 +85,7 @@ func ExampleErrorCheck() {
 		},
 		AckExpected: AckBitset(gen.HealthCheck_TO_ABNORMAL),
 	})
+	defer durTest.Dispose()
 
 	// A utility for updating test results
 	updateTestResults := func(c *ErrorCheck, r *gen.EmergencyTestResult) {

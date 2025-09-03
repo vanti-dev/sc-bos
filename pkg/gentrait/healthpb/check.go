@@ -14,27 +14,33 @@ import (
 
 // checkBase provides common functionality for health checks of different types.
 type checkBase struct {
-	check          *gen.HealthCheck
-	onBeforeCommit func(c *gen.HealthCheck) (*gen.HealthCheck, error)
+	check *gen.HealthCheck // nil when disposed
+	lifecycle
+}
+
+// lifecycle models the transitions a check can go through.
+// This type is split out to localise documentation.
+type lifecycle struct {
+	// When set, onCommit is called after storing a new HealthCheck during write.
+	onCommit func(c *gen.HealthCheck)
+	// When set, onDispose is called when Dispose is called for the first time.
+	onDispose func(c *gen.HealthCheck)
 }
 
 // write commits changes made by f as an atomic update.
 func (cb *checkBase) write(f func(dst *gen.HealthCheck)) {
+	if cb.check == nil {
+		return // disposed
+	}
 	dst := proto.Clone(cb.check).(*gen.HealthCheck)
 	f(dst)
-	if !proto.Equal(cb.check, dst) {
-		// apply side effects
-		if cb.onBeforeCommit != nil {
-			hc, err := cb.onBeforeCommit(dst)
-			// todo: handle error
-			if err != nil {
-				panic(err)
-			}
-			if hc != nil {
-				dst = hc
-			}
-		}
-		cb.check = dst
+	if proto.Equal(cb.check, dst) {
+		return
+	}
+	// apply side effects
+	cb.check = dst
+	if cb.onCommit != nil {
+		cb.onCommit(dst)
 	}
 }
 
@@ -103,7 +109,18 @@ func (cb *checkBase) UpdateReliability(_ context.Context, nr *gen.HealthCheck_Re
 			rel.ReliableTime = timestamppb.Now()
 		}
 	})
+}
 
+// Dispose signals that no more updates to the check will be made.
+func (cb *checkBase) Dispose() {
+	if cb.check == nil {
+		return // already disposed
+	}
+	c := cb.check
+	cb.check = nil
+	if cb.onDispose != nil {
+		cb.onDispose(c)
+	}
 }
 
 // ReliabilityFromErr creates a HealthCheck_Reliability from an error.
