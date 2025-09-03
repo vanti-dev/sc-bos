@@ -27,7 +27,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(accesspb.TraitName): {
 			headers: []string{"access.grant", "access.reason", "access.actor.name", "access.actor.title", "access.actor.displayname", "access.actor.email"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := gen.NewAccessApiClient(s.node.ClientConn())
+				c := gen.NewAccessApiClient(s.m.ClientConn())
 				data, err := c.GetLastAccessAttempt(ctx, &gen.GetLastAccessAttemptRequest{Name: name})
 				if err != nil {
 					return nil, err
@@ -38,22 +38,22 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(meter.TraitName): {
 			headers: []string{"meter.usage", "meter.unit"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := gen.NewMeterApiClient(s.node.ClientConn())
+				c := gen.NewMeterApiClient(s.m.ClientConn())
 				data, err := c.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: name})
 				if err != nil {
 					return nil, err
 				}
 
 				var unit string
-				ci := gen.NewMeterInfoClient(s.node.ClientConn())
+				ci := gen.NewMeterInfoClient(s.m.ClientConn())
 				if info, err := ci.DescribeMeterReading(ctx, &gen.DescribeMeterReadingRequest{Name: name}); err == nil {
 					unit = info.GetUsageUnit()
 				}
 				return meterReadingToRow(data, unit), nil
 			},
 			history: func(name string, period *timepb.Period, pageSize int32) *historyCursor {
-				c := gen.NewMeterHistoryClient(s.node.ClientConn())
-				ci := gen.NewMeterInfoClient(s.node.ClientConn())
+				c := gen.NewMeterHistoryClient(s.m.ClientConn())
+				ci := gen.NewMeterInfoClient(s.m.ClientConn())
 				var unit string
 				return &historyCursor{
 					getPage: func(ctx context.Context, token string) ([]historyRecord, string, error) {
@@ -89,7 +89,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(statuspb.TraitName): {
 			headers: []string{"status.level", "status.description", "status.recordtime"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := gen.NewStatusApiClient(s.node.ClientConn())
+				c := gen.NewStatusApiClient(s.m.ClientConn())
 				data, err := c.GetCurrentStatus(ctx, &gen.GetCurrentStatusRequest{Name: name})
 				if err != nil {
 					return nil, err
@@ -100,7 +100,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(trait.AirQualitySensor): {
 			headers: []string{"iaq.co2", "iaq.voc", "iaq.pressure", "iaq.comfort", "iaq.infectionrisk", "iaq.score", "iaq.pm1", "iaq.pm25", "iaq.pm10", "iaq.airchange"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := traits.NewAirQualitySensorApiClient(s.node.ClientConn())
+				c := traits.NewAirQualitySensorApiClient(s.m.ClientConn())
 				data, err := c.GetAirQuality(ctx, &traits.GetAirQualityRequest{Name: name})
 				if err != nil {
 					return nil, err
@@ -108,7 +108,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 				return airQualityToRow(data), nil
 			},
 			history: func(name string, period *timepb.Period, pageSize int32) *historyCursor {
-				c := gen.NewAirQualitySensorHistoryClient(s.node.ClientConn())
+				c := gen.NewAirQualitySensorHistoryClient(s.m.ClientConn())
 				return &historyCursor{
 					getPage: func(ctx context.Context, token string) ([]historyRecord, string, error) {
 						page, err := c.ListAirQualityHistory(ctx, &gen.ListAirQualityHistoryRequest{
@@ -136,7 +136,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(trait.AirTemperature): {
 			headers: []string{"airtemperature.temperature", "airtemperature.humidity", "airtemperature.setpoint", "airtemperature.mode"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := traits.NewAirTemperatureApiClient(s.node.ClientConn())
+				c := traits.NewAirTemperatureApiClient(s.m.ClientConn())
 				data, err := c.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{Name: name})
 				if err != nil {
 					return nil, err
@@ -144,7 +144,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 				return airTemperatureToRow(data), nil
 			},
 			history: func(name string, period *timepb.Period, pageSize int32) *historyCursor {
-				c := gen.NewAirTemperatureHistoryClient(s.node.ClientConn())
+				c := gen.NewAirTemperatureHistoryClient(s.m.ClientConn())
 				return &historyCursor{
 					getPage: func(ctx context.Context, token string) ([]historyRecord, string, error) {
 						page, err := c.ListAirTemperatureHistory(ctx, &gen.ListAirTemperatureHistoryRequest{
@@ -172,7 +172,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(trait.Electric): {
 			headers: []string{"electric.current", "electric.voltage", "electric.powerfactor", "electric.realpower", "electric.apparentpower", "electric.reactivepower", "electric.reactivepower"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := traits.NewElectricApiClient(s.node.ClientConn())
+				c := traits.NewElectricApiClient(s.m.ClientConn())
 				data, err := c.GetDemand(ctx, &traits.GetDemandRequest{Name: name})
 				if err != nil {
 					return nil, err
@@ -180,7 +180,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 				return electricDemandToRow(data), nil
 			},
 			history: func(name string, period *timepb.Period, pageSize int32) *historyCursor {
-				c := gen.NewElectricHistoryClient(s.node.ClientConn())
+				c := gen.NewElectricHistoryClient(s.m.ClientConn())
 				return &historyCursor{
 					getPage: func(ctx context.Context, token string) ([]historyRecord, string, error) {
 						page, err := c.ListElectricDemandHistory(ctx, &gen.ListElectricDemandHistoryRequest{
@@ -208,7 +208,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(trait.EnterLeaveSensor): {
 			headers: []string{"enterleave.entertotal", "enterleave.leavetotal"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := traits.NewEnterLeaveSensorApiClient(s.node.ClientConn())
+				c := traits.NewEnterLeaveSensorApiClient(s.m.ClientConn())
 				data, err := c.GetEnterLeaveEvent(ctx, &traits.GetEnterLeaveEventRequest{Name: name})
 				if err != nil {
 					return nil, err
@@ -219,7 +219,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(trait.FanSpeed): {
 			headers: []string{"fanspeed.percentage", "fanspeed.preset"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := traits.NewFanSpeedApiClient(s.node.ClientConn())
+				c := traits.NewFanSpeedApiClient(s.m.ClientConn())
 				data, err := c.GetFanSpeed(ctx, &traits.GetFanSpeedRequest{Name: name})
 				if err != nil {
 					return nil, err
@@ -230,7 +230,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(trait.Light): {
 			headers: []string{"light.level", "light.preset"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := traits.NewLightApiClient(s.node.ClientConn())
+				c := traits.NewLightApiClient(s.m.ClientConn())
 				data, err := c.GetBrightness(ctx, &traits.GetBrightnessRequest{Name: name})
 				if err != nil {
 					return nil, err
@@ -241,7 +241,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(trait.OccupancySensor): {
 			headers: []string{"occupancy.state", "occupancy.peoplecount", "occupancy.changetime"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := traits.NewOccupancySensorApiClient(s.node.ClientConn())
+				c := traits.NewOccupancySensorApiClient(s.m.ClientConn())
 				data, err := c.GetOccupancy(ctx, &traits.GetOccupancyRequest{Name: name})
 				if err != nil {
 					return nil, err
@@ -249,7 +249,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 				return occupancyToRow(data), nil
 			},
 			history: func(name string, period *timepb.Period, pageSize int32) *historyCursor {
-				c := gen.NewOccupancySensorHistoryClient(s.node.ClientConn())
+				c := gen.NewOccupancySensorHistoryClient(s.m.ClientConn())
 				return &historyCursor{
 					getPage: func(ctx context.Context, token string) ([]historyRecord, string, error) {
 						page, err := c.ListOccupancyHistory(ctx, &gen.ListOccupancyHistoryRequest{
@@ -277,7 +277,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 		string(trait.OpenClose): {
 			headers: []string{"openclose.openpercent"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
-				c := traits.NewOpenCloseApiClient(s.node.ClientConn())
+				c := traits.NewOpenCloseApiClient(s.m.ClientConn())
 				data, err := c.GetPositions(ctx, &traits.GetOpenClosePositionsRequest{Name: name})
 				if err != nil {
 					return nil, err

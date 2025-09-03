@@ -415,7 +415,7 @@ func (s *Server) parseAndValidateDownloadToken(tokenStr string) (*DownloadToken,
 }
 
 func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[string]traitInfo) (devices []*gen.Device, headers []string, err error) {
-	devices = s.node.ListDevices(
+	devices = s.m.ListDevices(
 		resource.WithInclude(func(id string, item proto.Message) bool {
 			if item == nil {
 				return false
