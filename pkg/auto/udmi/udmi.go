@@ -106,14 +106,14 @@ func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
 					hadTrait, hasTrait := hasUDMITrait(change.OldValue), hasUDMITrait(change.NewValue)
 					if hadTrait && !hasTrait {
 						// remove
-						err := tasks.Stop(change.Name)
+						err := tasks.Stop(change.Id)
 						if err != nil && !errors.Is(err, ErrNotRunning) {
-							e.services.Logger.Debug("error during stop", zap.String("name", change.Name), zap.Error(err))
+							e.services.Logger.Debug("error during stop", zap.String("name", change.Id), zap.Error(err))
 						}
 					}
 					if !hadTrait && hasTrait {
 						// add
-						go pullFrom(change.Name)
+						go pullFrom(change.Id)
 					}
 				}
 			}

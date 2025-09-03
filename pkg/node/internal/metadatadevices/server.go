@@ -43,7 +43,7 @@ func (s Server) GetMetadata(_ context.Context, request *traits.GetMetadataReques
 func (s Server) PullMetadata(request *traits.PullMetadataRequest, g grpc.ServerStreamingServer[traits.PullMetadataResponse]) error {
 	filter := masks.NewResponseFilter(masks.WithFieldMask(request.ReadMask))
 	for change := range s.devices.PullDevice(g.Context(), request.Name, resource.WithUpdatesOnly(request.UpdatesOnly)) {
-		mdChange := deviceChangeToProto(change, filter)
+		mdChange := deviceChangeToProto(request.Name, change, filter)
 		err := g.Send(&traits.PullMetadataResponse{Changes: []*traits.PullMetadataResponse_Change{mdChange}})
 		if err != nil {
 			return err
@@ -52,15 +52,15 @@ func (s Server) PullMetadata(request *traits.PullMetadataRequest, g grpc.ServerS
 	return nil
 }
 
-func deviceChangeToProto(c devicespb.DeviceChange, filter *masks.ResponseFilter) *traits.PullMetadataResponse_Change {
+func deviceChangeToProto(name string, c devicespb.DeviceChange, filter *masks.ResponseFilter) *traits.PullMetadataResponse_Change {
 	res := &traits.PullMetadataResponse_Change{
-		Name:       c.Name,
+		Name:       name,
 		ChangeTime: timestamppb.New(c.ChangeTime),
 	}
-	if c.Device.GetMetadata() == nil {
+	if c.Value.GetMetadata() == nil {
 		res.Metadata = &traits.Metadata{}
 	} else {
-		res.Metadata = filter.FilterClone(c.Device.GetMetadata()).(*traits.Metadata)
+		res.Metadata = filter.FilterClone(c.Value.GetMetadata()).(*traits.Metadata)
 	}
 	return res
 }
