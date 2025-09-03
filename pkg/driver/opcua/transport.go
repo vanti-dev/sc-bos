@@ -120,6 +120,14 @@ func (t *Transport) handleTransportEvent(node *ua.NodeID, value any) {
 			}
 		}
 	}
+	if t.cfg.OperatingMode != nil && NodeIdsAreEqual(t.cfg.OperatingMode.NodeId, node) {
+		mode, err := conv.ToTraitEnum[gen.Transport_OperatingMode](value, t.cfg.OperatingMode.Enum, gen.Transport_OperatingMode_value)
+		if err != nil {
+			t.logger.Error("failed to convert OperatingMode to trait enum", zap.Error(err))
+			return
+		}
+		old.OperatingMode = mode
+	}
 	if t.cfg.Doors != nil {
 		for i, door := range t.cfg.Doors {
 			if door.Status != nil && NodeIdsAreEqual(door.Status.NodeId, node) {
