@@ -16,7 +16,7 @@ import (
 
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
 
 type Server struct {
@@ -25,8 +25,8 @@ type Server struct {
 	// ChildPageSize overrides the default page size used when querying the parent trait for children
 	ChildPageSize int32
 
-	node *node.Node
-	now  func() time.Time
+	m   Model
+	now func() time.Time
 
 	downloadUrlBase      url.URL // defaults to /dl/devices
 	downloadTokenWriter  DownloadTokenWriter
@@ -37,9 +37,21 @@ type Server struct {
 	downloadPageTimeout  time.Duration // defaults to 10 seconds, applies to get and history cursor calls
 }
 
-func NewServer(n *node.Node, opts ...Option) *Server {
+// Collection contains a list of devices.
+type Collection interface {
+	ListDevices(opts ...resource.ReadOption) []*gen.Device
+	PullDevices(ctx context.Context, opts ...resource.ReadOption) <-chan resources.CollectionChange[*gen.Device]
+}
+
+// Model defines where this server gets its data from, and how it connects to other nodes.
+type Model interface {
+	Collection
+	ClientConn() grpc.ClientConnInterface
+}
+
+func NewServer(m Model, opts ...Option) *Server {
 	s := &Server{
-		node:                 n,
+		m:                    m,
 		now:                  time.Now,
 		downloadUrlBase:      url.URL{Path: "/dl/devices"},
 		downloadExpiry:       time.Hour,
@@ -80,7 +92,7 @@ func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest)
 	}
 
 	// note: allDevices is already sorted by name
-	allDevices := s.node.ListDevices(
+	allDevices := s.m.ListDevices(
 		resource.WithReadMask(request.ReadMask),
 		resource.WithInclude(func(id string, item proto.Message) bool {
 			if item == nil {
@@ -131,7 +143,7 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 		return err
 	}
 
-	changes := s.node.PullDevices(server.Context(),
+	changes := s.m.PullDevices(server.Context(),
 		resource.WithUpdatesOnly(request.UpdatesOnly),
 		resource.WithReadMask(request.ReadMask),
 		resource.WithInclude(func(id string, item proto.Message) bool {
@@ -159,7 +171,7 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 }
 
 func (s *Server) GetDevicesMetadata(_ context.Context, request *gen.GetDevicesMetadataRequest) (*gen.DevicesMetadata, error) {
-	devices := s.node.ListDevices()
+	devices := s.m.ListDevices()
 	var res *gen.DevicesMetadata
 	col := newMetadataCollector(request.GetIncludes().GetFields()...)
 	for _, device := range devices {
@@ -185,7 +197,7 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 	}
 
 	// do this before getting initial values
-	changes := s.node.PullDevices(server.Context())
+	changes := s.m.PullDevices(server.Context())
 
 	// send initial values.
 	// Note we recalculate the metadata for the initial value and for updates separately. We can't guarantee data
