@@ -849,7 +849,8 @@
               }
             }
           ],
-          "appearance": {"title": "Lifts"}
+          "appearance": {"title": "Lifts"},
+          "membership": {"subsystem": "vt"}
         }
       ]
     }
