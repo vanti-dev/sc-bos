@@ -24,11 +24,18 @@ func ExampleRegistry_devicesApi() {
 
 	// todo: make this more ergonomic
 	registry := &Registry{
+		onCheckCreate: func(name string, c *gen.HealthCheck) *gen.HealthCheck {
+			_, _ = devs.Update(&gen.Device{Name: name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
+				dstDev := dst.(*gen.Device)
+				dstDev.HealthChecks = mergeChecks(mask.Merge, dstDev.HealthChecks, c)
+			}), resource.WithCreateIfAbsent(), resource.WithExpectAbsent())
+			return nil
+		},
 		onCheckUpdate: func(name string, c *gen.HealthCheck) {
 			_, _ = devs.Update(&gen.Device{Name: name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
 				dstDev := dst.(*gen.Device)
 				dstDev.HealthChecks = mergeChecks(mask.Merge, dstDev.HealthChecks, c)
-			}), resource.WithCreateIfAbsent())
+			}))
 		},
 		onCheckDelete: func(name, id string) {
 			_, _ = devs.Update(&gen.Device{Name: name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
@@ -44,9 +51,13 @@ func ExampleRegistry_devicesApi() {
 		Appearance: &traits.Metadata_Appearance{Title: "Example Device 1"},
 	}}, resource.WithCreateIfAbsent())
 	// prepare a health check for the device
-	dev1Check, _ := exampleChecks.NewErrorCheck("device1", &gen.HealthCheck{
+	dev1Check, err := exampleChecks.NewErrorCheck("device1", &gen.HealthCheck{
 		DisplayName: "Is it working",
 	})
+	if err != nil {
+		panic(err)
+	}
+	defer dev1Check.Dispose()
 	// report on the health of the device
 	dev1Check.UpdateError(errors.New("malfunction"))
 

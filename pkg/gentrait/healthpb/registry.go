@@ -20,9 +20,24 @@ type Registry struct {
 	mu     sync.RWMutex
 	byName map[string]*namedChecks
 
+	onCheckCreate func(name string, c *gen.HealthCheck) *gen.HealthCheck
 	onCheckUpdate func(name string, c *gen.HealthCheck)
 	onCheckDelete func(name, id string)
 	onNameDelete  func(name string)
+}
+
+func (r *Registry) GetCheck(name, id string) *gen.HealthCheck {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	nc, ok := r.byName[name]
+	if !ok {
+		return nil
+	}
+	c, ok := nc.byId[id]
+	if !ok {
+		return nil
+	}
+	return c.check
 }
 
 // ForOwner returns a Checks instance that can create checks owned by the given owner.
@@ -53,6 +68,13 @@ func (r *Registry) addCheck(name, id string, c *checkBase) error {
 	_, exists := nc.byId[id]
 	if exists {
 		return fmt.Errorf("%w: %s[%s]", ErrAlreadyExists, name, id)
+	}
+
+	if r.onCheckCreate != nil {
+		created := r.onCheckCreate(name, c.check)
+		if created != nil {
+			c.check = created
+		}
 	}
 	c.onCommit = func(c *gen.HealthCheck) {
 		if r.onCheckUpdate != nil {

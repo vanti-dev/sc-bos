@@ -23,16 +23,18 @@ func ExampleRegistry_healthApi() {
 
 	// todo: make this more ergonomic
 	registry := &Registry{
+		onCheckCreate: func(name string, c *gen.HealthCheck) *gen.HealthCheck {
+			mu.Lock()
+			defer mu.Unlock()
+			m := NewModel()
+			undo := n.Announce(name, node.HasTrait(TraitName, node.WithClients(gen.WrapHealthApi(NewModelServer(m)))))
+			announced[name] = device{undo: undo, m: m}
+			return nil
+		},
 		onCheckUpdate: func(name string, c *gen.HealthCheck) {
 			mu.Lock()
 			defer mu.Unlock()
-			a, ok := announced[name]
-			if !ok {
-				m := NewModel()
-				undo := n.Announce(name, node.HasTrait(TraitName, node.WithClients(gen.WrapHealthApi(NewModelServer(m)))))
-				a = device{undo: undo, m: m}
-				announced[name] = a
-			}
+			a := announced[name]
 			_, err := a.m.CreateHealthCheck(c)
 			if err != nil {
 				panic(fmt.Errorf("failed to create health check: %w", err))
@@ -69,6 +71,7 @@ func ExampleRegistry_healthApi() {
 	if err != nil {
 		panic(err)
 	}
+	defer errCheck.Dispose()
 	// report on the health of the device
 	errCheck.UpdateError(errors.New("needs filter change"))
 
