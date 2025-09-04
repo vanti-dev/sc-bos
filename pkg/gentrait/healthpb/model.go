@@ -9,9 +9,12 @@ import (
 
 	"github.com/smart-core-os/sc-golang/pkg/masks"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
+
+const TraitName trait.Name = "smartcore.bos.Health"
 
 // Model stores health checks against a single entity.
 type Model struct {

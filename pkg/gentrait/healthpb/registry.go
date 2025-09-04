@@ -22,6 +22,7 @@ type Registry struct {
 
 	onCheckUpdate func(name string, c *gen.HealthCheck)
 	onCheckDelete func(name, id string)
+	onNameDelete  func(name string)
 }
 
 // ForOwner returns a Checks instance that can create checks owned by the given owner.
@@ -62,12 +63,16 @@ func (r *Registry) addCheck(name, id string, c *checkBase) error {
 		// clean up our own state
 		r.mu.Lock()
 		delete(nc.byId, id)
-		if len(nc.byId) == 0 {
+		deleteName := len(nc.byId) == 0
+		if deleteName {
 			delete(r.byName, name)
 		}
 		r.mu.Unlock()
 		if r.onCheckDelete != nil {
 			r.onCheckDelete(name, id)
+		}
+		if deleteName && r.onNameDelete != nil {
+			r.onNameDelete(name)
 		}
 	}
 	nc.byId[id] = c
