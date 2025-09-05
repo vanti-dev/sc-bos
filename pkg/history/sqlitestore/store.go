@@ -32,9 +32,8 @@ var migrationFS embed.FS
 var schema = sqlite.MustLoadVersionedSchema(migrationFS, "migrations")
 
 type Database struct {
-	db       *sqlite.Database
-	maxCount int64
-	maxAge   time.Duration
+	db     *sqlite.Database
+	logger *zap.Logger
 }
 
 func Open(ctx context.Context, path string, options ...Option) (*Database, error) {
@@ -60,13 +59,17 @@ func Open(ctx context.Context, path string, options ...Option) (*Database, error
 		return nil, errors.Join(err, db.Close())
 	}
 
-	return &Database{db: db}, nil
+	return &Database{
+		db:     db,
+		logger: o.logger,
+	}, nil
 }
 
-func (d *Database) OpenStore(source string) *Store {
+func (d *Database) OpenStore(source string, opts ...WriteOption) *Store {
 	return &Store{
 		database: d,
 		source:   source,
+		opts:     opts,
 	}
 }
 
@@ -74,9 +77,9 @@ func (d *Database) Close() error {
 	return d.db.Close()
 }
 
-func (d *Database) Insert(ctx context.Context, record Record) (Record, error) {
+func (d *Database) Insert(ctx context.Context, record Record, opts ...WriteOption) (Record, error) {
 	toInsert := []Record{record}
-	err := d.InsertBulk(ctx, toInsert)
+	err := d.InsertBulk(ctx, toInsert, opts...)
 	if err != nil {
 		return Record{}, err
 	}
@@ -85,7 +88,13 @@ func (d *Database) Insert(ctx context.Context, record Record) (Record, error) {
 
 // InsertBulk inserts multiple records into the database in a single transaction.
 // Mutates records to set the ID field for each inserted record.
-func (d *Database) InsertBulk(ctx context.Context, records []Record) error {
+func (d *Database) InsertBulk(ctx context.Context, records []Record, opts ...WriteOption) error {
+	o := writeOpts{}
+	for _, option := range opts {
+		option(&o)
+	}
+
+	txTime := time.Now()
 	err := d.db.WriteTx(ctx, func(tx *sql.Tx) (err error) {
 		sources, err := newSourceAllocator(ctx, tx)
 		if err != nil {
@@ -104,7 +113,9 @@ func (d *Database) InsertBulk(ctx context.Context, records []Record) error {
 			err = errors.Join(err, stmt.Close())
 		}()
 
+		modifiedSources := make(map[string]struct{})
 		for i, record := range records {
+			modifiedSources[record.Source] = struct{}{}
 			srcID, err := sources.getOrInsertSource(ctx, record.Source)
 			if err != nil {
 				return err
@@ -121,7 +132,26 @@ func (d *Database) InsertBulk(ctx context.Context, records []Record) error {
 			records[i].ID = recordID
 			records[i].CreateTime = recordID.Timestamp() // truncated and without time zone
 		}
-		return stmt.Close()
+		for source := range modifiedSources {
+			if o.enableMaxCount {
+				_, err = d.trimCount(ctx, tx, source, o.maxCount)
+				if err != nil {
+					return err
+				}
+			}
+			if !o.trimTime.IsZero() {
+				_, err = d.trimTime(ctx, tx, source, o.trimTime)
+				if err != nil {
+					return err
+				}
+			} else if o.trimAge > 0 {
+				_, err = d.trimTime(ctx, tx, source, txTime.Add(-o.trimAge))
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
 	})
 	return err
 }
@@ -214,6 +244,124 @@ func (d *Database) Size(ctx context.Context) (int64, error) {
 	return size, err
 }
 
+// TrimTime deletes all records with a timestamp before the specified time.
+// If source is non-empty, only deletes records from that source. If source is empty, deletes records from all sources.
+// Returns the number of records deleted.
+func (d *Database) TrimTime(ctx context.Context, source string, before time.Time) (int64, error) {
+	var deleted int64
+	err := d.db.WriteTx(ctx, func(tx *sql.Tx) (err error) {
+		deleted, err = d.trimTime(ctx, tx, source, before)
+		return
+	})
+	return deleted, err
+}
+
+func (d *Database) trimTime(ctx context.Context, tx *sql.Tx, source string, before time.Time) (deleted int64, err error) {
+	recordID := MakeRecordID(before, 0)
+	if source == "" {
+		deleted, err = d.deleteAllBefore(ctx, tx, recordID)
+	} else {
+		deleted, err = d.deleteSourceBefore(ctx, tx, source, recordID)
+	}
+	return deleted, err
+}
+
+// deletes all records with ID less than the specified ID, for all sources
+func (d *Database) deleteAllBefore(ctx context.Context, tx *sql.Tx, id RecordID) (int64, error) {
+	res, err := tx.ExecContext(ctx, "DELETE FROM history WHERE id < ?", id)
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
+}
+
+// deletes all records for the specified source name with ID less than the specified ID
+func (d *Database) deleteSourceBefore(ctx context.Context, tx *sql.Tx, source string, id RecordID) (int64, error) {
+	res, err := tx.ExecContext(ctx, `
+		DELETE FROM history WHERE id < ? AND source_id IN (
+			SELECT id FROM history_sources WHERE source = ?
+		)
+	`, id, source)
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
+}
+
+// deletes all records for the specified source name
+func (d *Database) deleteSource(ctx context.Context, tx *sql.Tx, source string) (int64, error) {
+	res, err := tx.ExecContext(ctx, `
+		DELETE FROM history WHERE source_id IN (SELECT id FROM history_sources WHERE source = ?)
+    `, source)
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
+}
+
+// get record ID for the nth newest record within the specified source
+// e.g. n=0 returns the newest record, n=1 the second newest, etc.
+// Returns sql.ErrNoRows if there are fewer than n+1 records for the source.
+func (d *Database) nthNewestRecordID(ctx context.Context, tx *sql.Tx, source string, n int64) (RecordID, error) {
+	var boundary RecordID
+	err := tx.QueryRowContext(ctx, `
+		SELECT history.id FROM history
+		INNER JOIN history_sources ON history.source_id = history_sources.id
+		WHERE history_sources.source = ?
+		ORDER BY history.id DESC LIMIT 1 OFFSET ?
+   	`, source, n).Scan(&boundary)
+	if err != nil {
+		return 0, err
+	}
+	return boundary, nil
+}
+
+// TrimCount deletes the oldest records for the specified source if the total number of records exceeds the given limit.
+// After deletion, the total number of records for that source will be at most 'limit'.
+// Source must be non-empty.
+// Returns the number of records deleted.
+func (d *Database) TrimCount(ctx context.Context, source string, limit int64) (int64, error) {
+	if source == "" {
+		return 0, errors.New("source must be non-empty")
+	}
+	if limit < 0 {
+		return 0, errors.New("limit must be non-negative")
+	}
+	var deleted int64
+	err := d.db.WriteTx(ctx, func(tx *sql.Tx) (err error) {
+		deleted, err = d.trimCount(ctx, tx, source, limit)
+		return err
+	})
+	return deleted, err
+}
+
+func (d *Database) trimCount(ctx context.Context, tx *sql.Tx, source string, limit int64) (int64, error) {
+	// we either need to delete all records older than boundary, or all records
+	var (
+		boundary  RecordID
+		deleteAll bool
+		err       error
+	)
+	if limit == 0 {
+		deleteAll = true
+	} else {
+		boundary, err = d.nthNewestRecordID(ctx, tx, source, limit-1)
+		if errors.Is(err, sql.ErrNoRows) {
+			deleteAll = true
+		} else if err != nil {
+			return 0, err
+		}
+	}
+
+	var deleted int64
+	if deleteAll {
+		deleted, err = d.deleteSource(ctx, tx, source)
+	} else {
+		deleted, err = d.deleteSourceBefore(ctx, tx, source, boundary)
+	}
+	return deleted, err
+}
+
 type Record struct {
 	ID         RecordID
 	Source     string
@@ -224,6 +372,7 @@ type Record struct {
 type Store struct {
 	database *Database
 	source   string
+	opts     []WriteOption // passed to every write operation
 
 	from, to history.Record
 }
@@ -234,7 +383,7 @@ func (s *Store) Append(ctx context.Context, payload []byte) (history.Record, err
 		Source:     s.source,
 		CreateTime: now,
 		Payload:    payload,
-	})
+	}, s.opts...)
 	if err != nil {
 		return history.Record{}, err
 	}
@@ -251,6 +400,7 @@ func (s *Store) Slice(from, to history.Record) history.Slice {
 		source:   s.source,
 		from:     from,
 		to:       to,
+		opts:     s.opts,
 	}
 }
 

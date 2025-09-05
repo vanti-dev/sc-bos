@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
@@ -76,17 +78,12 @@ func verifyRecords(t *testing.T, db *Database, ctx context.Context, expected []R
 			t.Errorf("record %d: missing ID", i)
 		}
 
-		// Verify the payload matches what we inserted
-		expectedPayload := string(expected[i].Payload)
-		actualPayload := string(retrievedRecords[i].Payload)
-		if actualPayload != expectedPayload {
-			t.Errorf("record %d: expected payload %q, got %q", i, expectedPayload, actualPayload)
-		}
-
-		// Verify timestamps are close (within 1 second)
-		timeDiff := retrievedRecords[i].CreateTime.Sub(expected[i].CreateTime).Abs()
-		if timeDiff > time.Millisecond {
-			t.Errorf("record %d: timestamp difference too large: %v", i, timeDiff)
+		diff := cmp.Diff(expected[i], retrievedRecords[i],
+			cmpopts.IgnoreFields(Record{}, "ID"),
+			cmpopts.EquateApproxTime(time.Millisecond),
+		)
+		if diff != "" {
+			t.Errorf("record %d: data mismatch (-want +got):\n%s", i, diff)
 		}
 	}
 }
@@ -126,6 +123,132 @@ func TestDatabase_InsertBulk_DuplicateSources(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
+}
+
+func TestDatabase_TrimCount(t *testing.T) {
+	db := newTestDB(t)
+	ctx := context.Background()
+
+	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
+	records := []Record{
+		{Source: "source-1", CreateTime: originTime.Add(-3 * time.Hour), Payload: []byte("-3h")},
+		{Source: "source-2", CreateTime: originTime.Add(-3 * time.Hour), Payload: []byte("-3h")},
+		{Source: "source-1", CreateTime: originTime.Add(-2 * time.Hour), Payload: []byte("-2h")},
+		{Source: "source-2", CreateTime: originTime.Add(-2 * time.Hour), Payload: []byte("-2h")},
+		{Source: "source-1", CreateTime: originTime.Add(-1 * time.Hour), Payload: []byte("-1h")},
+		{Source: "source-2", CreateTime: originTime.Add(-1 * time.Hour), Payload: []byte("-1h")},
+	}
+	err := db.InsertBulk(ctx, records)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Trim to 2 records for source-1, should delete the oldest record
+	// source-2 should remain unaffected
+	deleted, err := db.TrimCount(ctx, "source-1", 2)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if deleted != 1 {
+		t.Errorf("expected 1 record deleted, got %d", deleted)
+	}
+	expect := []Record{
+		{Source: "source-2", CreateTime: originTime.Add(-3 * time.Hour), Payload: []byte("-3h")},
+		{Source: "source-1", CreateTime: originTime.Add(-2 * time.Hour), Payload: []byte("-2h")},
+		{Source: "source-2", CreateTime: originTime.Add(-2 * time.Hour), Payload: []byte("-2h")},
+		{Source: "source-1", CreateTime: originTime.Add(-1 * time.Hour), Payload: []byte("-1h")},
+		{Source: "source-2", CreateTime: originTime.Add(-1 * time.Hour), Payload: []byte("-1h")},
+	}
+	verifyRecords(t, db, ctx, expect)
+}
+
+func TestDatabase_TrimTime(t *testing.T) {
+	db := newTestDB(t)
+	ctx := context.Background()
+
+	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
+	records := []Record{
+		{Source: "other-source", CreateTime: originTime.Add(-3 * time.Hour), Payload: []byte("other-3h")},
+		{Source: "time-source", CreateTime: originTime.Add(-3 * time.Hour), Payload: []byte("-3h")},
+		{Source: "time-source", CreateTime: originTime.Add(-2 * time.Hour), Payload: []byte("-2h")},
+		{Source: "time-source", CreateTime: originTime.Add(-1 * time.Hour), Payload: []byte("-1h")},
+		{Source: "time-source", CreateTime: originTime, Payload: []byte("now")},
+	}
+	err := db.InsertBulk(ctx, records)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Trim records older than -90 minutes
+	cutoff := originTime.Add(-90 * time.Minute)
+	deleted, err := db.TrimTime(ctx, "time-source", cutoff)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if deleted != 2 {
+		t.Errorf("expected 2 records deleted, got %d", deleted)
+	}
+	expect := []Record{
+		{Source: "other-source", CreateTime: originTime.Add(-3 * time.Hour), Payload: []byte("other-3h")},
+		{Source: "time-source", CreateTime: originTime.Add(-1 * time.Hour), Payload: []byte("-1h")},
+		{Source: "time-source", CreateTime: originTime, Payload: []byte("now")},
+	}
+	verifyRecords(t, db, ctx, expect)
+}
+
+func TestDatabase_InsertBulk_WithMaxCount(t *testing.T) {
+	db := newTestDB(t)
+	ctx := context.Background()
+
+	source := "trim-source"
+	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
+	records := []Record{
+		{Source: source, CreateTime: originTime.Add(-3 * time.Hour), Payload: []byte("old-payload-1")},
+		{Source: source, CreateTime: originTime.Add(-2 * time.Hour), Payload: []byte("old-payload-2")},
+		{Source: source, CreateTime: originTime.Add(-1 * time.Hour), Payload: []byte("old-payload-3")},
+		{Source: source, CreateTime: originTime, Payload: []byte("new-payload")},
+	}
+
+	err := db.InsertBulk(ctx, records, WithMaxCount(2))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expect := []Record{
+		{Source: source, CreateTime: originTime.Add(-1 * time.Hour), Payload: []byte("old-payload-3")},
+		{Source: source, CreateTime: originTime, Payload: []byte("new-payload")},
+	}
+	verifyRecords(t, db, ctx, expect)
+}
+
+func TestDatabase_InsertBulk_WithEarliestTime(t *testing.T) {
+	db := newTestDB(t)
+	ctx := context.Background()
+
+	now := time.Now()
+	source := "time-trim-source"
+	records := []Record{
+		{Source: source, CreateTime: now.Add(-3 * time.Hour), Payload: []byte("old-payload-1")},
+		{Source: source, CreateTime: now.Add(-2 * time.Hour), Payload: []byte("old-payload-2")},
+		{Source: source, CreateTime: now.Add(-1 * time.Hour), Payload: []byte("old-payload-3")},
+		{Source: source, CreateTime: now, Payload: []byte("new-payload")},
+	}
+
+	trimBefore := now.Add(-90 * time.Minute) // Trim records older than 90 minutes
+
+	err := db.InsertBulk(ctx, records, WithEarliestTime(trimBefore))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	count, err := db.Count(ctx, source, 0, 0)
+	if err != nil {
+		t.Fatalf("unexpected error counting records: %v", err)
+	}
+
+	if count != 2 {
+		t.Errorf("expected 2 records after time-based trim, got %d", count)
+	}
 }
 
 func TestDatabase_Read(t *testing.T) {
