@@ -688,6 +688,43 @@ export namespace HealthCheckRecord {
   }
 }
 
+export class HealthCheckRecord extends jspb.Message {
+  getHealthCheck(): HealthCheck | undefined;
+  setHealthCheck(value?: HealthCheck): HealthCheckRecord;
+  hasHealthCheck(): boolean;
+  clearHealthCheck(): HealthCheckRecord;
+
+  getRecordTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setRecordTime(value?: google_protobuf_timestamp_pb.Timestamp): HealthCheckRecord;
+  hasRecordTime(): boolean;
+  clearRecordTime(): HealthCheckRecord;
+
+  getRecordType(): HealthCheckRecord.RecordType;
+  setRecordType(value: HealthCheckRecord.RecordType): HealthCheckRecord;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): HealthCheckRecord.AsObject;
+  static toObject(includeInstance: boolean, msg: HealthCheckRecord): HealthCheckRecord.AsObject;
+  static serializeBinaryToWriter(message: HealthCheckRecord, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): HealthCheckRecord;
+  static deserializeBinaryFromReader(message: HealthCheckRecord, reader: jspb.BinaryReader): HealthCheckRecord;
+}
+
+export namespace HealthCheckRecord {
+  export type AsObject = {
+    healthCheck?: HealthCheck.AsObject,
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    recordType: HealthCheckRecord.RecordType,
+  }
+
+  export enum RecordType { 
+    RECORD_TYPE_UNSPECIFIED = 0,
+    ADDED = 1,
+    UPDATED = 2,
+    REMOVED = 3,
+  }
+}
+
 export class ListHealthChecksRequest extends jspb.Message {
   getName(): string;
   setName(value: string): ListHealthChecksRequest;
