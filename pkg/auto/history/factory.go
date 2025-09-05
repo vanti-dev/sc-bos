@@ -26,6 +26,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/history/boltstore"
 	"github.com/vanti-dev/sc-bos/pkg/history/memstore"
 	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
+	"github.com/vanti-dev/sc-bos/pkg/history/sqlitestore"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -147,6 +148,21 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 		if err != nil {
 			return err
 		}
+	case "sqlite":
+		db, err := a.stores.SqliteHistory(ctx)
+		if err != nil {
+			return err
+		}
+		var opts []sqlitestore.WriteOption
+		if ttl := cfg.Storage.TTL; ttl != nil {
+			if ttl.MaxAge.Duration > 0 {
+				opts = append(opts, sqlitestore.WithMaxAge(ttl.MaxAge.Duration))
+			}
+			if ttl.MaxCount > 0 {
+				opts = append(opts, sqlitestore.WithMaxCount(ttl.MaxCount))
+			}
+		}
+		store = db.OpenStore(cfg.Source.SourceName(), opts...)
 	default:
 		return fmt.Errorf("unsupported storage type %s", cfg.Storage.Type)
 	}
