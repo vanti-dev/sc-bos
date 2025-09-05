@@ -10,6 +10,7 @@ import (
 
 type ModelServer struct {
 	gen.UnimplementedServiceTicketApiServer
+	gen.UnimplementedServiceTicketInfoServer
 	model *Model
 }
 
@@ -31,4 +32,8 @@ func (m *ModelServer) CreateTicket(_ context.Context, req *gen.CreateTicketReque
 
 func (m *ModelServer) UpdateTicket(_ context.Context, req *gen.UpdateTicketRequest) (*gen.Ticket, error) {
 	return m.model.updateTicket(req.Ticket)
+}
+
+func (m *ModelServer) DescribeTicket(context.Context, *gen.DescribeTicketRequest) (*gen.TicketSupport, error) {
+	return m.model.support, nil
 }

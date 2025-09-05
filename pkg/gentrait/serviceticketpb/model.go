@@ -11,6 +11,7 @@ import (
 
 type Model struct {
 	tickets map[string]*gen.Ticket // TicketId -> Ticket
+	support *gen.TicketSupport
 }
 
 func NewModel(opts ...resource.Option) *Model {
@@ -32,4 +33,9 @@ func (m Model) updateTicket(ticket *gen.Ticket) (*gen.Ticket, error) {
 	}
 	m.tickets[ticket.Id] = ticket
 	return ticket, nil
+}
+
+// SetSupport sets the gen.TicketSupport to use in the ServiceTicketInfoServer.
+func (m Model) SetSupport(s *gen.TicketSupport) {
+	m.support = s
 }
