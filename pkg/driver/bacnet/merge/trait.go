@@ -10,6 +10,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
+	transportpb "github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 )
@@ -41,6 +42,8 @@ func IntoTrait(client *gobacnet.Client, devices known.Context, statuses *statusp
 		return newSecurityEvent(client, devices, statuses, traitConfig, logger)
 	case statuspb.TraitName:
 		return newStatus(client, devices, statuses, traitConfig, logger)
+	case transportpb.TraitName:
+		return newTransport(client, devices, statuses, traitConfig, logger)
 	case UdmiMergeName, udmipb.TraitName:
 		return newUdmiMerge(client, devices, statuses, traitConfig, logger)
 	}
