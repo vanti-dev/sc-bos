@@ -5098,6 +5098,248 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
+proto.smartcore.bos.HealthCheckRecord.prototype.toObject = function(opt_includeInstance) {
+  return proto.smartcore.bos.HealthCheckRecord.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.smartcore.bos.HealthCheckRecord} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.HealthCheckRecord.toObject = function(includeInstance, msg) {
+  var f, obj = {
+healthCheck: (f = msg.getHealthCheck()) && proto.smartcore.bos.HealthCheck.toObject(includeInstance, f),
+recordTime: (f = msg.getRecordTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+recordType: jspb.Message.getFieldWithDefault(msg, 3, 0)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.smartcore.bos.HealthCheckRecord}
+ */
+proto.smartcore.bos.HealthCheckRecord.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.smartcore.bos.HealthCheckRecord;
+  return proto.smartcore.bos.HealthCheckRecord.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.smartcore.bos.HealthCheckRecord} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.smartcore.bos.HealthCheckRecord}
+ */
+proto.smartcore.bos.HealthCheckRecord.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.smartcore.bos.HealthCheck;
+      reader.readMessage(value,proto.smartcore.bos.HealthCheck.deserializeBinaryFromReader);
+      msg.setHealthCheck(value);
+      break;
+    case 2:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setRecordTime(value);
+      break;
+    case 3:
+      var value = /** @type {!proto.smartcore.bos.HealthCheckRecord.RecordType} */ (reader.readEnum());
+      msg.setRecordType(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.smartcore.bos.HealthCheckRecord.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.smartcore.bos.HealthCheckRecord.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.smartcore.bos.HealthCheckRecord} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.smartcore.bos.HealthCheckRecord.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getHealthCheck();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.smartcore.bos.HealthCheck.serializeBinaryToWriter
+    );
+  }
+  f = message.getRecordTime();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getRecordType();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      3,
+      f
+    );
+  }
+};
+
+
+/**
+ * @enum {number}
+ */
+proto.smartcore.bos.HealthCheckRecord.RecordType = {
+  RECORD_TYPE_UNSPECIFIED: 0,
+  ADDED: 1,
+  UPDATED: 2,
+  REMOVED: 3
+};
+
+/**
+ * optional HealthCheck health_check = 1;
+ * @return {?proto.smartcore.bos.HealthCheck}
+ */
+proto.smartcore.bos.HealthCheckRecord.prototype.getHealthCheck = function() {
+  return /** @type{?proto.smartcore.bos.HealthCheck} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.HealthCheck, 1));
+};
+
+
+/**
+ * @param {?proto.smartcore.bos.HealthCheck|undefined} value
+ * @return {!proto.smartcore.bos.HealthCheckRecord} returns this
+*/
+proto.smartcore.bos.HealthCheckRecord.prototype.setHealthCheck = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.HealthCheckRecord} returns this
+ */
+proto.smartcore.bos.HealthCheckRecord.prototype.clearHealthCheck = function() {
+  return this.setHealthCheck(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.HealthCheckRecord.prototype.hasHealthCheck = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp record_time = 2;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.HealthCheckRecord.prototype.getRecordTime = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 2));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.HealthCheckRecord} returns this
+*/
+proto.smartcore.bos.HealthCheckRecord.prototype.setRecordTime = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.HealthCheckRecord} returns this
+ */
+proto.smartcore.bos.HealthCheckRecord.prototype.clearRecordTime = function() {
+  return this.setRecordTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.HealthCheckRecord.prototype.hasRecordTime = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional RecordType record_type = 3;
+ * @return {!proto.smartcore.bos.HealthCheckRecord.RecordType}
+ */
+proto.smartcore.bos.HealthCheckRecord.prototype.getRecordType = function() {
+  return /** @type {!proto.smartcore.bos.HealthCheckRecord.RecordType} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.HealthCheckRecord.RecordType} value
+ * @return {!proto.smartcore.bos.HealthCheckRecord} returns this
+ */
+proto.smartcore.bos.HealthCheckRecord.prototype.setRecordType = function(value) {
+  return jspb.Message.setProto3EnumField(this, 3, value);
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
 proto.smartcore.bos.ListHealthChecksRequest.prototype.toObject = function(opt_includeInstance) {
   return proto.smartcore.bos.ListHealthChecksRequest.toObject(opt_includeInstance, this);
 };
