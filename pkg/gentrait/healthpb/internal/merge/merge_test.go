@@ -1,4 +1,4 @@
-package healthpb
+package merge
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-func TestMergeCheck(t *testing.T) {
+func TestCheck(t *testing.T) {
 	tests := []struct {
 		name           string
 		src, dst, want *gen.HealthCheck
@@ -115,7 +115,7 @@ func TestMergeCheck(t *testing.T) {
 			if tt.ignore != "" {
 				t.Skipf("skipping test %q: %s", tt.name, tt.ignore)
 			}
-			mergeCheck(proto.Merge, tt.dst, tt.src)
+			Check(proto.Merge, tt.dst, tt.src)
 			if diff := cmp.Diff(tt.want, tt.dst, protocmp.Transform()); diff != "" {
 				t.Errorf("mergeCheck() mismatch (-want +got):\n%s", diff)
 			}

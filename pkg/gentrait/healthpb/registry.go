@@ -139,12 +139,16 @@ func (hc *Checks) NewErrorCheck(name string, c *gen.HealthCheck) (*ErrorCheck, e
 }
 
 func (hc *Checks) adjustId(c *gen.HealthCheck) {
-	switch {
-	case c.Id != "":
-		c.Id = hc.owner + ":" + c.Id
-	default:
-		c.Id = hc.owner
+	c.Id = AbsID(hc.owner, c.Id)
+}
+
+// AbsID returns the absolute ID for a check owned by owner with the given checkID.
+// The AbsID will be present on health checks received via Registry callbacks.
+func AbsID(owner, checkID string) string {
+	if checkID == "" {
+		return owner
 	}
+	return owner + ":" + checkID
 }
 
 type namedChecks struct {

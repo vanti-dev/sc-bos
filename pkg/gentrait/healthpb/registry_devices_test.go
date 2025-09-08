@@ -15,6 +15,7 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb/internal/merge"
 )
 
 // ExampleRegistry_devicesApi shows how to implement the [gen.DevicesApiServer] using a [Registry].
@@ -27,20 +28,20 @@ func ExampleRegistry_devicesApi() {
 		onCheckCreate: func(name string, c *gen.HealthCheck) *gen.HealthCheck {
 			_, _ = devs.Update(&gen.Device{Name: name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
 				dstDev := dst.(*gen.Device)
-				dstDev.HealthChecks = mergeChecks(mask.Merge, dstDev.HealthChecks, c)
+				dstDev.HealthChecks = merge.Checks(mask.Merge, dstDev.HealthChecks, c)
 			}), resource.WithCreateIfAbsent(), resource.WithExpectAbsent())
 			return nil
 		},
 		onCheckUpdate: func(name string, c *gen.HealthCheck) {
 			_, _ = devs.Update(&gen.Device{Name: name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
 				dstDev := dst.(*gen.Device)
-				dstDev.HealthChecks = mergeChecks(mask.Merge, dstDev.HealthChecks, c)
+				dstDev.HealthChecks = merge.Checks(mask.Merge, dstDev.HealthChecks, c)
 			}))
 		},
 		onCheckDelete: func(name, id string) {
 			_, _ = devs.Update(&gen.Device{Name: name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
 				dstDev := dst.(*gen.Device)
-				dstDev.HealthChecks = removeCheck(dstDev.HealthChecks, id)
+				dstDev.HealthChecks = merge.Remove(dstDev.HealthChecks, id)
 			}), resource.WithAllowMissing(true))
 		},
 	}

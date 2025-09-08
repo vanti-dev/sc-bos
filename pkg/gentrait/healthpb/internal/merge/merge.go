@@ -1,4 +1,4 @@
-package healthpb
+package merge
 
 import (
 	"slices"
@@ -9,9 +9,9 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-// mergeCheck merges src into dst, which must share the same id.
+// Check merges src into dst, which must share the same id.
 // This is similar to proto.Merge, but some repeated fields are replaced instead of appended to.
-func mergeCheck(merge func(dst, src proto.Message), dst, src *gen.HealthCheck) {
+func Check(merge func(dst, src proto.Message), dst, src *gen.HealthCheck) {
 	if src == nil || dst == nil {
 		return
 	}
@@ -59,10 +59,10 @@ func mergeCheck(merge func(dst, src proto.Message), dst, src *gen.HealthCheck) {
 	}
 }
 
-// mergeChecks adds src checks into dst, merging when ids match, returning the union.
+// Checks adds src checks into dst, merging when ids match, returning the union.
 // The dst checks must be sorted by ID in ascending order.
 // The returned checks will be sorted by ID in ascending order as well.
-func mergeChecks(merge func(dst, src proto.Message), dst []*gen.HealthCheck, src ...*gen.HealthCheck) []*gen.HealthCheck {
+func Checks(merge func(dst, src proto.Message), dst []*gen.HealthCheck, src ...*gen.HealthCheck) []*gen.HealthCheck {
 	if len(src) == 0 {
 		return dst
 	}
@@ -75,7 +75,7 @@ func mergeChecks(merge func(dst, src proto.Message), dst []*gen.HealthCheck, src
 		dstIndex, found := findCheck(srcCheck.Id, dst)
 		if found {
 			// merge existing check
-			mergeCheck(merge, dst[dstIndex], srcCheck)
+			Check(merge, dst[dstIndex], srcCheck)
 			continue
 		}
 		// add new check, which we do later when we know how many we need to add
@@ -85,9 +85,9 @@ func mergeChecks(merge func(dst, src proto.Message), dst []*gen.HealthCheck, src
 	return dst
 }
 
-// removeCheck removes the check with the given id from dst, returning the modified slice.
+// Remove removes the check with the given id from dst, returning the modified slice.
 // If no such check exists, dst is returned unmodified.
-func removeCheck(dst []*gen.HealthCheck, id string) []*gen.HealthCheck {
+func Remove(dst []*gen.HealthCheck, id string) []*gen.HealthCheck {
 	index, found := findCheck(id, dst)
 	if !found {
 		return dst

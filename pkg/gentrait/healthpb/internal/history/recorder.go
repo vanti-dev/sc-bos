@@ -12,10 +12,15 @@ import (
 
 // A Recorder records health check updates into a database.
 type Recorder struct {
-	db *db.DB
+	db RecorderStore
 }
 
-func NewRecorder(db *db.DB) *Recorder {
+// A RecorderStore allows inserting health check history records.
+type RecorderStore interface {
+	Insert(ctx context.Context, record db.Record) (db.Record, error)
+}
+
+func NewRecorder(db RecorderStore) *Recorder {
 	return &Recorder{db: db}
 }
 
@@ -25,10 +30,11 @@ func (r *Recorder) Record(ctx context.Context, name string, check *gen.HealthChe
 		return err
 	}
 	rec := db.Record{
-		Name:    name,
-		CheckID: check.Id,
-		Main:    main,
-		Aux:     aux,
+		Name:       name,
+		CheckID:    check.Id,
+		CreateTime: time.Now(),
+		Main:       main,
+		Aux:        aux,
 	}
 	_, err = r.db.Insert(ctx, rec)
 	return err

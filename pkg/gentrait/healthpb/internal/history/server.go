@@ -12,12 +12,19 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 )
 
+// Server is a [gen.HealthHistoryServer] that reads health check history from a database.
 type Server struct {
 	gen.UnimplementedHealthHistoryServer
-	db *db.DB
+	db ServerStore
 }
 
-func NewServer(db *db.DB) *Server {
+// A ServerStore provides access to health check history records.
+type ServerStore interface {
+	Read(ctx context.Context, id db.CheckID, from, to db.RecordID, desc bool, dst []db.Record) (n int, err error)
+	Count(ctx context.Context, id db.CheckID, from, to db.RecordID) (total int, err error)
+}
+
+func NewServer(db ServerStore) *Server {
 	return &Server{db: db}
 }
 
@@ -68,7 +75,7 @@ func (s *Server) ListHealthCheckHistory(ctx context.Context, req *gen.ListHealth
 	}
 	res.HealthCheckRecords = make([]*gen.HealthCheckRecord, n)
 	for i := range n {
-		hcr, err := decodeHealthCheckRecord(buf[i])
+		hcr, err := decodeRecord(buf[i])
 		if err != nil {
 			return nil, err
 		}
@@ -104,17 +111,21 @@ func parseOrderBy(s string) historypb.OrderBy {
 	}
 }
 
-func decodeHealthCheckRecord(r db.Record) (*gen.HealthCheckRecord, error) {
+func decodeRecord(r db.Record) (*gen.HealthCheckRecord, error) {
 	dst := &gen.HealthCheckRecord{
 		RecordTime: timestamppb.New(r.ID.Timestamp()),
 		HealthCheck: &gen.HealthCheck{
 			Id: r.CheckID,
 		},
 	}
-	if err := proto.Unmarshal(r.Aux, dst.HealthCheck); err != nil {
+	opts := proto.UnmarshalOptions{
+		Merge:        true,
+		AllowPartial: true,
+	}
+	if err := opts.Unmarshal(r.Aux, dst.HealthCheck); err != nil {
 		return nil, err
 	}
-	if err := proto.Unmarshal(r.Main, dst.HealthCheck); err != nil {
+	if err := opts.Unmarshal(r.Main, dst.HealthCheck); err != nil {
 		return nil, err
 	}
 	return dst, nil

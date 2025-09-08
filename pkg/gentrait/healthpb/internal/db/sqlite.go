@@ -1,3 +1,4 @@
+// Package db provides a SQLite-based implementation of a health check record store.
 package db
 
 import (
@@ -13,7 +14,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/internal/sqlite"
-	"github.com/vanti-dev/sc-bos/pkg/history"
 )
 
 const appID = 0x5C0503
@@ -144,6 +144,28 @@ func (d *DB) Read(ctx context.Context, id CheckID, from, to RecordID, desc bool,
 	return n, err
 }
 
+// ReadLastRecord reads the most recent record for the given CheckID.
+// If id is zero, all checks are considered.
+// If id has a zero id field, all checks for the given name are considered.
+// It is an error to provide an id with no name, but an id.
+func (d *DB) ReadLastRecord(ctx context.Context, id CheckID) (Record, error) {
+	if id.Name == "" && id.ID != "" {
+		return Record{}, errors.New("name required for non-zero id")
+	}
+	var r Record
+	err := d.read(ctx, id, 0, 0, true, func(record Record) bool {
+		r = record
+		return false // only need the first (last) record
+	})
+	if err != nil {
+		return Record{}, err
+	}
+	if r.IsZero() {
+		return Record{}, sql.ErrNoRows
+	}
+	return r, nil
+}
+
 func (d *DB) read(ctx context.Context, id CheckID, from, to RecordID, desc bool, cb func(Record) bool) error {
 	err := d.db.ReadTx(ctx, func(tx *sql.Tx) error {
 		filters, args := buildFilters(id, from, to)
@@ -159,7 +181,7 @@ func (d *DB) read(ctx context.Context, id CheckID, from, to RecordID, desc bool,
 			INNER JOIN health_check_ids on health_check_history.check_id = health_check_ids.id
 			INNER JOIN health_check_aux on health_check_history.aux_id = health_check_aux.id
 			WHERE %s
-			ORDER BY history.id %s;
+			ORDER BY health_check_history.id %s;
 			`, filters, order)
 
 		rows, err := tx.QueryContext(ctx, query, args...)
@@ -231,23 +253,6 @@ func (d *DB) Compact(ctc context.Context) error {
 		return err
 	})
 }
-func calcBound(limit history.Record) (RecordID, error) {
-	if limit.ID != "" {
-		id, err := ParseRecordID(limit.ID)
-		if err != nil {
-			return 0, err
-		}
-		return id, nil
-	}
-
-	if !limit.CreateTime.IsZero() {
-		id := MakeRecordID(limit.CreateTime, 0)
-		return id, nil
-	}
-
-	// zero value is sentinel meaning "no bound"
-	return 0, nil
-}
 
 // builds an SQL term for filtering records based on a CheckID and row ID range.
 // Also returns a slice of parameters to be passed when executing the query.
@@ -286,6 +291,15 @@ type Record struct {
 	Name, CheckID string
 	CreateTime    time.Time
 	Main, Aux     []byte // payloads
+}
+
+func (r Record) IsZero() bool {
+	return r.ID == 0 &&
+		r.Name == "" &&
+		r.CheckID == "" &&
+		r.CreateTime.IsZero() &&
+		len(r.Main) == 0 &&
+		len(r.Aux) == 0
 }
 
 // RecordID is a combination of Timestamp and deduplicating serial for use as the primary key for history records.

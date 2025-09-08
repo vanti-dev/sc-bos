@@ -11,6 +11,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb/internal/merge"
 	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
 
@@ -86,5 +87,5 @@ func (m *Model) PullHealthChecks(ctx context.Context, opts ...resource.ReadOptio
 func healthCheckMerge(mask *masks.FieldUpdater, dst, src proto.Message) {
 	srcVal := src.(*gen.HealthCheck)
 	dstVal := dst.(*gen.HealthCheck)
-	mergeCheck(mask.Merge, dstVal, srcVal)
+	merge.Check(mask.Merge, dstVal, srcVal)
 }

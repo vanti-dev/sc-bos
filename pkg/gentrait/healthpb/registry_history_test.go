@@ -1,51 +1,54 @@
 package healthpb
 
 import (
-	"errors"
+	"context"
 	"fmt"
-	"time"
+	"os"
 
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb/internal/db"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb/internal/history"
 )
 
-// ExampleRegistry_history shows how to connect a Registry to a historical datastore.
-// Checks are initially loaded from the datastore to populate their initial state,
-// updates are recorded to the datastore as they occur.
+// ExampleRegistry_history shows how to connect a [Registry] to a history recorder and server.
 func ExampleRegistry_history() {
-	// history is a sample in-memory store holding the last known state of a check.
-	history := store{
-		// our store has a previous record for device1's "example" check
-		// indicating it was previously in an error state.
-		key{"device1", "example"}: &gen.HealthCheck{
-			Id: "example",
-			Check: &gen.HealthCheck_Check{
-				State:        gen.HealthCheck_Check_ABNORMAL,
-				AbnormalTime: timeAt(12, 42),
-				LastError:    ErrorToProto(errors.New("out of paper")),
-			},
-		},
+	ctx := context.Background()
+	dbFile, err := os.CreateTemp(os.TempDir(), "example.db")
+	if err != nil {
+		panic(err)
 	}
+	dbFile.Close() // we don't need it, we just needed the filename
+	defer func() { os.Remove(dbFile.Name()) }()
+
+	// records is a database containing health check history
+	records, err := db.Open(ctx, dbFile.Name())
+	if err != nil {
+		panic(err)
+	}
+	defer records.Close()
+
+	seeder := history.NewSeeder(records)     // seeders initialise checks from history
+	recorder := history.NewRecorder(records) // recorders save check updates to history
+	server := history.NewServer(records)     // servers expose history over gRPC
+
+	// add an existing record to the db
+	_ = recorder.Record(ctx, "device1", &gen.HealthCheck{
+		Id:              AbsID("example", "paper-level"),
+		DisplayName:     "Paper level",
+		Description:     "Check the level of the paper in the printer",
+		EquipmentImpact: gen.HealthCheck_FUNCTION,
+		Check: &gen.HealthCheck_Check{
+			State: gen.HealthCheck_Check_ABNORMAL,
+		},
+	})
 
 	registry := &Registry{
 		onCheckCreate: func(name string, c *gen.HealthCheck) *gen.HealthCheck {
-			old, err := history.LoadLastCheck(name, c.Id)
-			if err != nil {
-				return nil
-			}
-			if old == nil {
-				// don't store the initial check as it likely has no state
-				return nil
-			}
-			// copy over any updates from the new check into old,
-			// anything not set on c (like timestamps or state) will be preserved
-			mergeCheck(proto.Merge, old, c)
-			return old
+			return seeder.Seed(ctx, name, c)
 		},
 		onCheckUpdate: func(name string, c *gen.HealthCheck) {
-			err := history.SaveCheck(name, c)
+			err := recorder.Record(ctx, name, c)
 			if err != nil {
 				panic(err)
 			}
@@ -55,6 +58,7 @@ func ExampleRegistry_history() {
 	// create the check for device1 owned by "example"
 	exampleChecks := registry.ForOwner("example")
 	dev1Check, err := exampleChecks.NewErrorCheck("device1", &gen.HealthCheck{
+		Id:          "paper-level",
 		DisplayName: "Paper level",
 	})
 	if err != nil {
@@ -62,38 +66,23 @@ func ExampleRegistry_history() {
 	}
 	defer dev1Check.Dispose()
 
-	// check the initial state was loaded from history
-	storeCheck1 := registry.GetCheck("device1", "example")
-	fmt.Printf("Before update: %q=%v\n", storeCheck1.GetDisplayName(), storeCheck1.GetCheck().GetState())
-
 	// perform a check
 	dev1Check.UpdateError(nil) // all good now
-	storeCheck2 := registry.GetCheck("device1", "example")
-	fmt.Printf("After update: %q=%v\n", storeCheck2.GetDisplayName(), storeCheck2.GetCheck().GetState())
-	// Output:
-	// Before update: "Paper level"=ABNORMAL
-	// After update: "Paper level"=NORMAL
-}
 
-func timeAt(h, m int) *timestamppb.Timestamp {
-	return timestamppb.New(time.Date(2025, 9, 4, h, m, 0, 0, time.UTC))
-}
-
-type store map[key]*gen.HealthCheck
-
-type key struct {
-	name, id string
-}
-
-func (s store) LoadLastCheck(name, id string) (*gen.HealthCheck, error) {
-	c := s[key{name, id}]
-	if c == nil {
-		return nil, nil
+	// use the history api to get the check results
+	client := gen.NewHealthHistoryClient(wrap.ServerToClient(gen.HealthHistory_ServiceDesc, server))
+	histResp, err := client.ListHealthCheckHistory(ctx, &gen.ListHealthCheckHistoryRequest{
+		Name: "device1",
+		Id:   AbsID("example", "paper-level"),
+	})
+	if err != nil {
+		panic(err)
 	}
-	return proto.Clone(c).(*gen.HealthCheck), nil
-}
+	for i, rec := range histResp.GetHealthCheckRecords() {
+		fmt.Printf("Record %d: state=%v\n", i, rec.GetHealthCheck().GetCheck().GetState())
+	}
 
-func (s store) SaveCheck(name string, c *gen.HealthCheck) error {
-	s[key{name, c.Id}] = c
-	return nil
+	// Output:
+	// Record 0: state=ABNORMAL
+	// Record 1: state=NORMAL
 }
