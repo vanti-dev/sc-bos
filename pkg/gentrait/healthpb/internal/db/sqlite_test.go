@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"os"
@@ -11,6 +12,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
+
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func TestDB_records(t *testing.T) {
@@ -91,6 +95,180 @@ func TestDB_Read(t *testing.T) {
 	})
 }
 
+func TestDB_largeDB(t *testing.T) {
+	if _, ok := os.LookupEnv("TEST_DB"); !ok {
+		t.Skip("TEST_DB not set, skipping large database test")
+	}
+	db := newDBTester(t)
+	const (
+		nRecords      = 1_000_000
+		batchSize     = 50000
+		nNames        = 5000
+		errMainRatio  = 5    // 1 in 5 will be an error check
+		nAux          = 1000 // 1000 unique aux payloads
+		logEveryBatch = 5
+		countRuns     = 10
+		readRuns      = 20
+	)
+	// device names
+	names := func() []string {
+		const prefix = "van/uk/brum/ugs/devices"
+		devs := make([]string, nNames)
+		for i := range nNames {
+			devs[i] = fmt.Sprintf("%s/LTF-L01-%03d", prefix, i+1)
+		}
+		return devs
+	}()
+	checks := []string{"toner", "paper", "filter", "fuse", "filter", "waste", "paper", "filter"} // some duplicates to adjust frequency
+	for i, check := range checks {
+		checks[i] = fmt.Sprintf("smartcore.bos.autos.traitcheck:%s", check)
+	}
+
+	pbMarshal := func(m proto.Message) []byte {
+		b, err := proto.Marshal(m)
+		if err != nil {
+			t.Fatalf("failed to marshal payload: %v", err)
+		}
+		return b
+	}
+
+	errMain := pbMarshal(&gen.HealthCheck{})
+	valMain := pbMarshal(&gen.HealthCheck{
+		Check: &gen.HealthCheck_Check{CurrentValue: &gen.HealthCheck_Value{Value: &gen.HealthCheck_Value_FloatValue{FloatValue: 24.76}}},
+	})
+	main := func(i int) []byte {
+		if i%errMainRatio == 0 {
+			return errMain
+		} else {
+			return valMain
+		}
+	}
+	sampleAux := pbMarshal(auxCheck())
+	aux := func(i int) []byte {
+		// This won't be a valid proto, but it will test different aux payloads.
+		// Replace the first 4 bytes with the index mod nAux.
+		binary.LittleEndian.PutUint32(sampleAux, uint32(i%nAux))
+		return sampleAux
+	}
+
+	t.Logf("Inserting %d records in batches of %d...", nRecords, batchSize)
+	insertStart := time.Now()
+	batchStart := insertStart
+	for batchNum := range nRecords / batchSize {
+		batch := make([]Record, batchSize)
+		for j := range batchSize {
+			i := batchNum*batchSize + j
+			batch[j] = db.NewRecord(names[i%nNames], checks[i%len(checks)], main(i), aux(i))
+		}
+		err := db.InsertBulk(t.Context(), batch)
+		if err != nil {
+			t.Fatalf("InsertBulk batch %d failed: %v", batchNum, err)
+		}
+
+		if b := batchNum + 1; b%logEveryBatch == 0 {
+			rate := float64(b*batchSize) / time.Since(insertStart).Seconds()
+			t.Logf("  Batch %d/%d inserted (%d/%d) in %v [%.2f/s]",
+				b, nRecords/batchSize, b*batchSize, nRecords, time.Since(batchStart), rate)
+			batchStart = time.Now()
+		}
+	}
+	rate := nRecords / time.Since(insertStart).Seconds()
+	t.Logf("Tnserted %d records in %v [%.2f/s]", nRecords, time.Since(insertStart), rate)
+
+	// count timing
+	n, err := db.Count(t.Context(), CheckID{}, 0, 0)
+	if err != nil {
+		t.Fatalf("Count failed: %v", err)
+	}
+	if n != nRecords {
+		t.Fatalf("Count returned %d, want %d", n, nRecords)
+	}
+
+	countStart := time.Now()
+	for range countRuns {
+		_, err := db.Count(t.Context(), CheckID{}, 0, 0)
+		if err != nil {
+			t.Fatalf("Count failed: %v", err)
+		}
+	}
+	countTotal := time.Since(countStart)
+	t.Logf("All records counted in %v (%v runs, %v total)", countTotal/countRuns, countRuns, countTotal)
+
+	// db sizing
+	dbSize, err := db.Size(t.Context())
+	if err != nil {
+		t.Fatalf("Size failed: %v", err)
+	}
+	avgSizePerRecord := float64(dbSize) / nRecords
+
+	// no splitting, no removal of ids, etc
+	sampleProto := auxCheck()
+	sampleProto.Id = "smartcore.bos.autos.traitcheck:toner"
+	sampleProto.Check.CurrentValue = &gen.HealthCheck_Value{Value: &gen.HealthCheck_Value_FloatValue{FloatValue: 24.76}}
+	sampleProtoBytes := pbMarshal(sampleProto)
+	samplePayloadSize := len(sampleProtoBytes) + // the proto payload
+		len("van/uk/brum/ugs/devices/LTF-L01-001") + // the device name
+		8 // an ID or timestamp
+	cmpPercent := func(a, b float64) float64 {
+		return (a - b) / b * 100
+	}
+	t.Logf("Protobuf size %.2f MB (%.2f bytes/record)", float64(nRecords*samplePayloadSize)/(1024*1024), float64(samplePayloadSize))
+	t.Logf("Database size %.2f MB (%.2f bytes/record) [%+.2f%% vs proto]", float64(dbSize)/(1024*1024), avgSizePerRecord, cmpPercent(avgSizePerRecord, float64(samplePayloadSize)))
+
+	// check read performance
+	id := CheckID{Name: names[0], ID: checks[0]}
+	dst := make([]Record, 100)
+	from := MakeRecordID(db.epoch.Add(db.timeInc*1/8), 1)
+	to := MakeRecordID(db.epoch.Add(db.timeInc*7/8), 10)
+	n, err = db.Read(t.Context(), id, from, to, false, dst) // warmup
+	if err != nil {
+		t.Fatalf("Read failed: %v", err)
+	}
+	t.Logf("Running read test against %d records", n)
+	readStart := time.Now()
+	for range readRuns {
+		n2, err := db.Read(t.Context(), id, from, to, false, dst) // warmup
+		if err != nil {
+			t.Fatalf("Read failed: %v", err)
+		}
+		if n2 != n {
+			t.Fatalf("Read returned %d, want %d", n, n2)
+		}
+	}
+	readTotal := time.Since(readStart)
+	t.Logf("  Query read in %v (%v runs, %v total)", readTotal/readRuns, readRuns, readTotal)
+	readStart = time.Now()
+	for range readRuns {
+		n2, err := db.Read(t.Context(), id, from, to, true, dst) // warmup
+		if err != nil {
+			t.Fatalf("Read failed: %v", err)
+		}
+		if n2 != n {
+			t.Fatalf("Read returned %d, want %d", n, n2)
+		}
+	}
+	readTotal = time.Since(readStart)
+	t.Logf("  Desc read in %v (%v runs, %v total)", readTotal/readRuns, readRuns, readTotal)
+}
+
+func auxCheck() *gen.HealthCheck {
+	return &gen.HealthCheck{
+		DisplayName:    "A Bounds Check",
+		Description:    "A description for a bounds check",
+		OccupantImpact: gen.HealthCheck_COMFORT,
+		Reliability:    &gen.HealthCheck_Reliability{State: gen.HealthCheck_Reliability_RELIABLE},
+		Check: &gen.HealthCheck_Check{
+			State: gen.HealthCheck_Check_NORMAL,
+			Bounds: &gen.HealthCheck_Check_NormalRange{NormalRange: &gen.HealthCheck_ValueRange{
+				Low:      &gen.HealthCheck_Value{Value: &gen.HealthCheck_Value_FloatValue{FloatValue: 24.76}},
+				High:     &gen.HealthCheck_Value{Value: &gen.HealthCheck_Value_FloatValue{FloatValue: 25.24}},
+				Deadband: &gen.HealthCheck_Value{Value: &gen.HealthCheck_Value_FloatValue{FloatValue: 0.5}},
+			}},
+			DisplayUnit: "°C",
+		},
+	}
+}
+
 type dbTester struct {
 	*testing.T
 	*DB
@@ -135,15 +313,25 @@ func (t *dbTester) Run(name string, f func(t *dbTester)) {
 	})
 }
 
-func (t *dbTester) InsertRecord(name, id, main, aux string) Record {
+func (t *dbTester) NewRecord(name, id string, main, aux []byte) Record {
 	t.Helper()
-	rec := Record{
+	return Record{
 		Name:       name,
 		CheckID:    id,
 		CreateTime: t.tick(),
-		Main:       []byte(main),
-		Aux:        []byte(aux),
+		Main:       main,
+		Aux:        aux,
 	}
+}
+
+func (t *dbTester) InsertRecord(name, id, main, aux string) Record {
+	t.Helper()
+	return t.InsertRecordBytes(name, id, []byte(main), []byte(aux))
+}
+
+func (t *dbTester) InsertRecordBytes(name, id string, main, aux []byte) Record {
+	t.Helper()
+	rec := t.NewRecord(name, id, main, aux)
 	got, err := t.Insert(t.Context(), rec)
 	if err != nil {
 		t.Fatalf("Insert failed: %v", err)
