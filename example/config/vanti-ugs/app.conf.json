@@ -868,7 +868,15 @@
           "membership": {"subsystem": "vt"}
         }
       ]
-    }
+    },
+    {"name": "van/uk/brum/ugs/eg-bc-01/driver/external", "type": "mock", "devices": [
+      {
+        "name": "van/uk/brum/ugs/devices/EVD-EXT-01",
+        "traits": [{"name": "smartcore.traits.EnergyStorage", "more": {"type": "ev"}}, {"name": "smartcore.bos.Status"}],
+        "appearance": {"title": "EV Delivery Car", "description": "Delivers AV equipment to sites"},
+        "membership": {"subsystem": "fleet"}
+      }
+    ]}
   ],
   "zones": [
     {
