@@ -75,7 +75,12 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/ELT-LN1-01",
-          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}, {"name": "smartcore.bos.EmergencyLight"}],
+          "traits": [
+            {"name": "smartcore.traits.Light"},
+            {"name": "smartcore.bos.Status"},
+            {"name": "smartcore.bos.EmergencyLight"},
+            {"name": "smartcore.traits.EnergyStorage"}
+          ],
           "appearance": {"title": "Stairwell Emergency Light"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Basement", "zone": "Stairwell"}
@@ -348,7 +353,12 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/ELT-L00-01",
-          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}, {"name": "smartcore.bos.EmergencyLight"}],
+          "traits": [
+            {"name": "smartcore.traits.Light"},
+            {"name": "smartcore.bos.Status"},
+            {"name": "smartcore.bos.EmergencyLight"},
+            {"name": "smartcore.traits.EnergyStorage"}
+          ],
           "appearance": {"title": "Reception Emergency Light"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "Ground Floor", "zone": "Reception"}
@@ -661,7 +671,12 @@
         },
         {
           "name": "van/uk/brum/ugs/devices/ELT-L01-01",
-          "traits": [{"name": "smartcore.traits.Light"}, {"name": "smartcore.bos.Status"}, {"name": "smartcore.bos.EmergencyLight"}],
+          "traits": [
+            {"name": "smartcore.traits.Light"},
+            {"name": "smartcore.bos.Status"},
+            {"name": "smartcore.bos.EmergencyLight"},
+            {"name": "smartcore.traits.EnergyStorage"}
+          ],
           "appearance": {"title": "Open Plan Emergency Light"},
           "membership": {"subsystem": "lighting"},
           "location": {"floor": "First Floor", "zone": "Open Plan"}
