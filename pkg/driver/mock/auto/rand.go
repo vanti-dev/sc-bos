@@ -24,3 +24,7 @@ func ptr[T any](v T) *T {
 func durationBetween(min, max time.Duration) time.Duration {
 	return time.Duration(rand.Intn(int(max-min)) + int(min))
 }
+
+func randomBool(probability float64) bool {
+	return rand.Float64() < probability
+}
