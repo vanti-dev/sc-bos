@@ -71,15 +71,19 @@ export function useElectricDemand(value) {
   const reactivePower = computed(() => div(_v.value?.reactivePower, 1000));
   const reactivePowerUnit = computed(() => 'kVAr');
   const powerFactor = computed(() => _v.value?.powerFactor ?? 0);
+  const current = computed(() => _v.value?.current);
+  const currentUnit = computed(() => 'A');
 
   const hasApparentPower = computed(() => apparentPower.value !== 0);
   const hasReactivePower = computed(() => reactivePower.value !== 0);
   const hasPowerFactor = computed(() => powerFactor.value !== 0);
+  const hasCurrent = computed(() => Boolean(current.value));
 
   return {
     realPower, realPowerUnit,
     apparentPower, apparentPowerUnit, hasApparentPower,
     reactivePower, reactivePowerUnit, hasReactivePower,
-    powerFactor, hasPowerFactor
+    powerFactor, hasPowerFactor,
+    current, currentUnit, hasCurrent
   };
 }
