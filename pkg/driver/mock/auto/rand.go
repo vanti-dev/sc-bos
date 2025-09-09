@@ -28,3 +28,25 @@ func durationBetween(min, max time.Duration) time.Duration {
 func randomBool(probability float64) bool {
 	return rand.Float64() < probability
 }
+
+// float32Range represents a min/max range for random value generation
+type float32Range struct {
+	Min float32
+	Max float32
+}
+
+// Random returns a random value within the range
+func (r float32Range) Random() float32 {
+	return float32Between(r.Min, r.Max)
+}
+
+// durationRange represents a min/max range for random duration generation
+type durationRange struct {
+	Min time.Duration
+	Max time.Duration
+}
+
+// Random returns a random duration within the range
+func (r durationRange) Random() time.Duration {
+	return durationBetween(r.Min, r.Max)
+}

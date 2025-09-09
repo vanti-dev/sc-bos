@@ -11,7 +11,65 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
-func EnergyStorage(model *energystoragepb.Model) service.Lifecycle {
+type EnergyStorageDeviceType string
+
+const (
+	EnergyStorageDeviceTypeBattery EnergyStorageDeviceType = "battery"
+	EnergyStorageDeviceTypeEV      EnergyStorageDeviceType = "ev"
+	EnergyStorageDeviceTypeDrone   EnergyStorageDeviceType = "drone"
+)
+
+type energyStorageProfile struct {
+	MaxCapacityKwh  float32
+	MaxRangeKm      float32
+	Voltage         *float32Range // nil means no voltage reporting
+	ChargeRate      float32Range
+	DischargeRate   float32Range
+	JourneyLength   *float32Range // typical journey distance for mobile devices
+	UpdateInterval  durationRange
+	PluggedInChance float64
+}
+
+// IsMobile returns true if the device can move (has range > 0)
+func (p energyStorageProfile) IsMobile() bool {
+	return p.MaxRangeKm > 0
+}
+
+var deviceProfiles = map[EnergyStorageDeviceType]energyStorageProfile{
+	EnergyStorageDeviceTypeBattery: {
+		MaxCapacityKwh:  0.1,                               // 100Wh for small battery
+		Voltage:         &float32Range{Min: 3.0, Max: 4.2}, // Low voltage battery - reported
+		ChargeRate:      float32Range{Min: 0.5, Max: 2.0},  // Slower charge rates
+		DischargeRate:   float32Range{Min: 0.2, Max: 1.0},
+		UpdateInterval:  durationRange{Min: 30 * time.Second, Max: 2 * time.Minute},
+		PluggedInChance: 0.8, // Usually plugged in
+	},
+	EnergyStorageDeviceTypeEV: {
+		MaxCapacityKwh:  75.0,  // 75kWh for EV
+		MaxRangeKm:      450.0, // Standard EV range
+		ChargeRate:      float32Range{Min: 1.0, Max: 3.0},
+		DischargeRate:   float32Range{Min: 0.3, Max: 1.5},
+		JourneyLength:   &float32Range{Min: 25, Max: 150}, // Typical daily commute/errands
+		UpdateInterval:  durationRange{Min: 45 * time.Second, Max: 90 * time.Second},
+		PluggedInChance: 0.7,
+	},
+	EnergyStorageDeviceTypeDrone: {
+		MaxCapacityKwh:  2.0,                              // 2kWh for drone
+		MaxRangeKm:      50.0,                             // Limited flight range
+		ChargeRate:      float32Range{Min: 2.0, Max: 5.0}, // Fast charging for quick turnaround
+		DischargeRate:   float32Range{Min: 1.0, Max: 3.0}, // Faster discharge during flight
+		JourneyLength:   &float32Range{Min: 2, Max: 15},   // Typical drone flight pattern
+		UpdateInterval:  durationRange{Min: 15 * time.Second, Max: 45 * time.Second},
+		PluggedInChance: 0.5, // Often flying/in use
+	},
+}
+
+func EnergyStorage(model *energystoragepb.Model, kind EnergyStorageDeviceType) service.Lifecycle {
+	profile, exists := deviceProfiles[kind]
+	if !exists {
+		profile = deviceProfiles[EnergyStorageDeviceTypeEV] // Default fallback
+	}
+
 	type state int
 	const (
 		stateIdle state = iota
@@ -22,8 +80,6 @@ func EnergyStorage(model *energystoragepb.Model) service.Lifecycle {
 
 	s := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
 		go func() {
-			timer := time.NewTimer(durationBetween(30*time.Second, 2*time.Minute))
-
 			// Initialize with a random starting percentage
 			currentPercentage := float32Between(20, 80)
 			var currentState state = stateIdle
@@ -39,7 +95,7 @@ func EnergyStorage(model *energystoragepb.Model) service.Lifecycle {
 					}
 				}
 
-				// Calculate percentage change rates
+				// Calculate percentage change rates based on device profile
 				var chargeRate, dischargeRate float32
 
 				// Update percentage based on current state
@@ -48,12 +104,10 @@ func EnergyStorage(model *energystoragepb.Model) service.Lifecycle {
 					// Slight random drift when idle
 					currentPercentage += float32Between(-0.5, 0.5)
 				case stateCharging:
-					// Increase by 1.0-3.0% per update when charging (faster)
-					chargeRate = float32Between(1.0, 3.0)
+					chargeRate = profile.ChargeRate.Random()
 					currentPercentage += chargeRate
 				case stateDischarging:
-					// Decrease by 0.3-1.5% per update when discharging (slower)
-					dischargeRate = float32Between(0.3, 1.5)
+					dischargeRate = profile.DischargeRate.Random()
 					currentPercentage -= dischargeRate
 				}
 
@@ -67,19 +121,28 @@ func EnergyStorage(model *energystoragepb.Model) service.Lifecycle {
 					currentState = stateIdle // Stop charging when full
 				}
 
-				// Build the energy level state
+				// Build the energy level state with device-specific fields
 				energyLevel := &traits.EnergyLevel{
 					Quantity: &traits.EnergyLevel_Quantity{
 						Percentage:  currentPercentage,
-						EnergyKwh:   currentPercentage * 0.75, // Assume 75kWh max capacity
+						EnergyKwh:   currentPercentage * profile.MaxCapacityKwh / 100,
 						Descriptive: getDescriptiveThreshold(currentPercentage),
-						DistanceKm:  currentPercentage * 4.5,                          // Assume ~450km max range
-						Voltage:     ptr(getVoltageFromPercentage(currentPercentage)), // Simulate realistic voltage
+						Voltage:     getVoltageFromPercentage(currentPercentage, profile),
 					},
-					PluggedIn: currentState == stateCharging || randomBool(0.7), // Usually plugged in
+					PluggedIn: currentState == stateCharging || randomBool(profile.PluggedInChance),
 				}
 
-				// Set flow state
+				// Only set voltage if profile includes it
+				if profile.Voltage != nil {
+					energyLevel.Quantity.Voltage = getVoltageFromPercentage(currentPercentage, profile)
+				}
+
+				// Only set distance for mobile devices
+				if profile.IsMobile() {
+					energyLevel.Quantity.DistanceKm = currentPercentage * profile.MaxRangeKm / 100
+				}
+
+				// Set flow state with device-specific parameters
 				switch currentState {
 				case stateIdle:
 					energyLevel.Flow = &traits.EnergyLevel_Idle{
@@ -88,25 +151,41 @@ func EnergyStorage(model *energystoragepb.Model) service.Lifecycle {
 						},
 					}
 				case stateCharging:
+					target := &traits.EnergyLevel_Quantity{
+						Percentage: float32Between(85, 100),
+					}
+					transfer := &traits.EnergyLevel_Transfer{
+						StartTime: stateStartTime,
+						Speed:     getSpeedFromRate(chargeRate),
+						Target:    target,
+					}
+					// Only set target distance for mobile devices
+					if profile.IsMobile() {
+						target.DistanceKm = target.Percentage * profile.MaxRangeKm / 100
+					}
 					energyLevel.Flow = &traits.EnergyLevel_Charge{
-						Charge: &traits.EnergyLevel_Transfer{
-							StartTime: stateStartTime,
-							Speed:     getSpeedFromRate(chargeRate),
-							Target: &traits.EnergyLevel_Quantity{
-								Percentage: float32Between(85, 100),
-							},
-						},
+						Charge: transfer,
 					}
 				case stateDischarging:
+					target := &traits.EnergyLevel_Quantity{
+						Percentage: float32Between(5, 25),
+					}
+					transfer := &traits.EnergyLevel_Transfer{
+						StartTime: stateStartTime,
+						Speed:     getSpeedFromRate(dischargeRate),
+						Target:    target,
+					}
+
+					// Add distance info only for mobile devices
+					if profile.IsMobile() {
+						if profile.JourneyLength != nil {
+							transfer.DistanceKm = profile.JourneyLength.Random()
+						}
+						target.DistanceKm = target.Percentage * profile.MaxRangeKm / 100
+					}
+
 					energyLevel.Flow = &traits.EnergyLevel_Discharge{
-						Discharge: &traits.EnergyLevel_Transfer{
-							StartTime:  stateStartTime,
-							DistanceKm: float32Between(50, 200), // Trip distance
-							Speed:      getSpeedFromRate(dischargeRate),
-							Target: &traits.EnergyLevel_Quantity{
-								Percentage: float32Between(5, 25), // Target low percentage when discharging
-							},
-						},
+						Discharge: transfer,
 					}
 				}
 
@@ -115,8 +194,7 @@ func EnergyStorage(model *energystoragepb.Model) service.Lifecycle {
 				select {
 				case <-ctx.Done():
 					return
-				case <-timer.C:
-					timer = time.NewTimer(durationBetween(30*time.Second, 2*time.Minute))
+				case <-time.After(profile.UpdateInterval.Random()):
 				}
 			}
 		}()
@@ -158,18 +236,21 @@ func getSpeedFromRate(rate float32) traits.EnergyLevel_Transfer_Speed {
 	}
 }
 
-func getVoltageFromPercentage(percentage float32) float32 {
-	// Simulate realistic EV battery voltage curve (typical range 350-420V for high voltage batteries)
-	// Voltage generally increases with charge level but not linearly
-	minVoltage := float32(350.0)
-	maxVoltage := float32(420.0)
-
-	// Add some non-linear curve and randomness to make it realistic
+func getVoltageFromPercentage(percentage float32, profile energyStorageProfile) *float32 {
+	if profile.Voltage == nil {
+		return nil
+	}
+	// Simulate realistic voltage curve based on device profile
 	normalized := percentage / 100.0
-	voltageRange := maxVoltage - minVoltage
-	baseVoltage := minVoltage + (voltageRange * normalized)
+	voltageRange := profile.Voltage.Max - profile.Voltage.Min
+	baseVoltage := profile.Voltage.Min + (voltageRange * normalized)
 
-	// Add some realistic variation (+/- 5V)
-	variation := float32Between(-5.0, 5.0)
-	return baseVoltage + variation
+	// Add realistic variation based on voltage range
+	variationPercent := float32(0.02) // 2% variation
+	if voltageRange < 10 {            // For low voltage devices like batteries
+		variationPercent = 0.05 // 5% variation
+	}
+	variation := voltageRange * variationPercent * float32Between(-1.0, 1.0)
+	ret := baseVoltage + variation
+	return &ret
 }
