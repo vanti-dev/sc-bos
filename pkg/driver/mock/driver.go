@@ -178,7 +178,20 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		return nil, nil
 	case trait.EnergyStorage:
 		model := energystoragepb.NewModel()
-		return []wrap.ServiceUnwrapper{energystoragepb.WrapApi(energystoragepb.NewModelServer(model))}, auto.EnergyStorage(model)
+		kind := auto.EnergyStorageDeviceTypeBattery
+		if k, ok := traitMd.GetMore()["type"]; ok {
+			switch auto.EnergyStorageDeviceType(k) {
+			case auto.EnergyStorageDeviceTypeBattery:
+				kind = auto.EnergyStorageDeviceTypeBattery
+			case auto.EnergyStorageDeviceTypeEV:
+				kind = auto.EnergyStorageDeviceTypeEV
+			case auto.EnergyStorageDeviceTypeDrone:
+				kind = auto.EnergyStorageDeviceTypeDrone
+			default:
+				logger.Sugar().Warnf("Unknown energy storage device type '%s' for %s, defaulting to battery", k, deviceName)
+			}
+		}
+		return []wrap.ServiceUnwrapper{energystoragepb.WrapApi(energystoragepb.NewModelServer(model))}, auto.EnergyStorage(model, kind)
 	case trait.EnterLeaveSensor:
 		return []wrap.ServiceUnwrapper{enterleavesensorpb.WrapApi(enterleavesensorpb.NewModelServer(enterleavesensorpb.NewModel()))}, nil
 	case trait.ExtendRetract:
