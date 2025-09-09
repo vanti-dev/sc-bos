@@ -39,7 +39,8 @@ const {
   realPower, realPowerUnit,
   apparentPower, apparentPowerUnit, hasApparentPower,
   reactivePower, reactivePowerUnit, hasReactivePower,
-  powerFactor, hasPowerFactor
+  powerFactor, hasPowerFactor,
+  current, currentUnit, hasCurrent
 } = useElectricDemand(() => props.value);
 
 const showHidden = ref(false);
@@ -75,6 +76,13 @@ const rows = computed(() => {
       label: 'Power Factor',
       value: powerFactor.value?.toFixed(2),
       unit: undefined
+    });
+  }
+  if (hasCurrent.value) {
+    result.push({
+      label: 'Current',
+      value: current.value.toFixed(3),
+      unit: currentUnit.value
     });
   }
   return result;
