@@ -39,3 +39,7 @@ func (m Model) updateTicket(ticket *gen.Ticket) (*gen.Ticket, error) {
 func (m Model) SetSupport(s *gen.TicketSupport) {
 	m.support = s
 }
+
+func (m Model) GetTickets() (map[string]*gen.Ticket, error) {
+	return m.tickets, nil
+}
