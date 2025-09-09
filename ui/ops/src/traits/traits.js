@@ -3,6 +3,7 @@ import {usePullAirQuality} from '@/traits/airQuality/airQuality.js';
 import {usePullAirTemperature} from '@/traits/airTemperature/airTemperature.js';
 import {usePullElectricDemand} from '@/traits/electricDemand/electric.js';
 import {usePullEmergency} from '@/traits/emergency/emergency.js';
+import {usePullEnergyLevel} from '@/traits/energyStorage/energyStorage.js';
 import {usePullEnterLeaveEvents} from '@/traits/enterLeave/enterLeave.js';
 import {usePullFanSpeed} from '@/traits/fanSpeed/fanSpeed.js';
 import {usePollBrightness, usePullBrightness} from '@/traits/light/light.js';
@@ -50,6 +51,8 @@ export const pullTraitByType = {
   'smartcore.traits.Electric:ElectricDemand': usePullElectricDemand,
   'smartcore.traits.Emergency': usePullEmergency,
   'smartcore.traits.Emergency:Emergency': usePullEmergency,
+  'smartcore.traits.EnergyStorage': usePullEnergyLevel,
+  'smartcore.traits.EnergyStorage:EnergyLevel': usePullEnergyLevel,
   'smartcore.traits.EnterLeaveSensor': usePullEnterLeaveEvents,
   'smartcore.traits.EnterLeaveSensor:EnterLeaveEvent': usePullEnterLeaveEvents,
   'smartcore.traits.FanSpeed': usePullFanSpeed,

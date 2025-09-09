@@ -25,6 +25,10 @@
       <v-divider class="mt-4 mb-1"/>
       <electric-demand-card v-bind="resource"/>
     </with-electric-demand>
+    <with-energy-storage v-if="traits['smartcore.traits.EnergyStorage']" :name="deviceId" v-slot="{resource}">
+      <v-divider class="mt-4 mb-1"/>
+      <energy-storage-card v-bind="resource"/>
+    </with-energy-storage>
     <with-meter v-if="traits['smartcore.bos.Meter']" :name="deviceId" v-slot="{resource, info}">
       <v-divider class="mt-4 mb-1"/>
       <meter-card v-bind="resource" :info="info?.response" :name="deviceId"/>
@@ -50,6 +54,8 @@ import WithAirTemperature from '@/traits/airTemperature/WithAirTemperature.vue';
 import ElectricDemandCard from '@/traits/electricDemand/ElectricDemandCard.vue';
 import WithElectricDemand from '@/traits/electricDemand/WithElectricDemand.vue';
 import EmergencyLight from '@/traits/emergency/EmergencyLight.vue';
+import EnergyStorageCard from '@/traits/energyStorage/EnergyStorageCard.vue';
+import WithEnergyStorage from '@/traits/energyStorage/WithEnergyStorage.vue';
 import LightCard from '@/traits/light/LightCard.vue';
 import MetadataCard from '@/traits/metadata/MetadataCard.vue';
 import MeterCard from '@/traits/meter/MeterCard.vue';
