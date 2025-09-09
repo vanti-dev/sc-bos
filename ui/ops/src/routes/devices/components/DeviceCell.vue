@@ -16,6 +16,13 @@
         :paused="props.paused">
       <electric-demand-cell v-bind="resource"/>
     </with-electric-demand>
+    <with-energy-storage
+        v-if="hasCell('EnergyStorage')"
+        v-slot="{ resource }"
+        :name="props.item.name"
+        :paused="props.paused">
+      <energy-storage-cell v-bind="resource"/>
+    </with-energy-storage>
     <with-meter v-if="hasCell('Meter')" v-slot="{ resource, info }" :name="props.item.name" :paused="props.paused">
       <meter-cell
           v-bind="resource"
@@ -87,6 +94,8 @@ import ElectricDemandCell from '@/traits/electricDemand/ElectricDemandCell.vue';
 import WithElectricDemand from '@/traits/electricDemand/WithElectricDemand.vue';
 import EmergencyCell from '@/traits/emergency/EmergencyCell.vue';
 import WithEmergency from '@/traits/emergency/WithEmergency.vue';
+import EnergyStorageCell from '@/traits/energyStorage/EnergyStorageCell.vue';
+import WithEnergyStorage from '@/traits/energyStorage/WithEnergyStorage.vue';
 import EnterLeaveEventCell from '@/traits/enterLeave/EnterLeaveEventCell.vue';
 import WithEnterLeave from '@/traits/enterLeave/WithEnterLeave.vue';
 import LightCell from '@/traits/light/LightCell.vue';
@@ -126,6 +135,9 @@ const visibleCells = computed(() => {
   }
   if (hasTrait(props.item, 'smartcore.traits.Electric')) {
     cells['ElectricDemand'] = true;
+  }
+  if (hasTrait(props.item, 'smartcore.traits.EnergyStorage')) {
+    cells['EnergyStorage'] = true;
   }
   if (hasTrait(props.item, 'smartcore.traits.EnterLeaveSensor')) {
     cells['EnterLeaveEvent'] = true;
