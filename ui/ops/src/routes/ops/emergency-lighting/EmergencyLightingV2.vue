@@ -128,7 +128,7 @@ const getDeviceTestResults = async () => {
   totalDevices.value = allDevices.length;
 
   for (const item of allDevices) {
-    getTestResultSet({ name: item.name })
+    getTestResultSet({ name: item.name, queryDevice: true })
         .then(testResult => {
           testResults.value.push({
             name: item.name,
