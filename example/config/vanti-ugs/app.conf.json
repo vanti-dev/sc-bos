@@ -1383,6 +1383,72 @@
   ],
   "automation": [
     {
+      "name": "van/uk/brum/ugs/automation/electric-history/EMT-LN1-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/EMT-LN1-01", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/EMT-L00-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/EMT-L00-01", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/EMT-L00-02",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/EMT-L00-02", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/EMT-L00-03",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/EMT-L00-03", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/building",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/building", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/building/generated",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/building/generated", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/building/water",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/building/water", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/basement",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/floors/basement", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/ground",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/floors/ground", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/lab",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/areas/lab", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/electric-history/comms-room",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/areas/comms-room", "trait": "smartcore.traits.Electric"},
+      "storage": {"type": "postgres"}
+    },
+    {
       "name": "van/uk/brum/ugs/automation/meter-history/EMT-LN1-01",
       "type": "history",
       "source": {"name": "van/uk/brum/ugs/devices/EMT-LN1-01", "trait": "smartcore.bos.Meter"},
