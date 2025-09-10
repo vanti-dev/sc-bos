@@ -170,7 +170,7 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 			},
 		},
 		string(trait.Electric): {
-			headers: []string{"electric.current", "electric.voltage", "electric.powerfactor", "electric.realpower", "electric.apparentpower", "electric.reactivepower", "electric.reactivepower"},
+			headers: []string{"electric.current", "electric.voltage", "electric.powerfactor", "electric.realpower", "electric.apparentpower", "electric.reactivepower"},
 			get: func(ctx context.Context, name string) (map[string]string, error) {
 				c := traits.NewElectricApiClient(s.m.ClientConn())
 				data, err := c.GetDemand(ctx, &traits.GetDemandRequest{Name: name})
