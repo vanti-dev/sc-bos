@@ -1,6 +1,9 @@
-import {fieldMaskFromObject, setProperties} from '@/api/convpb';
+import {fieldMaskFromObject, setProperties, timestampToDate} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb';
 import {pullResource, setValue, trackAction} from '@/api/resource';
+import {periodFromObject} from '@/api/sc/types/period';
+import {ElectricHistoryPromiseClient} from '@vanti-dev/sc-bos-ui-gen/proto/history_grpc_web_pb';
+import {ListElectricDemandHistoryRequest} from '@vanti-dev/sc-bos-ui-gen/proto/history_pb';
 import {ElectricApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/electric_grpc_web_pb';
 import {GetDemandRequest, PullDemandRequest} from '@smart-core-os/sc-api-grpc-web/traits/electric_pb';
 
@@ -35,11 +38,42 @@ export function getDemand(request, tracker) {
 }
 
 /**
+ * @param {Partial<ListElectricDemandHistoryRequest.AsObject>} request
+ * @param {ActionTracker<ListElectricDemandHistoryResponse.AsObject>} [tracker]
+ * @return {Promise<ListElectricDemandHistoryResponse.AsObject>}
+ */
+export function listElectricDemandHistory(request, tracker = {}) {
+  return trackAction('ElectricDemandHistory.listElectricDemandHistory', tracker, endpoint => {
+    const api = historyClient(endpoint);
+    return api.listElectricDemandHistory(listElectricDemandHistoryRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {ElectricDemandRecord | ElectricDemandRecord.AsObject} obj
+ * @return {ElectricDemandRecord.AsObject & {recordTime: Date|undefined}}
+ */
+export function electricDemandRecordToObject(obj) {
+  if (!obj) return undefined;
+  if (typeof obj.toObject === 'function') obj = obj.toObject();
+  if (obj.recordTime) obj.recordTime = timestampToDate(obj.recordTime);
+  return obj;
+}
+
+/**
  * @param {string} endpoint
  * @return {ElectricApiPromiseClient}
  */
 function apiClient(endpoint) {
   return new ElectricApiPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ * @param {string} endpoint
+ * @return {ElectricHistoryPromiseClient}
+ */
+function historyClient(endpoint) {
+  return new ElectricHistoryPromiseClient(endpoint, null, clientOptions());
 }
 
 /**
@@ -65,5 +99,18 @@ function getDemandRequestFromObject(obj) {
   const dst = new GetDemandRequest();
   setProperties(dst, obj, 'name');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  return dst;
+}
+
+/**
+ * @param {Partial<ListElectricDemandHistoryRequest.AsObject>} obj
+ * @return {ListElectricDemandHistoryRequest|undefined}
+ */
+function listElectricDemandHistoryRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new ListElectricDemandHistoryRequest();
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize', 'orderBy');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  dst.setPeriod(periodFromObject(obj.period));
   return dst;
 }
