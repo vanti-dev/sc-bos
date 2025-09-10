@@ -629,6 +629,20 @@
                   }
                 },
                 {
+                  "component": "builtin:energy/DemandHistoryCard",
+                  "props": {
+                    "title": "Average Power Demand",
+                    "metric": "realPower",
+                    "demandNames": [
+                      "van/uk/brum/ugs/devices/EMT-L00-01",
+                      "van/uk/brum/ugs/devices/EMT-L00-02",
+                      "van/uk/brum/ugs/devices/EMT-L00-03",
+                      "van/uk/brum/ugs/devices/EMT-LN1-01"
+                    ],
+                    "minChartHeight": "300px"
+                  }
+                },
+                {
                   "component": "builtin:power-history/PowerHistoryCard",
                   "props": {
                     "demand": "van/uk/brum/ugs/zones/building",
