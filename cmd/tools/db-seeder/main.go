@@ -49,7 +49,7 @@ func main() {
 		panic(err)
 	}
 
-	devices, err := parseDeviceConfig(appConf)
+	airqualityDevices, electricDevices, err := parseDeviceConfig(appConf)
 	if err != nil {
 		panic(err)
 	}
@@ -80,8 +80,7 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 
-	wg.Add(4)
-
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for _, aq := range aqs {
@@ -93,6 +92,7 @@ func main() {
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for _, occ := range occs {
@@ -104,6 +104,7 @@ func main() {
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		for _, mtr := range meters {
@@ -125,14 +126,27 @@ func main() {
 		}
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for _, d := range devices {
+		for _, d := range airqualityDevices {
 			err = SeedAirQuality(ctx, db, d, lookBack)
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("seeded device %s\n", d)
+			fmt.Printf("seeded air quality device %s\n", d)
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, d := range electricDevices {
+			err = SeedElectric(ctx, db, d, lookBack)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("seeded electric device %s\n", d)
 		}
 	}()
 
@@ -193,19 +207,20 @@ func parseZoneConfig(appConf *appconf.Config) ([]*airqualitycfg.Root, []*occupan
 	return aqs, occs, meters, nil
 }
 
-func parseDeviceConfig(appConf *appconf.Config) ([]string, error) {
+func parseDeviceConfig(appConf *appconf.Config) ([]string, []string, error) {
 	var airqualityDevices []string
+	var electricDevices []string
 
 	for _, dr := range appConf.Drivers {
 		buf, err := dr.MarshalJSON()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		var devices mockcfg.Root
 		err = json.Unmarshal(buf, &devices)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		for _, device := range devices.Devices {
@@ -213,9 +228,12 @@ func parseDeviceConfig(appConf *appconf.Config) ([]string, error) {
 				if trt.Name == trait.AirQualitySensor.String() {
 					airqualityDevices = append(airqualityDevices, device.Name)
 				}
+				if trt.Name == trait.Electric.String() {
+					electricDevices = append(electricDevices, device.Name)
+				}
 			}
 		}
 	}
 
-	return airqualityDevices, nil
+	return airqualityDevices, electricDevices, nil
 }
