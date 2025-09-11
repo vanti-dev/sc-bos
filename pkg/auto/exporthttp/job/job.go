@@ -73,14 +73,18 @@ func Multiplex(ctx context.Context, jobs ...Job) *Mulpx {
 		j := job
 
 		out.group.Go(func() error {
+			throttle := time.NewTicker(5 * time.Second)
+			defer throttle.Stop()
+
 			for {
 				select {
 				case <-j.GetNextExecution():
 					out.C <- j
-					j.SetPreviousExecution(time.Now())
 				case <-ctx.Done():
 					return ctx.Err()
 				}
+
+				<-throttle.C // throttle to avoid a hot loop if jobs take a while to execute
 			}
 		})
 	}
@@ -122,21 +126,14 @@ func (b *BaseJob) GetName() string {
 
 func (b *BaseJob) GetNextExecution() <-chan time.Time {
 	t := time.Now().UTC()
-	// check the previous execution timestamp
-	previous := time.Time{}
-	key := fmt.Sprintf(boltKeyTemplate, b.AutoName, b.ScName, b.Name)
-	if err := b.Db.Get(key, &previous); err != nil {
-		b.Logger.Error("failed to get previous execution time", zap.String("name", b.Name), zap.Error(err), zap.String("key", key))
-	}
 
+	previous := b.getPreviousExecution()
 	executeImmediately := shouldExecuteImmediately(b.Schedule, t, previous.UTC())
 
 	b.Logger.Debug("previous execution time detected", zap.String("name", b.Name), zap.Time("previous", previous), zap.Time("current", t), zap.Bool("executeImmediately", executeImmediately))
 
 	if executeImmediately {
-		// execute immediately
-		// throttle to 1s to avoid a zero duration and spamming executions
-		return time.After(time.Second)
+		return time.After(0)
 	}
 
 	return time.After(time.Until(b.Schedule.Next(t)))
@@ -153,110 +150,123 @@ func (b *BaseJob) SetPreviousExecution(t time.Time) {
 func FromConfig(cfg config.Root, db *bolthold.Store, autoName, scName string, logger *zap.Logger, node *node.Node) []Job {
 	var jobs []Job
 
-	now := time.Now().UTC()
-
 	if cfg.Sources.Occupancy != nil && len(cfg.Sources.Occupancy.Sensors) > 0 {
 		occ := &OccupancyJob{
 			BaseJob: BaseJob{
-				Site:              cfg.Site,
-				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Occupancy.Path),
-				Schedule:          cfg.Sources.Occupancy.Schedule,
-				Db:                db,
-				PreviousExecution: now,
-				AutoName:          autoName,
-				Name:              "occupancy",
-				ScName:            scName,
-				Logger:            logger,
-				Timeout:           cfg.Sources.Occupancy.Timeout,
+				Site:     cfg.Site,
+				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Occupancy.Path),
+				Schedule: cfg.Sources.Occupancy.Schedule,
+				Db:       db,
+				AutoName: autoName,
+				Name:     "occupancy",
+				ScName:   scName,
+				Logger:   logger,
+				Timeout:  cfg.Sources.Occupancy.Timeout,
 			},
 			Sensors: cfg.Sources.Occupancy.Sensors,
 			client:  traits.NewOccupancySensorApiClient(node.ClientConn()),
 		}
 
+		occ.PreviousExecution = occ.getPreviousExecution()
 		jobs = append(jobs, occ)
 	}
 	if cfg.Sources.Temperature != nil && len(cfg.Sources.Temperature.Sensors) > 0 {
 		temperature := &TemperatureJob{
 			BaseJob: BaseJob{
-				Site:              cfg.Site,
-				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Temperature.Path),
-				Schedule:          cfg.Sources.Temperature.Schedule,
-				Db:                db,
-				PreviousExecution: now,
-				AutoName:          autoName,
-				ScName:            scName,
-				Name:              "temperature",
-				Logger:            logger,
-				Timeout:           cfg.Sources.Temperature.Timeout,
+				Site:     cfg.Site,
+				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Temperature.Path),
+				Schedule: cfg.Sources.Temperature.Schedule,
+				Db:       db,
+				AutoName: autoName,
+				ScName:   scName,
+				Name:     "temperature",
+				Logger:   logger,
+				Timeout:  cfg.Sources.Temperature.Timeout,
 			},
 			Sensors: cfg.Sources.Temperature.Sensors,
 			client:  traits.NewAirTemperatureApiClient(node.ClientConn()),
 		}
 
+		temperature.PreviousExecution = temperature.getPreviousExecution()
 		jobs = append(jobs, temperature)
 	}
 	if cfg.Sources.Energy != nil && len(cfg.Sources.Energy.Meters) > 0 {
 		energy := &EnergyJob{
 			BaseJob: BaseJob{
-				Site:              cfg.Site,
-				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Energy.Path),
-				Schedule:          cfg.Sources.Energy.Schedule,
-				Db:                db,
-				PreviousExecution: now,
-				AutoName:          autoName,
-				ScName:            scName,
-				Name:              "energy",
-				Logger:            logger,
-				Timeout:           cfg.Sources.Energy.Timeout,
+				Site:     cfg.Site,
+				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Energy.Path),
+				Schedule: cfg.Sources.Energy.Schedule,
+				Db:       db,
+				AutoName: autoName,
+				ScName:   scName,
+				Name:     "energy",
+				Logger:   logger,
+				Timeout:  cfg.Sources.Energy.Timeout,
 			},
 			Meters:     cfg.Sources.Energy.Meters,
 			client:     gen.NewMeterHistoryClient(node.ClientConn()),
 			infoClient: gen.NewMeterInfoClient(node.ClientConn()),
 		}
 
+		energy.PreviousExecution = energy.getPreviousExecution()
 		jobs = append(jobs, energy)
 	}
 	if cfg.Sources.AirQuality != nil && len(cfg.Sources.AirQuality.Sensors) > 0 {
 		air := &AirQualityJob{
 			BaseJob: BaseJob{
-				Site:              cfg.Site,
-				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.AirQuality.Path),
-				Schedule:          cfg.Sources.AirQuality.Schedule,
-				Db:                db,
-				PreviousExecution: now,
-				AutoName:          autoName,
-				ScName:            scName,
-				Name:              "air_quality",
-				Logger:            logger,
-				Timeout:           cfg.Sources.AirQuality.Timeout,
+				Site:     cfg.Site,
+				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.AirQuality.Path),
+				Schedule: cfg.Sources.AirQuality.Schedule,
+				Db:       db,
+				AutoName: autoName,
+				ScName:   scName,
+				Name:     "air_quality",
+				Logger:   logger,
+				Timeout:  cfg.Sources.AirQuality.Timeout,
 			},
 			Sensors: cfg.Sources.AirQuality.Sensors,
 			client:  traits.NewAirQualitySensorApiClient(node.ClientConn()),
 		}
 
+		air.PreviousExecution = air.getPreviousExecution()
 		jobs = append(jobs, air)
 	}
 	if cfg.Sources.Water != nil && len(cfg.Sources.Water.Meters) > 0 {
 		water := &WaterJob{
 			BaseJob: BaseJob{
-				Site:              cfg.Site,
-				Url:               fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Water.Path),
-				Schedule:          cfg.Sources.Water.Schedule,
-				Db:                db,
-				PreviousExecution: now,
-				AutoName:          autoName,
-				ScName:            scName,
-				Name:              "water",
-				Logger:            logger,
-				Timeout:           cfg.Sources.Water.Timeout,
+				Site:     cfg.Site,
+				Url:      fmt.Sprintf("%s/%s", cfg.BaseUrl, cfg.Sources.Water.Path),
+				Schedule: cfg.Sources.Water.Schedule,
+				Db:       db,
+				AutoName: autoName,
+				ScName:   scName,
+				Name:     "water",
+				Logger:   logger,
+				Timeout:  cfg.Sources.Water.Timeout,
 			},
 			Meters:     cfg.Sources.Water.Meters,
 			client:     gen.NewMeterHistoryClient(node.ClientConn()),
 			infoClient: gen.NewMeterInfoClient(node.ClientConn()),
 		}
 
+		water.PreviousExecution = water.getPreviousExecution()
 		jobs = append(jobs, water)
 	}
 
 	return jobs
+}
+
+func (b *BaseJob) getPreviousExecution() time.Time {
+	previous := time.Time{}
+	key := fmt.Sprintf(boltKeyTemplate, b.AutoName, b.ScName, b.Name)
+	if err := b.Db.Get(key, &previous); err != nil {
+		b.Logger.Error("failed to get previous execution time", zap.String("name", b.Name), zap.Error(err), zap.String("key", key))
+		// assume the job executed successfully one interval ago if we can't retrieve the previous execution time
+		now := time.Now()
+		next := b.Schedule.Next(now)
+		interval := b.Schedule.Next(next).Sub(next)
+		previous = now.Add(-interval)
+	}
+
+	return previous
 }

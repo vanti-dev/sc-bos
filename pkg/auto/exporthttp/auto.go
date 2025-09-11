@@ -10,6 +10,7 @@ package exporthttp
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -39,7 +40,7 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 }
 
 func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
-	logger := a.Logger.Named(cfg.Name).With(zap.String("baseUrl", cfg.BaseUrl))
+	logger := a.Logger.Named(cfg.Name)
 
 	jobs := job.FromConfig(cfg, a.Database, AutoName, cfg.Name, logger, a.Node)
 
@@ -71,6 +72,7 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 						logger.Warn(fmt.Sprintf("failed to run %s", jb.GetName()), zap.Error(err))
 						return
 					}
+					jb.SetPreviousExecution(time.Now())
 				}()
 			case <-ctx.Done():
 				return
