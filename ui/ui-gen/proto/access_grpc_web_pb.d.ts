@@ -20,6 +20,27 @@ export class AccessApiClient {
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<access_pb.PullAccessAttemptsResponse>;
 
+  createAccessGrant(
+    request: access_pb.CreateAccessGrantRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: access_pb.AccessGrant) => void
+  ): grpcWeb.ClientReadableStream<access_pb.AccessGrant>;
+
+  updateAccessGrant(
+    request: access_pb.UpdateAccessGrantRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: access_pb.AccessGrant) => void
+  ): grpcWeb.ClientReadableStream<access_pb.AccessGrant>;
+
+  deleteAccessGrant(
+    request: access_pb.DeleteAccessGrantRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: access_pb.DeleteAccessGrantResponse) => void
+  ): grpcWeb.ClientReadableStream<access_pb.DeleteAccessGrantResponse>;
+
 }
 
 export class AccessApiPromiseClient {
@@ -36,6 +57,21 @@ export class AccessApiPromiseClient {
     request: access_pb.PullAccessAttemptsRequest,
     metadata?: grpcWeb.Metadata
   ): grpcWeb.ClientReadableStream<access_pb.PullAccessAttemptsResponse>;
+
+  createAccessGrant(
+    request: access_pb.CreateAccessGrantRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<access_pb.AccessGrant>;
+
+  updateAccessGrant(
+    request: access_pb.UpdateAccessGrantRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<access_pb.AccessGrant>;
+
+  deleteAccessGrant(
+    request: access_pb.DeleteAccessGrantRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<access_pb.DeleteAccessGrantResponse>;
 
 }
 
