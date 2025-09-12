@@ -114,6 +114,12 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	}
 
 	// configurable shared storage for more permanent data
+	storesConfig := config.Stores
+	if storesConfig == nil {
+		storesConfig = &stores.Config{}
+	}
+	storesConfig.DataDir = config.DataDir
+	storesConfig.Logger = logger.Named("stores")
 	store := stores.New(config.Stores)
 
 	certConfig := config.CertConfig
