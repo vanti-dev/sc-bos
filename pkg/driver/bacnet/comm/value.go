@@ -378,3 +378,110 @@ func massageValueForWrite(_ bactypes.Device, obj bactypes.Object, prop property.
 	}
 	return value
 }
+
+type EngineeringUnits uint16
+
+// Partial list from BACnet 2020
+const (
+	UnitsMetersPerSecond    EngineeringUnits = 166 // m/s
+	UnitsKilogramsPerSecond EngineeringUnits = 191
+	UnitsCelsius            EngineeringUnits = 62 // °C
+	UnitsKelvin             EngineeringUnits = 63 // K
+	UnitsFahrenheit         EngineeringUnits = 64 // °F
+	UnitsRankine            EngineeringUnits = 65
+	UnitsPascal             EngineeringUnits = 32 // Pa
+	UnitsKilopascal         EngineeringUnits = 33 // kPa
+	UnitsBar                EngineeringUnits = 36
+	UnitsPsi                EngineeringUnits = 37 // pounds per square inch
+	UnitsWatt               EngineeringUnits = 55 // W
+	UnitsKilowatt           EngineeringUnits = 56 // kW
+	UnitsHorsepower         EngineeringUnits = 59
+	UnitsJoule              EngineeringUnits = 70 // J
+	UnitsKilojoule          EngineeringUnits = 71 // kJ
+	UnitsWattHours          EngineeringUnits = 72
+	UnitsKilowattHours      EngineeringUnits = 73
+	UnitsBTU                EngineeringUnits = 117 // British Thermal Unit
+	UnitsBTUPerHour         EngineeringUnits = 119
+	UnitsLitre              EngineeringUnits = 146
+	UnitsCubicMeter         EngineeringUnits = 80
+	UnitsCubicFeet          EngineeringUnits = 79
+	UnitsLiterPerSecond     EngineeringUnits = 142
+	UnitsCubicMeterPerHour  EngineeringUnits = 135
+	UnitsCubicFeetPerMinute EngineeringUnits = 93
+	UnitsPercent            EngineeringUnits = 98
+	UnitsPartsPerMillion    EngineeringUnits = 96
+	UnitsSeconds            EngineeringUnits = 52
+	UnitsMinutes            EngineeringUnits = 53
+	UnitsHours              EngineeringUnits = 54
+	// ... (there are >200 defined, see ASHRAE 135 Table 12-43)
+)
+
+func (u EngineeringUnits) String() string {
+	switch u {
+	case UnitsMetersPerSecond:
+		return "m/s"
+	case UnitsKilogramsPerSecond:
+		return "kg/s"
+	case UnitsCelsius:
+		return "°C"
+	case UnitsKelvin:
+		return "K"
+	case UnitsFahrenheit:
+		return "°F"
+	case UnitsRankine:
+		return "°R"
+	case UnitsPascal:
+		return "Pa"
+	case UnitsKilopascal:
+		return "kPa"
+	case UnitsBar:
+		return "bar"
+	case UnitsPsi:
+		return "psi"
+	case UnitsWatt:
+		return "W"
+	case UnitsKilowatt:
+		return "kW"
+	case UnitsHorsepower:
+		return "hp"
+	case UnitsJoule:
+		return "J"
+	case UnitsKilojoule:
+		return "kJ"
+	case UnitsWattHours:
+		return "Wh"
+	case UnitsKilowattHours:
+		return "kWh"
+	case UnitsBTU:
+		return "BTU"
+	case UnitsBTUPerHour:
+		return "BTU/h"
+	case UnitsLitre:
+		return "L"
+	case UnitsCubicMeter:
+		return "m³"
+	case UnitsCubicFeet:
+		return "ft³"
+	case UnitsLiterPerSecond:
+		return "L/s"
+	case UnitsCubicMeterPerHour:
+		return "m³/h"
+	case UnitsCubicFeetPerMinute:
+		return "CFM"
+	case UnitsPercent:
+		return "%"
+	case UnitsPartsPerMillion:
+		return "ppm"
+	case UnitsSeconds:
+		return "s"
+	case UnitsMinutes:
+		return "min"
+	case UnitsHours:
+		return "h"
+	default:
+		if u <= 1023 {
+			return fmt.Sprintf("reserved(%d)", u)
+		}
+		return fmt.Sprintf("vendor(%d)", u)
+	}
+}
