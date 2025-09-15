@@ -254,6 +254,175 @@ func (d *DB) Compact(ctc context.Context) error {
 	})
 }
 
+// TrimOptions specifies criteria for trimming records from the database.
+type TrimOptions struct {
+	// If non-zero, ensures at least this many records are retained.
+	MinCount int64
+	// If non-zero, ensures at most this many records are retained.
+	// If MaxCount is less than MinCount, MinCount takes precedence.
+	MaxCount int64
+	// When non-zero, records before this time are eligible for deletion.
+	Before time.Time
+}
+
+func (o TrimOptions) IsZero() bool {
+	return o.MinCount == 0 && o.MaxCount == 0 && o.Before.IsZero()
+}
+
+// Trim removes records from the database according to the provided options.
+func (d *DB) Trim(ctx context.Context, id CheckID, opts TrimOptions) (int64, error) {
+	if id.Name == "" && id.ID != "" {
+		return 0, errors.New("name required for non-zero id")
+	}
+	if opts.IsZero() || opts.MinCount > 0 && opts.MaxCount == 0 && opts.Before.IsZero() {
+		// nothing to delete
+		return 0, nil
+	}
+	var deleted int64
+	err := d.db.WriteTx(ctx, func(tx *sql.Tx) error {
+		n, err := d.trim(ctx, tx, id, opts)
+		deleted = n
+		return err
+	})
+	return deleted, err
+}
+
+func (d *DB) trim(ctx context.Context, tx *sql.Tx, id CheckID, opts TrimOptions) (_ int64, err error) {
+	// Simple case when there are no count-based limits
+	if opts.MinCount == 0 && opts.MaxCount == 0 {
+		oldestIDToKeep := MakeRecordID(opts.Before, 0)
+		return d.deleteChecksBefore(ctx, tx, id, oldestIDToKeep)
+	}
+
+	var tsID RecordID
+	if !opts.Before.IsZero() {
+		tsID = MakeRecordID(opts.Before, 0)
+	}
+
+	// when there are counts, we have to delete checks per matching id,
+	// which means querying for each id to work out the cutoff point.
+	filter, args := buildFilters(id, 0, 0)
+	checkIDs, err := tx.QueryContext(ctx, fmt.Sprintf(`SELECT id from health_check_ids WHERE %s`, filter), args...)
+	if err != nil {
+		return 0, err
+	}
+	defer func() {
+		err = errors.Join(err, checkIDs.Close())
+	}()
+
+	var totalDeleted int64
+	for checkIDs.Next() {
+		var idRow int64
+		err := checkIDs.Scan(&idRow)
+		if err != nil {
+			return 0, err
+		}
+		var oldestID RecordID
+		switch {
+		case opts.Before.IsZero():
+			oldestID, err = d.nthNewestID(ctx, tx, idRow, max(opts.MaxCount, opts.MinCount)-1)
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				return 0, err
+			}
+		case opts.MinCount > 0 && opts.MaxCount == 0:
+			oldestID, err = d.nthNewestID(ctx, tx, idRow, opts.MinCount-1)
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				return 0, err
+			}
+			oldestID = min(oldestID, tsID)
+		case opts.MaxCount > 0 && opts.MinCount == 0:
+			oldestID, err = d.nthNewestID(ctx, tx, idRow, opts.MaxCount-1)
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				return 0, err
+			}
+			oldestID = max(oldestID, tsID)
+		default:
+			minID, err := d.nthNewestID(ctx, tx, idRow, opts.MinCount-1)
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				return 0, err
+			}
+			var maxID RecordID
+			if opts.MaxCount >= opts.MinCount {
+				var err error
+				maxID, err = d.nthNewestID(ctx, tx, idRow, opts.MaxCount-1)
+				if err != nil && !errors.Is(err, sql.ErrNoRows) {
+					return 0, err
+				}
+			} else {
+				maxID = minID
+			}
+			switch {
+			case minID < tsID:
+				oldestID = minID
+			case maxID < tsID:
+				oldestID = tsID
+			default:
+				oldestID = maxID
+			}
+		}
+		if oldestID == 0 {
+			// nothing to delete for this check ID
+			continue
+		}
+		nDeleted, err := d.deleteChecksBeforeWithID(ctx, tx, idRow, oldestID)
+		if err != nil {
+			return 0, err
+		}
+		totalDeleted += nDeleted
+	}
+	if err := checkIDs.Err(); err != nil {
+		return 0, err
+	}
+
+	return totalDeleted, nil
+}
+
+func (d *DB) deleteChecksBefore(ctx context.Context, tx *sql.Tx, id CheckID, before RecordID) (int64, error) {
+	if id.Name == "" {
+		res, err := tx.ExecContext(ctx, "DELETE FROM health_check_history WHERE id < ?", before)
+		if err != nil {
+			return 0, err
+		}
+		return res.RowsAffected()
+	}
+	filters, args := buildFilters(id, 0, 0)
+	args = append(args, before)
+	query := fmt.Sprintf(`
+		DELETE FROM health_check_history
+		WHERE health_check_history.check_id IN (SELECT id FROM health_check_ids WHERE %s) AND health_check_history.id < ?;
+	`, filters)
+	res, err := tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
+}
+
+func (d *DB) deleteChecksBeforeWithID(ctx context.Context, tx *sql.Tx, id int64, before RecordID) (int64, error) {
+	res, err := tx.ExecContext(ctx, "DELETE FROM health_check_history WHERE check_id = ? AND id < ?", id, before)
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
+}
+
+// nthNewestID returns the RecordID for the nth newest check with check_id of id.
+func (d *DB) nthNewestID(ctx context.Context, tx *sql.Tx, id, n int64) (RecordID, error) {
+	query := fmt.Sprintf(`
+		SELECT id
+		FROM health_check_history
+		WHERE check_id = ?
+		ORDER BY id DESC
+		LIMIT 1 OFFSET %d;
+	`, n)
+	var res RecordID
+	err := tx.QueryRowContext(ctx, query, id).Scan(&res)
+	if err != nil {
+		return 0, err
+	}
+	return res, nil
+}
+
 // builds an SQL term for filtering records based on a CheckID and row ID range.
 // Also returns a slice of parameters to be passed when executing the query.
 // If no filtering is to be performed, returns a dummy condition to maintain valid SQL syntax.

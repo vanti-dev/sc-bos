@@ -95,6 +95,301 @@ func TestDB_Read(t *testing.T) {
 	})
 }
 
+func TestDB_Trim(t *testing.T) {
+	const (
+		nDevices = 2
+		nChecks  = 2
+		nPer     = 5 // each device+check combo has this many records
+	)
+	newDB := func(t *testing.T) (*dbTester, []Record) {
+		t.Helper()
+		db := newDBTester(t)
+		all := make([]Record, 0, nDevices*nChecks*nPer)
+		// dev1,id1
+		// dev2,id1
+		// dev1,id2
+		// dev2,id2
+		// ...
+		// dev1,id1
+		// dev2,id1
+		// etc for nPer
+		for range nPer {
+			for checkID := range nChecks {
+				for devID := range nDevices {
+					all = append(all, db.InsertRecord(
+						fmt.Sprintf("dev%d", devID+1),
+						fmt.Sprintf("id%d", checkID+1),
+						"",
+						"",
+					))
+				}
+			}
+		}
+		return db, all
+	}
+	isDev := func(devID int) func(i int) bool {
+		return func(i int) bool {
+			return i%nDevices == devID-1
+		}
+	}
+	isCheck := func(checkID int) func(i int) bool {
+		return func(i int) bool {
+			return (i/nDevices)%nChecks == checkID-1
+		}
+	}
+	isRecordNumRange := func(from, to int) func(i int) bool {
+		return func(i int) bool {
+			n := i / (nDevices * nChecks)
+			return n >= from && n < to
+		}
+	}
+	isBefore := func(t time.Time) func(i int) bool {
+		sinceEpoch := t.Sub(dbEpoch)
+		beforeIdx := int(sinceEpoch / createCadence)
+		return func(i int) bool {
+			return i < beforeIdx
+		}
+	}
+	// exclude returns records from all that match none of the given functions.
+	// For example, exclude(all, isDev(1), isCheck(2)) returns all records that are not
+	// from device 1 and check 2, but will include device 1 check 1, device 2 check 2, etc.
+	exclude := func(all []Record, fns ...func(i int) bool) []Record {
+		var unmatched []Record
+		for i, r := range all {
+			matches := true
+			for _, fn := range fns {
+				if !fn(i) {
+					matches = false
+					break
+				}
+			}
+			if !matches {
+				unmatched = append(unmatched, r)
+			}
+		}
+		return unmatched
+	}
+
+	t.Run("empty", func(t *testing.T) {
+		db, all := newDB(t)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if n != 0 {
+			t.Fatalf("Trim removed %d records, want 0", n)
+		}
+		db.AssertRecords(all...)
+	})
+	t.Run("min only", func(t *testing.T) {
+		db, all := newDB(t)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{MinCount: 2})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if n != 0 {
+			t.Fatalf("Trim removed %d records, want 0", n)
+		}
+		db.AssertRecords(all...)
+	})
+	t.Run("max name+id", func(t *testing.T) {
+		db, all := newDB(t)
+		n, err := db.Trim(t.Context(), CheckID{Name: "dev1", ID: "id1"}, TrimOptions{MaxCount: 3})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(nPer-3), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isDev(1), isCheck(1), isRecordNumRange(0, 2))
+		db.AssertRecords(want...)
+	})
+	t.Run("max name", func(t *testing.T) {
+		db, all := newDB(t)
+		n, err := db.Trim(t.Context(), CheckID{Name: "dev1"}, TrimOptions{MaxCount: 2})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(nChecks*(nPer-2)), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isDev(1), isRecordNumRange(0, 3))
+		db.AssertRecords(want...)
+	})
+	t.Run("max all", func(t *testing.T) {
+		db, all := newDB(t)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{MaxCount: 4})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(nDevices*nChecks*(nPer-4)), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isRecordNumRange(0, 1))
+		db.AssertRecords(want...)
+	})
+	t.Run("min>max", func(t *testing.T) {
+		db, all := newDB(t)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{MinCount: 3, MaxCount: 2})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(nDevices*nChecks*(nPer-3)), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isRecordNumRange(0, 2))
+		db.AssertRecords(want...)
+	})
+	t.Run("large max", func(t *testing.T) {
+		db, all := newDB(t)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{MaxCount: nPer*nDevices*nChecks + 1})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if n != 0 {
+			t.Fatalf("Trim removed %d records, want 0", n)
+		}
+		db.AssertRecords(all...)
+	})
+
+	t.Run("age name+id", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * 8)
+		n, err := db.Trim(t.Context(), CheckID{Name: "dev2", ID: "id1"}, TrimOptions{Before: before})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(8/(nDevices*nChecks)), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isDev(2), isCheck(1), isBefore(before))
+		db.AssertRecords(want...)
+	})
+	t.Run("age name", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * 6)
+		n, err := db.Trim(t.Context(), CheckID{Name: "dev1"}, TrimOptions{Before: before})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(6/nDevices), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isDev(1), isBefore(before))
+		db.AssertRecords(want...)
+	})
+	t.Run("age all", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * 5)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{Before: before})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(5), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isBefore(before))
+		db.AssertRecords(want...)
+	})
+
+	// age+max, but age removes more
+	t.Run("age<max", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * nDevices * nChecks * 2)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{Before: before, MaxCount: 4})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(8), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isBefore(before))
+		db.AssertRecords(want...)
+	})
+	// age+max, but max removes more
+	t.Run("age>max", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * nDevices * nChecks * 2)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{Before: before, MaxCount: 2})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64((nPer-2)*nDevices*nChecks), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isRecordNumRange(0, nPer-2))
+		db.AssertRecords(want...)
+	})
+	// age+min, keeps enough
+	t.Run("age+min", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * nDevices * nChecks * 4)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{Before: before, MinCount: 3})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(nDevices*nChecks*(nPer-3)), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isRecordNumRange(0, nPer-3))
+		db.AssertRecords(want...)
+	})
+
+	// tests with min+max+age
+	t.Run("age<min<max", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * nDevices * nChecks * 2)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{Before: before, MinCount: 2, MaxCount: 4})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(8), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isBefore(before))
+		db.AssertRecords(want...)
+	})
+	t.Run("min<age<max", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * nDevices * nChecks * 3)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{Before: before, MinCount: 3, MaxCount: 4})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(nDevices*nChecks*(nPer-3)), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isRecordNumRange(0, nPer-3))
+		db.AssertRecords(want...)
+	})
+	t.Run("min<max<age", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * nDevices * nChecks * 2)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{Before: before, MinCount: 2, MaxCount: 3})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(nDevices*nChecks*(nPer-3)), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isRecordNumRange(0, nPer-3))
+		db.AssertRecords(want...)
+	})
+	t.Run("age+min>max", func(t *testing.T) {
+		db, all := newDB(t)
+		before := dbEpoch.Add(createCadence * nDevices * nChecks * 3)
+		n, err := db.Trim(t.Context(), CheckID{}, TrimOptions{Before: before, MinCount: 3, MaxCount: 2})
+		if err != nil {
+			t.Fatalf("Trim failed: %v", err)
+		}
+		if want, got := int64(nDevices*nChecks*(nPer-3)), n; want != got {
+			t.Fatalf("Trim removed %d records, want %d", got, want)
+		}
+		want := exclude(all, isRecordNumRange(0, nPer-3))
+		db.AssertRecords(want...)
+	})
+}
+
 func TestDB_largeDB(t *testing.T) {
 	if _, ok := os.LookupEnv("TEST_DB"); !ok {
 		t.Skip("TEST_DB not set, skipping large database test")
@@ -269,6 +564,12 @@ func auxCheck() *gen.HealthCheck {
 	}
 }
 
+var (
+	// the earliest record in the test db has this create time
+	dbEpoch       = time.Date(2021, 9, 4, 12, 0, 0, 0, time.UTC)
+	createCadence = 10 * time.Minute // each record is this much later than the previous one
+)
+
 type dbTester struct {
 	*testing.T
 	*DB
@@ -302,7 +603,7 @@ func newDBTester(t *testing.T) *dbTester {
 			t.Logf("database file size: %d bytes", stat.Size())
 		}
 	})
-	return &dbTester{T: t, DB: db, epoch: time.Date(2021, 9, 4, 12, 0, 0, 0, time.UTC)}
+	return &dbTester{T: t, DB: db, epoch: dbEpoch}
 }
 
 func (t *dbTester) Run(name string, f func(t *dbTester)) {
@@ -396,7 +697,9 @@ func (t *dbTester) testReadRecord(want, got Record) error {
 	if diff := got.CreateTime.Sub(want.CreateTime).Abs(); diff > time.Millisecond {
 		err = errors.Join(err, fmt.Errorf("create time diff %v > 1ms", diff))
 	}
-	got.CreateTime = want.CreateTime // avoid time precision loss during comparison
+	// avoid time precision loss during comparison
+	got.CreateTime = time.Time{}
+	want.CreateTime = time.Time{}
 	if diff := cmp.Diff(want, got); diff != "" {
 		err = errors.Join(err, fmt.Errorf("record mismatch (-want +got):\n%s", diff))
 	}
@@ -405,6 +708,6 @@ func (t *dbTester) testReadRecord(want, got Record) error {
 
 func (t *dbTester) tick() time.Time {
 	now := t.epoch.Add(t.timeInc)
-	t.timeInc += 10 * time.Minute
+	t.timeInc += createCadence
 	return now
 }
