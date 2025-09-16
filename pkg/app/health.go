@@ -24,7 +24,23 @@ import (
 // setupHealthRegistry returns a healthpb.Registry that is integrated with the deviceStore and announced on the rootNode.
 func setupHealthRegistry(ctx context.Context, config sysconf.Config, deviceStore *devicespb.Collection, rootNode node.Announcer, logger *zap.Logger) (_ *healthpb.Registry, close func() error, _ error) {
 	// persistent storage for health checks and history
-	healthCheckStore, err := healthdb.Open(ctx, files.Path(config.DataDir, config.Health.DBPath))
+	var dbOpts []healthdb.Option
+	if config.Health.TTL.MaxCount != nil || config.Health.TTL.MaxAge != nil {
+		// note: a min-count means nothing on its own
+		var minCount, maxCount int64
+		var maxAge time.Duration
+		if v := config.Health.TTL.MinCount; v != nil {
+			minCount = int64(*v)
+		}
+		if v := config.Health.TTL.MaxCount; v != nil {
+			maxCount = int64(*v)
+		}
+		if v := config.Health.TTL.MaxAge; v != nil {
+			maxAge = v.Duration
+		}
+		dbOpts = append(dbOpts, healthdb.WithTrimOnWrite(minCount, maxCount, maxAge))
+	}
+	healthCheckStore, err := healthdb.Open(ctx, files.Path(config.DataDir, config.Health.DBPath), dbOpts...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("health check store: %w", err)
 	}
