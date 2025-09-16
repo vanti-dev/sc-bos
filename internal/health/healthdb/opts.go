@@ -1,4 +1,4 @@
-package db
+package healthdb
 
 import (
 	"go.uber.org/zap"

@@ -1,4 +1,4 @@
-package history
+package healthhistory
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/vanti-dev/sc-bos/internal/health/healthdb"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb/internal/db"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 )
 
@@ -20,8 +20,8 @@ type Server struct {
 
 // A ServerStore provides access to health check history records.
 type ServerStore interface {
-	Read(ctx context.Context, id db.CheckID, from, to db.RecordID, desc bool, dst []db.Record) (n int, err error)
-	Count(ctx context.Context, id db.CheckID, from, to db.RecordID) (total int, err error)
+	Read(ctx context.Context, id healthdb.CheckID, from, to healthdb.RecordID, desc bool, dst []healthdb.Record) (n int, err error)
+	Count(ctx context.Context, id healthdb.CheckID, from, to healthdb.RecordID) (total int, err error)
 }
 
 func NewServer(db ServerStore) *Server {
@@ -55,7 +55,7 @@ func (s *Server) ListHealthCheckHistory(ctx context.Context, req *gen.ListHealth
 		}
 	}
 
-	buf := make([]db.Record, pageSize+1) // +1 to detect if there's a next page
+	buf := make([]healthdb.Record, pageSize+1) // +1 to detect if there's a next page
 	n, err := s.db.Read(ctx, id, from, to, orderBy == historypb.OrderByTimeDesc, buf)
 	if err != nil {
 		return nil, err
@@ -84,16 +84,16 @@ func (s *Server) ListHealthCheckHistory(ctx context.Context, req *gen.ListHealth
 	return res, nil
 }
 
-func parseCheckID(req *gen.ListHealthCheckHistoryRequest) db.CheckID {
-	return db.CheckID{Name: req.GetName(), ID: req.GetId()}
+func parseCheckID(req *gen.ListHealthCheckHistoryRequest) healthdb.CheckID {
+	return healthdb.CheckID{Name: req.GetName(), ID: req.GetId()}
 }
 
-func parseListBounds(req *gen.ListHealthCheckHistoryRequest) (from, to db.RecordID) {
+func parseListBounds(req *gen.ListHealthCheckHistoryRequest) (from, to healthdb.RecordID) {
 	if ts := req.GetPeriod().GetStartTime(); ts != nil {
-		from = db.MakeRecordID(ts.AsTime(), 0)
+		from = healthdb.MakeRecordID(ts.AsTime(), 0)
 	}
 	if ts := req.GetPeriod().GetEndTime(); ts != nil {
-		to = db.MakeRecordID(ts.AsTime(), 0)
+		to = healthdb.MakeRecordID(ts.AsTime(), 0)
 	}
 	return from, to
 }
@@ -111,7 +111,7 @@ func parseOrderBy(s string) historypb.OrderBy {
 	}
 }
 
-func decodeRecord(r db.Record) (*gen.HealthCheckRecord, error) {
+func decodeRecord(r healthdb.Record) (*gen.HealthCheckRecord, error) {
 	dst := &gen.HealthCheckRecord{
 		RecordTime: timestamppb.New(r.ID.Timestamp()),
 		HealthCheck: &gen.HealthCheck{

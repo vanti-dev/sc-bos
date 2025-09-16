@@ -1,13 +1,13 @@
-package history
+package healthhistory
 
 import (
 	"context"
 
 	"google.golang.org/protobuf/proto"
 
+	"github.com/vanti-dev/sc-bos/internal/health/healthdb"
+	"github.com/vanti-dev/sc-bos/internal/health/healthmerge"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb/internal/db"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb/internal/merge"
 )
 
 // Seeder initialises health checks from historical data.
@@ -17,7 +17,7 @@ type Seeder struct {
 
 // A SeederStore provides access to the last known health check history record.
 type SeederStore interface {
-	ReadLastRecord(ctx context.Context, id db.CheckID) (db.Record, error)
+	ReadLastRecord(ctx context.Context, id healthdb.CheckID) (healthdb.Record, error)
 }
 
 func NewSeeder(db SeederStore) *Seeder {
@@ -29,12 +29,12 @@ func (s *Seeder) Seed(ctx context.Context, name string, c *gen.HealthCheck) *gen
 	if err != nil {
 		return nil // no change made
 	}
-	merge.Check(proto.Merge, old, c)
+	healthmerge.Check(proto.Merge, old, c)
 	return old
 }
 
 func (s *Seeder) lastCheck(ctx context.Context, name, id string) (*gen.HealthCheck, error) {
-	oldDBRecord, err := s.db.ReadLastRecord(ctx, db.CheckID{Name: name, ID: id})
+	oldDBRecord, err := s.db.ReadLastRecord(ctx, healthdb.CheckID{Name: name, ID: id})
 	if err != nil {
 		return nil, err
 	}

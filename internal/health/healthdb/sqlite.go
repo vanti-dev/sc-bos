@@ -1,5 +1,5 @@
 // Package db provides a SQLite-based implementation of a health check record store.
-package db
+package healthdb
 
 import (
 	"context"

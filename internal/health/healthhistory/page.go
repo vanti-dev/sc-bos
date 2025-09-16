@@ -1,12 +1,12 @@
-package history
+package healthhistory
 
 import (
 	"encoding/base64"
 
 	"google.golang.org/protobuf/proto"
 
+	"github.com/vanti-dev/sc-bos/internal/health/healthdb"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb/internal/db"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 )
 
@@ -16,13 +16,13 @@ const (
 	maxPageSize     = 1000
 )
 
-func parsePageInfo(req *gen.ListHealthCheckHistoryRequest) (nextID db.RecordID, pageSize, totalSize int32, _ error) {
+func parsePageInfo(req *gen.ListHealthCheckHistoryRequest) (nextID healthdb.RecordID, pageSize, totalSize int32, _ error) {
 	pageToken, err := unmarshalToken(req.GetPageToken())
 	if err != nil {
 		return 0, 0, 0, err
 	}
 	if id := pageToken.GetRecordId(); id != "" {
-		nextID, err = db.ParseRecordID(id)
+		nextID, err = healthdb.ParseRecordID(id)
 		if err != nil {
 			return 0, 0, 0, err
 		}
@@ -51,7 +51,7 @@ func unmarshalToken(token string) (*historypb.PageToken, error) {
 	return pb, err
 }
 
-func createNextPageToken(r db.Record, totalSize int32) (string, error) {
+func createNextPageToken(r healthdb.Record, totalSize int32) (string, error) {
 	return marshalToken(&historypb.PageToken{RecordId: r.ID.String(), TotalSize: totalSize})
 }
 

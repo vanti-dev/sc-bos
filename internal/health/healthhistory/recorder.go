@@ -1,4 +1,4 @@
-package history
+package healthhistory
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
+	"github.com/vanti-dev/sc-bos/internal/health/healthdb"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb/internal/db"
 )
 
 // A Recorder records health check updates into a database.
@@ -17,7 +17,7 @@ type Recorder struct {
 
 // A RecorderStore allows inserting health check history records.
 type RecorderStore interface {
-	Insert(ctx context.Context, record db.Record) (db.Record, error)
+	Insert(ctx context.Context, record healthdb.Record) (healthdb.Record, error)
 }
 
 func NewRecorder(db RecorderStore) *Recorder {
@@ -29,7 +29,7 @@ func (r *Recorder) Record(ctx context.Context, name string, check *gen.HealthChe
 	if err != nil {
 		return err
 	}
-	rec := db.Record{
+	rec := healthdb.Record{
 		Name:       name,
 		CheckID:    check.Id,
 		CreateTime: time.Now(),
