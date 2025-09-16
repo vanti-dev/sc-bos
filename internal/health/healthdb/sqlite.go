@@ -1,4 +1,4 @@
-// Package db provides a SQLite-based implementation of a health check record store.
+// Package healthdb provides a SQLite-based implementation of a health check record store.
 package healthdb
 
 import (
@@ -26,9 +26,7 @@ var schema = sqlite.MustLoadVersionedSchema(schemaVersionsFS, "schema")
 type DB struct {
 	db *sqlite.Database
 
-	// zero means none
-	minCount, maxCount uint64
-	maxAge             time.Duration
+	trimAfterWriteOption trimAfterWriteOption
 }
 
 func Open(ctx context.Context, path string, options ...Option) (*DB, error) {
@@ -117,7 +115,12 @@ func (d *DB) InsertBulk(ctx context.Context, records []Record) error {
 			records[i].ID = rowID
 			records[i].CreateTime = rowID.Timestamp() // truncated and without time zone
 		}
-		return stmt.Close()
+		err = stmt.Close()
+		if err != nil {
+			return err
+		}
+
+		return d.trimAfterWrite(ctx, tx, records)
 	})
 	return err
 }
@@ -267,6 +270,27 @@ type TrimOptions struct {
 
 func (o TrimOptions) IsZero() bool {
 	return o.MinCount == 0 && o.MaxCount == 0 && o.Before.IsZero()
+}
+
+func (d *DB) trimAfterWrite(ctx context.Context, tx *sql.Tx, records []Record) error {
+	tOpts := d.trimAfterWriteOption.toTrimOptions()
+	if tOpts.IsZero() {
+		return nil
+	}
+	// we only trim the modified checks so we aren't doing excess query work
+	seenIDs := make(map[CheckID]struct{})
+	for _, record := range records {
+		id := CheckID{Name: record.Name, ID: record.CheckID}
+		if _, seen := seenIDs[id]; seen {
+			continue
+		}
+		seenIDs[id] = struct{}{}
+		_, err := d.trim(ctx, tx, id, tOpts)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Trim removes records from the database according to the provided options.
