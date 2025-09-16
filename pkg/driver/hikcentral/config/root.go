@@ -31,10 +31,10 @@ type API struct {
 }
 
 type Settings struct {
-	InfoPoll      *jsontypes.Duration `json:"infoPoll,omitempty"`
-	OccupancyPoll *jsontypes.Duration `json:"occupancyPoll,omitempty"`
-	EventsPoll    *jsontypes.Duration `json:"eventsPoll,omitempty"`
-	StreamPoll    *jsontypes.Duration `json:"streamPoll,omitempty"`
+	InfoPoll      *jsontypes.Duration `json:"infoPoll,omitempty"`      // How often to poll for camera info updates. Defaults to 5 minutes
+	OccupancyPoll *jsontypes.Duration `json:"occupancyPoll,omitempty"` // How often to poll for occupancy updates. Defaults to 1 minute
+	EventsPoll    *jsontypes.Duration `json:"eventsPoll,omitempty"`    // How often to poll for events updates. Defaults to 30 seconds
+	StreamPoll    *jsontypes.Duration `json:"streamPoll,omitempty"`    // How often to poll for stream updates. Defaults to 1 minute
 }
 
 type Camera struct {
@@ -61,6 +61,15 @@ func ReadBytes(raw []byte) (dst Root, err error) {
 	if dst.API.Timeout == nil {
 		dst.API.Timeout = &jsontypes.Duration{Duration: 5 * time.Second}
 	}
+	if dst.Settings == nil {
+		dst.Settings = &Settings{
+			InfoPoll:      &jsontypes.Duration{Duration: 5 * time.Minute},
+			OccupancyPoll: &jsontypes.Duration{Duration: 1 * time.Minute},
+			EventsPoll:    &jsontypes.Duration{Duration: 30 * time.Second},
+			StreamPoll:    &jsontypes.Duration{Duration: 1 * time.Minute},
+		}
+	}
+
 	return
 }
 
