@@ -43,17 +43,17 @@ func ExampleRegistry_history() {
 		},
 	})
 
-	registry := &Registry{
-		onCheckCreate: func(name string, c *gen.HealthCheck) *gen.HealthCheck {
+	registry := NewRegistry(
+		WithOnCheckCreate(func(name string, c *gen.HealthCheck) *gen.HealthCheck {
 			return seeder.Seed(ctx, name, c)
-		},
-		onCheckUpdate: func(name string, c *gen.HealthCheck) {
+		}),
+		WithOnCheckUpdate(func(name string, c *gen.HealthCheck) {
 			err := recorder.Record(ctx, name, c)
 			if err != nil {
 				panic(err)
 			}
-		},
-	}
+		}),
+	)
 
 	// create the check for device1 owned by "example"
 	exampleChecks := registry.ForOwner("example")

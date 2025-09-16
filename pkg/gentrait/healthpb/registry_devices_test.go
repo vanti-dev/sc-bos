@@ -23,28 +23,27 @@ func ExampleRegistry_devicesApi() {
 	devs := devicespb.NewCollection()
 	server := devices.NewServer(devicesServerModel{Collection: devs})
 
-	// todo: make this more ergonomic
-	registry := &Registry{
-		onCheckCreate: func(name string, c *gen.HealthCheck) *gen.HealthCheck {
+	registry := NewRegistry(
+		WithOnCheckCreate(func(name string, c *gen.HealthCheck) *gen.HealthCheck {
 			_, _ = devs.Update(&gen.Device{Name: name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
 				dstDev := dst.(*gen.Device)
 				dstDev.HealthChecks = merge.Checks(mask.Merge, dstDev.HealthChecks, c)
 			}), resource.WithCreateIfAbsent(), resource.WithExpectAbsent())
 			return nil
-		},
-		onCheckUpdate: func(name string, c *gen.HealthCheck) {
+		}),
+		WithOnCheckUpdate(func(name string, c *gen.HealthCheck) {
 			_, _ = devs.Update(&gen.Device{Name: name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
 				dstDev := dst.(*gen.Device)
 				dstDev.HealthChecks = merge.Checks(mask.Merge, dstDev.HealthChecks, c)
 			}))
-		},
-		onCheckDelete: func(name, id string) {
+		}),
+		WithOnCheckDelete(func(name, id string) {
 			_, _ = devs.Update(&gen.Device{Name: name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
 				dstDev := dst.(*gen.Device)
 				dstDev.HealthChecks = merge.Remove(dstDev.HealthChecks, id)
 			}), resource.WithAllowMissing(true))
-		},
-	}
+		}),
+	)
 	exampleChecks := registry.ForOwner("example")
 
 	// create the device with some metadata

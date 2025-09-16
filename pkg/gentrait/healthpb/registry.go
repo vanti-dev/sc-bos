@@ -26,6 +26,55 @@ type Registry struct {
 	onNameDelete  func(name string)
 }
 
+// NewRegistry creates a new Registry instance.
+func NewRegistry(opts ...RegistryOption) *Registry {
+	r := &Registry{}
+	for _, o := range opts {
+		o.apply(r)
+	}
+	return r
+}
+
+// RegistryOption is an option for configuring a Registry.
+type RegistryOption interface {
+	apply(*Registry)
+}
+
+type registryOptionFunc func(*Registry)
+
+func (f registryOptionFunc) apply(r *Registry) {
+	f(r)
+}
+
+// WithOnCheckCreate configures a callback that is invoked when a new check is created.
+// The callback may return a different HealthCheck instance to be used instead of the one passed in.
+func WithOnCheckCreate(f func(name string, c *gen.HealthCheck) *gen.HealthCheck) RegistryOption {
+	return registryOptionFunc(func(r *Registry) {
+		r.onCheckCreate = f
+	})
+}
+
+// WithOnCheckUpdate configures a callback that is invoked when a check is updated.
+func WithOnCheckUpdate(f func(name string, c *gen.HealthCheck)) RegistryOption {
+	return registryOptionFunc(func(r *Registry) {
+		r.onCheckUpdate = f
+	})
+}
+
+// WithOnCheckDelete configures a callback that is invoked when a check is deleted.
+func WithOnCheckDelete(f func(name, id string)) RegistryOption {
+	return registryOptionFunc(func(r *Registry) {
+		r.onCheckDelete = f
+	})
+}
+
+// WithOnNameDelete configures a callback that is invoked when the last check for a name is deleted.
+func WithOnNameDelete(f func(name string)) RegistryOption {
+	return registryOptionFunc(func(r *Registry) {
+		r.onNameDelete = f
+	})
+}
+
 func (r *Registry) GetCheck(name, id string) *gen.HealthCheck {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

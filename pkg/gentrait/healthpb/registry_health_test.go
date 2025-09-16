@@ -21,17 +21,16 @@ func ExampleRegistry_healthApi() {
 	}
 	announced := make(map[string]device)
 
-	// todo: make this more ergonomic
-	registry := &Registry{
-		onCheckCreate: func(name string, c *gen.HealthCheck) *gen.HealthCheck {
+	registry := NewRegistry(
+		WithOnCheckCreate(func(name string, c *gen.HealthCheck) *gen.HealthCheck {
 			mu.Lock()
 			defer mu.Unlock()
 			m := NewModel()
 			undo := n.Announce(name, node.HasTrait(TraitName, node.WithClients(gen.WrapHealthApi(NewModelServer(m)))))
 			announced[name] = device{undo: undo, m: m}
 			return nil
-		},
-		onCheckUpdate: func(name string, c *gen.HealthCheck) {
+		}),
+		WithOnCheckUpdate(func(name string, c *gen.HealthCheck) {
 			mu.Lock()
 			defer mu.Unlock()
 			a := announced[name]
@@ -39,8 +38,8 @@ func ExampleRegistry_healthApi() {
 			if err != nil {
 				panic(fmt.Errorf("failed to create health check: %w", err))
 			}
-		},
-		onCheckDelete: func(name, id string) {
+		}),
+		WithOnCheckDelete(func(name, id string) {
 			mu.Lock()
 			defer mu.Unlock()
 			a, ok := announced[name]
@@ -51,8 +50,8 @@ func ExampleRegistry_healthApi() {
 			if err != nil {
 				panic(fmt.Errorf("can't delete health check %q.%q: %w", name, id, err))
 			}
-		},
-		onNameDelete: func(name string) {
+		}),
+		WithOnNameDelete(func(name string) {
 			mu.Lock()
 			defer mu.Unlock()
 			a, ok := announced[name]
@@ -61,8 +60,8 @@ func ExampleRegistry_healthApi() {
 			}
 			a.undo()
 			delete(announced, name)
-		},
-	}
+		}),
+	)
 
 	// set up checks for the example
 	exampleChecks := registry.ForOwner("example")
