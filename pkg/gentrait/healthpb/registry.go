@@ -20,6 +20,7 @@ type Registry struct {
 	mu     sync.RWMutex
 	byName map[string]*namedChecks
 
+	onNameCreate  func(name string)
 	onCheckCreate func(name string, c *gen.HealthCheck) *gen.HealthCheck
 	onCheckUpdate func(name string, c *gen.HealthCheck)
 	onCheckDelete func(name, id string)
@@ -44,6 +45,13 @@ type registryOptionFunc func(*Registry)
 
 func (f registryOptionFunc) apply(r *Registry) {
 	f(r)
+}
+
+// WithOnNameCreate configures a callback that is invoked when a new name is created.
+func WithOnNameCreate(f func(name string)) RegistryOption {
+	return registryOptionFunc(func(r *Registry) {
+		r.onNameCreate = f
+	})
 }
 
 // WithOnCheckCreate configures a callback that is invoked when a new check is created.
@@ -113,6 +121,9 @@ func (r *Registry) addCheck(name, id string, c *checkBase) error {
 			byId: make(map[string]*checkBase),
 		}
 		r.byName[name] = nc
+		if r.onNameCreate != nil {
+			r.onNameCreate(name)
+		}
 	}
 	_, exists := nc.byId[id]
 	if exists {
