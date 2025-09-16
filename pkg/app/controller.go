@@ -120,7 +120,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	}
 	storesConfig.DataDir = config.DataDir
 	storesConfig.Logger = logger.Named("stores")
-	store := stores.New(config.Stores)
+	store := stores.New(storesConfig)
 
 	certConfig := config.CertConfig
 	// Create a private key if it doesn't exist.
