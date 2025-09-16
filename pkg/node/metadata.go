@@ -10,8 +10,8 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
+	"github.com/vanti-dev/sc-bos/internal/node/nodeopts"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
 )
 
 // mergeAllMetadata uses the metadatapb.Merge algorithm to merge multiple metadata objects into one.
@@ -98,7 +98,7 @@ func (ml *metadataList) isEmpty() bool {
 	return len(*ml) == 0
 }
 
-func (ml *metadataList) updateCollection(c *devicespb.Collection, opts ...resource.WriteOption) error {
+func (ml *metadataList) updateCollection(c nodeopts.Store, opts ...resource.WriteOption) error {
 	if ml.isEmpty() {
 		return fmt.Errorf("no name: empty metadata list")
 	}
