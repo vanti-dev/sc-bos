@@ -12,6 +12,7 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
+	"github.com/vanti-dev/sc-bos/internal/node/nodeopts"
 	"github.com/vanti-dev/sc-bos/internal/router"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
 	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
@@ -36,14 +37,14 @@ type Node struct {
 	// We want it to wait.
 	// We also need devices and mlLists to be consistent with each other.
 	mu      sync.Mutex
-	devices *devicespb.Collection
+	devices nodeopts.Store
 	mlLists map[string]*metadataList
 
 	Logger *zap.Logger
 }
 
 // New creates a new Node with the given name.
-func New(name string) *Node {
+func New(name string, opts ...Option) *Node {
 	mapID := func(requestName string) string {
 		if requestName == "" {
 			return name
@@ -52,12 +53,17 @@ func New(name string) *Node {
 		}
 	}
 
+	cfg := nodeopts.Join(opts...)
+	if cfg.Store == nil {
+		cfg.Store = devicespb.NewCollection(resource.WithIDInterceptor(mapID))
+	}
+
 	node := &Node{
 		name: name,
 		router: router.New(router.WithKeyInterceptor(func(key string) (mappedKey string, err error) {
 			return mapID(key), nil
 		})),
-		devices: devicespb.NewCollection(resource.WithIDInterceptor(mapID)),
+		devices: cfg.Store,
 		mlLists: make(map[string]*metadataList),
 		Logger:  zap.NewNop(),
 	}
