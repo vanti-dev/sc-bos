@@ -72,6 +72,8 @@ type Config struct {
 
 	DisablePprof bool `json:"disablePprof"` // don't register net/http/pprof handlers
 
+	Health *Health `json:"health,omitempty"`
+
 	Systems map[string]system.RawConfig `json:"systems,omitempty"`
 
 	Policy     policy.Policy `json:"-"` // Override the policy used for RPC calls. Defaults to policy.Default
@@ -138,6 +140,15 @@ const (
 	PolicyCheck PolicyMode = "check" // Check requests against the policy if the request has a token or client cert.
 )
 
+// Health configures the health check system.
+type Health struct {
+	// DBPath is the location of the SQLite database file used to store health check results.
+	// Relative paths are relative to DataDir.
+	// Defaults to "health/checks.db".
+	DBPath string `json:"dbPath,omitempty"`
+	// todo: TTL and other config options
+}
+
 func Default() Config {
 	logConf := zap.NewDevelopmentConfig()
 	config := Config{
@@ -157,6 +168,10 @@ func Default() Config {
 			CorsOrigins: []string{"*"},
 		},
 		StaticHosting: []http.StaticHostingConfig{},
+
+		Health: &Health{
+			DBPath: "health/checks.db",
+		},
 
 		CertConfig: &Certs{
 			KeyFile:      "grpc.key.pem",
