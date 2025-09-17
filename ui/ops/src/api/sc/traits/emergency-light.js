@@ -31,7 +31,7 @@ export function getTestResultSet(request, tracker) {
 function getLatestTestResultsRequestFromObject(obj) {
  if (!obj) return undefined;
  const dst = new GetTestResultSetRequest();
- setProperties(dst, obj, 'name');
+ setProperties(dst, obj, 'name', 'queryDevice');
  return dst;
 }
 
