@@ -57,7 +57,7 @@
         </span>
       </template>
       <template #item.functionTest.endTime="{ item }">
-        <span v-if="item.functionTest.endTime">
+        <span v-if="item.functionTest && item.functionTest.endTime">
           {{ timestampToDate(item.functionTest.endTime).toLocaleString() }}
         </span>
       </template>
@@ -67,7 +67,7 @@
         </span>
       </template>
       <template #item.durationTest.endTime="{ item }">
-        <span v-if="item.durationTest.endTime">
+        <span v-if="item.durationTest && item.durationTest.endTime">
           {{ timestampToDate(item.durationTest.endTime).toLocaleString() }}
         </span>
       </template>
@@ -173,9 +173,15 @@ async function downloadCSV() {
 
   const csvRows = testResults.value.map(item =>
       headers.map(h => {
-        let val = getValue(item, h.key);
-        if (h.key.endsWith('result') && val !== undefined && val !== null) {
-          // Use the same formatting as in the table
+        let val;
+        if (h.key.startsWith('functionTest') && !item.functionTest) {
+          val = '';
+        } else if (h.key.startsWith('durationTest') && !item.durationTest) {
+          val = '';
+        } else {
+          val = getValue(item, h.key);
+        }
+        if (h.key.endsWith('result') && val !== undefined && val !== null && val !== '') {
           val = emergencyLightResultToString(val);
         }
         if (h.key.endsWith('endTime') && val) {
