@@ -24,6 +24,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/meter"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/mode"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/occupancy"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/onoff"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/openclose"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/status"
 )
@@ -40,6 +41,7 @@ var DefaultFeatures = []zone.Factory{
 	openclose.Feature,
 	status.Feature,
 	airquality.Feature,
+	onoff.Feature,
 }
 
 // Factory builds a generic area using DefaultFeatures.
