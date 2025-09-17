@@ -634,6 +634,12 @@
           "appearance": {"title": "Project Door Blackout"},
           "membership": {"subsystem": "shades"},
           "location": {"floor": "Ground Floor", "zone": "Project Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/DSH-001",
+          "traits": [{"name": "smartcore.traits.OnOff"}],
+          "appearance": {"title": "Dishwasher"},
+          "location": {"floor": "Ground Floor", "zone": "Kitchen"}
         }
       ]
     },

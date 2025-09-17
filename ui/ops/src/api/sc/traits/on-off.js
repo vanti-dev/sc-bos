@@ -2,7 +2,7 @@ import {fieldMaskFromObject, setProperties} from '@/api/convpb';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setValue, trackAction} from '@/api/resource.js';
 import {OnOffApiPromiseClient} from '@smart-core-os/sc-api-grpc-web/traits/on_off_grpc_web_pb';
-import {GetOnOffRequest, PullOnOffRequest} from '@smart-core-os/sc-api-grpc-web/traits/on_off_pb';
+import {GetOnOffRequest, PullOnOffRequest, UpdateOnOffRequest} from '@smart-core-os/sc-api-grpc-web/traits/on_off_pb';
 
 /**
  * @param {Partial<PullOnOffRequest.AsObject>} request
@@ -31,6 +31,18 @@ export function getOnOff(request, tracker) {
   return trackAction('OnOff.getOnOff', tracker ?? {}, endpoint => {
     const api = apiClient(endpoint);
     return api.getOnOff(getOnOffRequestFromObject(request));
+  });
+}
+
+/**
+ * @param {Partial<UpdateOnOffRequest.AsObject>} request
+ * @param {ActionTracker<OnOff.AsObject>} [tracker]
+ * @return {Promise<OnOff.AsObject>}
+ */
+export function updateOnOff(request, tracker) {
+  return trackAction('OnOff.updateOnOff', tracker ?? {}, endpoint => {
+    const api = apiClient(endpoint);
+    return api.updateOnOff(updateOnOffRequestFromObject(request));
   });
 }
 
@@ -65,5 +77,18 @@ function getOnOffRequestFromObject(obj) {
   const dst = new GetOnOffRequest();
   setProperties(dst, obj, 'name');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  return dst;
+}
+
+/**
+ * @param {Partial<UpdateOnOffRequest.AsObject>} obj
+ * @return {UpdateOnOffRequest|undefined}
+ */
+function updateOnOffRequestFromObject(obj) {
+  if (!obj) return undefined;
+  
+  const dst = new UpdateOnOffRequest();
+  setProperties(dst, obj, 'name', 'onOff');
+  dst.setUpdateMask(fieldMaskFromObject(obj.updateMask));
   return dst;
 }
