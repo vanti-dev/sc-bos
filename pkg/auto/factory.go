@@ -9,6 +9,8 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/vanti-dev/sc-bos/pkg/app/stores"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -16,6 +18,7 @@ import (
 type Services struct {
 	Logger          *zap.Logger
 	Node            *node.Node // for advertising devices
+	Devices         gen.DevicesApiClient
 	Database        *bolthold.Store
 	Stores          *stores.Stores
 	GRPCServices    grpc.ServiceRegistrar // for registering non-routed services
@@ -23,6 +26,7 @@ type Services struct {
 	ClientTLSConfig *tls.Config
 	Now             func() time.Time
 	Config          service.ConfigUpdater
+	Health          *healthpb.Checks
 }
 
 // Factory constructs new automation instances.

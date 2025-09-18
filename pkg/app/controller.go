@@ -24,8 +24,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/smart-core-os/sc-golang/pkg/resource"
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/account"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
+	"github.com/vanti-dev/sc-bos/internal/node/nodeopts"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/interceptors"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
@@ -38,6 +41,8 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb"
 	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
@@ -89,7 +94,17 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	if cName == "" {
 		cName = config.Name
 	}
-	rootNode := node.New(cName)
+
+	// external store for devices so we can attach multiple resources to it,
+	// like metadata and health checks.
+	deviceStore := devicespb.NewCollection(resource.WithIDInterceptor(func(oldID string) (newID string) {
+		if oldID == "" {
+			return cName
+		} else {
+			return oldID
+		}
+	}))
+	rootNode := node.New(cName, nodeopts.WithStore(deviceStore))
 	rootNode.Logger = logger.Named("node")
 
 	var accountStore *account.Store
@@ -273,6 +288,9 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	devicesApi := devices.NewServer(rootNode, devicesApiOpts...)
 	devicesApi.Register(grpcServer)
 
+	// HealthApi, HealthHistoryApi, and adding health checks to the DevicesApi
+	checkRegistry, closeHealthStore, err := setupHealthRegistry(ctx, config, deviceStore, rootNode, logger.Named("health"))
+
 	grpcWebServer := grpcweb.WrapServer(grpcServer,
 		grpcweb.WithOriginFunc(func(origin string) bool {
 			return true
@@ -337,6 +355,8 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Enrollment:       enrollServer,
 		Logger:           logger,
 		Node:             rootNode,
+		Devices:          gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, devicesApi)),
+		CheckRegistry:    checkRegistry,
 		Tasks:            &task.Group{},
 		Database:         db,
 		Stores:           store,
@@ -353,6 +373,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	}
 	c.Defer(manager.Close)
 	c.Defer(store.Close)
+	c.Defer(closeHealthStore)
 	return c, nil
 }
 
@@ -410,12 +431,14 @@ type Controller struct {
 	// services for drivers/automations
 	Logger          *zap.Logger
 	Node            *node.Node
+	Devices         gen.DevicesApiClient
 	Tasks           *task.Group
 	Database        *bolthold.Store
 	TokenValidators *token.ValidatorSet
 	GRPCCerts       *pki.SourceSet
 	Stores          *stores.Stores
 	Accounts        *account.Store
+	CheckRegistry   *healthpb.Registry
 
 	ReflectionServer *reflectionapi.Server
 
