@@ -1,11 +1,11 @@
 <template>
   <div>
-    <slot :resource="onOffValue"/>
+    <slot :resource="onOffValue" :update="doUpdateOnOff" :update-tracker="updateTracker"/>
   </div>
 </template>
 
 <script setup>
-import {usePullOnOff} from '@/traits/onOff/onOff.js';
+import {usePullOnOff, useUpdateOnOff} from '@/traits/onOff/onOff.js';
 import {reactive} from 'vue';
 
 const props = defineProps({
@@ -20,4 +20,6 @@ const props = defineProps({
 });
 
 const onOffValue = reactive(usePullOnOff(() => props.name, () => props.paused));
+const updateTracker = reactive(useUpdateOnOff(() => props.name));
+const doUpdateOnOff = updateTracker.updateOnOff;
 </script>

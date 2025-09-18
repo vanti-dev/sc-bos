@@ -8,7 +8,7 @@
         <v-list-item-title class="text-body-small text-capitalize">State</v-list-item-title>
         <template #append>
           <v-list-item-subtitle>
-            {{ stateStr }}
+            {{ state }}
           </v-list-item-subtitle>
         </template>
       </v-list-item>
@@ -18,13 +18,13 @@
       <v-btn
           size="small"
           variant="tonal"
-          @click="setOff()">
+          @click="setOnOff(OnOff.State.OFF)">
         Off
       </v-btn>
       <v-btn
           size="small"
           variant="tonal"
-          @click="setOn()">
+          @click="setOnOff(OnOff.State.ON)">
         On
       </v-btn>
     </v-card-actions>
@@ -33,7 +33,7 @@
 
 <script setup>
 
-import {useOccupancy} from '@/traits/occupancy/occupancy.js';
+import {useOnOff} from '@/traits/onOff/onOff.js';
 import {OnOff} from '@smart-core-os/sc-api-grpc-web/traits/on_off_pb.js';
 
 const props = defineProps({
@@ -45,24 +45,23 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
-  },
-  name: {
-    type: String,
-    required: true
   }
 });
 const emit = defineEmits([
-  'updateOnOff' // of OnOff.AsObject | UpdateOnOffRequest.AsObject
+  'updateOnOff' // of UpdateOnOffRequest.AsObject
 ]);
 
-const {stateStr} = (() => props.value);
+const {state} = useOnOff(() => props.value);
 
-function setOff() {
-  emit('updateOnOff', {name: props.name, onOff: {state: OnOff.State.OFF}});
-}
-
-function setOn() {
-  emit('updateOnOff', {name: props.name, onOff: {state: OnOff.State.ON}});
+/**
+ * Update OnOff state
+ *
+ * @param {OnOff.State} s - new state
+ */
+function setOnOff(s) {
+  console.debug('Setting OnOff to OFF for', props.value);
+  console.debug('Current value:', state.value);
+  emit('updateOnOff', {name: 'van/uk/brum/ugs/devices/FCU-L00-01', onOff: {state: s}});
 }
 
 </script>

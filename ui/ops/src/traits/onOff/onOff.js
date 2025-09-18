@@ -1,5 +1,4 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource.js';
-import {updateAirTemperature} from '@/api/sc/traits/air-temperature.js';
 import {pullOnOff, updateOnOff} from '@/api/sc/traits/on-off.js';
 import {setRequestName, toQueryObject, watchResource} from '@/util/traits.js';
 import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
@@ -8,9 +7,10 @@ import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 /**
  * @param {MaybeRefOrGetter<string|PullOnOffRequest.AsObject>} query
  * @param {MaybeRefOrGetter<boolean>=} paused
- * @return {ToRefs<UnwrapNestedRefs<ResourceValue<OnOff.AsObject, PullOnOffResponse>>>}
+ * @return {ToRefs<ResourceValue<OnOff.AsObject, PullOnOffResponse>>}
  */
 export function usePullOnOff(query, paused = false) {
+ console.debug('usePullOnOff');
  const resource = reactive(
    /** @type {ResourceValue<OnOff.AsObject, PullOnOffResponse>} */
    newResourceValue()
@@ -59,4 +59,30 @@ export function useUpdateOnOff(name) {
    return updateOnOff(toRequestObject(req), tracker);
   }
  };
+}
+
+/**
+ * @param {MaybeRefOrGetter<OnOff.AsObject|null>} value
+ * @returns {{state: ComputedRef<string|*>, table: ComputedRef<[{label: string, value: (string|*)}]>}}
+ */
+export function useOnOff(value) {
+  const _v = computed(() => toValue(value));
+  
+  const state = computed(() => {
+   const v = _v.value;
+   if (!v) return '';
+   return v.onOff?.state ?? '';
+  })
+ 
+ const table = computed(() => {
+  return [{
+   label: 'State',
+   value: state.value
+  }];
+ });
+ 
+  return {
+    state,
+    table
+  }
 }
