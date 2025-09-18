@@ -540,10 +540,14 @@ func (id RecordID) String() string {
 	return fmt.Sprintf("%016X", int64(id))
 }
 
+// sourceAllocator maintains a cache of source name to ID mappings, so that we don't have to query the database for
+// it each time we insert.
+// Can only be used within a single transaction (e.g. bulk insert) because the sources table, which this caches,
+// can be modified between transactions.
 type sourceAllocator struct {
 	sources    map[string]int64 // source name to ID mapping
-	insertStmt *sql.Stmt        // prepared statement for inserting new sources if they don't exist
 	queryStmt  *sql.Stmt        // prepared statement for querying source IDs
+	insertStmt *sql.Stmt        // prepared statement for inserting new sources if they don't exist
 }
 
 func newSourceAllocator(ctx context.Context, tx *sql.Tx) (*sourceAllocator, error) {
@@ -552,12 +556,12 @@ func newSourceAllocator(ctx context.Context, tx *sql.Tx) (*sourceAllocator, erro
 	}
 
 	var err error
-	sc.insertStmt, err = tx.PrepareContext(ctx, "INSERT OR IGNORE INTO history_sources (source) VALUES (?)")
+	sc.queryStmt, err = tx.PrepareContext(ctx, "SELECT id FROM history_sources WHERE source = ?")
 	if err != nil {
 		return nil, err
 	}
 
-	sc.queryStmt, err = tx.PrepareContext(ctx, "SELECT id FROM history_sources WHERE source = ?")
+	sc.insertStmt, err = tx.PrepareContext(ctx, "INSERT INTO history_sources (source) VALUES (?) RETURNING id")
 	if err != nil {
 		return nil, err
 	}
@@ -565,20 +569,20 @@ func newSourceAllocator(ctx context.Context, tx *sql.Tx) (*sourceAllocator, erro
 	return sc, nil
 }
 
+// getOrInsertSource returns the ID in the sources table for the given source name.
+// If the source doesn't exist within the table, it is inserted.
+// Results are cached so calling getOrInsertSource for the same source multiple times is efficient.
 func (sa *sourceAllocator) getOrInsertSource(ctx context.Context, source string) (int64, error) {
 	if id, ok := sa.sources[source]; ok {
 		return id, nil
 	}
 
-	// Insert the source if it doesn't exist
-	_, err := sa.insertStmt.ExecContext(ctx, source)
-	if err != nil {
-		return 0, err
-	}
-
 	// Query the ID of the source
 	var id int64
-	err = sa.queryStmt.QueryRowContext(ctx, source).Scan(&id)
+	err := sa.queryStmt.QueryRowContext(ctx, source).Scan(&id)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = sa.insertStmt.QueryRowContext(ctx, source).Scan(&id)
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -587,6 +591,12 @@ func (sa *sourceAllocator) getOrInsertSource(ctx context.Context, source string)
 	return id, nil
 }
 
+// recordIDAllocator is used to efficiently allocate RecordID within a single transaction.
+// Each RecordID encodes both a timestamp and a serial number. When a new row is to be inserted, we need to determine
+// the next free serial number for the given timestamp.
+// recordIDAllocator caches the highest serial number used for each seen timestamp, so we don't have to query it
+// on every INSERT.
+// Can only be used within a single transaction (e.g. bulk insert) because new records can be inserted between transactions.
 type recordIDAllocator struct {
 	maxRecordIDByTS map[int64]RecordID // map from millisecond timestamp to the max record ID within that ts
 	stmt            *sql.Stmt          // prepared statement for querying the max record ID for a given millisecond timestamp
@@ -606,6 +616,9 @@ func newRecordIDAllocator(ctx context.Context, tx *sql.Tx) (*recordIDAllocator, 
 	return ra, nil
 }
 
+// allocateRecordID returns the next free RecordID for the given timestamp.
+// Queries the database if this timestamp hasn't been seen before. The returned RecordID is considered allocated,
+// so subsequent calls with the same timestamp will return incrementing RecordIDs.
 func (ra *recordIDAllocator) allocateRecordID(ctx context.Context, ts time.Time) (RecordID, error) {
 	var (
 		anyExist bool
@@ -632,6 +645,7 @@ func (ra *recordIDAllocator) allocateRecordID(ctx context.Context, ts time.Time)
 	if anyExist {
 		next, ok = highest.Next()
 		if !ok {
+			// would overflow into the next timestamp
 			return 0, ErrTooManyRecords
 		}
 	} else {
