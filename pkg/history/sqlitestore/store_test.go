@@ -17,7 +17,7 @@ import (
 
 func TestDatabase_Insert(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// Using fixed origin time for test determinism
 	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
@@ -56,45 +56,55 @@ func TestDatabase_Insert(t *testing.T) {
 }
 
 // verifyRecords retrieves all records for a source from the database and verifies they match expected records.
-func verifyRecords(t *testing.T, db *Database, ctx context.Context, expected []Record) {
+func verifyRecords(t testing.TB, db *Database, ctx context.Context, expected []Record) {
 	t.Helper()
 
-	// Create a slice with capacity to hold all expected records
-	retrievedRecords := make([]Record, len(expected)+1)
+	buf := make([]Record, 1000)
 
-	// Fetch all records using zero-value Records to indicate full range
-	count, err := db.Read(ctx, "", 0, 0, false, retrievedRecords)
-	if err != nil {
-		t.Fatalf("unexpected error reading records: %v", err)
-	}
-
-	if count != len(expected) {
-		t.Errorf("expected %d records, got %d", len(expected), count)
-	}
-
-	// Verify each record has correct data
-	for i := range count {
-		if retrievedRecords[i].ID == 0 {
-			t.Errorf("record %d: missing ID", i)
+	var next RecordID
+	for len(expected) > 0 {
+		clear(buf)
+		// Fetch all records using zero-value Records to indicate full range
+		count, err := db.Read(ctx, "", next, 0, false, buf)
+		if err != nil {
+			t.Fatalf("unexpected error reading records: %v", err)
 		}
 
-		diff := cmp.Diff(expected[i], retrievedRecords[i],
+		// either we should fill the buffer or get all remaining records
+		if count != len(expected) && count != len(buf) {
+			t.Errorf("expected %d records, got %d", len(expected), count)
+			return
+		}
+
+		// Verify each record has correct data
+		for i := range count {
+			if buf[i].ID == 0 {
+				t.Errorf("record %d: missing ID", i)
+			}
+		}
+		diff := cmp.Diff(expected[:count], buf[:count],
 			cmpopts.IgnoreFields(Record{}, "ID"),
 			cmpopts.EquateApproxTime(time.Millisecond),
 		)
 		if diff != "" {
-			t.Errorf("record %d: data mismatch (-want +got):\n%s", i, diff)
+			t.Errorf("data mismatch (-want +got):\n%s", diff)
+		}
+		expected = expected[count:]
+		if count > 0 {
+			next = buf[count-1].ID + 1
 		}
 	}
+
 }
 
 func TestDatabase_InsertBulk(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
+	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 	records := []Record{
-		{Source: "source-1", CreateTime: time.Now(), Payload: []byte("payload-1")},
-		{Source: "source-2", CreateTime: time.Now(), Payload: []byte("payload-2")},
+		{Source: "source-1", CreateTime: originTime, Payload: []byte("payload-1")},
+		{Source: "source-2", CreateTime: originTime.Add(time.Second), Payload: []byte("payload-2")},
 	}
 
 	err := db.InsertBulk(ctx, records)
@@ -102,20 +112,22 @@ func TestDatabase_InsertBulk(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	for i, record := range records {
-		if record.ID == 0 {
-			t.Errorf("expected valid ID for record %d, got zero", i)
-		}
+	expect := []Record{
+		{Source: "source-1", CreateTime: originTime, Payload: []byte("payload-1")},
+		{Source: "source-2", CreateTime: originTime.Add(time.Second), Payload: []byte("payload-2")},
 	}
+	verifyRecords(t, db, ctx, expect)
 }
 
 func TestDatabase_InsertBulk_DuplicateSources(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
+	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
+	source := "duplicate-source"
 	records := []Record{
-		{Source: "duplicate-source", CreateTime: time.Now(), Payload: []byte("payload-1")},
-		{Source: "duplicate-source", CreateTime: time.Now(), Payload: []byte("payload-2")},
+		{Source: source, CreateTime: originTime, Payload: []byte("payload-1")},
+		{Source: source, CreateTime: originTime.Add(time.Second), Payload: []byte("payload-2")},
 	}
 
 	err := db.InsertBulk(ctx, records)
@@ -123,11 +135,16 @@ func TestDatabase_InsertBulk_DuplicateSources(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
+	expect := []Record{
+		{Source: source, CreateTime: originTime, Payload: []byte("payload-1")},
+		{Source: source, CreateTime: originTime.Add(time.Second), Payload: []byte("payload-2")},
+	}
+	verifyRecords(t, db, ctx, expect)
 }
 
 func TestDatabase_TrimCount(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 	records := []Record{
@@ -164,7 +181,7 @@ func TestDatabase_TrimCount(t *testing.T) {
 
 func TestDatabase_TrimTime(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 	records := []Record{
@@ -198,7 +215,7 @@ func TestDatabase_TrimTime(t *testing.T) {
 
 func TestDatabase_InsertBulk_WithMaxCount(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	source := "trim-source"
 	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
@@ -223,7 +240,7 @@ func TestDatabase_InsertBulk_WithMaxCount(t *testing.T) {
 
 func TestDatabase_InsertBulk_WithEarliestTime(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	now := time.Now()
 	source := "time-trim-source"
@@ -253,7 +270,7 @@ func TestDatabase_InsertBulk_WithEarliestTime(t *testing.T) {
 
 func TestDatabase_Read(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	source := "test-source"
 	payload := []byte("test-payload")
@@ -285,7 +302,7 @@ func TestDatabase_Read(t *testing.T) {
 
 func TestDatabase_Count(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	source := "test-source"
 	payload := []byte("test-payload")
@@ -313,7 +330,7 @@ func TestDatabase_Count(t *testing.T) {
 
 func TestDatabase_Size(t *testing.T) {
 	db := newTestDB(t)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	size, err := db.Size(ctx)
 	if err != nil {
@@ -325,66 +342,29 @@ func TestDatabase_Size(t *testing.T) {
 	}
 }
 
-func TestDatabase_LargeScale(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping large scale test in short mode")
-	}
-
-	db := newTestDB(t)
-	ctx := context.Background()
+func BenchmarkDatabase_InsertBatch(b *testing.B) {
+	db := newTestDB(b)
+	ctx := b.Context()
+	totalRecords := b.N
 
 	const (
-		totalRecords = 1_000_000
-		numSources   = 50
-		batchSize    = 10_000 // insert in batches for efficiency
-		payloadSize  = 100    // size of each payload in bytes
+		numSources  = 50
+		batchSize   = 10_000 // insert in batches for efficiency
+		payloadSize = 100    // size of each payload in bytes
 	)
 
-	logger := zaptest.NewLogger(t)
+	logger := zaptest.NewLogger(b)
 
 	logger.Info("Starting large scale database test",
 		zap.Int("total_records", totalRecords),
 		zap.Int("num_sources", numSources),
 		zap.Int("batch_size", batchSize))
 
-	start := time.Now()
-	baseTime := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+	b.ResetTimer()
+	_ = insertTestBatches(b, db, totalRecords)
+	b.StopTimer()
 
-	// Insert records in batches
-	var expected []Record
-	for batch := 0; batch < totalRecords/batchSize; batch++ {
-		records := make([]Record, batchSize)
-
-		for i := 0; i < batchSize; i++ {
-			recordNum := batch*batchSize + i
-			sourceID := recordNum % numSources
-			record := Record{
-				Source:     fmt.Sprintf("source-%d", sourceID),
-				CreateTime: baseTime.Add(time.Duration(recordNum) * time.Millisecond),
-				Payload:    generateRandomPayload(200),
-			}
-			records[i] = record
-			expected = append(expected, record)
-		}
-
-		err := db.InsertBulk(ctx, records)
-		if err != nil {
-			t.Fatalf("failed to insert batch %d: %v", batch, err)
-		}
-
-		// Log progress every 20 batches
-		if batch%20 == 0 {
-			elapsed := time.Since(start)
-			recordsInserted := (batch + 1) * batchSize
-			rate := float64(recordsInserted) / elapsed.Seconds()
-			logger.Info("Insertion progress",
-				zap.Int("records_inserted", recordsInserted),
-				zap.Duration("elapsed", elapsed),
-				zap.Float64("records_per_second", rate))
-		}
-	}
-
-	insertDuration := time.Since(start)
+	insertDuration := b.Elapsed()
 	logger.Info("Insertion completed",
 		zap.Duration("total_time", insertDuration),
 		zap.Float64("avg_records_per_second", float64(totalRecords)/insertDuration.Seconds()))
@@ -392,17 +372,17 @@ func TestDatabase_LargeScale(t *testing.T) {
 	// Verify record count
 	count, err := db.Count(ctx, "", 0, 0)
 	if err != nil {
-		t.Fatalf("failed to count records: %v", err)
+		b.Fatalf("failed to count records: %v", err)
 	}
 
 	if count != totalRecords {
-		t.Errorf("expected %d records, got %d", totalRecords, count)
+		b.Errorf("expected %d records, got %d", totalRecords, count)
 	}
 
 	// Measure database size
 	dbSize, err := db.Size(ctx)
 	if err != nil {
-		t.Fatalf("failed to get database size: %v", err)
+		b.Fatalf("failed to get database size: %v", err)
 	}
 
 	avgSizePerRecord := float64(dbSize) / float64(totalRecords)
@@ -414,21 +394,55 @@ func TestDatabase_LargeScale(t *testing.T) {
 		zap.Float64("avg_bytes_per_record", avgSizePerRecord),
 		zap.Float64("overhead_bytes_per_record", overheadPerRecord),
 		zap.Int("total_records", count))
+}
 
-	// Verify we can still read records efficiently
-	readStart := time.Now()
-	into := make([]Record, 1000)
-	readCount, err := db.Read(ctx, "source-0", 0, 0, false, into)
-	if err != nil {
-		t.Fatalf("failed to read records: %v", err)
+func BenchmarkDatabase_Read(b *testing.B) {
+	db := newTestDB(b)
+	ctx := b.Context()
+	totalRecords := b.N
+
+	expected := insertTestBatches(b, db, totalRecords)
+
+	b.ResetTimer()
+	verifyRecords(b, db, ctx, expected)
+}
+
+func insertTestBatches(tb testing.TB, db *Database, totalRecords int) (expected []Record) {
+	const (
+		numSources  = 50
+		batchSize   = 10_000 // insert in batches for efficiency
+		payloadSize = 100    // size of each payload in bytes
+	)
+
+	baseTime := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	// Insert records in batches
+	for batch := 0; len(expected) < totalRecords; batch++ {
+		// Handle last batch which may be smaller
+		thisBatchSize := batchSize
+		if len(expected)+thisBatchSize > totalRecords {
+			thisBatchSize = totalRecords - len(expected)
+		}
+		records := make([]Record, thisBatchSize)
+
+		for i := 0; i < thisBatchSize; i++ {
+			recordNum := batch*batchSize + i
+			sourceID := recordNum % numSources
+			record := Record{
+				Source:     fmt.Sprintf("source-%d", sourceID),
+				CreateTime: baseTime.Add(time.Duration(recordNum) * time.Millisecond),
+				Payload:    generateRandomPayload(payloadSize),
+			}
+			records[i] = record
+			expected = append(expected, record)
+		}
+
+		err := db.InsertBulk(tb.Context(), records)
+		if err != nil {
+			tb.Fatalf("failed to insert batch %d: %v", batch, err)
+		}
 	}
-	readDuration := time.Since(readStart)
-
-	logger.Info("Read performance test",
-		zap.Int("records_read", readCount),
-		zap.Duration("read_time", readDuration))
-
-	verifyRecords(t, db, ctx, expected)
+	return expected
 }
 
 func generateRandomPayload(size int) []byte {
@@ -440,30 +454,30 @@ func generateRandomPayload(size int) []byte {
 	return payload
 }
 
-func newTestDB(t testing.TB) *Database {
-	t.Helper()
-	dir := t.TempDir()
+func newTestDB(tb testing.TB) *Database {
+	tb.Helper()
+	dir := tb.TempDir()
 	dbPath := filepath.Join(dir, "test.db")
 
-	ctx := context.Background()
+	ctx := tb.Context()
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		t.Fatalf("failed to create logger: %v", err)
+		tb.Fatalf("failed to create logger: %v", err)
 	}
 	db, err := Open(ctx, dbPath, WithLogger(logger))
 	if err != nil {
-		t.Fatalf("failed to open test database: %v", err)
+		tb.Fatalf("failed to open test database: %v", err)
 	}
-	t.Logf("created test database %s", dbPath)
-	t.Cleanup(func() {
+	tb.Logf("created test database %s", dbPath)
+	tb.Cleanup(func() {
 		if err := db.Close(); err != nil {
-			t.Errorf("failed to close test database: %v", err)
+			tb.Errorf("failed to close test database: %v", err)
 		}
 		stat, err := os.Stat(dbPath)
 		if err != nil {
-			t.Logf("failed to stat test database file: %v", err)
+			tb.Logf("failed to stat test database file: %v", err)
 		} else {
-			t.Logf("database file size: %d bytes", stat.Size())
+			tb.Logf("database file size: %d bytes", stat.Size())
 		}
 	})
 	return db
