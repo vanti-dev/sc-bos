@@ -153,3 +153,290 @@ export namespace PullAccessAttemptsResponse {
 
 }
 
+export class AccessGrant extends jspb.Message {
+  getId(): string;
+  setId(value: string): AccessGrant;
+
+  getStartTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setStartTime(value?: google_protobuf_timestamp_pb.Timestamp): AccessGrant;
+  hasStartTime(): boolean;
+  clearStartTime(): AccessGrant;
+
+  getEndTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setEndTime(value?: google_protobuf_timestamp_pb.Timestamp): AccessGrant;
+  hasEndTime(): boolean;
+  clearEndTime(): AccessGrant;
+
+  getPurpose(): string;
+  setPurpose(value: string): AccessGrant;
+  hasPurpose(): boolean;
+  clearPurpose(): AccessGrant;
+
+  getGrantee(): actor_pb.Actor | undefined;
+  setGrantee(value?: actor_pb.Actor): AccessGrant;
+  hasGrantee(): boolean;
+  clearGrantee(): AccessGrant;
+
+  getGranter(): actor_pb.Actor | undefined;
+  setGranter(value?: actor_pb.Actor): AccessGrant;
+  hasGranter(): boolean;
+  clearGranter(): AccessGrant;
+
+  getCreatedTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setCreatedTime(value?: google_protobuf_timestamp_pb.Timestamp): AccessGrant;
+  hasCreatedTime(): boolean;
+  clearCreatedTime(): AccessGrant;
+
+  getUpdatedTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+  setUpdatedTime(value?: google_protobuf_timestamp_pb.Timestamp): AccessGrant;
+  hasUpdatedTime(): boolean;
+  clearUpdatedTime(): AccessGrant;
+
+  getEntryCode(): string;
+  setEntryCode(value: string): AccessGrant;
+  hasEntryCode(): boolean;
+  clearEntryCode(): AccessGrant;
+
+  getQrCodeUrl(): string;
+  setQrCodeUrl(value: string): AccessGrant;
+
+  getQrCodeImage(): Uint8Array | string;
+  getQrCodeImage_asU8(): Uint8Array;
+  getQrCodeImage_asB64(): string;
+  setQrCodeImage(value: Uint8Array | string): AccessGrant;
+
+  getSkipCheckIn(): boolean;
+  setSkipCheckIn(value: boolean): AccessGrant;
+  hasSkipCheckIn(): boolean;
+  clearSkipCheckIn(): AccessGrant;
+
+  getQrCodeCase(): AccessGrant.QrCodeCase;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AccessGrant.AsObject;
+  static toObject(includeInstance: boolean, msg: AccessGrant): AccessGrant.AsObject;
+  static serializeBinaryToWriter(message: AccessGrant, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AccessGrant;
+  static deserializeBinaryFromReader(message: AccessGrant, reader: jspb.BinaryReader): AccessGrant;
+}
+
+export namespace AccessGrant {
+  export type AsObject = {
+    id: string,
+    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    purpose?: string,
+    grantee?: actor_pb.Actor.AsObject,
+    granter?: actor_pb.Actor.AsObject,
+    createdTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    updatedTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    entryCode?: string,
+    qrCodeUrl: string,
+    qrCodeImage: Uint8Array | string,
+    skipCheckIn?: boolean,
+  }
+
+  export enum QrCodeCase { 
+    QR_CODE_NOT_SET = 0,
+    QR_CODE_URL = 10,
+    QR_CODE_IMAGE = 11,
+  }
+
+  export enum PurposeCase { 
+    _PURPOSE_NOT_SET = 0,
+    PURPOSE = 4,
+  }
+
+  export enum CreatedTimeCase { 
+    _CREATED_TIME_NOT_SET = 0,
+    CREATED_TIME = 7,
+  }
+
+  export enum UpdatedTimeCase { 
+    _UPDATED_TIME_NOT_SET = 0,
+    UPDATED_TIME = 8,
+  }
+
+  export enum EntryCodeCase { 
+    _ENTRY_CODE_NOT_SET = 0,
+    ENTRY_CODE = 9,
+  }
+
+  export enum SkipCheckInCase { 
+    _SKIP_CHECK_IN_NOT_SET = 0,
+    SKIP_CHECK_IN = 12,
+  }
+}
+
+export class CreateAccessGrantRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): CreateAccessGrantRequest;
+
+  getAccessGrant(): AccessGrant | undefined;
+  setAccessGrant(value?: AccessGrant): CreateAccessGrantRequest;
+  hasAccessGrant(): boolean;
+  clearAccessGrant(): CreateAccessGrantRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CreateAccessGrantRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: CreateAccessGrantRequest): CreateAccessGrantRequest.AsObject;
+  static serializeBinaryToWriter(message: CreateAccessGrantRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CreateAccessGrantRequest;
+  static deserializeBinaryFromReader(message: CreateAccessGrantRequest, reader: jspb.BinaryReader): CreateAccessGrantRequest;
+}
+
+export namespace CreateAccessGrantRequest {
+  export type AsObject = {
+    name: string,
+    accessGrant?: AccessGrant.AsObject,
+  }
+}
+
+export class UpdateAccessGrantRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): UpdateAccessGrantRequest;
+
+  getAccessGrant(): AccessGrant | undefined;
+  setAccessGrant(value?: AccessGrant): UpdateAccessGrantRequest;
+  hasAccessGrant(): boolean;
+  clearAccessGrant(): UpdateAccessGrantRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateAccessGrantRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateAccessGrantRequest): UpdateAccessGrantRequest.AsObject;
+  static serializeBinaryToWriter(message: UpdateAccessGrantRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateAccessGrantRequest;
+  static deserializeBinaryFromReader(message: UpdateAccessGrantRequest, reader: jspb.BinaryReader): UpdateAccessGrantRequest;
+}
+
+export namespace UpdateAccessGrantRequest {
+  export type AsObject = {
+    name: string,
+    accessGrant?: AccessGrant.AsObject,
+  }
+}
+
+export class DeleteAccessGrantRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): DeleteAccessGrantRequest;
+
+  getAccessGrantId(): string;
+  setAccessGrantId(value: string): DeleteAccessGrantRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeleteAccessGrantRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteAccessGrantRequest): DeleteAccessGrantRequest.AsObject;
+  static serializeBinaryToWriter(message: DeleteAccessGrantRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteAccessGrantRequest;
+  static deserializeBinaryFromReader(message: DeleteAccessGrantRequest, reader: jspb.BinaryReader): DeleteAccessGrantRequest;
+}
+
+export namespace DeleteAccessGrantRequest {
+  export type AsObject = {
+    name: string,
+    accessGrantId: string,
+  }
+}
+
+export class DeleteAccessGrantResponse extends jspb.Message {
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeleteAccessGrantResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteAccessGrantResponse): DeleteAccessGrantResponse.AsObject;
+  static serializeBinaryToWriter(message: DeleteAccessGrantResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteAccessGrantResponse;
+  static deserializeBinaryFromReader(message: DeleteAccessGrantResponse, reader: jspb.BinaryReader): DeleteAccessGrantResponse;
+}
+
+export namespace DeleteAccessGrantResponse {
+  export type AsObject = {
+  }
+}
+
+export class GetAccessGrantsRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): GetAccessGrantsRequest;
+
+  getAccessGrantId(): string;
+  setAccessGrantId(value: string): GetAccessGrantsRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): GetAccessGrantsRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): GetAccessGrantsRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetAccessGrantsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetAccessGrantsRequest): GetAccessGrantsRequest.AsObject;
+  static serializeBinaryToWriter(message: GetAccessGrantsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetAccessGrantsRequest;
+  static deserializeBinaryFromReader(message: GetAccessGrantsRequest, reader: jspb.BinaryReader): GetAccessGrantsRequest;
+}
+
+export namespace GetAccessGrantsRequest {
+  export type AsObject = {
+    name: string,
+    accessGrantId: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+  }
+}
+
+export class ListAccessGrantsRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): ListAccessGrantsRequest;
+
+  getReadMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
+  setReadMask(value?: google_protobuf_field_mask_pb.FieldMask): ListAccessGrantsRequest;
+  hasReadMask(): boolean;
+  clearReadMask(): ListAccessGrantsRequest;
+
+  getPageSize(): number;
+  setPageSize(value: number): ListAccessGrantsRequest;
+
+  getPageToken(): string;
+  setPageToken(value: string): ListAccessGrantsRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListAccessGrantsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListAccessGrantsRequest): ListAccessGrantsRequest.AsObject;
+  static serializeBinaryToWriter(message: ListAccessGrantsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListAccessGrantsRequest;
+  static deserializeBinaryFromReader(message: ListAccessGrantsRequest, reader: jspb.BinaryReader): ListAccessGrantsRequest;
+}
+
+export namespace ListAccessGrantsRequest {
+  export type AsObject = {
+    name: string,
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+    pageSize: number,
+    pageToken: string,
+  }
+}
+
+export class ListAccessGrantsResponse extends jspb.Message {
+  getAccessGrantsList(): Array<AccessGrant>;
+  setAccessGrantsList(value: Array<AccessGrant>): ListAccessGrantsResponse;
+  clearAccessGrantsList(): ListAccessGrantsResponse;
+  addAccessGrants(value?: AccessGrant, index?: number): AccessGrant;
+
+  getNextPageToken(): string;
+  setNextPageToken(value: string): ListAccessGrantsResponse;
+
+  getTotalSize(): number;
+  setTotalSize(value: number): ListAccessGrantsResponse;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListAccessGrantsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListAccessGrantsResponse): ListAccessGrantsResponse.AsObject;
+  static serializeBinaryToWriter(message: ListAccessGrantsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListAccessGrantsResponse;
+  static deserializeBinaryFromReader(message: ListAccessGrantsResponse, reader: jspb.BinaryReader): ListAccessGrantsResponse;
+}
+
+export namespace ListAccessGrantsResponse {
+  export type AsObject = {
+    accessGrantsList: Array<AccessGrant.AsObject>,
+    nextPageToken: string,
+    totalSize: number,
+  }
+}
+
