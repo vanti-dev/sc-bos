@@ -41,7 +41,8 @@ func New(cfg *Config) *Stores {
 
 	s := &Stores{
 		sqliteHistoryStore: sqliteHistoryStore{
-			path: filepath.Join(cfg.DataDir, defaultSqliteHistoryFile),
+			path:   filepath.Join(cfg.DataDir, defaultSqliteHistoryFile),
+			logger: logger.Named("sqlite"),
 		},
 	}
 	if cfg.Postgres != nil {
