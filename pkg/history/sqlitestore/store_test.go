@@ -142,6 +142,29 @@ func TestDatabase_InsertBulk_DuplicateSources(t *testing.T) {
 	verifyRecords(t, db, ctx, expect)
 }
 
+func TestDatabase_InsertBulk_DuplicateCreateTimes(t *testing.T) {
+	db := newTestDB(t)
+	ctx := t.Context()
+
+	originTime := time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
+	records := []Record{
+		{Source: "source-1", CreateTime: originTime, Payload: []byte("payload-1")},
+		{Source: "source-2", CreateTime: originTime, Payload: []byte("payload-2")},
+	}
+
+	err := db.InsertBulk(ctx, records)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// for records with identical CreateTime, insertion order should be preserved
+	expect := []Record{
+		{Source: "source-1", CreateTime: originTime, Payload: []byte("payload-1")},
+		{Source: "source-2", CreateTime: originTime, Payload: []byte("payload-2")},
+	}
+	verifyRecords(t, db, ctx, expect)
+}
+
 func TestDatabase_TrimCount(t *testing.T) {
 	db := newTestDB(t)
 	ctx := t.Context()
