@@ -41,7 +41,7 @@ func New(cfg *Config) *Stores {
 
 	s := &Stores{
 		sqliteHistoryStore: sqliteHistoryStore{
-			path: filepath.Join(cfg.DataDir, defaultSqliteHistoryPath),
+			path: filepath.Join(cfg.DataDir, defaultSqliteHistoryFile),
 		},
 	}
 	if cfg.Postgres != nil {
@@ -50,7 +50,7 @@ func New(cfg *Config) *Stores {
 	return s
 }
 
-const defaultSqliteHistoryPath = "data/history.sqlite3"
+const defaultSqliteHistoryFile = "history.sqlite3"
 
 // Stores provides access to shared storage connections/clients.
 type Stores struct {
