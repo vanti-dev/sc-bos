@@ -415,6 +415,10 @@ func (s *Store) ReadDesc(ctx context.Context, into []history.Record) (int, error
 }
 
 func (s *Store) read(ctx context.Context, into []history.Record, desc bool) (int, error) {
+	if len(into) == 0 {
+		return 0, nil
+	}
+
 	fromBound, err := calcBound(s.from)
 	if err != nil {
 		return 0, err
@@ -426,17 +430,13 @@ func (s *Store) read(ctx context.Context, into []history.Record, desc bool) (int
 
 	var n int
 	err = s.database.read(ctx, s.source, fromBound, toBound, desc, func(record Record) bool {
-		if n >= len(into) {
-			// No more space in the slice, stop reading
-			return false
-		}
 		into[n] = history.Record{
 			ID:         record.ID.String(),
 			CreateTime: record.CreateTime,
 			Payload:    record.Payload,
 		}
 		n++
-		return true
+		return n < len(into)
 	})
 	return n, err
 }
