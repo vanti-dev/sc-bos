@@ -48,7 +48,8 @@ func Open(ctx context.Context, path string, options ...Option) (*Database, error
 	db, err := sqlite.Open(ctx, path,
 		sqlite.WithApplicationID(appID),
 		sqlite.WithLogger(o.logger),
-		sqlite.WithWriterPragma("auto_vacuum", "INCREMENTAL"),
+		// automatically shrink the database file when data is deleted
+		sqlite.WithWriterPragma("auto_vacuum", "FULL"),
 	)
 	if err != nil {
 		return nil, err
