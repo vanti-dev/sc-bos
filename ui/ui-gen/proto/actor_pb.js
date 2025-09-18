@@ -87,6 +87,8 @@ url: jspb.Message.getFieldWithDefault(msg, 13, ""),
 email: jspb.Message.getFieldWithDefault(msg, 14, ""),
 lastGrantTime: (f = msg.getLastGrantTime()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
 lastGrantZone: jspb.Message.getFieldWithDefault(msg, 16, ""),
+vehicleRegistration: jspb.Message.getFieldWithDefault(msg, 17, ""),
+company: jspb.Message.getFieldWithDefault(msg, 18, ""),
 idsMap: (f = msg.getIdsMap()) ? f.toObject(includeInstance, undefined) : [],
 moreMap: (f = msg.getMoreMap()) ? f.toObject(includeInstance, undefined) : []
   };
@@ -158,6 +160,14 @@ proto.smartcore.bos.Actor.deserializeBinaryFromReader = function(msg, reader) {
     case 16:
       var value = /** @type {string} */ (reader.readString());
       msg.setLastGrantZone(value);
+      break;
+    case 17:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVehicleRegistration(value);
+      break;
+    case 18:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCompany(value);
       break;
     case 100:
       var value = msg.getIdsMap();
@@ -255,6 +265,20 @@ proto.smartcore.bos.Actor.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       16,
+      f
+    );
+  }
+  f = message.getVehicleRegistration();
+  if (f.length > 0) {
+    writer.writeString(
+      17,
+      f
+    );
+  }
+  f = message.getCompany();
+  if (f.length > 0) {
+    writer.writeString(
+      18,
       f
     );
   }
@@ -448,6 +472,42 @@ proto.smartcore.bos.Actor.prototype.getLastGrantZone = function() {
  */
 proto.smartcore.bos.Actor.prototype.setLastGrantZone = function(value) {
   return jspb.Message.setProto3StringField(this, 16, value);
+};
+
+
+/**
+ * optional string vehicle_registration = 17;
+ * @return {string}
+ */
+proto.smartcore.bos.Actor.prototype.getVehicleRegistration = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 17, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Actor} returns this
+ */
+proto.smartcore.bos.Actor.prototype.setVehicleRegistration = function(value) {
+  return jspb.Message.setProto3StringField(this, 17, value);
+};
+
+
+/**
+ * optional string company = 18;
+ * @return {string}
+ */
+proto.smartcore.bos.Actor.prototype.getCompany = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 18, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Actor} returns this
+ */
+proto.smartcore.bos.Actor.prototype.setCompany = function(value) {
+  return jspb.Message.setProto3StringField(this, 18, value);
 };
 
 
