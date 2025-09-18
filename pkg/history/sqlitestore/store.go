@@ -140,13 +140,14 @@ func (d *Database) InsertBulk(ctx context.Context, records []Record, opts ...Wri
 					return err
 				}
 			}
-			if !o.trimTime.IsZero() {
-				_, err = d.trimTime(ctx, tx, source, o.trimTime)
-				if err != nil {
-					return err
-				}
-			} else if o.trimAge > 0 {
-				_, err = d.trimTime(ctx, tx, source, txTime.Add(-o.trimAge))
+			// only one of trimTime or trimAge can be set
+			// calculate what time t, if any, to trim to
+			t := o.trimTime
+			if d := o.trimAge; t.IsZero() && d > 0 {
+				t = txTime.Add(-d)
+			}
+			if !t.IsZero() {
+				_, err = d.trimTime(ctx, tx, source, t)
 				if err != nil {
 					return err
 				}
