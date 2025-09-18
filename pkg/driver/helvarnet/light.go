@@ -365,7 +365,6 @@ func (l *Light) getFunctionTestResult() (*EmergencyState, error) {
 	want := "?" + command[1:len(command)-1]
 
 	r, err := l.client.sendAndReceive(command, want)
-	l.logger.Debug("getFunctionTestResult", zap.String("response", r), zap.String("command", command))
 	if err != nil {
 		return nil, err
 	}
@@ -519,10 +518,13 @@ func (l *Light) GetTestResultSet(_ context.Context, req *gen.GetTestResultSetReq
 				return nil, err
 			}
 			result.DurationTest = dRes
-			// update the stored test result set with the new result
-			_, _ = l.testResultSet.Set(result, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
+
+			r, err := l.testResultSet.Set(result, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
 				Paths: []string{"duration_test"},
 			}))
+			if err == nil {
+				result = r.(*gen.TestResultSet)
+			}
 		}
 	}
 	return result, nil
