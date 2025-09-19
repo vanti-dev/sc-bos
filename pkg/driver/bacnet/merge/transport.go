@@ -189,15 +189,14 @@ func (t *transport) pollPeer(ctx context.Context) (*gen.Transport, error) {
 }
 
 func (t *transport) processCarLoadUnits(response any, _ *gen.Transport) error {
-	value, ok := response.(comm.EngineeringUnits)
-	if !ok {
-		return comm.ErrReadProperty{Prop: "loadUnits", Cause: fmt.Errorf("converting to EngineeringUnits")}
+	value, err := comm.IntValue(response)
+	if err != nil {
+		return comm.ErrReadProperty{Prop: "loadUnits", Cause: err}
 	}
 
-	t.units.Store(value.String())
+	t.units.Store(comm.EngineeringUnits(value).String())
 
 	return nil
-
 }
 
 func (t *transport) processAssignedLandingCalls(response any, data *gen.Transport) error {

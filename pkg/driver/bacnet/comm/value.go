@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strconv"
 	"sync"
 
 	"go.uber.org/multierr"
@@ -379,109 +380,146 @@ func massageValueForWrite(_ bactypes.Device, obj bactypes.Object, prop property.
 	return value
 }
 
+// EngineeringUnits is the BACnet engineering units type (uint16).
 type EngineeringUnits uint16
 
-// Partial list from BACnet 2020
+// BACnet Engineering Units 0...129 (from ASHRAE 135 / OPC UA mapping).
 const (
-	UnitsMetersPerSecond    EngineeringUnits = 166 // m/s
-	UnitsKilogramsPerSecond EngineeringUnits = 191
-	UnitsCelsius            EngineeringUnits = 62 // °C
-	UnitsKelvin             EngineeringUnits = 63 // K
-	UnitsFahrenheit         EngineeringUnits = 64 // °F
-	UnitsRankine            EngineeringUnits = 65
-	UnitsPascal             EngineeringUnits = 32 // Pa
-	UnitsKilopascal         EngineeringUnits = 33 // kPa
-	UnitsBar                EngineeringUnits = 36
-	UnitsPsi                EngineeringUnits = 37 // pounds per square inch
-	UnitsWatt               EngineeringUnits = 55 // W
-	UnitsKilowatt           EngineeringUnits = 56 // kW
-	UnitsHorsepower         EngineeringUnits = 59
-	UnitsJoule              EngineeringUnits = 70 // J
-	UnitsKilojoule          EngineeringUnits = 71 // kJ
-	UnitsWattHours          EngineeringUnits = 72
-	UnitsKilowattHours      EngineeringUnits = 73
-	UnitsBTU                EngineeringUnits = 117 // British Thermal Unit
-	UnitsBTUPerHour         EngineeringUnits = 119
-	UnitsLitre              EngineeringUnits = 146
-	UnitsCubicMeter         EngineeringUnits = 80
-	UnitsCubicFeet          EngineeringUnits = 79
-	UnitsLiterPerSecond     EngineeringUnits = 142
-	UnitsCubicMeterPerHour  EngineeringUnits = 135
-	UnitsCubicFeetPerMinute EngineeringUnits = 93
-	UnitsPercent            EngineeringUnits = 98
-	UnitsPartsPerMillion    EngineeringUnits = 96
-	UnitsSeconds            EngineeringUnits = 52
-	UnitsMinutes            EngineeringUnits = 53
-	UnitsHours              EngineeringUnits = 54
-	// ... (there are >200 defined, see ASHRAE 135 Table 12-43)
+	EngineeringUnitsSquareMetres             EngineeringUnits = 0
+	EngineeringUnitsSquareFeet               EngineeringUnits = 1
+	EngineeringUnitsMilliAmperes             EngineeringUnits = 2
+	EngineeringUnitsAmperes                  EngineeringUnits = 3
+	EngineeringUnitsOhms                     EngineeringUnits = 4
+	EngineeringUnitsVolts                    EngineeringUnits = 5
+	EngineeringUnitsKilovolts                EngineeringUnits = 6
+	EngineeringUnitsMegavolts                EngineeringUnits = 7
+	EngineeringUnitsVoltAmperes              EngineeringUnits = 8
+	EngineeringUnitsKilovoltAmperes          EngineeringUnits = 9
+	EngineeringUnitsMegavoltAmperes          EngineeringUnits = 10
+	EngineeringUnitsDegreesPhase             EngineeringUnits = 14
+	EngineeringUnitsPowerFactor              EngineeringUnits = 15
+	EngineeringUnitsJoules                   EngineeringUnits = 16
+	EngineeringUnitsKilojoules               EngineeringUnits = 17
+	EngineeringUnitsWattHours                EngineeringUnits = 18
+	EngineeringUnitsKilowattHours            EngineeringUnits = 19
+	EngineeringUnitsBtus                     EngineeringUnits = 20
+	EngineeringUnitsTherms                   EngineeringUnits = 21
+	EngineeringUnitsTonsPerHour              EngineeringUnits = 22
+	EngineeringUnitsHertz                    EngineeringUnits = 27
+	EngineeringUnitsMillimetres              EngineeringUnits = 30
+	EngineeringUnitsMetres                   EngineeringUnits = 31
+	EngineeringUnitsInches                   EngineeringUnits = 32
+	EngineeringUnitsFeet                     EngineeringUnits = 33
+	EngineeringUnitsKilograms                EngineeringUnits = 39
+	EngineeringUnitsPoundsMass               EngineeringUnits = 40
+	EngineeringUnitsTonsMass                 EngineeringUnits = 41
+	EngineeringUnitsWatts                    EngineeringUnits = 73
+	EngineeringUnitsKilowatts                EngineeringUnits = 74
+	EngineeringUnitsMegawatts                EngineeringUnits = 75
+	EngineeringUnitsHorsepower               EngineeringUnits = 78
+	EngineeringUnitsPascals                  EngineeringUnits = 80
+	EngineeringUnitsKilopascals              EngineeringUnits = 81
+	EngineeringUnitsBars                     EngineeringUnits = 82
+	EngineeringUnitsPoundsForcePerSquareInch EngineeringUnits = 83
+	EngineeringUnitsCentimetresOfWater       EngineeringUnits = 84
+	EngineeringUnitsInchesOfWater            EngineeringUnits = 85
+	EngineeringUnitsMillimetresOfMercury     EngineeringUnits = 86
+	EngineeringUnitsInchesOfMercury          EngineeringUnits = 88
+	EngineeringUnitsDegreesCelsius           EngineeringUnits = 89
+	EngineeringUnitsDegreesKelvin            EngineeringUnits = 90
+	EngineeringUnitsDegreesFahrenheit        EngineeringUnits = 91
+	EngineeringUnitsHours                    EngineeringUnits = 98
+	EngineeringUnitsMinutes                  EngineeringUnits = 99
+	EngineeringUnitsSeconds                  EngineeringUnits = 100
+	EngineeringUnitsMetresPerSecond          EngineeringUnits = 101
+	EngineeringUnitsFeetPerSecond            EngineeringUnits = 103
+	EngineeringUnitsFeetPerMinute            EngineeringUnits = 104
+	EngineeringUnitsMilesPerHour             EngineeringUnits = 105
+	EngineeringUnitsCubicFeet                EngineeringUnits = 106
+	EngineeringUnitsCubicMetres              EngineeringUnits = 107
+	EngineeringUnitsImperialGallons          EngineeringUnits = 108
+	EngineeringUnitsLitres                   EngineeringUnits = 109
+	EngineeringUnitsUsGallons                EngineeringUnits = 110
+	EngineeringUnitsCubicFeetPerMinute       EngineeringUnits = 112
+	EngineeringUnitsCubicMetresPerHour       EngineeringUnits = 115
+	EngineeringUnitsImperialGallonsPerMinute EngineeringUnits = 116
+	EngineeringUnitsLitresPerSecond          EngineeringUnits = 117
+	EngineeringUnitsLitresPerMinute          EngineeringUnits = 118
+	EngineeringUnitsLitresPerHour            EngineeringUnits = 119
+	EngineeringUnitsUsGallonsPerMinute       EngineeringUnits = 120
+	EngineeringUnitsPercent                  EngineeringUnits = 129
 )
 
+var unitSymbols = map[EngineeringUnits]string{
+	EngineeringUnitsSquareMetres:             "m²",
+	EngineeringUnitsSquareFeet:               "ft²",
+	EngineeringUnitsMilliAmperes:             "mA",
+	EngineeringUnitsAmperes:                  "A",
+	EngineeringUnitsOhms:                     "Ω",
+	EngineeringUnitsVolts:                    "V",
+	EngineeringUnitsKilovolts:                "kV",
+	EngineeringUnitsMegavolts:                "MV",
+	EngineeringUnitsVoltAmperes:              "VA",
+	EngineeringUnitsKilovoltAmperes:          "kVA",
+	EngineeringUnitsMegavoltAmperes:          "MVA",
+	EngineeringUnitsDegreesPhase:             "° phase",
+	EngineeringUnitsPowerFactor:              "pf",
+	EngineeringUnitsJoules:                   "J",
+	EngineeringUnitsKilojoules:               "kJ",
+	EngineeringUnitsWattHours:                "Wh",
+	EngineeringUnitsKilowattHours:            "kWh",
+	EngineeringUnitsBtus:                     "BTU",
+	EngineeringUnitsTherms:                   "therm",
+	EngineeringUnitsTonsPerHour:              "ton/h",
+	EngineeringUnitsHertz:                    "Hz",
+	EngineeringUnitsPercent:                  "%",
+	EngineeringUnitsMetres:                   "m",
+	EngineeringUnitsFeet:                     "ft",
+	EngineeringUnitsInches:                   "in",
+	EngineeringUnitsMillimetres:              "mm",
+	EngineeringUnitsWatts:                    "W",
+	EngineeringUnitsKilowatts:                "kW",
+	EngineeringUnitsMegawatts:                "MW",
+	EngineeringUnitsHorsepower:               "hp",
+	EngineeringUnitsPascals:                  "Pa",
+	EngineeringUnitsKilopascals:              "kPa",
+	EngineeringUnitsBars:                     "bar",
+	EngineeringUnitsPoundsForcePerSquareInch: "psi",
+	EngineeringUnitsCentimetresOfWater:       "cmH₂O",
+	EngineeringUnitsInchesOfWater:            "inH₂O",
+	EngineeringUnitsMillimetresOfMercury:     "mmHg",
+	EngineeringUnitsInchesOfMercury:          "inHg",
+	EngineeringUnitsDegreesCelsius:           "°C",
+	EngineeringUnitsDegreesFahrenheit:        "°F",
+	EngineeringUnitsDegreesKelvin:            "K",
+	EngineeringUnitsHours:                    "h",
+	EngineeringUnitsMinutes:                  "min",
+	EngineeringUnitsSeconds:                  "s",
+	EngineeringUnitsLitres:                   "L",
+	EngineeringUnitsUsGallons:                "gal (US)",
+	EngineeringUnitsImperialGallons:          "gal (Imp)",
+	EngineeringUnitsLitresPerSecond:          "L/s",
+	EngineeringUnitsLitresPerMinute:          "L/min",
+	EngineeringUnitsLitresPerHour:            "L/h",
+	EngineeringUnitsUsGallonsPerMinute:       "gpm (US)",
+	EngineeringUnitsImperialGallonsPerMinute: "gpm (Imp)",
+	EngineeringUnitsCubicMetres:              "m³",
+	EngineeringUnitsCubicFeet:                "ft³",
+	EngineeringUnitsCubicMetresPerHour:       "m³/h",
+	EngineeringUnitsCubicFeetPerMinute:       "cfm",
+	EngineeringUnitsMetresPerSecond:          "m/s",
+	EngineeringUnitsFeetPerSecond:            "ft/s",
+	EngineeringUnitsFeetPerMinute:            "ft/min",
+	EngineeringUnitsMilesPerHour:             "mph",
+	EngineeringUnitsKilograms:                "kg",
+	EngineeringUnitsPoundsMass:               "lb",
+	EngineeringUnitsTonsMass:                 "ton",
+}
+
+// String implements fmt.Stringer.
 func (u EngineeringUnits) String() string {
-	switch u {
-	case UnitsMetersPerSecond:
-		return "m/s"
-	case UnitsKilogramsPerSecond:
-		return "kg/s"
-	case UnitsCelsius:
-		return "°C"
-	case UnitsKelvin:
-		return "K"
-	case UnitsFahrenheit:
-		return "°F"
-	case UnitsRankine:
-		return "°R"
-	case UnitsPascal:
-		return "Pa"
-	case UnitsKilopascal:
-		return "kPa"
-	case UnitsBar:
-		return "bar"
-	case UnitsPsi:
-		return "psi"
-	case UnitsWatt:
-		return "W"
-	case UnitsKilowatt:
-		return "kW"
-	case UnitsHorsepower:
-		return "hp"
-	case UnitsJoule:
-		return "J"
-	case UnitsKilojoule:
-		return "kJ"
-	case UnitsWattHours:
-		return "Wh"
-	case UnitsKilowattHours:
-		return "kWh"
-	case UnitsBTU:
-		return "BTU"
-	case UnitsBTUPerHour:
-		return "BTU/h"
-	case UnitsLitre:
-		return "L"
-	case UnitsCubicMeter:
-		return "m³"
-	case UnitsCubicFeet:
-		return "ft³"
-	case UnitsLiterPerSecond:
-		return "L/s"
-	case UnitsCubicMeterPerHour:
-		return "m³/h"
-	case UnitsCubicFeetPerMinute:
-		return "CFM"
-	case UnitsPercent:
-		return "%"
-	case UnitsPartsPerMillion:
-		return "ppm"
-	case UnitsSeconds:
-		return "s"
-	case UnitsMinutes:
-		return "min"
-	case UnitsHours:
-		return "h"
-	default:
-		if u <= 1023 {
-			return fmt.Sprintf("reserved(%d)", u)
-		}
-		return fmt.Sprintf("vendor(%d)", u)
+	if s, ok := unitSymbols[u]; ok {
+		return s
 	}
+	return "Unknown(" + strconv.Itoa(int(u)) + ")"
 }
