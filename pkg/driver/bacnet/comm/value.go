@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strconv"
 	"sync"
 
 	"go.uber.org/multierr"
@@ -379,109 +380,113 @@ func massageValueForWrite(_ bactypes.Device, obj bactypes.Object, prop property.
 	return value
 }
 
+// EngineeringUnits is the BACnet engineering units type (uint16).
 type EngineeringUnits uint16
 
-// Partial list from BACnet 2020
-const (
-	UnitsMetersPerSecond    EngineeringUnits = 166 // m/s
-	UnitsKilogramsPerSecond EngineeringUnits = 191
-	UnitsCelsius            EngineeringUnits = 62 // °C
-	UnitsKelvin             EngineeringUnits = 63 // K
-	UnitsFahrenheit         EngineeringUnits = 64 // °F
-	UnitsRankine            EngineeringUnits = 65
-	UnitsPascal             EngineeringUnits = 32 // Pa
-	UnitsKilopascal         EngineeringUnits = 33 // kPa
-	UnitsBar                EngineeringUnits = 36
-	UnitsPsi                EngineeringUnits = 37 // pounds per square inch
-	UnitsWatt               EngineeringUnits = 55 // W
-	UnitsKilowatt           EngineeringUnits = 56 // kW
-	UnitsHorsepower         EngineeringUnits = 59
-	UnitsJoule              EngineeringUnits = 70 // J
-	UnitsKilojoule          EngineeringUnits = 71 // kJ
-	UnitsWattHours          EngineeringUnits = 72
-	UnitsKilowattHours      EngineeringUnits = 73
-	UnitsBTU                EngineeringUnits = 117 // British Thermal Unit
-	UnitsBTUPerHour         EngineeringUnits = 119
-	UnitsLitre              EngineeringUnits = 146
-	UnitsCubicMeter         EngineeringUnits = 80
-	UnitsCubicFeet          EngineeringUnits = 79
-	UnitsLiterPerSecond     EngineeringUnits = 142
-	UnitsCubicMeterPerHour  EngineeringUnits = 135
-	UnitsCubicFeetPerMinute EngineeringUnits = 93
-	UnitsPercent            EngineeringUnits = 98
-	UnitsPartsPerMillion    EngineeringUnits = 96
-	UnitsSeconds            EngineeringUnits = 52
-	UnitsMinutes            EngineeringUnits = 53
-	UnitsHours              EngineeringUnits = 54
-	// ... (there are >200 defined, see ASHRAE 135 Table 12-43)
-)
+// unitSymbols maps BACnet EngineeringUnits → shorthand symbol.
+var unitSymbols = map[EngineeringUnits]string{
+	0:  "m²",
+	1:  "ft²",
+	2:  "mA",
+	3:  "A",
+	4:  "Ω",
+	5:  "V",
+	6:  "kV",
+	7:  "MV",
+	8:  "V·A",
+	9:  "kV·A",
+	10: "MV·A",
+	14: "° phase",
+	15: "power factor",
+	16: "J",
+	17: "kJ",
+	18: "W·h",
+	19: "kW·h",
+	20: "Btu",
+	21: "thm (US)",
+	22: "ton/h",
+	23: "J/kg·dry air",
+	24: "Btu/lb·dry air",
+	25: "cph", // cycles per hour
+	26: "cpm", // cycles per minute
+	27: "Hz",
+	28: "g/kg·dry air",
+	29: "%RH",
+	30: "mm",
+	31: "m",
+	32: "in",
+	33: "ft",
+	34: "W/ft²",
+	35: "W/m²",
+	36: "lm",
+	37: "lx",
+	38: "fc",
+	39: "kg",
+	40: "lb",
+	41: "ton",
+	42: "kg/s",
+	43: "kg/min",
+	44: "kg/h",
+	45: "lb/min",
+	46: "lb/h",
+	47: "W",
+	48: "kW",
+	49: "MW",
+	50: "Btu/h",
+	51: "hp",
+	52: "TR", // ton of refrigeration
+	53: "Pa",
+	54: "kPa",
+	55: "bar",
+	56: "psi",
+	57: "cmH₂O",
+	58: "inH₂O",
+	59: "mmHg",
+	60: "cmHg",
+	61: "inHg",
+	62: "°C",
+	63: "K",
+	64: "°F",
+	65: "°C·d", // degree days Celsius
+	66: "°F·d", // degree days Fahrenheit
+	67: "yr",
+	68: "mo",
+	69: "wk",
+	70: "d",
+	71: "h",
+	72: "min",
+	73: "s",
+	74: "m/s",
+	75: "km/h",
+	76: "ft/s",
+	77: "ft/min",
+	78: "mph",
+	79: "ft³",
+	80: "m³",
+	81: "gal (Imp)",
+	82: "L",
+	83: "gal (US)",
+	84: "cfm",
+	85: "m³/s",
+	86: "gal (Imp)/min",
+	87: "L/s",
+	88: "L/min",
+	89: "gpm (US)",
+	90: "°",
+	91: "°C/h",
+	92: "°C/min",
+	93: "°F/h",
+	94: "°F/min",
+	95: "unitless",
+	96: "ppm",
+	97: "ppb",
+	98: "%",
+}
 
+// String implements fmt.Stringer.
 func (u EngineeringUnits) String() string {
-	switch u {
-	case UnitsMetersPerSecond:
-		return "m/s"
-	case UnitsKilogramsPerSecond:
-		return "kg/s"
-	case UnitsCelsius:
-		return "°C"
-	case UnitsKelvin:
-		return "K"
-	case UnitsFahrenheit:
-		return "°F"
-	case UnitsRankine:
-		return "°R"
-	case UnitsPascal:
-		return "Pa"
-	case UnitsKilopascal:
-		return "kPa"
-	case UnitsBar:
-		return "bar"
-	case UnitsPsi:
-		return "psi"
-	case UnitsWatt:
-		return "W"
-	case UnitsKilowatt:
-		return "kW"
-	case UnitsHorsepower:
-		return "hp"
-	case UnitsJoule:
-		return "J"
-	case UnitsKilojoule:
-		return "kJ"
-	case UnitsWattHours:
-		return "Wh"
-	case UnitsKilowattHours:
-		return "kWh"
-	case UnitsBTU:
-		return "BTU"
-	case UnitsBTUPerHour:
-		return "BTU/h"
-	case UnitsLitre:
-		return "L"
-	case UnitsCubicMeter:
-		return "m³"
-	case UnitsCubicFeet:
-		return "ft³"
-	case UnitsLiterPerSecond:
-		return "L/s"
-	case UnitsCubicMeterPerHour:
-		return "m³/h"
-	case UnitsCubicFeetPerMinute:
-		return "CFM"
-	case UnitsPercent:
-		return "%"
-	case UnitsPartsPerMillion:
-		return "ppm"
-	case UnitsSeconds:
-		return "s"
-	case UnitsMinutes:
-		return "min"
-	case UnitsHours:
-		return "h"
-	default:
-		if u <= 1023 {
-			return fmt.Sprintf("reserved(%d)", u)
-		}
-		return fmt.Sprintf("vendor(%d)", u)
+	if s, ok := unitSymbols[u]; ok {
+		return s
 	}
+	return "Unknown(" + strconv.Itoa(int(u)) + ")"
 }
