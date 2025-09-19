@@ -449,7 +449,7 @@
           "traits": [
             {
               "name": "smartcore.bos.Meter",
-              "more" : {"unit": "m³"}
+              "more": {"unit": "m³"}
             },
             {"name": "smartcore.bos.Status"}
           ],
@@ -462,7 +462,7 @@
           "traits": [
             {
               "name": "smartcore.bos.Meter",
-              "more" : {"unit": "m³"}
+              "more": {"unit": "m³"}
             },
             {"name": "smartcore.bos.Status"}
           ],
@@ -828,7 +828,7 @@
           "name": "van/uk/brum/ugs/devices/security-events",
           "traits": [
             {
-              "name" : "smartcore.bos.SecurityEvent"
+              "name": "smartcore.bos.SecurityEvent"
             }
           ],
           "appearance": {"title": "Security Events"}
@@ -843,7 +843,7 @@
           "name": "van/uk/brum/ugs/devices/waste",
           "traits": [
             {
-              "name" : "smartcore.traits.Waste"
+              "name": "smartcore.traits.Waste"
             }
           ],
           "appearance": {"title": "Waste"}
@@ -858,9 +858,9 @@
           "name": "van/uk/brum/ugs/devices/lift",
           "traits": [
             {
-              "name" : "smartcore.bos.Transport",
-              "more" : {
-                "numFloors" : "2"
+              "name": "smartcore.bos.Transport",
+              "more": {
+                "numFloors": "2"
               }
             }
           ],
@@ -869,14 +869,18 @@
         }
       ]
     },
-    {"name": "van/uk/brum/ugs/eg-bc-01/driver/external", "type": "mock", "devices": [
+    {
+      "name": "van/uk/brum/ugs/eg-bc-01/driver/external", "type": "mock", "devices": [
       {
         "name": "van/uk/brum/ugs/devices/EVD-EXT-01",
-        "traits": [{"name": "smartcore.traits.EnergyStorage", "more": {"type": "ev"}}, {"name": "smartcore.bos.Status"}],
+        "traits": [
+          {"name": "smartcore.traits.EnergyStorage", "more": {"type": "ev"}}, {"name": "smartcore.bos.Status"}
+        ],
         "appearance": {"title": "EV Delivery Car", "description": "Delivers AV equipment to sites"},
         "membership": {"subsystem": "fleet"}
       }
-    ]}
+    ]
+    }
   ],
   "zones": [
     {
