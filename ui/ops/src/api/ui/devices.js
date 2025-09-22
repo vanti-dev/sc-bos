@@ -177,6 +177,7 @@ function getDevicesMetadataRequestFromObject(obj) {
   const dst = new GetDevicesMetadataRequest();
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setIncludes(devicesMetadataIncludeFromObject(obj.includes));
+  dst.setQuery(deviceQueryFromObject(obj.query));
   return dst;
 }
 
@@ -191,6 +192,7 @@ function pullDevicesMetadataRequestFromObject(obj) {
   setProperties(dst, obj, 'updatesOnly');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setIncludes(devicesMetadataIncludeFromObject(obj.includes));
+  dst.setQuery(deviceQueryFromObject(obj.query));
   return dst;
 }
 

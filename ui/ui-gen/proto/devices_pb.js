@@ -3615,7 +3615,8 @@ proto.smartcore.bos.GetDevicesMetadataRequest.prototype.toObject = function(opt_
 proto.smartcore.bos.GetDevicesMetadataRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
 readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f)
+includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f),
+query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3662,6 +3663,11 @@ proto.smartcore.bos.GetDevicesMetadataRequest.deserializeBinaryFromReader = func
       reader.readMessage(value,proto.smartcore.bos.DevicesMetadata.Include.deserializeBinaryFromReader);
       msg.setIncludes(value);
       break;
+    case 4:
+      var value = new proto.smartcore.bos.Device.Query;
+      reader.readMessage(value,proto.smartcore.bos.Device.Query.deserializeBinaryFromReader);
+      msg.setQuery(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3705,6 +3711,14 @@ proto.smartcore.bos.GetDevicesMetadataRequest.serializeBinaryToWriter = function
       3,
       f,
       proto.smartcore.bos.DevicesMetadata.Include.serializeBinaryToWriter
+    );
+  }
+  f = message.getQuery();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      proto.smartcore.bos.Device.Query.serializeBinaryToWriter
     );
   }
 };
@@ -3784,6 +3798,43 @@ proto.smartcore.bos.GetDevicesMetadataRequest.prototype.hasIncludes = function()
 };
 
 
+/**
+ * optional Device.Query query = 4;
+ * @return {?proto.smartcore.bos.Device.Query}
+ */
+proto.smartcore.bos.GetDevicesMetadataRequest.prototype.getQuery = function() {
+  return /** @type{?proto.smartcore.bos.Device.Query} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.Device.Query, 4));
+};
+
+
+/**
+ * @param {?proto.smartcore.bos.Device.Query|undefined} value
+ * @return {!proto.smartcore.bos.GetDevicesMetadataRequest} returns this
+*/
+proto.smartcore.bos.GetDevicesMetadataRequest.prototype.setQuery = function(value) {
+  return jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.GetDevicesMetadataRequest} returns this
+ */
+proto.smartcore.bos.GetDevicesMetadataRequest.prototype.clearQuery = function() {
+  return this.setQuery(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.GetDevicesMetadataRequest.prototype.hasQuery = function() {
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
 
 
 
@@ -3818,7 +3869,8 @@ proto.smartcore.bos.PullDevicesMetadataRequest.toObject = function(includeInstan
   var f, obj = {
 readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
 includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f),
-updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3868,6 +3920,11 @@ proto.smartcore.bos.PullDevicesMetadataRequest.deserializeBinaryFromReader = fun
     case 4:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setUpdatesOnly(value);
+      break;
+    case 5:
+      var value = new proto.smartcore.bos.Device.Query;
+      reader.readMessage(value,proto.smartcore.bos.Device.Query.deserializeBinaryFromReader);
+      msg.setQuery(value);
       break;
     default:
       reader.skipField();
@@ -3919,6 +3976,14 @@ proto.smartcore.bos.PullDevicesMetadataRequest.serializeBinaryToWriter = functio
     writer.writeBool(
       4,
       f
+    );
+  }
+  f = message.getQuery();
+  if (f != null) {
+    writer.writeMessage(
+      5,
+      f,
+      proto.smartcore.bos.Device.Query.serializeBinaryToWriter
     );
   }
 };
@@ -4013,6 +4078,43 @@ proto.smartcore.bos.PullDevicesMetadataRequest.prototype.getUpdatesOnly = functi
  */
 proto.smartcore.bos.PullDevicesMetadataRequest.prototype.setUpdatesOnly = function(value) {
   return jspb.Message.setProto3BooleanField(this, 4, value);
+};
+
+
+/**
+ * optional Device.Query query = 5;
+ * @return {?proto.smartcore.bos.Device.Query}
+ */
+proto.smartcore.bos.PullDevicesMetadataRequest.prototype.getQuery = function() {
+  return /** @type{?proto.smartcore.bos.Device.Query} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.Device.Query, 5));
+};
+
+
+/**
+ * @param {?proto.smartcore.bos.Device.Query|undefined} value
+ * @return {!proto.smartcore.bos.PullDevicesMetadataRequest} returns this
+*/
+proto.smartcore.bos.PullDevicesMetadataRequest.prototype.setQuery = function(value) {
+  return jspb.Message.setWrapperField(this, 5, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.PullDevicesMetadataRequest} returns this
+ */
+proto.smartcore.bos.PullDevicesMetadataRequest.prototype.clearQuery = function() {
+  return this.setQuery(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.PullDevicesMetadataRequest.prototype.hasQuery = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 

@@ -94,13 +94,7 @@ func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest)
 	// note: allDevices is already sorted by name
 	allDevices := s.m.ListDevices(
 		resource.WithReadMask(request.ReadMask),
-		resource.WithInclude(func(id string, item proto.Message) bool {
-			if item == nil {
-				return false
-			}
-			device := item.(*gen.Device)
-			return deviceMatchesQuery(request.Query, device)
-		}),
+		withDevicesMatchingsQuery(request.Query),
 	)
 	nextIndex := 0
 	if pageToken.LastName != "" {
@@ -146,13 +140,7 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 	changes := s.m.PullDevices(server.Context(),
 		resource.WithUpdatesOnly(request.UpdatesOnly),
 		resource.WithReadMask(request.ReadMask),
-		resource.WithInclude(func(id string, item proto.Message) bool {
-			if item == nil {
-				return false
-			}
-			device := item.(*gen.Device)
-			return deviceMatchesQuery(request.Query, device)
-		}),
+		withDevicesMatchingsQuery(request.Query),
 	)
 	for change := range changes {
 		resChange := &gen.PullDevicesResponse_Change{
@@ -171,7 +159,7 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 }
 
 func (s *Server) GetDevicesMetadata(_ context.Context, request *gen.GetDevicesMetadataRequest) (*gen.DevicesMetadata, error) {
-	devices := s.m.ListDevices()
+	devices := s.m.ListDevices(withDevicesMatchingsQuery(request.GetQuery()))
 	var res *gen.DevicesMetadata
 	col := newMetadataCollector(request.GetIncludes().GetFields()...)
 	for _, device := range devices {
@@ -197,13 +185,16 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 	}
 
 	// do this before getting initial values
-	changes := s.m.PullDevices(server.Context())
+	changes := s.m.PullDevices(server.Context(), withDevicesMatchingsQuery(request.GetQuery()))
 
 	// send initial values.
 	// Note we recalculate the metadata for the initial value and for updates separately. We can't guarantee data
 	// consistency between the Get and Pull calls, at least this way the data should be accurate.
 	if !request.UpdatesOnly {
-		md, err := s.GetDevicesMetadata(server.Context(), &gen.GetDevicesMetadataRequest{Includes: request.Includes})
+		md, err := s.GetDevicesMetadata(server.Context(), &gen.GetDevicesMetadataRequest{
+			Includes: request.Includes,
+			Query:    request.Query,
+		})
 		if err != nil {
 			return err
 		}
@@ -256,4 +247,14 @@ func validateQuery(q *gen.Device_Query) error {
 		}
 	}
 	return nil
+}
+
+func withDevicesMatchingsQuery(query *gen.Device_Query) resource.ReadOption {
+	return resource.WithInclude(func(id string, item proto.Message) bool {
+		if item == nil {
+			return false
+		}
+		device := item.(*gen.Device)
+		return deviceMatchesQuery(query, device)
+	})
 }

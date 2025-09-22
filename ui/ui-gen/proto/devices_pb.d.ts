@@ -423,6 +423,11 @@ export class GetDevicesMetadataRequest extends jspb.Message {
   hasIncludes(): boolean;
   clearIncludes(): GetDevicesMetadataRequest;
 
+  getQuery(): Device.Query | undefined;
+  setQuery(value?: Device.Query): GetDevicesMetadataRequest;
+  hasQuery(): boolean;
+  clearQuery(): GetDevicesMetadataRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetDevicesMetadataRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetDevicesMetadataRequest): GetDevicesMetadataRequest.AsObject;
@@ -435,6 +440,7 @@ export namespace GetDevicesMetadataRequest {
   export type AsObject = {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     includes?: DevicesMetadata.Include.AsObject,
+    query?: Device.Query.AsObject,
   }
 }
 
@@ -452,6 +458,11 @@ export class PullDevicesMetadataRequest extends jspb.Message {
   getUpdatesOnly(): boolean;
   setUpdatesOnly(value: boolean): PullDevicesMetadataRequest;
 
+  getQuery(): Device.Query | undefined;
+  setQuery(value?: Device.Query): PullDevicesMetadataRequest;
+  hasQuery(): boolean;
+  clearQuery(): PullDevicesMetadataRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PullDevicesMetadataRequest.AsObject;
   static toObject(includeInstance: boolean, msg: PullDevicesMetadataRequest): PullDevicesMetadataRequest.AsObject;
@@ -465,6 +476,7 @@ export namespace PullDevicesMetadataRequest {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     includes?: DevicesMetadata.Include.AsObject,
     updatesOnly: boolean,
+    query?: Device.Query.AsObject,
   }
 }
 
