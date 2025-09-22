@@ -388,7 +388,9 @@ type GetDevicesMetadataRequest struct {
 	ReadMask *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=read_mask,json=readMask,proto3" json:"read_mask,omitempty"`
 	// Which fields to include in the metadata calculations.
 	// If absent DeviceMetadata.field_counts will be empty.
-	Includes      *DevicesMetadata_Include `protobuf:"bytes,3,opt,name=includes,proto3" json:"includes,omitempty"`
+	Includes *DevicesMetadata_Include `protobuf:"bytes,3,opt,name=includes,proto3" json:"includes,omitempty"`
+	// A query for filtering the devices that will be included in the metadata calculations.
+	Query         *Device_Query `protobuf:"bytes,4,opt,name=query,proto3" json:"query,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -437,6 +439,13 @@ func (x *GetDevicesMetadataRequest) GetIncludes() *DevicesMetadata_Include {
 	return nil
 }
 
+func (x *GetDevicesMetadataRequest) GetQuery() *Device_Query {
+	if x != nil {
+		return x.Query
+	}
+	return nil
+}
+
 type PullDevicesMetadataRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Fields to fetch relative to the DeviceMetadata type
@@ -446,7 +455,9 @@ type PullDevicesMetadataRequest struct {
 	Includes *DevicesMetadata_Include `protobuf:"bytes,3,opt,name=includes,proto3" json:"includes,omitempty"`
 	// When true the device will only send changes to the resource value.
 	// The default behaviour is to send the current value immediately followed by any updates as they happen.
-	UpdatesOnly   bool `protobuf:"varint,4,opt,name=updates_only,json=updatesOnly,proto3" json:"updates_only,omitempty"`
+	UpdatesOnly bool `protobuf:"varint,4,opt,name=updates_only,json=updatesOnly,proto3" json:"updates_only,omitempty"`
+	// A query for filtering the devices that will be included in the metadata calculations.
+	Query         *Device_Query `protobuf:"bytes,5,opt,name=query,proto3" json:"query,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -500,6 +511,13 @@ func (x *PullDevicesMetadataRequest) GetUpdatesOnly() bool {
 		return x.UpdatesOnly
 	}
 	return false
+}
+
+func (x *PullDevicesMetadataRequest) GetQuery() *Device_Query {
+	if x != nil {
+		return x.Query
+	}
+	return nil
 }
 
 type PullDevicesMetadataResponse struct {
@@ -1542,14 +1560,16 @@ const file_devices_proto_rawDesc = "" +
 	"\tnew_value\x18\x03 \x01(\v2\x15.smartcore.bos.DeviceR\bnewValue\x122\n" +
 	"\told_value\x18\x04 \x01(\v2\x15.smartcore.bos.DeviceR\boldValue\x12;\n" +
 	"\vchange_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"changeTime\"\x98\x01\n" +
+	"changeTime\"\xcb\x01\n" +
 	"\x19GetDevicesMetadataRequest\x127\n" +
 	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\x12B\n" +
-	"\bincludes\x18\x03 \x01(\v2&.smartcore.bos.DevicesMetadata.IncludeR\bincludes\"\xbc\x01\n" +
+	"\bincludes\x18\x03 \x01(\v2&.smartcore.bos.DevicesMetadata.IncludeR\bincludes\x121\n" +
+	"\x05query\x18\x04 \x01(\v2\x1b.smartcore.bos.Device.QueryR\x05query\"\xef\x01\n" +
 	"\x1aPullDevicesMetadataRequest\x127\n" +
 	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\x12B\n" +
 	"\bincludes\x18\x03 \x01(\v2&.smartcore.bos.DevicesMetadata.IncludeR\bincludes\x12!\n" +
-	"\fupdates_only\x18\x04 \x01(\bR\vupdatesOnly\"\x91\x02\n" +
+	"\fupdates_only\x18\x04 \x01(\bR\vupdatesOnly\x121\n" +
+	"\x05query\x18\x05 \x01(\v2\x1b.smartcore.bos.Device.QueryR\x05query\"\x91\x02\n" +
 	"\x1bPullDevicesMetadataResponse\x12K\n" +
 	"\achanges\x18\x01 \x03(\v21.smartcore.bos.PullDevicesMetadataResponse.ChangeR\achanges\x1a\xa4\x01\n" +
 	"\x06Change\x12\x12\n" +
@@ -1636,47 +1656,49 @@ var file_devices_proto_depIdxs = []int32{
 	17, // 7: smartcore.bos.PullDevicesResponse.changes:type_name -> smartcore.bos.PullDevicesResponse.Change
 	22, // 8: smartcore.bos.GetDevicesMetadataRequest.read_mask:type_name -> google.protobuf.FieldMask
 	15, // 9: smartcore.bos.GetDevicesMetadataRequest.includes:type_name -> smartcore.bos.DevicesMetadata.Include
-	22, // 10: smartcore.bos.PullDevicesMetadataRequest.read_mask:type_name -> google.protobuf.FieldMask
-	15, // 11: smartcore.bos.PullDevicesMetadataRequest.includes:type_name -> smartcore.bos.DevicesMetadata.Include
-	18, // 12: smartcore.bos.PullDevicesMetadataResponse.changes:type_name -> smartcore.bos.PullDevicesMetadataResponse.Change
-	11, // 13: smartcore.bos.GetDownloadDevicesUrlRequest.query:type_name -> smartcore.bos.Device.Query
-	23, // 14: smartcore.bos.GetDownloadDevicesUrlRequest.history:type_name -> smartcore.types.time.Period
-	19, // 15: smartcore.bos.GetDownloadDevicesUrlRequest.table:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table
-	24, // 16: smartcore.bos.DownloadDevicesUrl.expire_after_time:type_name -> google.protobuf.Timestamp
-	12, // 17: smartcore.bos.Device.Query.conditions:type_name -> smartcore.bos.Device.Query.Condition
-	13, // 18: smartcore.bos.Device.Query.Condition.string_in:type_name -> smartcore.bos.Device.Query.StringList
-	13, // 19: smartcore.bos.Device.Query.Condition.string_in_fold:type_name -> smartcore.bos.Device.Query.StringList
-	24, // 20: smartcore.bos.Device.Query.Condition.timestamp_equal:type_name -> google.protobuf.Timestamp
-	24, // 21: smartcore.bos.Device.Query.Condition.timestamp_gt:type_name -> google.protobuf.Timestamp
-	24, // 22: smartcore.bos.Device.Query.Condition.timestamp_gte:type_name -> google.protobuf.Timestamp
-	24, // 23: smartcore.bos.Device.Query.Condition.timestamp_lt:type_name -> google.protobuf.Timestamp
-	24, // 24: smartcore.bos.Device.Query.Condition.timestamp_lte:type_name -> google.protobuf.Timestamp
-	13, // 25: smartcore.bos.Device.Query.Condition.name_descendant_in:type_name -> smartcore.bos.Device.Query.StringList
-	13, // 26: smartcore.bos.Device.Query.Condition.name_descendant_inc_in:type_name -> smartcore.bos.Device.Query.StringList
-	16, // 27: smartcore.bos.DevicesMetadata.StringFieldCount.counts:type_name -> smartcore.bos.DevicesMetadata.StringFieldCount.CountsEntry
-	25, // 28: smartcore.bos.PullDevicesResponse.Change.type:type_name -> smartcore.types.ChangeType
-	0,  // 29: smartcore.bos.PullDevicesResponse.Change.new_value:type_name -> smartcore.bos.Device
-	0,  // 30: smartcore.bos.PullDevicesResponse.Change.old_value:type_name -> smartcore.bos.Device
-	24, // 31: smartcore.bos.PullDevicesResponse.Change.change_time:type_name -> google.protobuf.Timestamp
-	1,  // 32: smartcore.bos.PullDevicesMetadataResponse.Change.devices_metadata:type_name -> smartcore.bos.DevicesMetadata
-	24, // 33: smartcore.bos.PullDevicesMetadataResponse.Change.change_time:type_name -> google.protobuf.Timestamp
-	20, // 34: smartcore.bos.GetDownloadDevicesUrlRequest.Table.include_cols:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table.Column
-	20, // 35: smartcore.bos.GetDownloadDevicesUrlRequest.Table.exclude_cols:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table.Column
-	2,  // 36: smartcore.bos.DevicesApi.ListDevices:input_type -> smartcore.bos.ListDevicesRequest
-	4,  // 37: smartcore.bos.DevicesApi.PullDevices:input_type -> smartcore.bos.PullDevicesRequest
-	6,  // 38: smartcore.bos.DevicesApi.GetDevicesMetadata:input_type -> smartcore.bos.GetDevicesMetadataRequest
-	7,  // 39: smartcore.bos.DevicesApi.PullDevicesMetadata:input_type -> smartcore.bos.PullDevicesMetadataRequest
-	9,  // 40: smartcore.bos.DevicesApi.GetDownloadDevicesUrl:input_type -> smartcore.bos.GetDownloadDevicesUrlRequest
-	3,  // 41: smartcore.bos.DevicesApi.ListDevices:output_type -> smartcore.bos.ListDevicesResponse
-	5,  // 42: smartcore.bos.DevicesApi.PullDevices:output_type -> smartcore.bos.PullDevicesResponse
-	1,  // 43: smartcore.bos.DevicesApi.GetDevicesMetadata:output_type -> smartcore.bos.DevicesMetadata
-	8,  // 44: smartcore.bos.DevicesApi.PullDevicesMetadata:output_type -> smartcore.bos.PullDevicesMetadataResponse
-	10, // 45: smartcore.bos.DevicesApi.GetDownloadDevicesUrl:output_type -> smartcore.bos.DownloadDevicesUrl
-	41, // [41:46] is the sub-list for method output_type
-	36, // [36:41] is the sub-list for method input_type
-	36, // [36:36] is the sub-list for extension type_name
-	36, // [36:36] is the sub-list for extension extendee
-	0,  // [0:36] is the sub-list for field type_name
+	11, // 10: smartcore.bos.GetDevicesMetadataRequest.query:type_name -> smartcore.bos.Device.Query
+	22, // 11: smartcore.bos.PullDevicesMetadataRequest.read_mask:type_name -> google.protobuf.FieldMask
+	15, // 12: smartcore.bos.PullDevicesMetadataRequest.includes:type_name -> smartcore.bos.DevicesMetadata.Include
+	11, // 13: smartcore.bos.PullDevicesMetadataRequest.query:type_name -> smartcore.bos.Device.Query
+	18, // 14: smartcore.bos.PullDevicesMetadataResponse.changes:type_name -> smartcore.bos.PullDevicesMetadataResponse.Change
+	11, // 15: smartcore.bos.GetDownloadDevicesUrlRequest.query:type_name -> smartcore.bos.Device.Query
+	23, // 16: smartcore.bos.GetDownloadDevicesUrlRequest.history:type_name -> smartcore.types.time.Period
+	19, // 17: smartcore.bos.GetDownloadDevicesUrlRequest.table:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table
+	24, // 18: smartcore.bos.DownloadDevicesUrl.expire_after_time:type_name -> google.protobuf.Timestamp
+	12, // 19: smartcore.bos.Device.Query.conditions:type_name -> smartcore.bos.Device.Query.Condition
+	13, // 20: smartcore.bos.Device.Query.Condition.string_in:type_name -> smartcore.bos.Device.Query.StringList
+	13, // 21: smartcore.bos.Device.Query.Condition.string_in_fold:type_name -> smartcore.bos.Device.Query.StringList
+	24, // 22: smartcore.bos.Device.Query.Condition.timestamp_equal:type_name -> google.protobuf.Timestamp
+	24, // 23: smartcore.bos.Device.Query.Condition.timestamp_gt:type_name -> google.protobuf.Timestamp
+	24, // 24: smartcore.bos.Device.Query.Condition.timestamp_gte:type_name -> google.protobuf.Timestamp
+	24, // 25: smartcore.bos.Device.Query.Condition.timestamp_lt:type_name -> google.protobuf.Timestamp
+	24, // 26: smartcore.bos.Device.Query.Condition.timestamp_lte:type_name -> google.protobuf.Timestamp
+	13, // 27: smartcore.bos.Device.Query.Condition.name_descendant_in:type_name -> smartcore.bos.Device.Query.StringList
+	13, // 28: smartcore.bos.Device.Query.Condition.name_descendant_inc_in:type_name -> smartcore.bos.Device.Query.StringList
+	16, // 29: smartcore.bos.DevicesMetadata.StringFieldCount.counts:type_name -> smartcore.bos.DevicesMetadata.StringFieldCount.CountsEntry
+	25, // 30: smartcore.bos.PullDevicesResponse.Change.type:type_name -> smartcore.types.ChangeType
+	0,  // 31: smartcore.bos.PullDevicesResponse.Change.new_value:type_name -> smartcore.bos.Device
+	0,  // 32: smartcore.bos.PullDevicesResponse.Change.old_value:type_name -> smartcore.bos.Device
+	24, // 33: smartcore.bos.PullDevicesResponse.Change.change_time:type_name -> google.protobuf.Timestamp
+	1,  // 34: smartcore.bos.PullDevicesMetadataResponse.Change.devices_metadata:type_name -> smartcore.bos.DevicesMetadata
+	24, // 35: smartcore.bos.PullDevicesMetadataResponse.Change.change_time:type_name -> google.protobuf.Timestamp
+	20, // 36: smartcore.bos.GetDownloadDevicesUrlRequest.Table.include_cols:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table.Column
+	20, // 37: smartcore.bos.GetDownloadDevicesUrlRequest.Table.exclude_cols:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table.Column
+	2,  // 38: smartcore.bos.DevicesApi.ListDevices:input_type -> smartcore.bos.ListDevicesRequest
+	4,  // 39: smartcore.bos.DevicesApi.PullDevices:input_type -> smartcore.bos.PullDevicesRequest
+	6,  // 40: smartcore.bos.DevicesApi.GetDevicesMetadata:input_type -> smartcore.bos.GetDevicesMetadataRequest
+	7,  // 41: smartcore.bos.DevicesApi.PullDevicesMetadata:input_type -> smartcore.bos.PullDevicesMetadataRequest
+	9,  // 42: smartcore.bos.DevicesApi.GetDownloadDevicesUrl:input_type -> smartcore.bos.GetDownloadDevicesUrlRequest
+	3,  // 43: smartcore.bos.DevicesApi.ListDevices:output_type -> smartcore.bos.ListDevicesResponse
+	5,  // 44: smartcore.bos.DevicesApi.PullDevices:output_type -> smartcore.bos.PullDevicesResponse
+	1,  // 45: smartcore.bos.DevicesApi.GetDevicesMetadata:output_type -> smartcore.bos.DevicesMetadata
+	8,  // 46: smartcore.bos.DevicesApi.PullDevicesMetadata:output_type -> smartcore.bos.PullDevicesMetadataResponse
+	10, // 47: smartcore.bos.DevicesApi.GetDownloadDevicesUrl:output_type -> smartcore.bos.DownloadDevicesUrl
+	43, // [43:48] is the sub-list for method output_type
+	38, // [38:43] is the sub-list for method input_type
+	38, // [38:38] is the sub-list for extension type_name
+	38, // [38:38] is the sub-list for extension extendee
+	0,  // [0:38] is the sub-list for field type_name
 }
 
 func init() { file_devices_proto_init() }

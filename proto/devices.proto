@@ -179,6 +179,8 @@ message GetDevicesMetadataRequest {
   // Which fields to include in the metadata calculations.
   // If absent DeviceMetadata.field_counts will be empty.
   DevicesMetadata.Include includes = 3;
+  // A query for filtering the devices that will be included in the metadata calculations.
+  Device.Query query = 4;
 }
 
 message PullDevicesMetadataRequest {
@@ -192,6 +194,8 @@ message PullDevicesMetadataRequest {
   // When true the device will only send changes to the resource value.
   // The default behaviour is to send the current value immediately followed by any updates as they happen.
   bool updates_only = 4;
+  // A query for filtering the devices that will be included in the metadata calculations.
+  Device.Query query = 5;
 }
 
 message PullDevicesMetadataResponse {
