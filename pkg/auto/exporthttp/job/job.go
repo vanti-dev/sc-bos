@@ -73,7 +73,9 @@ func Multiplex(ctx context.Context, jobs ...Job) *Mulpx {
 		j := job
 
 		out.group.Go(func() error {
-			throttle := time.NewTicker(5 * time.Second)
+			// Since cron schedules often occur at a minimum of every minute,
+			// we add a throttle to avoid a hot loop if jobs take a while to execute.
+			throttle := time.NewTicker(time.Minute)
 			defer throttle.Stop()
 
 			for {
