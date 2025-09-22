@@ -1117,6 +1117,22 @@
                   }
                 }
               ]
+            },
+            {
+              "title": "Health",
+              "icon": "mdi-heart-pulse",
+              "path": "health",
+              "layout": "builtin:LayoutMainSide",
+              "main": [
+                {
+                  "id": "ImpactBreakdown",
+                  "component": "builtin:health/ImpactBreakdown"
+                },
+                {
+                  "id": "CheckTable",
+                  "component": "builtin:health/CheckTable"
+                }
+              ]
             }
           ]
         }
