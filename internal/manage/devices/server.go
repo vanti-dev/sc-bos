@@ -213,7 +213,7 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 	}
 
 	// watch for and send updates to metadata
-	col := newMetadataCollector(request.Includes.Fields...)
+	col := newMetadataCollector(request.GetIncludes().GetFields()...)
 	seeding := true
 	for change := range changes {
 		var md *gen.DevicesMetadata
