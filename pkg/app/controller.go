@@ -7,7 +7,6 @@ import (
 	"crypto/x509/pkix"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"net/http/pprof"
 	"net/url"
@@ -261,20 +260,14 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// DevicesApi
 	var devicesApiOpts []devices.Option
 	// work out the url download links should be using for targeting this controller
-	lisHost, lisPort, _ := net.SplitHostPort(config.ListenHTTPS)
-	if lisHost == "" {
-		lisHost = config.HTTPAddr // populated via network interface scanning or config
-	}
-	if lisHost != "" {
-		hostAndPort := lisHost
-		if lisPort != "" {
-			hostAndPort = net.JoinHostPort(lisHost, lisPort)
-		}
+	if hostPort, err := config.ExternalHTTPEndpoint(); err == nil {
 		devicesApiOpts = append(devicesApiOpts, devices.WithDownloadUrlBase(url.URL{
 			Scheme: "https",
-			Host:   hostAndPort,
+			Host:   hostPort,
 			Path:   "/dl/devices",
 		}))
+	} else {
+		logger.Error("failed to determine external http endpoint - download URLs unavailable", zap.Error(err))
 	}
 	devicesApi := devices.NewServer(rootNode, devicesApiOpts...)
 	devicesApi.Register(grpcServer)
@@ -503,26 +496,6 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 
 	err = multierr.Append(err, group.Wait())
 	return
-}
-
-func (c *Controller) grpcEndpoint() (string, error) {
-	lisAddr := c.SystemConfig.ListenGRPC
-	addr := c.SystemConfig.GRPCAddr
-	_, p, err := net.SplitHostPort(lisAddr)
-	if err != nil {
-		return "", err
-	}
-	return net.JoinHostPort(addr, p), nil
-}
-
-func (c *Controller) httpEndpoint() (string, error) {
-	lisAddr := c.SystemConfig.ListenHTTPS
-	addr := c.SystemConfig.HTTPAddr
-	_, p, err := net.SplitHostPort(lisAddr)
-	if err != nil {
-		return "", err
-	}
-	return net.JoinHostPort(addr, p), nil
 }
 
 const (

@@ -79,7 +79,7 @@ func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, e
 }
 
 func (c *Controller) startSystems() (*service.Map, error) {
-	grpcEndpoint, err := c.grpcEndpoint()
+	grpcEndpoint, err := c.SystemConfig.ExternalGRPCEndpoint()
 	if err != nil {
 		return nil, err
 	}

@@ -53,9 +53,12 @@ type Config struct {
 	Logger      *zap.Config `json:"logger,omitempty"`
 	ListenGRPC  string      `json:"listenGrpc,omitempty"`
 	ListenHTTPS string      `json:"listenHttps,omitempty"`
-	// Preferred IP/host others use to connect to us.
+
+	Host string `json:"-"`
+	// Preferred host:port others use to connect to us.
 	// Typically used when the controller constructs and shares its own address with others,
 	// for example during enrollment or when producing download links.
+	// Can optionally contain a port, otherwise the port from ListenGRPC/ListenHTTPS is used.
 	GRPCAddr string `json:"grpcAddr,omitempty"` // Defaults to netutil.OutboundAddr
 	HTTPAddr string `json:"httpAddr,omitempty"` // Defaults to GRPCAddr
 
@@ -104,6 +107,18 @@ func (c *Config) AutoConfigBlocks() map[string][]block.Block {
 // Zone types that do not implement BlockSource are not included in the output.
 func (c *Config) ZoneConfigBlocks() map[string][]block.Block {
 	return extractConfigBlocks(c, c.ZoneFactories)
+}
+
+// ExternalHTTPEndpoint returns the way that the server should be reached over HTTPS from the outside world.
+// This can be overridden by setting HTTPAddr.
+func (c *Config) ExternalHTTPEndpoint() (string, error) {
+	return netutil.MergeHostPort(c.ListenHTTPS, c.HTTPAddr)
+}
+
+// ExternalGRPCEndpoint returns the way that the server should be reached over gRPC from the outside world.
+// This can be overridden by setting GRPCAddr.
+func (c *Config) ExternalGRPCEndpoint() (string, error) {
+	return netutil.MergeHostPort(c.ListenGRPC, c.GRPCAddr)
 }
 
 func extractConfigBlocks[Factory any](c *Config, factories map[string]Factory) map[string][]block.Block {
@@ -184,6 +199,19 @@ type Experimental struct {
 // Normalize adjusts c to apply defaults that are based on the values of other fields.
 // Normalize should be called explicitly if not using Load.
 func (c *Config) Normalize() {
+	// set defaults for the external addresses by autodiscovery
+	// gRPC address will default to the outbound address
+	if addr, err := netutil.OutboundAddr(); err == nil {
+		if grpcAddr, err := netutil.MergeHostPort(addr.String(), c.GRPCAddr); err == nil {
+			c.GRPCAddr = grpcAddr
+		}
+	}
+	// HTTP address will default to the gRPC address (but not the gRPC port)
+	bareGrpcHost := netutil.StripPort(c.GRPCAddr)
+	if httpAddr, err := netutil.MergeHostPort(bareGrpcHost, c.HTTPAddr); err == nil {
+		c.HTTPAddr = httpAddr
+	}
+
 	if c.GRPCAddr == "" {
 		if addr, err := netutil.OutboundAddr(); err == nil {
 			c.GRPCAddr = addr.String()
