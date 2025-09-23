@@ -54,7 +54,6 @@ type Config struct {
 	ListenGRPC  string      `json:"listenGrpc,omitempty"`
 	ListenHTTPS string      `json:"listenHttps,omitempty"`
 
-	Host string `json:"-"`
 	// Preferred host:port others use to connect to us.
 	// Typically used when the controller constructs and shares its own address with others,
 	// for example during enrollment or when producing download links.
