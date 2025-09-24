@@ -12,6 +12,7 @@ import (
 	time "github.com/smart-core-os/sc-api/go/types/time"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
@@ -788,6 +789,7 @@ type Device_Query_Condition struct {
 	//	*Device_Query_Condition_NameDescendantInc
 	//	*Device_Query_Condition_NameDescendantIn
 	//	*Device_Query_Condition_NameDescendantIncIn
+	//	*Device_Query_Condition_Present
 	Value         isDevice_Query_Condition_Value `protobuf_oneof:"value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -972,6 +974,15 @@ func (x *Device_Query_Condition) GetNameDescendantIncIn() *Device_Query_StringLi
 	return nil
 }
 
+func (x *Device_Query_Condition) GetPresent() *emptypb.Empty {
+	if x != nil {
+		if x, ok := x.Value.(*Device_Query_Condition_Present); ok {
+			return x.Present
+		}
+	}
+	return nil
+}
+
 type isDevice_Query_Condition_Value interface {
 	isDevice_Query_Condition_Value()
 }
@@ -1065,6 +1076,12 @@ type Device_Query_Condition_NameDescendantIncIn struct {
 	NameDescendantIncIn *Device_Query_StringList `protobuf:"bytes,33,opt,name=name_descendant_inc_in,json=nameDescendantIncIn,proto3,oneof"`
 }
 
+type Device_Query_Condition_Present struct {
+	// The condition matches if the field is present.
+	// Default values are not present unless explicit presences is tracked for the field.
+	Present *emptypb.Empty `protobuf:"bytes,40,opt,name=present,proto3,oneof"`
+}
+
 func (*Device_Query_Condition_StringEqual) isDevice_Query_Condition_Value() {}
 
 func (*Device_Query_Condition_StringEqualFold) isDevice_Query_Condition_Value() {}
@@ -1094,6 +1111,8 @@ func (*Device_Query_Condition_NameDescendantInc) isDevice_Query_Condition_Value(
 func (*Device_Query_Condition_NameDescendantIn) isDevice_Query_Condition_Value() {}
 
 func (*Device_Query_Condition_NameDescendantIncIn) isDevice_Query_Condition_Value() {}
+
+func (*Device_Query_Condition_Present) isDevice_Query_Condition_Value() {}
 
 // A list of strings, because oneof can't be repeated.
 type Device_Query_StringList struct {
@@ -1496,14 +1515,14 @@ var File_devices_proto protoreflect.FileDescriptor
 
 const file_devices_proto_rawDesc = "" +
 	"\n" +
-	"\rdevices.proto\x12\rsmartcore.bos\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x15traits/metadata.proto\x1a\x12types/change.proto\x1a\x17types/time/period.proto\"\xa6\t\n" +
+	"\rdevices.proto\x12\rsmartcore.bos\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x15traits/metadata.proto\x1a\x12types/change.proto\x1a\x17types/time/period.proto\"\xda\t\n" +
 	"\x06Device\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x126\n" +
-	"\bmetadata\x18\x02 \x01(\v2\x1a.smartcore.traits.MetadataR\bmetadata\x1a\xcf\b\n" +
+	"\bmetadata\x18\x02 \x01(\v2\x1a.smartcore.traits.MetadataR\bmetadata\x1a\x83\t\n" +
 	"\x05Query\x12E\n" +
 	"\n" +
 	"conditions\x18\x01 \x03(\v2%.smartcore.bos.Device.Query.ConditionR\n" +
-	"conditions\x1a\xd6\a\n" +
+	"conditions\x1a\x8a\b\n" +
 	"\tCondition\x12\x14\n" +
 	"\x05field\x18\x01 \x01(\tR\x05field\x12#\n" +
 	"\fstring_equal\x18\x02 \x01(\tH\x00R\vstringEqual\x12,\n" +
@@ -1520,7 +1539,8 @@ const file_devices_proto_rawDesc = "" +
 	"\x0fname_descendant\x18\x1e \x01(\tH\x00R\x0enameDescendant\x120\n" +
 	"\x13name_descendant_inc\x18\x1f \x01(\tH\x00R\x11nameDescendantInc\x12V\n" +
 	"\x12name_descendant_in\x18  \x01(\v2&.smartcore.bos.Device.Query.StringListH\x00R\x10nameDescendantIn\x12]\n" +
-	"\x16name_descendant_inc_in\x18! \x01(\v2&.smartcore.bos.Device.Query.StringListH\x00R\x13nameDescendantIncInB\a\n" +
+	"\x16name_descendant_inc_in\x18! \x01(\v2&.smartcore.bos.Device.Query.StringListH\x00R\x13nameDescendantIncIn\x122\n" +
+	"\apresent\x18( \x01(\v2\x16.google.protobuf.EmptyH\x00R\apresentB\a\n" +
 	"\x05value\x1a&\n" +
 	"\n" +
 	"StringList\x12\x18\n" +
@@ -1643,7 +1663,8 @@ var file_devices_proto_goTypes = []any{
 	(*fieldmaskpb.FieldMask)(nil),                     // 22: google.protobuf.FieldMask
 	(*time.Period)(nil),                               // 23: smartcore.types.time.Period
 	(*timestamppb.Timestamp)(nil),                     // 24: google.protobuf.Timestamp
-	(types.ChangeType)(0),                             // 25: smartcore.types.ChangeType
+	(*emptypb.Empty)(nil),                             // 25: google.protobuf.Empty
+	(types.ChangeType)(0),                             // 26: smartcore.types.ChangeType
 }
 var file_devices_proto_depIdxs = []int32{
 	21, // 0: smartcore.bos.Device.metadata:type_name -> smartcore.traits.Metadata
@@ -1675,30 +1696,31 @@ var file_devices_proto_depIdxs = []int32{
 	24, // 26: smartcore.bos.Device.Query.Condition.timestamp_lte:type_name -> google.protobuf.Timestamp
 	13, // 27: smartcore.bos.Device.Query.Condition.name_descendant_in:type_name -> smartcore.bos.Device.Query.StringList
 	13, // 28: smartcore.bos.Device.Query.Condition.name_descendant_inc_in:type_name -> smartcore.bos.Device.Query.StringList
-	16, // 29: smartcore.bos.DevicesMetadata.StringFieldCount.counts:type_name -> smartcore.bos.DevicesMetadata.StringFieldCount.CountsEntry
-	25, // 30: smartcore.bos.PullDevicesResponse.Change.type:type_name -> smartcore.types.ChangeType
-	0,  // 31: smartcore.bos.PullDevicesResponse.Change.new_value:type_name -> smartcore.bos.Device
-	0,  // 32: smartcore.bos.PullDevicesResponse.Change.old_value:type_name -> smartcore.bos.Device
-	24, // 33: smartcore.bos.PullDevicesResponse.Change.change_time:type_name -> google.protobuf.Timestamp
-	1,  // 34: smartcore.bos.PullDevicesMetadataResponse.Change.devices_metadata:type_name -> smartcore.bos.DevicesMetadata
-	24, // 35: smartcore.bos.PullDevicesMetadataResponse.Change.change_time:type_name -> google.protobuf.Timestamp
-	20, // 36: smartcore.bos.GetDownloadDevicesUrlRequest.Table.include_cols:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table.Column
-	20, // 37: smartcore.bos.GetDownloadDevicesUrlRequest.Table.exclude_cols:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table.Column
-	2,  // 38: smartcore.bos.DevicesApi.ListDevices:input_type -> smartcore.bos.ListDevicesRequest
-	4,  // 39: smartcore.bos.DevicesApi.PullDevices:input_type -> smartcore.bos.PullDevicesRequest
-	6,  // 40: smartcore.bos.DevicesApi.GetDevicesMetadata:input_type -> smartcore.bos.GetDevicesMetadataRequest
-	7,  // 41: smartcore.bos.DevicesApi.PullDevicesMetadata:input_type -> smartcore.bos.PullDevicesMetadataRequest
-	9,  // 42: smartcore.bos.DevicesApi.GetDownloadDevicesUrl:input_type -> smartcore.bos.GetDownloadDevicesUrlRequest
-	3,  // 43: smartcore.bos.DevicesApi.ListDevices:output_type -> smartcore.bos.ListDevicesResponse
-	5,  // 44: smartcore.bos.DevicesApi.PullDevices:output_type -> smartcore.bos.PullDevicesResponse
-	1,  // 45: smartcore.bos.DevicesApi.GetDevicesMetadata:output_type -> smartcore.bos.DevicesMetadata
-	8,  // 46: smartcore.bos.DevicesApi.PullDevicesMetadata:output_type -> smartcore.bos.PullDevicesMetadataResponse
-	10, // 47: smartcore.bos.DevicesApi.GetDownloadDevicesUrl:output_type -> smartcore.bos.DownloadDevicesUrl
-	43, // [43:48] is the sub-list for method output_type
-	38, // [38:43] is the sub-list for method input_type
-	38, // [38:38] is the sub-list for extension type_name
-	38, // [38:38] is the sub-list for extension extendee
-	0,  // [0:38] is the sub-list for field type_name
+	25, // 29: smartcore.bos.Device.Query.Condition.present:type_name -> google.protobuf.Empty
+	16, // 30: smartcore.bos.DevicesMetadata.StringFieldCount.counts:type_name -> smartcore.bos.DevicesMetadata.StringFieldCount.CountsEntry
+	26, // 31: smartcore.bos.PullDevicesResponse.Change.type:type_name -> smartcore.types.ChangeType
+	0,  // 32: smartcore.bos.PullDevicesResponse.Change.new_value:type_name -> smartcore.bos.Device
+	0,  // 33: smartcore.bos.PullDevicesResponse.Change.old_value:type_name -> smartcore.bos.Device
+	24, // 34: smartcore.bos.PullDevicesResponse.Change.change_time:type_name -> google.protobuf.Timestamp
+	1,  // 35: smartcore.bos.PullDevicesMetadataResponse.Change.devices_metadata:type_name -> smartcore.bos.DevicesMetadata
+	24, // 36: smartcore.bos.PullDevicesMetadataResponse.Change.change_time:type_name -> google.protobuf.Timestamp
+	20, // 37: smartcore.bos.GetDownloadDevicesUrlRequest.Table.include_cols:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table.Column
+	20, // 38: smartcore.bos.GetDownloadDevicesUrlRequest.Table.exclude_cols:type_name -> smartcore.bos.GetDownloadDevicesUrlRequest.Table.Column
+	2,  // 39: smartcore.bos.DevicesApi.ListDevices:input_type -> smartcore.bos.ListDevicesRequest
+	4,  // 40: smartcore.bos.DevicesApi.PullDevices:input_type -> smartcore.bos.PullDevicesRequest
+	6,  // 41: smartcore.bos.DevicesApi.GetDevicesMetadata:input_type -> smartcore.bos.GetDevicesMetadataRequest
+	7,  // 42: smartcore.bos.DevicesApi.PullDevicesMetadata:input_type -> smartcore.bos.PullDevicesMetadataRequest
+	9,  // 43: smartcore.bos.DevicesApi.GetDownloadDevicesUrl:input_type -> smartcore.bos.GetDownloadDevicesUrlRequest
+	3,  // 44: smartcore.bos.DevicesApi.ListDevices:output_type -> smartcore.bos.ListDevicesResponse
+	5,  // 45: smartcore.bos.DevicesApi.PullDevices:output_type -> smartcore.bos.PullDevicesResponse
+	1,  // 46: smartcore.bos.DevicesApi.GetDevicesMetadata:output_type -> smartcore.bos.DevicesMetadata
+	8,  // 47: smartcore.bos.DevicesApi.PullDevicesMetadata:output_type -> smartcore.bos.PullDevicesMetadataResponse
+	10, // 48: smartcore.bos.DevicesApi.GetDownloadDevicesUrl:output_type -> smartcore.bos.DownloadDevicesUrl
+	44, // [44:49] is the sub-list for method output_type
+	39, // [39:44] is the sub-list for method input_type
+	39, // [39:39] is the sub-list for extension type_name
+	39, // [39:39] is the sub-list for extension extendee
+	0,  // [0:39] is the sub-list for field type_name
 }
 
 func init() { file_devices_proto_init() }
@@ -1722,6 +1744,7 @@ func file_devices_proto_init() {
 		(*Device_Query_Condition_NameDescendantInc)(nil),
 		(*Device_Query_Condition_NameDescendantIn)(nil),
 		(*Device_Query_Condition_NameDescendantIncIn)(nil),
+		(*Device_Query_Condition_Present)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
