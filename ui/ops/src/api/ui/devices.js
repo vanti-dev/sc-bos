@@ -142,13 +142,20 @@ function deviceQueryConditionFromObject(obj) {
   const dst = new Device.Query.Condition();
   setProperties(dst, obj, 'field',
       'stringEqual', 'stringEqualFold',
-      'stringContains', 'stringContainsFold'
+      'stringContains', 'stringContainsFold',
+      'nameDescendant', 'nameDescendantInc'
   );
   if (obj.stringIn) {
     dst.setStringIn(new Device.Query.StringList().setStringsList(obj.stringIn.stringsList));
   }
   if (obj.stringInFold) {
     dst.setStringInFold(new Device.Query.StringList().setStringsList(obj.stringInFold.stringsList));
+  }
+  if (obj.nameDescendantIn) {
+    dst.setNameDescendantIn(new Device.Query.StringList().setStringsList(obj.nameDescendantIn.stringsList));
+  }
+  if (obj.nameDescendantIncIn) {
+    dst.setNameDescendantIncIn(new Device.Query.StringList().setStringsList(obj.nameDescendantIncIn.stringsList));
   }
   convertProperties(dst, obj, timestampFromObject,
       'timestampEqual', 'timestampGt', 'timestampGte', 'timestampLt', 'timestampLte');
