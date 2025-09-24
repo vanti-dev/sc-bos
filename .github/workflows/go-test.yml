@@ -2,7 +2,7 @@ name: Go Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, tools/code-coverage ]
   pull_request:
     branches: [ main ]
 
