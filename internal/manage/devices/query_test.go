@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -797,6 +798,50 @@ func Test_conditionToCmpFunc(t *testing.T) {
 				for _, str := range tt.negative {
 					if cmpFunc(nameLeaf(str)) {
 						t.Errorf("expected %q to not match condition %s", str, tt.cond)
+					}
+				}
+			})
+		}
+	})
+
+	t.Run("presence", func(t *testing.T) {
+		mkLeaf := func(field string, val protoreflect.Value) leaf {
+			md := (&querypb.Result{}).ProtoReflect().Descriptor()
+			return leaf{
+				fd: md.Fields().ByName(protoreflect.Name(field)),
+				v:  val,
+			}
+		}
+		tests := []struct {
+			cond     *gen.Device_Query_Condition
+			positive []leaf
+			negative []leaf
+		}{
+			{
+				cond: &gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_Present{Present: &emptypb.Empty{}}},
+				positive: []leaf{
+					mkLeaf("string_val", protoreflect.ValueOfString("a")),
+					mkLeaf("r_string", protoreflect.ValueOfString("b")),
+					mkLeaf("enum_val", protoreflect.ValueOfEnum(querypb.ResultEnum_RESULT_ENUM_A.Number())),
+				},
+				negative: []leaf{
+					mkLeaf("string_val", protoreflect.Value{}),
+					mkLeaf("r_string", protoreflect.Value{}),
+					mkLeaf("enum_val", protoreflect.Value{}),
+				},
+			},
+		}
+		for _, tt := range tests {
+			t.Run(condTestName(tt.cond), func(t *testing.T) {
+				cmpFunc := conditionToCmpFunc(tt.cond)
+				for _, l := range tt.positive {
+					if !cmpFunc(l) {
+						t.Errorf("expected %v to match condition %s", l, tt.cond)
+					}
+				}
+				for _, l := range tt.negative {
+					if cmpFunc(l) {
+						t.Errorf("expected %v to not match condition %s", l, tt.cond)
 					}
 				}
 			})

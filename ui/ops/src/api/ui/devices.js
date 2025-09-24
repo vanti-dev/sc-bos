@@ -13,6 +13,7 @@ import {
   PullDevicesMetadataRequest,
   PullDevicesRequest
 } from '@vanti-dev/sc-bos-ui-gen/proto/devices_pb';
+import {Empty} from 'google-protobuf/google/protobuf/empty_pb.js';
 
 /**
  * @param {Partial<ListDevicesRequest.AsObject>} request
@@ -159,6 +160,10 @@ function deviceQueryConditionFromObject(obj) {
   }
   convertProperties(dst, obj, timestampFromObject,
       'timestampEqual', 'timestampGt', 'timestampGte', 'timestampLt', 'timestampLte');
+
+  if (obj.present) {
+    dst.setPresent(new Empty())
+  }
   return dst;
 }
 

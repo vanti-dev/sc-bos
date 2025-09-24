@@ -166,6 +166,11 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
 			n, _ := tree.matchDescendant(v)
 			return n != nil
 		})
+
+	case *gen.Device_Query_Condition_Present:
+		return func(v leaf) bool {
+			return v.v.IsValid()
+		}
 	}
 
 	return func(v leaf) bool {

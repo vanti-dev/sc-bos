@@ -4,6 +4,7 @@ package smartcore.bos;
 
 option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
+import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "traits/metadata.proto";
@@ -78,6 +79,10 @@ message Device {
         // The server may have limits on the number of names that can be compared.
         // See the name_descendant_inc description for details of how descendant matching works.
         StringList name_descendant_inc_in = 33;
+
+        // The condition matches if the field is present.
+        // Default values are not present unless explicit presences is tracked for the field.
+        google.protobuf.Empty present = 40;
 
         // there's room here for additional rhs values for the field, but we don't need any
       }

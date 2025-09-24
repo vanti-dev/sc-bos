@@ -1,5 +1,6 @@
 import * as jspb from 'google-protobuf'
 
+import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb'; // proto import: "google/protobuf/empty.proto"
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 import * as traits_metadata_pb from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb'; // proto import: "traits/metadata.proto"
@@ -116,6 +117,11 @@ export namespace Device {
       hasNameDescendantIncIn(): boolean;
       clearNameDescendantIncIn(): Condition;
 
+      getPresent(): google_protobuf_empty_pb.Empty | undefined;
+      setPresent(value?: google_protobuf_empty_pb.Empty): Condition;
+      hasPresent(): boolean;
+      clearPresent(): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -144,6 +150,7 @@ export namespace Device {
         nameDescendantInc: string,
         nameDescendantIn?: Device.Query.StringList.AsObject,
         nameDescendantIncIn?: Device.Query.StringList.AsObject,
+        present?: google_protobuf_empty_pb.Empty.AsObject,
       }
 
       export enum ValueCase { 
@@ -163,6 +170,7 @@ export namespace Device {
         NAME_DESCENDANT_INC = 31,
         NAME_DESCENDANT_IN = 32,
         NAME_DESCENDANT_INC_IN = 33,
+        PRESENT = 40,
       }
     }
 
