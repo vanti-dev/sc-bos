@@ -38,6 +38,8 @@ func IntoTrait(client *gobacnet.Client, devices known.Context, statuses *statusp
 		return newMode(client, devices, statuses, traitConfig, logger)
 	case trait.OccupancySensor:
 		return newOccupancy(client, devices, statuses, traitConfig, logger)
+	case trait.OnOff:
+		return newOnOff(client, devices, statuses, traitConfig, logger)
 	case securityevent.TraitName:
 		return newSecurityEvent(client, devices, statuses, traitConfig, logger)
 	case statuspb.TraitName:
