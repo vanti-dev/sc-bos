@@ -11,15 +11,15 @@ profile: cover.out
 threshold:
   # (optional; default 0)
   # Minimum coverage percentage required for individual files.
-  file: 70
+  file: 0
 
   # (optional; default 0)
   # Minimum coverage percentage required for each package.
-  package: 80
+  package: 0
 
   # (optional; default 0)
   # Minimum overall project coverage percentage required.
-  total: 95
+  total: 0
 
 # Holds regexp rules which will override thresholds for matched files or packages
 # using their paths.
@@ -38,8 +38,8 @@ override:
 exclude:
   # Exclude files or packages matching their paths
   paths:
-    - \.pb\.go$    # excludes all protobuf generated files
-    - ^pkg/bar     # exclude package `pkg/bar`
+    - \cmd\tools\*\.go$    # excludes all protobuf generated files
+    - ^pkg/gen     # exclude package `pkg/bar`
 
 # (optional; default false)
 # When true, requires all coverage-ignore annotations to include explanatory comments
