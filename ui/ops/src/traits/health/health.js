@@ -1,5 +1,6 @@
 import {MINUTE} from '@/components/now.js';
 import {usePullDevicesMetadata} from '@/composables/devices.js';
+import {HealthCheck} from '@vanti-dev/sc-bos-ui-gen/proto/health_pb';
 import {computed, onScopeDispose, ref, toValue, watch} from 'vue';
 
 /**
@@ -238,4 +239,37 @@ export function totalUnreliableCount(counts) {
     if (k === 'RELIABLE' || k === 'STATE_UNSPECIFIED') return acc;
     return acc + v;
   }, 0);
+}
+
+/**
+ * Counts the number of checks in a specific state.
+ *
+ * @param {Array<import('@vanti-dev/sc-bos-ui-gen/proto/health_pb').HealthCheck.AsObject>} checks
+ * @param {import('@vanti-dev/sc-bos-ui-gen/proto/health_pb').HealthCheck.Check.State} state
+ * @return {number}
+ */
+export function countChecksByState(checks, state) {
+  return checks?.reduce((acc, check) => {
+    if (check.check.state === state) acc++;
+    return acc;
+  }, 0);
+}
+
+/**
+ * Counts the number of normal and abnormal checks.
+ *
+ * @param {Array<import('@vanti-dev/sc-bos-ui-gen/proto/health_pb').HealthCheck.AsObject>} checks
+ * @return {{normalCount: number, abnormalCount: number, totalCount: number}}
+ */
+export function countChecks(checks) {
+  const normalCount = countChecksByState(checks, HealthCheck.Check.State.NORMAL);
+  const abnormalCount = checks?.reduce((acc, check) => {
+    if (check.check.state > HealthCheck.Check.State.NORMAL) acc++;
+    return acc;
+  }, 0);
+  return {
+    normalCount,
+    abnormalCount,
+    totalCount: normalCount + abnormalCount,
+  }
 }
