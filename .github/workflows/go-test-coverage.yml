@@ -23,6 +23,19 @@ jobs:
           git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/vanti-dev".insteadOf "https://github.com/vanti-dev"
 
       - name: Test all with coverage
-        uses: robherley/go-test-action@v0
+        run: go test -skip '_e2e$' -coverprofile=./cover.out -covermode=set ./pkg/... ./internal/...
+
+      - name: Check test coverage
+        uses: vladopajic/go-test-coverage@v2
         with:
-          testArguments: ./pkg/... ./internal/...
+          config: ./.testcoverage.yml
+
+      - name: Generate coverage report
+        run: go tool cover -html=./cover.out -o=cover.html
+
+      - name: Preview coverage report
+        id: html_preview
+        uses: pavi2410/html-preview-action@v4
+        with:
+          html_file: 'cover.html'
+          job_summary: true
