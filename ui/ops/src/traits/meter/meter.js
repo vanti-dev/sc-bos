@@ -249,7 +249,7 @@ async function getReadingBefore(name, t) {
     name,
     pageSize: 1,
     orderBy: 'recordTime desc',
-    period: {endTime: t}
+    period: {startTime: t}
   });
   return res.meterReadingRecordsList?.[0];
 };
