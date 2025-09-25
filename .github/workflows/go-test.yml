@@ -38,3 +38,12 @@ jobs:
         uses: vladopajic/go-test-coverage@v2
         with:
           config: ./.testcoverage.yml
+
+      - name: Generate coverage report
+        run: go tool cover -html=./cover.out -o=cover.html
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: cover.html
