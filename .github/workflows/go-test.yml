@@ -32,19 +32,6 @@ jobs:
         run: go test -short -race ./...
 
       - name: Test all with coverage
-        run: go test -skip '_e2e$' -coverprofile=./cover.out -covermode=set ./pkg/... ./internal/...
-
-      - name: Check test coverage
-        uses: vladopajic/go-test-coverage@v2
+        uses: robherley/go-test-action@v0
         with:
-          config: ./.testcoverage.yml
-
-      - name: Generate coverage report
-        run: go tool cover -html=./cover.out -o=cover.html
-
-      - name: Preview coverage report
-        id: html_preview
-        uses: pavi2410/html-preview-action@v4
-        with:
-          html_file: 'cover.html'
-          job_summary: true
+          testArguments: pkg/... internal./...
