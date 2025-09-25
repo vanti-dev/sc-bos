@@ -9,6 +9,9 @@
       <v-divider class="mt-4 mb-1"/>
       <air-temperature-card v-bind="resource" @update-air-temperature="update"/>
     </with-air-temperature>
+    <with-on-off v-if="traits['smartcore.traits.OnOff']" :name="deviceId" v-slot="{resource, update}">
+      <on-off-card v-bind="resource" @update-on-off="update" :name="deviceId"/>
+    </with-on-off>
     <with-air-quality v-if="traits['smartcore.traits.AirQualitySensor']" :name="deviceId" v-slot="{resource}">
       <v-divider class="mt-4 mb-1"/>
       <air-quality-card v-bind="resource" :name="deviceId"/>
@@ -63,6 +66,8 @@ import WithMeter from '@/traits/meter/WithMeter.vue';
 import ModeCard from '@/traits/mode/ModeCard.vue';
 import OccupancyCard from '@/traits/occupancy/OccupancyCard.vue';
 import WithOccupancy from '@/traits/occupancy/WithOccupancy.vue';
+import OnOffCard from '@/traits/onOff/OnOffCard.vue';
+import WithOnOff from '@/traits/onOff/WithOnOff.vue';
 import StatusLogCard from '@/traits/status/StatusLogCard.vue';
 import WithStatus from '@/traits/status/WithStatus.vue';
 import TransportCard from '@/traits/transport/TransportCard.vue';
