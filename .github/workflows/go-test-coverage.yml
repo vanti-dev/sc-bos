@@ -2,12 +2,12 @@ name: Go Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, tools/code-coverage ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  test-all:
+  test-coverage:
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: github.com/smart-core-os/*,github.com/vanti-dev/*
@@ -22,11 +22,7 @@ jobs:
           git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/smart-core-os".insteadOf "https://github.com/smart-core-os"
           git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/vanti-dev".insteadOf "https://github.com/vanti-dev"
 
-      - name: Test (cachable)
-        run: go test -skip '_e2e$' ./...
-
-      - name: Test (uncachable)
-        run: go test -count=1 -run '_e2e$' ./...
-
-      - name: Test short tests under race detector
-        run: go test -short -race ./...
+      - name: Test all with coverage
+        uses: robherley/go-test-action@v0
+        with:
+          testArguments: ./pkg/... ./internal/...
