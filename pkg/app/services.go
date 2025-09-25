@@ -51,6 +51,7 @@ func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, e
 	ctxServices := auto.Services{
 		Logger:          c.Logger.Named("auto"),
 		Node:            c.Node,
+		Devices:         c.Devices,
 		Database:        c.Database,
 		Stores:          c.Stores,
 		GRPCServices:    c.GRPC,

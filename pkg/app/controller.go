@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/account"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/interceptors"
@@ -336,6 +337,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Enrollment:       enrollServer,
 		Logger:           logger,
 		Node:             rootNode,
+		Devices:          gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, devicesApi)),
 		Tasks:            &task.Group{},
 		Database:         db,
 		Stores:           store,
@@ -409,6 +411,7 @@ type Controller struct {
 	// services for drivers/automations
 	Logger          *zap.Logger
 	Node            *node.Node
+	Devices         gen.DevicesApiClient
 	Tasks           *task.Group
 	Database        *bolthold.Store
 	TokenValidators *token.ValidatorSet
