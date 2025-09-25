@@ -38,7 +38,7 @@ override:
 exclude:
   # Exclude files or packages matching their paths
   paths:
-    - \cmd\tools\*\.go$    # excludes all protobuf generated files
+    - ^cmd/tools/.*\.go$    # excludes all Go files in cmd/tools and its subdirectories
     - ^pkg/gen     # exclude package `pkg/bar`
 
 # (optional; default false)
