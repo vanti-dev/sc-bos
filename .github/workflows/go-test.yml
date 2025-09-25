@@ -42,8 +42,9 @@ jobs:
       - name: Generate coverage report
         run: go tool cover -html=./cover.out -o=cover.html
 
-      - name: Archive code coverage results
-        uses: actions/upload-artifact@v4
+      - name: Preview coverage report
+        id: html_preview
+        uses: pavi2410/html-preview-action@v4
         with:
-          name: code-coverage-report
-          path: cover.html
+          html_file: 'cover.html'
+          job_summary: true
