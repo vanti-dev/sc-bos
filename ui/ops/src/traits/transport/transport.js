@@ -117,7 +117,16 @@ export function useTransport(value, support = null) {
   const actualPosition = computed(() => {
     const v = _v.value;
     if (!v) return '';
-    return v.actualPosition?.floor ?? '';
+    if (v.actualPosition?.floor && v.actualPosition?.floor !== '') {
+      return v.actualPosition?.floor;
+    }
+    if (v.actualPosition?.title && v.actualPosition?.title !== '') {
+      return v.actualPosition?.title;
+    }
+    if (v.actualPosition?.id && v.actualPosition?.id !== '') {
+      return v.actualPosition?.id;
+    }
+    return '';
   });
 
   const doorStatus = computed(() => {
@@ -126,7 +135,7 @@ export function useTransport(value, support = null) {
     let res = [];
     for (const door of v.doorsList) {
       res.push({
-        label: door.title,
+        label: door.title !== '' ? door.title : 'Door',
         value: enumToDisplayName(doorStatusById[door.status] ?? '')
       });
     }
