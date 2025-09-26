@@ -137,9 +137,10 @@ export function useMeterReading(value, support = null) {
  *
  * @param {import('vue').MaybeRefOrGetter<string>} name
  * @param {import('vue').MaybeRefOrGetter<Date>} t
+ * @param {boolean} interpolate - whether to interpolate between readings before and after t, or just use the next reading after t
  * @return {import('vue').ComputedRef<null | MeterReading.AsObject>}
  */
-export function useMeterReadingAt(name, t) {
+export function useMeterReadingAt(name, t, interpolate = false) {
   const usageAtT = ref(/** @type {null|number} */ null);
   const readingAtT = computed(() => {
     if (usageAtT.value === null) return null;
@@ -169,10 +170,21 @@ export function useMeterReadingAt(name, t) {
     // see: https://github.com/grpc/grpc-web/issues/946
     fetching.value = {t, cancel: () => {}};
     try {
-      const [before, after] = await Promise.all([
-        getReadingBefore(name, t),
-        getReadingOnOrAfter(name, t)
-      ]);
+      let before, after;
+      // trying to interpolate with the reading before can really slow things down as startTime is not set in getReadingBefore
+      // only do this if we care about the graph being super accurate. for most cases this won't matter
+      if (interpolate) {
+        [before, after] = await Promise.all([
+          getReadingBefore(name, t),
+          getReadingOnOrAfter(name, t)
+        ]);
+      } else {
+        [before, after] = await Promise.all([
+          null,
+          getReadingOnOrAfter(name, t)
+        ]);
+      }
+      
       if (cancelled()) return;
       usageAtT.value = interpolateUsage(before, after, t);
     } catch (e) {
@@ -249,7 +261,7 @@ async function getReadingBefore(name, t) {
     name,
     pageSize: 1,
     orderBy: 'recordTime desc',
-    period: {startTime: t}
+    period: {endTime: t} // this could be very slow without a start time
   });
   return res.meterReadingRecordsList?.[0];
 };
