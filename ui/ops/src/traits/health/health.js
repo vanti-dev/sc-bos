@@ -55,9 +55,10 @@ export function useRollingHistory(value, age = 5 * MINUTE, resolution = MINUTE) 
 /**
  * @typedef {Object} TableProps
  * @property {string} title
- * @property {number} score
+ * @property {number} totalCount
  * @property {string} color
  * @property {string} affectLabel
+ * @property {boolean} hideAffected
  * @property {Array<{title: string, count: number, prevCount: number, affect: string}>} issues
  * @property {number} errorCount
  * @property {number} prevErrorCount
@@ -189,6 +190,7 @@ function useImpactTable(currentCounts, oldCounts, conditions, opts) {
       title: opts.title,
       totalCount,
       affectLabel: opts.affectLabel,
+      hideAffected: true,
       issues,
       errorCount,
       prevErrorCount,

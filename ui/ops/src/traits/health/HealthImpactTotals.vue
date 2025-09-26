@@ -48,7 +48,7 @@ const impactTables = computed(() => {
     occupantTable.value,
     equipmentTable.value,
     complianceTable.value,
-  ]
+  ].filter(t => t.totalCount > 0);
 })
 </script>
 

@@ -29,7 +29,7 @@
             <td>Issues</td>
             <td v-for="(count, i) in issueCounts" :key="i">{{ count }}</td>
           </tr>
-          <tr>
+          <tr v-if="!props.hideAffected">
             <td v-for="(s, i) in affectCells" :key="i">{{ s }}</td>
           </tr>
           <tr>
@@ -61,6 +61,10 @@ const props = defineProps({
   affectLabel: {
     type: String,
     default: 'People affected'
+  },
+  hideAffected: {
+    type: Boolean,
+    default: false
   },
   issues: {
     type: Array,
