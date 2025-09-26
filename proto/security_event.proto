@@ -83,7 +83,7 @@ message SecurityEvent {
       // A locker has not been locked
       LOCKER_NOT_LOCKED = 23;
       // A break glass alarm has been activated
-      BREAK_GLASS = 24;
+      BREAK_GLASS_ALARM = 24;
   }
 
   // The time the security event occurred.

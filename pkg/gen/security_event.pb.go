@@ -132,7 +132,7 @@ const (
 	// A locker has not been locked
 	SecurityEvent_LOCKER_NOT_LOCKED SecurityEvent_EventType = 23
 	// A break glass alarm has been activated
-	SecurityEvent_BREAK_GLASS SecurityEvent_EventType = 24
+	SecurityEvent_BREAK_GLASS_ALARM SecurityEvent_EventType = 24
 )
 
 // Enum value maps for SecurityEvent_EventType.
@@ -162,7 +162,7 @@ var (
 		21: "LOCKER_OPEN_TOO_LONG",
 		22: "LOCKER_FORCED_OPEN",
 		23: "LOCKER_NOT_LOCKED",
-		24: "BREAK_GLASS",
+		24: "BREAK_GLASS_ALARM",
 	}
 	SecurityEvent_EventType_value = map[string]int32{
 		"EVENT_TYPE_UNKNOWN":      0,
@@ -189,7 +189,7 @@ var (
 		"LOCKER_OPEN_TOO_LONG":    21,
 		"LOCKER_FORCED_OPEN":      22,
 		"LOCKER_NOT_LOCKED":       23,
-		"BREAK_GLASS":             24,
+		"BREAK_GLASS_ALARM":       24,
 	}
 )
 
@@ -739,7 +739,7 @@ var File_security_event_proto protoreflect.FileDescriptor
 
 const file_security_event_proto_rawDesc = "" +
 	"\n" +
-	"\x14security_event.proto\x12\rsmartcore.bos\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12types/change.proto\x1a\vactor.proto\"\xe7\b\n" +
+	"\x14security_event.proto\x12\rsmartcore.bos\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12types/change.proto\x1a\vactor.proto\"\xed\b\n" +
 	"\rSecurityEvent\x12J\n" +
 	"\x13security_event_time\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x11securityEventTime\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x0e\n" +
@@ -760,7 +760,7 @@ const file_security_event_proto_rawDesc = "" +
 	"\rSTATE_UNKNOWN\x10\x00\x12\x12\n" +
 	"\x0eUNACKNOWLEDGED\x10\x01\x12\x10\n" +
 	"\fACKNOWLEDGED\x10\x02\x12\f\n" +
-	"\bRESOLVED\x10\x03\"\x8b\x04\n" +
+	"\bRESOLVED\x10\x03\"\x91\x04\n" +
 	"\tEventType\x12\x16\n" +
 	"\x12EVENT_TYPE_UNKNOWN\x10\x00\x12\n" +
 	"\n" +
@@ -790,8 +790,8 @@ const file_security_event_proto_rawDesc = "" +
 	"\rLOCKER_STATUS\x10\x14\x12\x18\n" +
 	"\x14LOCKER_OPEN_TOO_LONG\x10\x15\x12\x16\n" +
 	"\x12LOCKER_FORCED_OPEN\x10\x16\x12\x15\n" +
-	"\x11LOCKER_NOT_LOCKED\x10\x17\x12\x0f\n" +
-	"\vBREAK_GLASS\x10\x18\"\xa4\x01\n" +
+	"\x11LOCKER_NOT_LOCKED\x10\x17\x12\x15\n" +
+	"\x11BREAK_GLASS_ALARM\x10\x18\"\xa4\x01\n" +
 	"\x19ListSecurityEventsRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
 	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\x12\x1b\n" +
