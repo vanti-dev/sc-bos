@@ -3,6 +3,7 @@ package merge
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"go.uber.org/multierr"
@@ -161,4 +162,24 @@ func processIngressDenied(response any, data *gen.AccessAttempt, cfg accessConfi
 		}
 	}
 	return nil
+}
+
+func (a *access) CreateAccessGrant(context.Context, *gen.CreateAccessGrantRequest) (*gen.AccessGrant, error) {
+	return nil, errors.New("method CreateAccessGrant not implemented")
+}
+
+func (a *access) UpdateAccessGrant(context.Context, *gen.UpdateAccessGrantRequest) (*gen.AccessGrant, error) {
+	return nil, errors.New("method UpdateAccessGrant not implemented")
+}
+
+func (a *access) DeleteAccessGrant(context.Context, *gen.DeleteAccessGrantRequest) (*gen.DeleteAccessGrantResponse, error) {
+	return nil, errors.New("method DeleteAccessGrant not implemented")
+}
+
+func (a *access) GetAccessGrant(context.Context, *gen.GetAccessGrantsRequest) (*gen.AccessGrant, error) {
+	return nil, errors.New("method GetAccessGrant not implemented")
+}
+
+func (a *access) ListAccessGrants(context.Context, *gen.ListAccessGrantsRequest) (*gen.ListAccessGrantsResponse, error) {
+	return nil, errors.New("method ListAccessGrants not implemented")
 }
