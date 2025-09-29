@@ -94,26 +94,26 @@ func (a *access) PullAccessAttempts(request *gen.PullAccessAttemptsRequest, serv
 func (a *access) pollPeer(ctx context.Context) (*gen.AccessAttempt, error) {
 	data := &gen.AccessAttempt{}
 
-	var resProcessors []func(response any, data *gen.AccessAttempt) error
+	var resProcessors []func(response any, data *gen.AccessAttempt, cfg accessConfig) error
 	var readValues []config.ValueSource
 	var requestNames []string
 
 	if a.cfg.IngressPermitted != nil {
 		requestNames = append(requestNames, "ingressPermitted")
 		readValues = append(readValues, *a.cfg.IngressPermitted)
-		resProcessors = append(resProcessors, a.processIngressPermitted)
+		resProcessors = append(resProcessors, processIngressPermitted)
 	}
 
 	if a.cfg.IngressDenied != nil {
 		requestNames = append(requestNames, "ingressDenied")
 		readValues = append(readValues, *a.cfg.IngressDenied)
-		resProcessors = append(resProcessors, a.processIngressDenied)
+		resProcessors = append(resProcessors, processIngressDenied)
 	}
 
 	responses := comm.ReadProperties(ctx, a.client, a.known, readValues...)
 	var errs []error
 	for i, response := range responses {
-		err := resProcessors[i](response, data)
+		err := resProcessors[i](response, data, a.cfg)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -127,7 +127,7 @@ func (a *access) pollPeer(ctx context.Context) (*gen.AccessAttempt, error) {
 	return a.model.UpdateLastAccessAttempt(data)
 }
 
-func (a *access) processIngressPermitted(response any, data *gen.AccessAttempt) error {
+func processIngressPermitted(response any, data *gen.AccessAttempt, cfg accessConfig) error {
 	value, ok := response.(string)
 	if !ok {
 		return comm.ErrReadProperty{Prop: "ingressPermitted", Cause: fmt.Errorf("converting to string")}
@@ -137,15 +137,15 @@ func (a *access) processIngressPermitted(response any, data *gen.AccessAttempt) 
 	data.Actor = &gen.Actor{
 		LastGrantTime: timestamppb.Now(),
 	}
-	if a.cfg.IngressDeniedType != nil {
+	if cfg.IngressPermittedType != nil {
 		data.Actor.Ids = map[string]string{
-			*a.cfg.IngressDeniedType: value,
+			*cfg.IngressPermittedType: value,
 		}
 	}
 	return nil
 }
 
-func (a *access) processIngressDenied(response any, data *gen.AccessAttempt) error {
+func processIngressDenied(response any, data *gen.AccessAttempt, cfg accessConfig) error {
 	value, ok := response.(string)
 	if !ok {
 		return comm.ErrReadProperty{Prop: "ingressDenied", Cause: fmt.Errorf("converting to string")}
@@ -153,10 +153,10 @@ func (a *access) processIngressDenied(response any, data *gen.AccessAttempt) err
 	data.Grant = gen.AccessAttempt_DENIED
 	data.AccessAttemptTime = timestamppb.Now()
 
-	if a.cfg.IngressDeniedType != nil {
+	if cfg.IngressDeniedType != nil {
 		data.Actor = &gen.Actor{
 			Ids: map[string]string{
-				*a.cfg.IngressDeniedType: value,
+				*cfg.IngressDeniedType: value,
 			},
 		}
 	}
