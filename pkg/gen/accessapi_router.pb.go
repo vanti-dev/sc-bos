@@ -145,3 +145,48 @@ func (r *AccessApiRouter) PullAccessAttempts(request *PullAccessAttemptsRequest,
 		return err
 	}
 }
+
+func (r *AccessApiRouter) CreateAccessGrant(ctx context.Context, request *CreateAccessGrantRequest) (*AccessGrant, error) {
+	child, err := r.GetAccessApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.CreateAccessGrant(ctx, request)
+}
+
+func (r *AccessApiRouter) UpdateAccessGrant(ctx context.Context, request *UpdateAccessGrantRequest) (*AccessGrant, error) {
+	child, err := r.GetAccessApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.UpdateAccessGrant(ctx, request)
+}
+
+func (r *AccessApiRouter) DeleteAccessGrant(ctx context.Context, request *DeleteAccessGrantRequest) (*DeleteAccessGrantResponse, error) {
+	child, err := r.GetAccessApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.DeleteAccessGrant(ctx, request)
+}
+
+func (r *AccessApiRouter) GetAccessGrant(ctx context.Context, request *GetAccessGrantsRequest) (*AccessGrant, error) {
+	child, err := r.GetAccessApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.GetAccessGrant(ctx, request)
+}
+
+func (r *AccessApiRouter) ListAccessGrants(ctx context.Context, request *ListAccessGrantsRequest) (*ListAccessGrantsResponse, error) {
+	child, err := r.GetAccessApiClient(request.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return child.ListAccessGrants(ctx, request)
+}
