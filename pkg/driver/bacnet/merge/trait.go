@@ -7,6 +7,7 @@ import (
 	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -40,6 +41,8 @@ func IntoTrait(client *gobacnet.Client, devices known.Context, statuses *statusp
 		return newOccupancy(client, devices, statuses, traitConfig, logger)
 	case trait.OnOff:
 		return newOnOff(client, devices, statuses, traitConfig, logger)
+	case accesspb.TraitName:
+		return newAccess(client, devices, statuses, traitConfig, logger)
 	case securityevent.TraitName:
 		return newSecurityEvent(client, devices, statuses, traitConfig, logger)
 	case statuspb.TraitName:
