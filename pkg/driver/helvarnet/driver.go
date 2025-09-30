@@ -16,6 +16,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylightpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -102,6 +103,8 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				node.WithClients(lightpb.WrapApi(lum))),
 			node.HasTrait(statuspb.TraitName,
 				node.WithClients(gen.WrapStatusApi(lum))),
+			node.HasTrait(udmipb.TraitName,
+				node.WithClients(gen.WrapUdmiService(lum))),
 			node.HasMetadata(l.Meta))
 		grp.Go(func() error {
 			return lum.runHealthCheck(ctx, cfg.RefreshStatus.Duration)
@@ -120,6 +123,8 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 		rootAnnouncer.Announce(pir.Name,
 			node.HasTrait(trait.OccupancySensor,
 				node.WithClients(occupancysensorpb.WrapApi(p))),
+			node.HasTrait(udmipb.TraitName,
+				node.WithClients(gen.WrapUdmiService(p))),
 			node.HasMetadata(pir.Meta))
 		grp.Go(func() error {
 			return p.runUpdateState(ctx, cfg.RefreshStatus.Duration)
@@ -142,6 +147,8 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				node.WithClients(gen.WrapStatusApi(emergencyLight))),
 			node.HasTrait(emergencylightpb.TraitName,
 				node.WithClients(gen.WrapEmergencyLightApi(emergencyLight))),
+			node.HasTrait(udmipb.TraitName,
+				node.WithClients(gen.WrapUdmiService(emergencyLight))),
 			node.HasMetadata(em.Meta))
 		grp.Go(func() error {
 			return emergencyLight.runHealthCheck(ctx, cfg.RefreshStatus.Duration)

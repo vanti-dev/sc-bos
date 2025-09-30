@@ -61,6 +61,8 @@ type Root struct {
 // GroupNumber is the Helvarnet group number.
 // IpAddress is the device's IP address.
 // Meta contains additional metadata for the device.
+// DurationTestLength is the length of the duration test for emergency lights, if known.
+// TopicPrefix is the topic prefix to use for the UDMI automation. If empty, the device name will be used.
 type Device struct {
 	Name        string           `json:"name,omitempty"`
 	Address     string           `json:"address,omitempty"`
@@ -69,6 +71,7 @@ type Device struct {
 	Meta        *traits.Metadata `json:"meta,omitempty"`
 	// The length of the duration test for emergency lights, if known
 	DurationTestLength *jsontypes.Duration `json:"durationTestLength,omitempty,omitzero"`
+	TopicPrefix        string              `json:"topicPrefix,omitempty"`
 }
 
 // Scene represents a HelvarNet lighting scene, which is a combination of a block (address), scene, and title.
@@ -130,6 +133,27 @@ func ParseConfig(data []byte) (Root, error) {
 
 	if root.RetrySleepDuration == nil {
 		root.RetrySleepDuration = &jsontypes.Duration{Duration: 500 * time.Microsecond}
+	}
+
+	for _, device := range root.EmergencyLights {
+		if device.TopicPrefix == "" {
+			device.TopicPrefix = device.Name
+		}
+	}
+	for _, device := range root.Lights {
+		if device.TopicPrefix == "" {
+			device.TopicPrefix = device.Name
+		}
+	}
+	for _, device := range root.LightingGroups {
+		if device.TopicPrefix == "" {
+			device.TopicPrefix = device.Name
+		}
+	}
+	for _, device := range root.Pirs {
+		if device.TopicPrefix == "" {
+			device.TopicPrefix = device.Name
+		}
 	}
 
 	return root, nil
