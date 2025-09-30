@@ -205,5 +205,11 @@ func GetStatusListFromFlag(flag uint32) []string {
 			statusList = append(statusList, ds.State)
 		}
 	}
+
+	if len(statusList) == 0 {
+		// There are some flags which are NSReserved / Internal use only, so if none of the known flags are set, just return OK
+		statusList = append(statusList, "OK")
+	}
+
 	return statusList
 }

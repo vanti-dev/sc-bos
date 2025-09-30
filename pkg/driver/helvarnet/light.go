@@ -246,7 +246,6 @@ func (l *Light) udmiPointsetFromData() (*gen.MqttMessage, error) {
 	}
 
 	statuses := config.GetStatusListFromFlag(l.helvarnetStatus)
-	points["StatusRaw"] = udmi.PointValue{PresentValue: l.helvarnetStatus}
 	points["Status"] = udmi.PointValue{PresentValue: strings.Join(statuses, ", ")}
 
 	b, err := json.Marshal(points)
