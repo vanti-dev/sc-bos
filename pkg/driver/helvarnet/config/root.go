@@ -192,3 +192,18 @@ var DeviceStatuses = []State{
 	{"BadReply", "Indicates that a reply to a query was malformed", 0x20000000, gen.StatusLog_NOTICE},
 	{"DeviceMismatch", "The actual load type does not match the expected type", 0x80000000, gen.StatusLog_NOTICE},
 }
+
+func GetStatusListFromFlag(flag int) []string {
+
+	if flag == 0 {
+		return []string{"OK"}
+	}
+
+	var statusList []string
+	for _, ds := range DeviceStatuses {
+		if flag&ds.FlagValue != 0 {
+			statusList = append(statusList, ds.State)
+		}
+	}
+	return statusList
+}

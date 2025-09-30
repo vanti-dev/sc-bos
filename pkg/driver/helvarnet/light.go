@@ -32,12 +32,13 @@ type Light struct {
 	gen.UnimplementedEmergencyLightApiServer
 	gen.UnimplementedUdmiServiceServer
 
-	brightness *resource.Value // *traits.Brightness
-	client     *tcpClient
-	conf       *config.Device
-	logger     *zap.Logger
-	status     *resource.Value // *gen.StatusLog
-	udmiBus    minibus.Bus[*gen.PullExportMessagesResponse]
+	brightness      *resource.Value // *traits.Brightness
+	client          *tcpClient
+	conf            *config.Device
+	logger          *zap.Logger
+	helvarnetStatus int             // The status flags field from the device, unique to Helvarnet protocol. See config.DeviceStatuses
+	status          *resource.Value // *gen.StatusLog
+	udmiBus         minibus.Bus[*gen.PullExportMessagesResponse]
 
 	testResultSet *resource.Value // *gen.TestResultSet
 }
@@ -123,6 +124,7 @@ func (l *Light) refreshDeviceStatus() error {
 		return err
 	}
 
+	l.helvarnetStatus = statusInt
 	log := &gen.StatusLog{
 		RecordTime: timestamppb.Now(),
 	}
@@ -185,7 +187,7 @@ func (l *Light) UpdateBrightness(_ context.Context, req *traits.UpdateBrightness
 }
 
 func (l *Light) GetBrightness(_ context.Context, _ *traits.GetBrightnessRequest) (*traits.Brightness, error) {
-	err := l.refreshDeviceStatus()
+	err := l.refreshBrightness()
 	if err != nil {
 		return nil, status.Error(codes.DeadlineExceeded, "failed to get brightness")
 	}
@@ -242,6 +244,9 @@ func (l *Light) udmiPointsetFromData() (*gen.MqttMessage, error) {
 	if brightness.Preset != nil && brightness.Preset.Title != "" {
 		points["Preset"] = udmi.PointValue{PresentValue: brightness.Preset.Title}
 	}
+
+	statuses := config.GetStatusListFromFlag(l.helvarnetStatus)
+	points["Status"] = udmi.PointValue{PresentValue: strings.Join(statuses, ", ")}
 
 	b, err := json.Marshal(points)
 	if err != nil {
