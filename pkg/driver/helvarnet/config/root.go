@@ -162,7 +162,7 @@ func ParseConfig(data []byte) (Root, error) {
 type State struct {
 	State       string              `json:"state,omitempty"`
 	Description string              `json:"description,omitempty"`
-	FlagValue   int                 `json:"flagValue,omitempty"`
+	FlagValue   uint32              `json:"flagValue,omitempty"`
 	Level       gen.StatusLog_Level `json:"smartcoreStatusLevel,omitempty"`
 }
 
@@ -193,7 +193,7 @@ var DeviceStatuses = []State{
 	{"DeviceMismatch", "The actual load type does not match the expected type", 0x80000000, gen.StatusLog_NOTICE},
 }
 
-func GetStatusListFromFlag(flag int) []string {
+func GetStatusListFromFlag(flag uint32) []string {
 
 	if flag == 0 {
 		return []string{"OK"}
