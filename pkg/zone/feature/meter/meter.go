@@ -41,16 +41,20 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 	conn := f.clients.ClientConn()
 	apiClient := gen.NewMeterApiClient(conn)
 	infoClient := gen.NewMeterInfoClient(conn)
+	historyClient := gen.NewMeterHistoryClient(conn)
 	announceGroup := func(name string, devices []string) {
 		if len(devices) == 0 {
 			return
 		}
 
 		group := &Group{
-			apiClient:  apiClient,
-			infoClient: infoClient,
-			names:      devices,
-			logger:     logger,
+			apiClient:        apiClient,
+			infoClient:       infoClient,
+			historyApiClient: historyClient,
+			names:            devices,
+			logger:           logger,
+
+			useHistoryBackupOnErr: cfg.UseHistoryBackupOnErr,
 		}
 		f.devices.Add(devices...)
 		announce.Announce(name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(group), gen.WrapMeterInfo(group))))
