@@ -28,7 +28,10 @@ type transportCfg struct {
 	config.Trait
 	AssignedLandingCalls *config.ValueSource `json:"assignedLandingCalls,omitempty"`
 	MakingCarCall        *config.ValueSource `json:"makingCarCall,omitempty"`
-	CarPosition          *config.ValueSource `json:"carPosition,omitempty"`
+	CarPosition          *struct {
+		Value    *config.ValueSource `json:"value,omitempty"`
+		USSystem bool                `json:"USSystem"`
+	} `json:"carPosition,omitempty"`
 	CarAssignedDirection *config.ValueSource `json:"carAssignedDirection,omitempty"`
 	CarDoorStatus        *config.ValueSource `json:"carDoorStatus,omitempty"`
 	CarMode              *config.ValueSource `json:"carMode,omitempty"`
@@ -101,7 +104,7 @@ func (t *transport) startPoll(init context.Context) (stop task.StopFn, err error
 func (t *transport) pollPeer(ctx context.Context) (*gen.Transport, error) {
 	data := &gen.Transport{}
 
-	var resProcessors []func(response any, data *gen.Transport) error
+	var resProcessors []func(response any, data *gen.Transport, cfg *transportCfg) error
 	var readValues []config.ValueSource
 	var requestNames []string
 
@@ -125,7 +128,7 @@ func (t *transport) pollPeer(ctx context.Context) (*gen.Transport, error) {
 
 	if t.config.CarPosition != nil {
 		requestNames = append(requestNames, "carPosition")
-		readValues = append(readValues, *t.config.CarPosition)
+		readValues = append(readValues, *t.config.CarPosition.Value)
 		resProcessors = append(resProcessors, t.processCarPosition)
 	}
 
@@ -174,7 +177,7 @@ func (t *transport) pollPeer(ctx context.Context) (*gen.Transport, error) {
 	responses := comm.ReadProperties(ctx, t.client, t.known, readValues...)
 	var errs []error
 	for i, response := range responses {
-		err := resProcessors[i](response, data)
+		err := resProcessors[i](response, data, &t.config)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -188,7 +191,7 @@ func (t *transport) pollPeer(ctx context.Context) (*gen.Transport, error) {
 	return t.model.UpdateTransport(data)
 }
 
-func (t *transport) processCarLoadUnits(response any, _ *gen.Transport) error {
+func (t *transport) processCarLoadUnits(response any, _ *gen.Transport, _ *transportCfg) error {
 	value, err := comm.IntValue(response)
 	if err != nil {
 		return comm.ErrReadProperty{Prop: "loadUnits", Cause: err}
@@ -199,7 +202,7 @@ func (t *transport) processCarLoadUnits(response any, _ *gen.Transport) error {
 	return nil
 }
 
-func (t *transport) processAssignedLandingCalls(response any, data *gen.Transport) error {
+func (t *transport) processAssignedLandingCalls(response any, data *gen.Transport, _ *transportCfg) error {
 	value, ok := response.([]comm.LandingCall)
 	if !ok {
 		return comm.ErrReadProperty{Prop: "assignedLandingCalls", Cause: fmt.Errorf("converting to AssignedLandingCalls")}
@@ -214,7 +217,7 @@ func (t *transport) processAssignedLandingCalls(response any, data *gen.Transpor
 	return nil
 }
 
-func (t *transport) processMakingCarCall(response any, data *gen.Transport) error {
+func (t *transport) processMakingCarCall(response any, data *gen.Transport, _ *transportCfg) error {
 	if response == nil {
 		return nil
 	}
@@ -236,18 +239,32 @@ func (t *transport) processMakingCarCall(response any, data *gen.Transport) erro
 	return nil
 }
 
-func (t *transport) processCarPosition(response any, data *gen.Transport) error {
+func (t *transport) processCarPosition(response any, data *gen.Transport, cfg *transportCfg) error {
 	value, err := comm.IntValue(response)
 
 	if err != nil {
 		return comm.ErrReadProperty{Prop: "carPosition", Cause: err}
 	}
 
+	if cfg.CarPosition.USSystem {
+		// In US system, floor numbering starts from 1, while in other systems it starts from 0.
+		// So convert the floor number to the British system by subtracting 1.
+		value -= 1
+		if value < 0 {
+			value = 0
+		}
+	}
+
+	if value == 0 {
+		data.ActualPosition = &gen.Transport_Location{Id: "0", Title: "Ground Floor"}
+		return nil
+	}
+
 	data.ActualPosition = &gen.Transport_Location{Id: fmt.Sprintf("%d", value), Title: fmt.Sprintf("Floor %d", value)}
 	return nil
 }
 
-func (t *transport) processCarAssignedDirection(response any, data *gen.Transport) error {
+func (t *transport) processCarAssignedDirection(response any, data *gen.Transport, _ *transportCfg) error {
 	value, ok := response.(comm.LiftCarDirection)
 	if !ok {
 		return comm.ErrReadProperty{Prop: "carAssignedDirection", Cause: fmt.Errorf("converting to CarAssignedDirection")}
@@ -267,7 +284,7 @@ func (t *transport) processCarAssignedDirection(response any, data *gen.Transpor
 	return nil
 }
 
-func (t *transport) processCarDoorStatus(response any, data *gen.Transport) error {
+func (t *transport) processCarDoorStatus(response any, data *gen.Transport, _ *transportCfg) error {
 	value, err := comm.IntValue(response)
 	if err != nil {
 		return comm.ErrReadProperty{Prop: "carDoorStatus", Cause: err}
@@ -293,7 +310,7 @@ func (t *transport) processCarDoorStatus(response any, data *gen.Transport) erro
 	return nil
 }
 
-func (t *transport) processCarMode(response any, data *gen.Transport) error {
+func (t *transport) processCarMode(response any, data *gen.Transport, _ *transportCfg) error {
 	value, err := comm.IntValue(response)
 
 	if err != nil {
@@ -332,7 +349,7 @@ func (t *transport) processCarMode(response any, data *gen.Transport) error {
 	return nil
 }
 
-func (t *transport) processCarLoad(response any, data *gen.Transport) error {
+func (t *transport) processCarLoad(response any, data *gen.Transport, _ *transportCfg) error {
 	value, err := comm.Float32Value(response)
 	if err != nil {
 		return comm.ErrReadProperty{Prop: "carLoad", Cause: err}
@@ -342,7 +359,7 @@ func (t *transport) processCarLoad(response any, data *gen.Transport) error {
 	return nil
 }
 
-func (t *transport) processNextStoppingFloor(response any, data *gen.Transport) error {
+func (t *transport) processNextStoppingFloor(response any, data *gen.Transport, _ *transportCfg) error {
 	value, err := comm.IntValue(response)
 	if err != nil {
 		return comm.ErrReadProperty{Prop: "nextStoppingFloor", Cause: err}
@@ -363,7 +380,7 @@ func (t *transport) processNextStoppingFloor(response any, data *gen.Transport) 
 	return nil
 }
 
-func (t *transport) processFaultSignals(response any, data *gen.Transport) error {
+func (t *transport) processFaultSignals(response any, data *gen.Transport, _ *transportCfg) error {
 	res, ok := response.([]interface{})
 
 	if !ok {
@@ -423,7 +440,7 @@ func (t *transport) processFaultSignals(response any, data *gen.Transport) error
 	return nil
 }
 
-func (t *transport) processPassengerAlarm(response any, data *gen.Transport) error {
+func (t *transport) processPassengerAlarm(response any, data *gen.Transport, _ *transportCfg) error {
 	value, err := comm.BoolValue(response)
 	if err != nil {
 		return comm.ErrReadProperty{Prop: "passengerAlarm", Cause: err}
