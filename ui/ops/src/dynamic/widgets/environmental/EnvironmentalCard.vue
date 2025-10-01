@@ -38,6 +38,21 @@
           Avg. Humidity
         </template>
       </circular-gauge>
+      <circular-gauge
+          v-if="indoorSoundLevel > 0"
+          :value="indoorSoundLevel"
+          :color="props.gaugeColor"
+          :min="0"
+          :max="85"
+          segments="30"
+          class="mt-7 mx-6">
+        <span class="align-baseline text-h1 ml-2">
+          {{ indoorSoundLevelStr }}<span style="font-size: 0.7em;">dB</span>
+        </span>
+        <template #title>
+          Avg. Humidity
+        </template>
+      </circular-gauge>
     </v-card-text>
   </content-card>
 </template>
@@ -47,6 +62,7 @@ import CircularGauge from '@/components/CircularGauge.vue';
 import ContentCard from '@/components/ContentCard.vue';
 
 import {useAirTemperature, usePullAirTemperature} from '@/traits/airTemperature/airTemperature.js';
+import {usePullSoundLevel} from '@/traits/sound/sound.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {computed} from 'vue';
 
@@ -62,6 +78,10 @@ const props = defineProps({
   gaugeColor: {
     type: String,
     default: 'primary'
+  },
+  soundSensor : {
+    type: String,
+    default: null
   }
 });
 
@@ -73,6 +93,7 @@ const {
 } = useAirTemperature(indoorValue);
 const {value: outdoorValue} = usePullAirTemperature(() => props.external);
 const {temp: outdoorTemperature} = useAirTemperature(outdoorValue);
+const {soundLevel: indoorSoundLevel} = usePullSoundLevel(() => props.soundSensor);
 
 const vOrDash = (r) => {
   const v = r.value ?? '-';
