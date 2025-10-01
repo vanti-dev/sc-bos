@@ -225,6 +225,27 @@
           "appearance": {"title": "Kaolin Door Blackout"},
           "membership": {"subsystem": "shades"},
           "location": {"floor": "Basement", "zone": "Kaolin Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L00-01",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Cotswold Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Basement", "zone": "Cotswold Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L00-02",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Cotswold Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Basement", "zone": "Cotswold Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L00-03",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Kaolin Sound Sensor"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Basement", "zone": "Kaolin Room"}
         }
       ]
     },
@@ -634,6 +655,13 @@
           "appearance": {"title": "Project Door Blackout"},
           "membership": {"subsystem": "shades"},
           "location": {"floor": "Ground Floor", "zone": "Project Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L01-01",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Reception"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Basement", "zone": "Reception"}
         }
       ]
     },

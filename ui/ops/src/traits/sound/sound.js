@@ -20,7 +20,7 @@ import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
 /**
  * @param {MaybeRefOrGetter<string|PullSoundLevelRequest.AsObject>} query - The name of the device or a query object
  * @param {MaybeRefOrGetter<boolean>=} paused - Whether to pause the data stream
- * @return {ToRefs<ResourceValue<SoundLevel.AsObject, PullSoundLevelResponse>>}
+ * @return {ToRefs<UnwrapNestedRefs<ResourceValue<SoundLevel.AsObject, PullSoundLevelResponse>>>}
  */
 export function usePullSoundLevel(query, paused = false) {
   const resource = reactive(
@@ -41,6 +41,21 @@ export function usePullSoundLevel(query, paused = false) {
   );
 
   return toRefs(resource);
+}
+
+/**
+ * @param {MaybeRefOrGetter<SoundLevel.AsObject>} value
+ * @return {{soundPressureLevel: ComputedRef<unknown>}}
+ */
+export function useSoundLevel(value) {
+  const soundPressureLevel = computed(() => {
+    const v = toValue(value);
+    return v?.soundPressureLevel ?? 0;
+  });
+
+  return {
+    soundPressureLevel
+  };
 }
 
 /**

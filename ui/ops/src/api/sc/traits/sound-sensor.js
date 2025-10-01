@@ -8,7 +8,7 @@ import {DescribeSoundLevelRequest, PullSoundLevelRequest} from '@vanti-dev/sc-bo
  * @param {ResourceValue<SoundLevel.AsObject, PullSoundLevelResponse>} resource
  */
 export function pullSoundLevel(request, resource) {
-  pullResource('SoundSensorApi.pullSoundLevel', resource, (endpoint) => {
+ pullResource('SoundSensorApi.pullSoundLevel', resource, (endpoint) => {
    const api = apiClient(endpoint);
    const stream = api.pullSoundLevel(pullSoundLevelRequestFromObject(request));
    stream.on('data', (msg) => {

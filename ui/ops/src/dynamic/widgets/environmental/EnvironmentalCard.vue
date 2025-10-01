@@ -39,18 +39,18 @@
         </template>
       </circular-gauge>
       <circular-gauge
-          v-if="indoorSoundLevel > 0"
-          :value="indoorSoundLevel"
+          v-if="soundPressureLevel > 0"
+          :value="soundPressureLevel"
           :color="props.gaugeColor"
           :min="0"
           :max="85"
           segments="30"
           class="mt-7 mx-6">
         <span class="align-baseline text-h1 ml-2">
-          {{ indoorSoundLevelStr }}<span style="font-size: 0.7em;">dB</span>
+          {{ soundLevelStr }}<span style="font-size: 0.7em;">dB</span>
         </span>
         <template #title>
-          Avg. Humidity
+          Avg. Sound Level
         </template>
       </circular-gauge>
     </v-card-text>
@@ -62,9 +62,9 @@ import CircularGauge from '@/components/CircularGauge.vue';
 import ContentCard from '@/components/ContentCard.vue';
 
 import {useAirTemperature, usePullAirTemperature} from '@/traits/airTemperature/airTemperature.js';
-import {usePullSoundLevel} from '@/traits/sound/sound.js';
+import {usePullSoundLevel, useSoundLevel} from '@/traits/sound/sound.js';
 import {isNullOrUndef} from '@/util/types.js';
-import {computed} from 'vue';
+import {computed, onMounted, onUnmounted} from 'vue';
 
 const props = defineProps({
   internal: {
@@ -85,6 +85,9 @@ const props = defineProps({
   }
 });
 
+console.debug('EnvironmentalCard internal', props.internal);
+console.debug('EnvironmentalCard soundSensor', props.soundSensor);
+
 const {value: indoorValue} = usePullAirTemperature(() => props.internal);
 const {
   temp: indoorTemperature,
@@ -93,7 +96,8 @@ const {
 } = useAirTemperature(indoorValue);
 const {value: outdoorValue} = usePullAirTemperature(() => props.external);
 const {temp: outdoorTemperature} = useAirTemperature(outdoorValue);
-const {soundLevel: indoorSoundLevel} = usePullSoundLevel(() => props.soundSensor);
+const {value: soundPressureValue} = usePullSoundLevel(() => props.soundSensor);
+const {soundPressureLevel: soundPressureLevel} = useSoundLevel(soundPressureValue);
 
 const vOrDash = (r) => {
   const v = r.value ?? '-';
@@ -109,5 +113,17 @@ const indoorHumidityStr = computed(() => {
 const outdoorTempStr = computed(() => {
   return vOrDash(outdoorTemperature);
 });
+const soundLevelStr = computed(() => {
+  return vOrDash(soundPressureLevel);
+});
 
+let soundInterval = null;
+onMounted(() => {
+  soundInterval = setInterval(() => {
+    console.log('soundPressureLevel:', soundPressureLevel);
+  }, 5000);
+});
+onUnmounted(() => {
+  if (soundInterval) clearInterval(soundInterval);
+});
 </script>

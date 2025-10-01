@@ -243,7 +243,8 @@
                     {
                       "component": "builtin:environmental/EnvironmentalCard",
                       "props": {
-                        "internal": "van/uk/brum/ugs/zones/rooms/kaolin"
+                        "internal": "van/uk/brum/ugs/zones/rooms/kaolin",
+                        "soundSensor": "van/uk/brum/ugs/devices/SND-L00-01"
                       }
                     }
                   ]
