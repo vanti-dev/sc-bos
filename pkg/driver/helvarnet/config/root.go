@@ -62,14 +62,13 @@ type Root struct {
 // IpAddress is the device's IP address.
 // Meta contains additional metadata for the device.
 // DurationTestLength is the length of the duration test for emergency lights, if known.
-// TopicPrefix is the topic prefix to use for the UDMI automation. If empty, the device name will be used.
+// TopicPrefix is the topic prefix to use for the UDMI automation, without the trailing '/'. If empty, the device name will be used.
 type Device struct {
-	Name        string           `json:"name,omitempty"`
-	Address     string           `json:"address,omitempty"`
-	GroupNumber *int             `json:"groupNumber,omitempty"`
-	IpAddress   string           `json:"ipAddress,omitempty"`
-	Meta        *traits.Metadata `json:"meta,omitempty"`
-	// The length of the duration test for emergency lights, if known
+	Name               string              `json:"name,omitempty"`
+	Address            string              `json:"address,omitempty"`
+	GroupNumber        *int                `json:"groupNumber,omitempty"`
+	IpAddress          string              `json:"ipAddress,omitempty"`
+	Meta               *traits.Metadata    `json:"meta,omitempty"`
 	DurationTestLength *jsontypes.Duration `json:"durationTestLength,omitempty,omitzero"`
 	TopicPrefix        string              `json:"topicPrefix,omitempty"`
 }
