@@ -7,6 +7,7 @@ import (
 type Root struct {
 	zone.Config
 
-	Meters      []string            `json:"meters,omitempty"`
-	MeterGroups map[string][]string `json:"meterGroups,omitempty"`
+	Meters                []string            `json:"meters,omitempty"`
+	MeterGroups           map[string][]string `json:"meterGroups,omitempty"`
+	UseHistoryBackupOnErr bool                `json:"useHistoryBackupOnErr,omitempty"`
 }

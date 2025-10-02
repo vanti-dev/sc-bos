@@ -24,13 +24,16 @@ import (
 type Group struct {
 	gen.UnimplementedMeterApiServer
 	gen.UnimplementedMeterInfoServer
-	apiClient  gen.MeterApiClient
-	infoClient gen.MeterInfoClient
-	names      []string
-	readOnly   bool
+	apiClient        gen.MeterApiClient
+	infoClient       gen.MeterInfoClient
+	historyApiClient gen.MeterHistoryClient
+	names            []string
+	readOnly         bool
 
 	unit     string
 	unitOnce once.RetryError
+
+	useHistoryBackupOnErr bool
 
 	logger *zap.Logger
 }
@@ -77,6 +80,23 @@ func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadin
 		i := i
 		fns[i] = func() {
 			res, err := g.apiClient.GetMeterReading(ctx, request)
+			if err != nil && g.useHistoryBackupOnErr {
+				// try to get the latest backup reading from the history table if the main read fails
+				latest, historyErr := g.historyApiClient.ListMeterReadingHistory(ctx, &gen.ListMeterReadingHistoryRequest{
+					Name:     name,
+					PageSize: 1,
+					OrderBy:  "record_time DESC",
+				})
+
+				if historyErr != nil || len(latest.GetMeterReadingRecords()) == 0 {
+					allRes[i] = value{name: name, err: err} // we forward the original error
+					return
+				}
+
+				res = latest.GetMeterReadingRecords()[0].MeterReading
+				err = nil
+
+			}
 			allRes[i] = value{name: name, val: res, err: err}
 		}
 	}
@@ -98,7 +118,23 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 	for _, name := range g.names {
 		request := proto.Clone(request).(*gen.PullMeterReadingsRequest)
 		request.Name = name
-		sendError := func(err error) error {
+		handleErr := func(err error) error {
+			if g.useHistoryBackupOnErr {
+				latest, historyErr := g.historyApiClient.ListMeterReadingHistory(ctx, &gen.ListMeterReadingHistoryRequest{
+					Name:     request.Name,
+					PageSize: 1,
+					OrderBy:  "record_time DESC",
+				})
+
+				if historyErr != nil || len(latest.GetMeterReadingRecords()) == 0 {
+					changes <- value{name: request.Name, err: err}
+					return err // we forward the original error
+				}
+				// use the latest backup reading from the history table if it exists
+				changes <- value{name: request.Name, val: latest.GetMeterReadingRecords()[0].MeterReading}
+				return nil
+			}
+
 			changes <- value{name: request.Name, err: err}
 			return err
 		}
@@ -107,12 +143,14 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				func(ctx context.Context, changes chan<- value) error {
 					stream, err := g.apiClient.PullMeterReadings(ctx, request)
 					if err != nil {
-						return sendError(err)
+						return handleErr(err)
 					}
 					for {
 						res, err := stream.Recv()
 						if err != nil {
-							return sendError(err)
+							if err2 := handleErr(err); err2 != nil {
+								return err
+							}
 						}
 						for _, change := range res.Changes {
 							changes <- value{name: request.Name, val: change.MeterReading}
@@ -122,7 +160,9 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				func(ctx context.Context, changes chan<- value) error {
 					res, err := g.apiClient.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: name, ReadMask: request.ReadMask})
 					if err != nil {
-						return sendError(err)
+						if err2 := handleErr(err); err2 != nil {
+							return err
+						}
 					}
 					changes <- value{name: request.Name, val: res}
 					return nil
