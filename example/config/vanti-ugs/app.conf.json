@@ -229,9 +229,9 @@
         {
           "name": "van/uk/brum/ugs/devices/SND-L00-01",
           "traits": [{"name":  "smartcore.bos.SoundSensor"}],
-          "appearance": {"title": "Cotswold Room"},
+          "appearance": {"title": "Copper Room"},
           "membership": {"subsystem": "sensors"},
-          "location": {"floor": "Basement", "zone": "Cotswold Room"}
+          "location": {"floor": "Basement", "zone": "Copper Room"}
         },
         {
           "name": "van/uk/brum/ugs/devices/SND-L00-02",
@@ -661,7 +661,28 @@
           "traits": [{"name":  "smartcore.bos.SoundSensor"}],
           "appearance": {"title": "Reception"},
           "membership": {"subsystem": "sensors"},
-          "location": {"floor": "Basement", "zone": "Reception"}
+          "location": {"floor": "Ground Floor", "zone": "Reception"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L01-02",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Teal Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Ground Floor", "zone": "Teal Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L01-03",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Green Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Ground Floor", "zone": "Green Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L01-04",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Yellow Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
         }
       ]
     },
@@ -820,6 +841,13 @@
           "appearance": {"title": "Open Plan Window 4"},
           "membership": {"subsystem": "shades"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Left to right"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L02-01",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "The Bank"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "First Floor", "zone": "The Bank"}
         }
       ]
     },

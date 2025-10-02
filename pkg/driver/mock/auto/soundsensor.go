@@ -15,7 +15,7 @@ import (
 
 func SoundSensorAuto(model *soundsensorpb.Model) *service.Service[string] {
 	slc := service.New(service.MonoApply(func(ctx context.Context, _ string) error {
-		ticker := time.NewTicker(30 * time.Second)
+		ticker := time.NewTicker(10 * time.Second)
 		go func() {
 			randomNumber := 20 + rand.Float32()*20
 			state := &gen.SoundLevel{
