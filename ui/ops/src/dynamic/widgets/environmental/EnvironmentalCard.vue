@@ -1,6 +1,6 @@
 <template>
   <content-card class="pt-6 pb-6">
-    <v-card-title class="text-h4 mb-0">Environmental</v-card-title>
+    <v-card-title v-if="title.length > 0" class="text-h4 mb-0">{{ title }}</v-card-title>
     <v-card-text class="d-flex flex-row flex-wrap justify-center align-center pa-0 text-white">
       <circular-gauge
           v-if="!isNullOrUndef(internal)"
@@ -67,6 +67,11 @@ import {isNullOrUndef} from '@/util/types.js';
 import {computed} from 'vue';
 
 const props = defineProps({
+  // title can be hidden by setting to null
+  title: {
+    type: String,
+    default: 'Environmental'
+  },
   internal: {
     type: String,
     default: null

@@ -56,6 +56,7 @@
             {
               "component": "builtin:environmental/EnvironmentalCard",
               "props": {
+                "title": "",
                 "external": "van/uk/brum/ugs/devices/TMP-L02-01",
                 "internal": "van/uk/brum/ugs/zones/building"
               }
@@ -123,6 +124,7 @@
                 {
                   "component": "builtin:environmental/EnvironmentalCard",
                   "props": {
+                    "title": "Floor Temperature",
                     "internal": "van/uk/brum/ugs/zones/floors/basement"
                   }
                 }
@@ -321,6 +323,7 @@
                 {
                   "component": "builtin:environmental/EnvironmentalCard",
                   "props": {
+                    "title": "Floor Temperature",
                     "internal": "van/uk/brum/ugs/zones/floors/ground"
                   }
                 }
@@ -561,6 +564,7 @@
                 {
                   "component": "builtin:environmental/EnvironmentalCard",
                   "props": {
+                    "title": "Floor Temperature",
                     "internal": "van/uk/brum/ugs/zones/floors/first"
                   }
                 }
