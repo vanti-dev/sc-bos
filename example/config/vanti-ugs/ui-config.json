@@ -163,7 +163,8 @@
                     {
                       "component": "builtin:environmental/EnvironmentalCard",
                       "props": {
-                        "internal": "van/uk/brum/ugs/zones/rooms/copper"
+                        "internal": "van/uk/brum/ugs/zones/rooms/copper",
+                        "soundSensor": "van/uk/brum/ugs/devices/SND-L00-01"
                       }
                     }
                   ]
@@ -203,7 +204,8 @@
                     {
                       "component": "builtin:environmental/EnvironmentalCard",
                       "props": {
-                        "internal": "van/uk/brum/ugs/zones/rooms/cotswold"
+                        "internal": "van/uk/brum/ugs/zones/rooms/cotswold",
+                        "soundSensor": "van/uk/brum/ugs/devices/SND-L00-02"
                       }
                     }
                   ]
@@ -243,7 +245,8 @@
                     {
                       "component": "builtin:environmental/EnvironmentalCard",
                       "props": {
-                        "internal": "van/uk/brum/ugs/zones/rooms/kaolin"
+                        "internal": "van/uk/brum/ugs/zones/rooms/kaolin",
+                        "soundSensor": "van/uk/brum/ugs/devices/SND-L00-03"
                       }
                     }
                   ]
@@ -358,7 +361,8 @@
                     {
                       "component": "builtin:environmental/EnvironmentalCard",
                       "props": {
-                        "internal": "van/uk/brum/ugs/zones/areas/reception"
+                        "internal": "van/uk/brum/ugs/zones/areas/reception",
+                        "soundSensor": "van/uk/brum/ugs/devices/SND-L01-01"
                       }
                     }
                   ]
@@ -398,7 +402,8 @@
                     {
                       "component": "builtin:environmental/EnvironmentalCard",
                       "props": {
-                        "internal": "van/uk/brum/ugs/zones/rooms/teal"
+                        "internal": "van/uk/brum/ugs/zones/rooms/teal",
+                        "soundSensor": "van/uk/brum/ugs/devices/SND-L01-02"
                       }
                     },
                     {
@@ -451,7 +456,8 @@
                     {
                       "component": "builtin:environmental/EnvironmentalCard",
                       "props": {
-                        "internal": "van/uk/brum/ugs/zones/rooms/green"
+                        "internal": "van/uk/brum/ugs/zones/rooms/green",
+                        "soundSensor": "van/uk/brum/ugs/devices/SND-L01-03"
                       }
                     }
                   ]
@@ -491,7 +497,8 @@
                     {
                       "component": "builtin:environmental/EnvironmentalCard",
                       "props": {
-                        "internal": "van/uk/brum/ugs/zones/rooms/yellow"
+                        "internal": "van/uk/brum/ugs/zones/rooms/yellow",
+                        "soundSensor": "van/uk/brum/ugs/devices/SND-L01-04"
                       }
                     }
                   ]
@@ -594,7 +601,8 @@
                     {
                       "component": "builtin:environmental/EnvironmentalCard",
                       "props": {
-                        "internal": "van/uk/brum/ugs/zones/rooms/bank"
+                        "internal": "van/uk/brum/ugs/zones/rooms/bank",
+                        "soundSensor": "van/uk/brum/ugs/devices/SND-L02-01"
                       }
                     }
                   ]
