@@ -64,7 +64,7 @@ import ContentCard from '@/components/ContentCard.vue';
 import {useAirTemperature, usePullAirTemperature} from '@/traits/airTemperature/airTemperature.js';
 import {usePullSoundLevel, useSoundLevel} from '@/traits/sound/sound.js';
 import {isNullOrUndef} from '@/util/types.js';
-import {computed, onMounted, onUnmounted} from 'vue';
+import {computed} from 'vue';
 
 const props = defineProps({
   internal: {
@@ -84,9 +84,6 @@ const props = defineProps({
     default: null
   }
 });
-
-console.debug('EnvironmentalCard internal', props.internal);
-console.debug('EnvironmentalCard soundSensor', props.soundSensor);
 
 const {value: indoorValue} = usePullAirTemperature(() => props.internal);
 const {
@@ -117,13 +114,4 @@ const soundLevelStr = computed(() => {
   return vOrDash(soundPressureLevel);
 });
 
-let soundInterval = null;
-onMounted(() => {
-  soundInterval = setInterval(() => {
-    console.log('soundPressureLevel:', soundPressureLevel);
-  }, 5000);
-});
-onUnmounted(() => {
-  if (soundInterval) clearInterval(soundInterval);
-});
 </script>
