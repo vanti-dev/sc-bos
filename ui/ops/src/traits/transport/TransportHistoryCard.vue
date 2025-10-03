@@ -23,6 +23,7 @@
 <script setup>
 import {camelToSentence} from '@/util/string.js';
 import {onUnmounted, ref, watch} from 'vue';
+import equal from 'fast-deep-equal/es6';
 
 const props = defineProps({
   history: {
@@ -42,7 +43,14 @@ const reset = () => {
 
 onUnmounted(() => {
   reset();
-})
+});
+
+
+const clean = (obj, ignoreFields) => {
+  return Object.fromEntries(Object.entries(obj).filter(([k]) => !ignoreFields.includes(k)));
+};
+
+const ignoreFields = ['passengerAlarm', 'doorsList', 'load'];
 
 
 watch(props.history, (arr) => {
@@ -52,8 +60,7 @@ watch(props.history, (arr) => {
   const now = new Date();
   reset();
   arr.forEach((item) => {
-    if (prev?.transport?.actualPosition?.id === item.transport.actualPosition.id) {
-      // ignore as the history table contains duplicates
+    if (equal(clean(item.transport, ignoreFields), clean(prev?.transport || {}, ignoreFields))) {
       prev = item;
       return;
     }
