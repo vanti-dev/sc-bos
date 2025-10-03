@@ -447,12 +447,13 @@ func parseGetCompletionTimeResponse(r string, zone string) (*time.Time, error) {
 		// this means the test has never been run
 		return nil, fmt.Errorf("function test completion time is zero, test has never been run")
 	}
-	t := time.Unix(epochSeconds, 0).UTC()
+
 	loc, err := time.LoadLocation(zone)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load Europe/London timezone: %w", err)
 	}
-	t = t.In(loc)
+	t := time.Unix(epochSeconds, 0).In(loc)
+
 	if t.IsZero() {
 		return nil, fmt.Errorf("function test completion time is zero")
 	}
