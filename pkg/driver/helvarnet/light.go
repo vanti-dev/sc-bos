@@ -41,9 +41,10 @@ type Light struct {
 	udmiBus         minibus.Bus[*gen.PullExportMessagesResponse]
 
 	testResultSet *resource.Value // *gen.TestResultSet
+	timezone      string
 }
 
-func newLight(client *tcpClient, l *zap.Logger, conf *config.Device) *Light {
+func newLight(client *tcpClient, l *zap.Logger, conf *config.Device, t string) *Light {
 	return &Light{
 		brightness:    resource.NewValue(resource.WithInitialValue(&traits.Brightness{}), resource.WithNoDuplicates()),
 		client:        client,
@@ -51,6 +52,7 @@ func newLight(client *tcpClient, l *zap.Logger, conf *config.Device) *Light {
 		logger:        l,
 		status:        resource.NewValue(resource.WithInitialValue(&gen.StatusLog{}), resource.WithNoDuplicates()),
 		testResultSet: resource.NewValue(resource.WithInitialValue(&gen.TestResultSet{}), resource.WithNoDuplicates()),
+		timezone:      t,
 	}
 }
 
@@ -429,7 +431,7 @@ func (l *Light) getDurationTestResult() (*EmergencyState, error) {
 }
 
 // parseGetCompletionTimeResponse parses the response from the device for the completion time of a function/duration test.
-func parseGetCompletionTimeResponse(r string) (*time.Time, error) {
+func parseGetCompletionTimeResponse(r string, zone string) (*time.Time, error) {
 	// example response ?V:1,C:170,@10.106.4.40=1754495355#
 	// the time is seconds in the Linux epoch
 	split := strings.Split(r, "=")
@@ -445,7 +447,12 @@ func parseGetCompletionTimeResponse(r string) (*time.Time, error) {
 		// this means the test has never been run
 		return nil, fmt.Errorf("function test completion time is zero, test has never been run")
 	}
-	t := time.Unix(epochSeconds, 0)
+	t := time.Unix(epochSeconds, 0).UTC()
+	loc, err := time.LoadLocation(zone)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Europe/London timezone: %w", err)
+	}
+	t = t.In(loc)
 	if t.IsZero() {
 		return nil, fmt.Errorf("function test completion time is zero")
 	}
@@ -463,7 +470,7 @@ func (l *Light) getFunctionTestCompletionTime() (*time.Time, error) {
 		return nil, err
 	}
 
-	return parseGetCompletionTimeResponse(r)
+	return parseGetCompletionTimeResponse(r, l.timezone)
 }
 
 // getDurationTestCompletionTime queries the device for the finish time of the last duration test.
@@ -477,7 +484,7 @@ func (l *Light) getDurationTestCompletionTime() (*time.Time, error) {
 		return nil, err
 	}
 
-	return parseGetCompletionTimeResponse(r)
+	return parseGetCompletionTimeResponse(r, l.timezone)
 }
 
 func (l *Light) StartFunctionTest(context.Context, *gen.StartEmergencyTestRequest) (*gen.StartEmergencyTestResponse, error) {
@@ -538,11 +545,13 @@ func (l *Light) GetTestResultSet(_ context.Context, req *gen.GetTestResultSetReq
 	if req.ReadMask == nil || slices.Contains(req.ReadMask.Paths, "function_test") {
 		result.FunctionTest = l.testResultSet.Get().(*gen.TestResultSet).FunctionTest
 		if req.QueryDevice {
+			l.logger.Debug("DEAN: Querying device for function test result", zap.String("name", l.conf.Name))
 			fRes, err := getTestResult(l.getFunctionTestResult, l.getFunctionTestCompletionTime)
 			if err != nil {
 				l.logger.Error("Failed to get function test result", zap.String("name", l.conf.Name), zap.Error(err))
 				return nil, err
 			}
+			l.logger.Debug("DEAN: Got function test result from device", zap.String("name", l.conf.Name), zap.Any("result", fRes))
 			result.FunctionTest = fRes
 			// update the stored test result set with the new result
 			_, _ = l.testResultSet.Set(result, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
@@ -568,6 +577,7 @@ func (l *Light) GetTestResultSet(_ context.Context, req *gen.GetTestResultSetReq
 			}
 		}
 	}
+	l.logger.Debug("DEAN: Got function test result from device", zap.String("name", l.conf.Name), zap.Any("result", result))
 	return result, nil
 }
 

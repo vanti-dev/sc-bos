@@ -52,6 +52,8 @@ type Root struct {
 	Port *string `json:"port,omitempty"`
 	// RetrySleepDuration is the duration to wait before retrying a failed operation, defaults 500 microseconds
 	RetrySleepDuration *jsontypes.Duration `json:"retrySleepDuration,omitempty,omitzero"`
+	// The timezone the controllers are in, defaults to "Europe/London"
+	Timezone *string `json:"timezone,omitempty"`
 }
 
 // Device represents a HelvarNet device, which can be a light, lighting group, or PIR sensor.
@@ -153,6 +155,11 @@ func ParseConfig(data []byte) (Root, error) {
 		if device.TopicPrefix == "" {
 			device.TopicPrefix = device.Name
 		}
+	}
+
+	if root.Timezone == nil || *root.Timezone == "" {
+		defaultTimezone := "Europe/London"
+		root.Timezone = &defaultTimezone
 	}
 
 	return root, nil
