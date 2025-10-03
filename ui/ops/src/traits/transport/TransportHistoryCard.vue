@@ -1,0 +1,79 @@
+<template>
+  <v-card class="elevation-1">
+    <div v-if="props.history.length === 0">
+      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">No Transport History</v-list-subheader>
+    </div>
+    <div v-else>
+      <v-list tile class="ma-0 pa-0">
+        <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Transport Usage</v-list-subheader>
+        <v-list-item v-for="label in Object.keys(table)" :key="label" class="py-1">
+          <v-list-item-title class="text-body-small text-capitalize">
+            {{ camelToSentence(label) }}
+          </v-list-item-title>
+          <template #append>
+            <v-list-item-subtitle class="text-body-1">
+              {{ table[label] }}
+            </v-list-item-subtitle>
+          </template>
+        </v-list-item>
+      </v-list>
+    </div>
+  </v-card>
+</template>
+<script setup>
+import {camelToSentence} from '@/util/string.js';
+import {onUnmounted, ref, watch} from 'vue';
+
+const props = defineProps({
+  history: {
+    type: Array, // of type TransportRecord.AsObject
+    default: () => []
+  }
+});
+
+
+const table = ref({day: 0, week: 0, month: 0});
+
+const reset = () => {
+  table.value.day = 0;
+  table.value.week = 0;
+  table.value.month = 0;
+};
+
+onUnmounted(() => {
+  reset();
+})
+
+
+watch(props.history, (arr) => {
+  arr.sort((a, b) => a.recordTime.seconds - b.recordTime.seconds);
+
+  let prev = null;
+  const now = new Date();
+  reset();
+  arr.forEach((item) => {
+    if (prev?.transport?.actualPosition?.id === item.transport.actualPosition.id) {
+      // ignore as the history table contains duplicates
+      prev = item;
+      return;
+    }
+    prev = item;
+    const date = new Date(item.recordTime.seconds * 1000);
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays <= 1) {
+      table.value.day += 1;
+    }
+    if (diffDays <= 7) {
+      table.value.week += 1;
+    }
+    if (diffDays <= 30) {
+      table.value.month += 1;
+    }
+  });
+}, {immediate: true, deep: true});
+</script>
+
+<style scoped>
+
+</style>
