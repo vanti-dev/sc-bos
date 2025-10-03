@@ -15,7 +15,8 @@ import (
 func (a *automation) collectTransportChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {
 	client := gen.NewTransportApiClient(a.clients.ClientConn())
 
-	last := newDeduper[*gen.Transport](cmp.Equal(cmp.FloatValueApprox(0.1, 0.0001), cmp.TimeValueWithin(time.Second)))
+	// 30 seconds is the average lift call response duration, so we consider changes within that window as identical
+	last := newDeduper[*gen.Transport](cmp.Equal(cmp.FloatValueApprox(1, 1), cmp.TimeValueWithin(30*time.Second)))
 
 	pullFn := func(ctx context.Context, changes chan<- []byte) error {
 		stream, err := client.PullTransport(ctx, &gen.PullTransportRequest{Name: source.Name, UpdatesOnly: true, ReadMask: source.ReadMask.PB()})
