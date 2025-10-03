@@ -52,7 +52,7 @@ import {triggerDownload} from '@/components/download/download.js';
 import {computeDatasets, datasetSourceName} from '@/dynamic/widgets/energy/chart.js';
 import {Units, useDemand, useDemands, usePresentMetric} from '@/dynamic/widgets/energy/demand.js';
 import DemandTooltip from '@/dynamic/widgets/energy/DemandTooltip.vue';
-import PeriodChooserRows from '@/dynamic/widgets/meter/PeriodChooserRows.vue';
+import PeriodChooserRows from '@/components/PeriodChooserRows.vue';
 import {useLocalProp} from '@/util/vue.js';
 import {Chart as ChartJS, Legend, LinearScale, LineElement, PointElement, TimeScale, Title, Tooltip} from 'chart.js'
 import {startOfDay, startOfYear} from 'date-fns';
