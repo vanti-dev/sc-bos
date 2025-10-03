@@ -70,7 +70,7 @@ export function useDescribeTransport(query) {
 }
 
 /**
- * Returns a ref containing the transport history for the given transport name from the given timestamp until now.
+ * Returns a ref containing the transport history for the given transport name for the given period.
  * Name must implement a TransportHistory trait aspect.
  *
  * @param {import('vue').MaybeRefOrGetter<string>} name - The name of the transport device

@@ -11,7 +11,7 @@
 import {timestampFromObject} from '@/api/convpb.js';
 import {useDescribeTransport, usePullTransport, useTransportHistory} from '@/traits/transport/transport.js';
 import {Period} from '@smart-core-os/sc-api-grpc-web/types/time/period_pb';
-import {reactive} from 'vue';
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue';
 
 const props = defineProps({
   // unique name of the device
@@ -49,7 +49,25 @@ const computePeriod = () => {
 
   return period.toObject();
 };
+const periodKey = ref(0);
 
-const transportHistory = reactive(useTransportHistory(() => props.name, () => computePeriod()));
+let timer;
+onMounted(() => {
+  timer = setInterval(() => {
+    periodKey.value++;
+  }, 60000); // update every minute
+});
+onUnmounted(() => {
+  clearInterval(timer);
+});
 
+const period = computed(() => {
+  periodKey.value; // dependency
+  return computePeriod();
+});
+
+const transportHistory = reactive(useTransportHistory(() => props.name, () => period.value));
+watch(period, () => {
+  Object.assign(transportHistory, useTransportHistory(() => props.name, () => period.value));
+});
 </script>
