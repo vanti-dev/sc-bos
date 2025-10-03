@@ -36,9 +36,15 @@
       <v-divider class="mt-4 mb-1"/>
       <meter-card v-bind="resource" :info="info?.response" :name="deviceId"/>
     </with-meter>
-    <with-transport v-if="traits['smartcore.bos.Transport']" :name="deviceId" v-slot="{resource, info}">
-      <v-divider class="mt-4 mb-1"/>
-      <transport-card v-bind="resource" :info="info?.response"/>
+    <with-transport v-if="traits['smartcore.bos.Transport']" :name="deviceId">
+      <template #transport="{resource, info}">
+        <v-divider class="mt-4 mb-1"/>
+        <transport-card :value="resource.value" :info="info?.response"/>
+      </template>
+      <template #history="{history}">
+        <v-divider class="mt-4 mb-1"/>
+        <transport-history-card :history="history"/>
+      </template>
     </with-transport>
     <v-divider v-if="traits['smartcore.bsp.EmergencyLight']" class="mt-4 mb-1"/>
     <emergency-light :name="deviceId" v-if="traits['smartcore.bsp.EmergencyLight']"/>
@@ -71,6 +77,7 @@ import WithOnOff from '@/traits/onOff/WithOnOff.vue';
 import StatusLogCard from '@/traits/status/StatusLogCard.vue';
 import WithStatus from '@/traits/status/WithStatus.vue';
 import TransportCard from '@/traits/transport/TransportCard.vue';
+import TransportHistoryCard from '@/traits/transport/TransportHistoryCard.vue';
 import WithTransport from '@/traits/transport/WithTransport.vue';
 import UdmiCard from '@/traits/udmi/UdmiCard.vue';
 
