@@ -29,8 +29,21 @@ type transportCfg struct {
 	AssignedLandingCalls *config.ValueSource `json:"assignedLandingCalls,omitempty"`
 	MakingCarCall        *config.ValueSource `json:"makingCarCall,omitempty"`
 	CarPosition          *struct {
-		Value    *config.ValueSource `json:"value,omitempty"`
-		USSystem bool                `json:"USSystem"`
+		Value *config.ValueSource `json:"value,omitempty"`
+		// USSystem for floor numbering starts from 1 on the ground floor
+		// so when true, we subtract 1 from the reported floor number to convert to
+		// the British system where floor numbering starts from 0 on the ground floor.
+		// If false, no conversion is done.
+		USSystem bool `json:"USSystem"`
+		// DummyFloors is a map of floor numbers that should be treated as non-existent.
+		// For example, in some buildings, there is no 13th floor, so we can map 13 to another floor number.
+		// This is checked after the USSystem conversion.
+		// So if USSystem is true and the reported floor is 14, and DummyFloors maps 13 to 12,
+		// the final reported floor will be 12.
+		// If USSystem is false and the reported floor is 13, and DummyFloors maps 13 to 12,
+		// the final reported floor will be 12.
+		// If the reported floor is not in the map, the reported floor is used as-is.
+		DummyFloors map[int]int `json:"dummyFloors,omitempty"`
 	} `json:"carPosition,omitempty"`
 	CarAssignedDirection *config.ValueSource `json:"carAssignedDirection,omitempty"`
 	CarDoorStatus        *config.ValueSource `json:"carDoorStatus,omitempty"`
@@ -252,6 +265,13 @@ func (t *transport) processCarPosition(response any, data *gen.Transport, cfg *t
 		value -= 1
 		if value < 0 {
 			value = 0
+		}
+	}
+
+	// Check if the floor is a dummy floor and map it to a real floor if so.
+	if cfg.CarPosition.DummyFloors != nil {
+		if newVal, ok := cfg.CarPosition.DummyFloors[int(value)]; ok {
+			value = int64(newVal)
 		}
 	}
 
