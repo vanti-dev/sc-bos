@@ -21,7 +21,11 @@ export const navItems = [
     title: 'Notifications',
     icon: 'mdi-bell-outline',
     link: {path: '/ops/notifications'},
-    badgeType: 'unacknowledgedAlertCount'
+    badgeType: 'unacknowledgedAlertCount',
+    enabled: () => {
+      const uiConfig = useUiConfigStore();
+      return uiConfig.pathEnabled('/ops/notifications') && (uiConfig.config?.ops?.notifications ?? true);
+    }
   },
   {
     title: 'Air Quality',
