@@ -37,6 +37,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylightpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/soundsensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
@@ -290,6 +291,9 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 	case securityevent.TraitName:
 		model := securityevent.NewModel()
 		return []wrap.ServiceUnwrapper{gen.WrapSecurityEventApi(securityevent.NewModelServer(model))}, auto.SecurityEventAuto(model)
+	case soundsensorpb.TraitName:
+		model := soundsensorpb.NewModel()
+		return []wrap.ServiceUnwrapper{gen.WrapSoundSensorApi(soundsensorpb.NewModelServer(model))}, auto.SoundSensorAuto(model)
 	case statuspb.TraitName:
 		model := statuspb.NewModel()
 		// set an initial value or Pull methods can hang

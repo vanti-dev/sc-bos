@@ -124,6 +124,7 @@ export namespace SecurityEvent {
     LOCKER_OPEN_TOO_LONG = 21,
     LOCKER_FORCED_OPEN = 22,
     LOCKER_NOT_LOCKED = 23,
+    BREAK_GLASS_ALARM = 24,
   }
 }
 
