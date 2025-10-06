@@ -1,29 +1,33 @@
 <template>
-  <v-card class="elevation-1">
-    <div v-if="props.history.length === 0">
-      <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">No Transport History</v-list-subheader>
-    </div>
-    <div v-else>
-      <v-list tile class="ma-0 pa-0">
+  <v-card elevation="0" tile>
+    <v-list tile class="ma-0 pa-0">
+      <div v-if="props.history.length === 0">
+        <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">No Transport History</v-list-subheader>
+      </div>
+      <div v-else>
         <v-list-subheader class="text-title-caps-large text-neutral-lighten-3">Transport Usage</v-list-subheader>
+        <v-list-subheader class="text-title-sentence-large text-neutral-lighten-3">
+          Transport Calls Over
+        </v-list-subheader>
         <v-list-item v-for="label in Object.keys(table)" :key="label" class="py-1">
           <v-list-item-title class="text-body-small text-capitalize">
-            {{ camelToSentence(label) }}
+            {{ `Last ${label}` }}
           </v-list-item-title>
+
           <template #append>
             <v-list-item-subtitle class="text-body-1">
               {{ table[label] }}
             </v-list-item-subtitle>
           </template>
         </v-list-item>
-      </v-list>
-    </div>
+      </div>
+    </v-list>
   </v-card>
 </template>
+
 <script setup>
-import {camelToSentence} from '@/util/string.js';
-import {onUnmounted, ref, watch} from 'vue';
 import equal from 'fast-deep-equal/es6';
+import {onUnmounted, ref, watch} from 'vue';
 
 const props = defineProps({
   history: {
@@ -82,5 +86,8 @@ watch(props.history, (arr) => {
 </script>
 
 <style scoped>
+.v-list-item {
+  min-height: auto;
+}
 
 </style>
