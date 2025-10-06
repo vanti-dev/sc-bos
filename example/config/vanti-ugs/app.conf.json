@@ -1839,6 +1839,12 @@
       "type": "history",
       "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-04", "trait": "smartcore.traits.AirQualitySensor"},
       "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/lift-history/lift",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/lift", "trait": "smartcore.bos.Transport"},
+      "storage": {"type": "postgres"}
     }
   ]
 }
