@@ -851,7 +851,7 @@
                   "component": "builtin:environmental/AirQualityHistoryCard",
                   "props": {
                     "title": "Weekly Air Quality",
-                    "source": "van/uk/brum/ugs/zones/building",
+                    "source": ["van/uk/brum/ugs/zones/building", "van/uk/brum/ugs/zones/areas/open-plan"],
                     "metric": "score",
                     "start": "day-7",
                     "end": "day-1"
