@@ -21,6 +21,7 @@ export const builtinWidgets = {
   'occupancy/OccupancyCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/OccupancyCard.vue')),
   'occupancy/PeopleCountCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/PeopleCountCard.vue')),
   'occupancy/PeopleCountHistoryChart': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/PeopleCountHistoryChart.vue')),
+  'occupancy/PeopleCountHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/PeopleCountHistoryCard.vue')),
   'occupancy/PresenceCard': defineAsyncComponent(() => import('@/dynamic/widgets/occupancy/PresenceCard.vue')),
   'power-history/PowerHistoryCard': defineAsyncComponent(() => import('@/dynamic/widgets/power-history/PowerHistoryCard.vue')),
   'security/SecurityEventsCard': defineAsyncComponent(() => import('@/dynamic/widgets/security/SecurityEventsCard.vue')),

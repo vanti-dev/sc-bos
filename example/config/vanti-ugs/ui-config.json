@@ -888,7 +888,7 @@
                 {
                   "loc": {"x": 1, "y": 7, "w": 4, "h": 2},
                   "id": "PeopleCountHistory",
-                  "component": "builtin:occupancy/PeopleCountHistoryChart",
+                  "component": "builtin:occupancy/PeopleCountHistoryCard",
                   "props": {
                     "totalOccupancyName": "van/uk/brum/ugs/zones/building",
                     "start": "day-7",
