@@ -25,18 +25,24 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 )
 
+const NoResponse = -1
+const BadResponse = -2
+
+const HealthCheckDeviceNormal = "device_normal"
+
 // Light represents a single light device within the HelvarNet system.
 type Light struct {
 	gen.UnimplementedStatusApiServer
 	traits.UnimplementedLightApiServer
 	gen.UnimplementedEmergencyLightApiServer
 	gen.UnimplementedUdmiServiceServer
+	gen.UnimplementedHealthApiServer
 
 	brightness      *resource.Value // *traits.Brightness
 	client          *tcpClient
 	conf            *config.Device
 	logger          *zap.Logger
-	helvarnetStatus uint32          // The status flags field from the device, unique to Helvarnet protocol. See config.DeviceStatuses
+	helvarnetStatus int64           // The status flags field from the device, unique to Helvarnet protocol. See config.DeviceStatuses
 	status          *resource.Value // *gen.StatusLog
 	udmiBus         minibus.Bus[*gen.PullExportMessagesResponse]
 
@@ -45,12 +51,13 @@ type Light struct {
 
 func newLight(client *tcpClient, l *zap.Logger, conf *config.Device) *Light {
 	return &Light{
-		brightness:    resource.NewValue(resource.WithInitialValue(&traits.Brightness{}), resource.WithNoDuplicates()),
-		client:        client,
-		conf:          conf,
-		logger:        l,
-		status:        resource.NewValue(resource.WithInitialValue(&gen.StatusLog{}), resource.WithNoDuplicates()),
-		testResultSet: resource.NewValue(resource.WithInitialValue(&gen.TestResultSet{}), resource.WithNoDuplicates()),
+		brightness:      resource.NewValue(resource.WithInitialValue(&traits.Brightness{}), resource.WithNoDuplicates()),
+		client:          client,
+		conf:            conf,
+		helvarnetStatus: NoResponse, // not yet fetched from device
+		logger:          l,
+		status:          resource.NewValue(resource.WithInitialValue(&gen.StatusLog{}), resource.WithNoDuplicates()),
+		testResultSet:   resource.NewValue(resource.WithInitialValue(&gen.TestResultSet{}), resource.WithNoDuplicates()),
 	}
 }
 
@@ -110,26 +117,29 @@ func (l *Light) refreshDeviceStatus() error {
 
 	r, err := l.client.sendAndReceive(command, want)
 	if err != nil {
+		l.helvarnetStatus = NoResponse
 		return err
 	}
 
 	split := strings.Split(r, "=")
 	if len(split) < 2 {
+		l.helvarnetStatus = BadResponse
 		return fmt.Errorf("invalid response in refreshDeviceStatus: %s", r)
 	}
 
 	s := strings.TrimSuffix(split[1], "#")
 	statusInt, err := strconv.Atoi(s)
 	if err != nil {
+		l.helvarnetStatus = BadResponse
 		return err
 	}
 
-	l.helvarnetStatus = uint32(statusInt)
+	l.helvarnetStatus = int64(statusInt)
 	log := &gen.StatusLog{
 		RecordTime: timestamppb.Now(),
 	}
 	for _, ds := range config.DeviceStatuses {
-		if (ds.FlagValue & l.helvarnetStatus) > 0 {
+		if (int64(ds.FlagValue) & l.helvarnetStatus) > 0 {
 			log.Problems = append(log.Problems, &gen.StatusLog_Problem{
 				Level:       ds.Level,
 				Name:        ds.State,
@@ -653,4 +663,40 @@ func (l *Light) PullControlTopics(*gen.PullControlTopicsRequest, grpc.ServerStre
 
 func (l *Light) OnMessage(context.Context, *gen.OnMessageRequest) (*gen.OnMessageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "OnMessage is not implemented for Light")
+}
+
+func (l *Light) GetHealthCheck(_ context.Context, req *gen.GetHealthCheckRequest) (*gen.HealthCheck, error) {
+	switch req.Id {
+	case HealthCheckDeviceNormal:
+		c := getDeviceOkHealthCheck(l.helvarnetStatus)
+		return c, nil
+	default:
+		return nil, status.Error(codes.InvalidArgument, "unknown health check id")
+	}
+}
+
+func getDeviceOkHealthCheck(s int64) *gen.HealthCheck {
+
+	reliability := &gen.HealthCheck_Reliability{}
+	check := &gen.HealthCheck_Check{}
+	if s < 0 {
+		if s == NoResponse {
+			reliability.State = gen.HealthCheck_Reliability_NO_RESPONSE
+		} else if s == BadResponse {
+			reliability.State = gen.HealthCheck_Reliability_BAD_RESPONSE
+		}
+		check.State = gen.HealthCheck_Check_ABNORMAL
+	} else {
+		reliability.State = gen.HealthCheck_Reliability_RELIABLE
+
+		// we have a known Helvarnet status, check for any problems
+	}
+
+	return &gen.HealthCheck{
+		Id:          HealthCheckDeviceNormal,
+		DisplayName: "Light Normal Operation",
+		Description: "The Light is under normal operation, no faults detected, no emergency tests running or pending",
+		Reliability: reliability,
+		Check:       check,
+	}
 }
