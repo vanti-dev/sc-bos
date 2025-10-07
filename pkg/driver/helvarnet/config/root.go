@@ -192,7 +192,7 @@ var DeviceStatuses = []State{
 	{"DeviceMismatch", "The actual load type does not match the expected type", 0x80000000, gen.StatusLog_NOTICE},
 }
 
-func GetStatusListFromFlag(flag uint32) []string {
+func GetStatusListFromFlag(flag int64) []string {
 
 	if flag == 0 {
 		return []string{"OK"}
@@ -200,7 +200,7 @@ func GetStatusListFromFlag(flag uint32) []string {
 
 	var statusList []string
 	for _, ds := range DeviceStatuses {
-		if flag&ds.FlagValue != 0 {
+		if flag&int64(ds.FlagValue) != 0 {
 			statusList = append(statusList, ds.State)
 		}
 	}
