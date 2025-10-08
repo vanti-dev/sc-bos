@@ -28,7 +28,7 @@ import (
 const NoResponse = -1
 const BadResponse = -2
 
-const HealthCheckDeviceNormal = "device_normal"
+const HealthCheckLightNormal = "light_normal"
 
 // Light represents a single light device within the HelvarNet system.
 type Light struct {
@@ -667,7 +667,7 @@ func (l *Light) OnMessage(context.Context, *gen.OnMessageRequest) (*gen.OnMessag
 
 func (l *Light) GetHealthCheck(_ context.Context, req *gen.GetHealthCheckRequest) (*gen.HealthCheck, error) {
 	switch req.Id {
-	case HealthCheckDeviceNormal:
+	case HealthCheckLightNormal:
 		c := getDeviceOkHealthCheck(l.helvarnetStatus)
 		return c, nil
 	default:
@@ -688,12 +688,12 @@ func getDeviceOkHealthCheck(s int64) *gen.HealthCheck {
 		check.State = gen.HealthCheck_Check_ABNORMAL
 	} else {
 		reliability.State = gen.HealthCheck_Reliability_RELIABLE
+		statuses := config.GetStatusListFromFlag(s)
 
-		// we have a known Helvarnet status, check for any problems
 	}
 
 	return &gen.HealthCheck{
-		Id:          HealthCheckDeviceNormal,
+		Id:          HealthCheckLightNormal,
 		DisplayName: "Light Normal Operation",
 		Description: "The Light is under normal operation, no faults detected, no emergency tests running or pending",
 		Reliability: reliability,
