@@ -4,34 +4,29 @@ package devices
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"sort"
-	"strings"
 	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 )
 
 type Server struct {
 	gen.UnimplementedDevicesApiServer
 
-	parentName string
 	// ChildPageSize overrides the default page size used when querying the parent trait for children
 	ChildPageSize int32
 
-	node *node.Node
-	now  func() time.Time
+	m   Model
+	now func() time.Time
 
 	downloadUrlBase      url.URL // defaults to /dl/devices
 	downloadTokenWriter  DownloadTokenWriter
@@ -42,10 +37,21 @@ type Server struct {
 	downloadPageTimeout  time.Duration // defaults to 10 seconds, applies to get and history cursor calls
 }
 
-func NewServer(n *node.Node, opts ...Option) *Server {
+// Collection contains a list of devices.
+type Collection interface {
+	ListDevices(opts ...resource.ReadOption) []*gen.Device
+	PullDevices(ctx context.Context, opts ...resource.ReadOption) <-chan resources.CollectionChange[*gen.Device]
+}
+
+// Model defines where this server gets its data from, and how it connects to other nodes.
+type Model interface {
+	Collection
+	ClientConn() grpc.ClientConnInterface
+}
+
+func NewServer(m Model, opts ...Option) *Server {
 	s := &Server{
-		parentName:           n.Name(),
-		node:                 n,
+		m:                    m,
 		now:                  time.Now,
 		downloadUrlBase:      url.URL{Path: "/dl/devices"},
 		downloadExpiry:       time.Hour,
@@ -85,37 +91,24 @@ func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest)
 		}
 	}
 
-	// note: allMetadata is already sorted by name
-	allMetadata := s.node.ListAllMetadata(
-		resource.WithReadMask(subMask(request.ReadMask, "metadata")),
-		resource.WithInclude(func(id string, item proto.Message) bool {
-			if item == nil {
-				return false
-			}
-			device := &gen.Device{
-				Name:     id,
-				Metadata: item.(*traits.Metadata),
-			}
-			return deviceMatchesQuery(request.Query, device)
-		}),
+	// note: allDevices is already sorted by name
+	allDevices := s.m.ListDevices(
+		resource.WithReadMask(request.ReadMask),
+		withDevicesMatchingsQuery(request.Query),
 	)
 	nextIndex := 0
 	if pageToken.LastName != "" {
-		nextIndex = sort.Search(len(allMetadata), func(i int) bool {
-			return allMetadata[i].Name >= pageToken.LastName
+		nextIndex = sort.Search(len(allDevices), func(i int) bool {
+			return allDevices[i].Name >= pageToken.LastName
 		})
-		if nextIndex < len(allMetadata) && allMetadata[nextIndex].Name == pageToken.LastName {
+		if nextIndex < len(allDevices) && allDevices[nextIndex].Name == pageToken.LastName {
 			nextIndex++
 		}
 		pageToken.LastName = ""
 	}
 
 	var devices []*gen.Device
-	for _, md := range allMetadata[nextIndex:] {
-		device := &gen.Device{
-			Name:     md.Name,
-			Metadata: md,
-		}
+	for _, device := range allDevices[nextIndex:] {
 		if len(devices) == pageSize {
 			// we found another device but we don't want to include it in the response,
 			// we'll use the info to know whether to populate the next page token
@@ -127,7 +120,7 @@ func (s *Server) ListDevices(_ context.Context, request *gen.ListDevicesRequest)
 
 	res := &gen.ListDevicesResponse{
 		Devices:   devices,
-		TotalSize: int32(len(allMetadata)),
+		TotalSize: int32(len(allDevices)),
 	}
 	if pageToken.LastName != "" {
 		ptStr, err := pageToken.encode()
@@ -144,31 +137,18 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 		return err
 	}
 
-	changes := s.node.PullAllMetadata(server.Context(),
+	changes := s.m.PullDevices(server.Context(),
 		resource.WithUpdatesOnly(request.UpdatesOnly),
-		resource.WithReadMask(subMask(request.ReadMask, "metadata")),
-		resource.WithInclude(func(id string, item proto.Message) bool {
-			if item == nil {
-				return false
-			}
-			device := &gen.Device{
-				Name:     id,
-				Metadata: item.(*traits.Metadata),
-			}
-			return deviceMatchesQuery(request.Query, device)
-		}),
+		resource.WithReadMask(request.ReadMask),
+		withDevicesMatchingsQuery(request.Query),
 	)
 	for change := range changes {
 		resChange := &gen.PullDevicesResponse_Change{
-			Name:       change.Name,
+			Name:       change.Id,
 			ChangeTime: timestamppb.New(change.ChangeTime),
 			Type:       change.ChangeType,
-		}
-		if change.OldValue != nil {
-			resChange.OldValue = &gen.Device{Name: change.Name, Metadata: change.OldValue}
-		}
-		if change.NewValue != nil {
-			resChange.NewValue = &gen.Device{Name: change.Name, Metadata: change.NewValue}
+			OldValue:   change.OldValue,
+			NewValue:   change.NewValue,
 		}
 		res := &gen.PullDevicesResponse{Changes: []*gen.PullDevicesResponse_Change{resChange}}
 		if err := server.Send(res); err != nil {
@@ -179,14 +159,11 @@ func (s *Server) PullDevices(request *gen.PullDevicesRequest, server gen.Devices
 }
 
 func (s *Server) GetDevicesMetadata(_ context.Context, request *gen.GetDevicesMetadataRequest) (*gen.DevicesMetadata, error) {
-	mds := s.node.ListAllMetadata()
+	devices := s.m.ListDevices(withDevicesMatchingsQuery(request.GetQuery()))
 	var res *gen.DevicesMetadata
 	col := newMetadataCollector(request.GetIncludes().GetFields()...)
-	for _, md := range mds {
-		res = col.add(&gen.Device{
-			Name:     md.Name,
-			Metadata: md,
-		})
+	for _, device := range devices {
+		res = col.add(device)
 	}
 	return res, nil
 }
@@ -208,13 +185,16 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 	}
 
 	// do this before getting initial values
-	changes := s.node.PullAllMetadata(server.Context())
+	changes := s.m.PullDevices(server.Context(), withDevicesMatchingsQuery(request.GetQuery()))
 
 	// send initial values.
 	// Note we recalculate the metadata for the initial value and for updates separately. We can't guarantee data
 	// consistency between the Get and Pull calls, at least this way the data should be accurate.
 	if !request.UpdatesOnly {
-		md, err := s.GetDevicesMetadata(server.Context(), &gen.GetDevicesMetadataRequest{Includes: request.Includes})
+		md, err := s.GetDevicesMetadata(server.Context(), &gen.GetDevicesMetadataRequest{
+			Includes: request.Includes,
+			Query:    request.Query,
+		})
 		if err != nil {
 			return err
 		}
@@ -224,15 +204,15 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 	}
 
 	// watch for and send updates to metadata
-	col := newMetadataCollector(request.Includes.Fields...)
+	col := newMetadataCollector(request.GetIncludes().GetFields()...)
 	seeding := true
 	for change := range changes {
 		var md *gen.DevicesMetadata
 		if change.OldValue != nil {
-			md = col.remove(&gen.Device{Name: change.OldValue.Name, Metadata: change.OldValue})
+			md = col.remove(change.OldValue)
 		}
 		if change.NewValue != nil {
-			md = col.add(&gen.Device{Name: change.NewValue.Name, Metadata: change.NewValue})
+			md = col.add(change.NewValue)
 		}
 
 		if change.LastSeedValue {
@@ -247,25 +227,6 @@ func (s *Server) PullDevicesMetadata(request *gen.PullDevicesMetadataRequest, se
 		}
 	}
 
-	return nil
-}
-
-func subMask(mask *fieldmaskpb.FieldMask, prefix string) *fieldmaskpb.FieldMask {
-	pd := fmt.Sprintf("%s.", prefix)
-	if mask != nil {
-		// the request read mask is prefixed with "metadata.", we need to remove that
-		newMask := &fieldmaskpb.FieldMask{}
-		for _, path := range mask.Paths {
-			if path == prefix {
-				// need all fields
-				return nil
-			}
-			if strings.HasPrefix(path, pd) {
-				newMask.Paths = append(newMask.Paths, path[len("metadata."):])
-			}
-		}
-		return newMask
-	}
 	return nil
 }
 
@@ -286,4 +247,14 @@ func validateQuery(q *gen.Device_Query) error {
 		}
 	}
 	return nil
+}
+
+func withDevicesMatchingsQuery(query *gen.Device_Query) resource.ReadOption {
+	return resource.WithInclude(func(id string, item proto.Message) bool {
+		if item == nil {
+			return false
+		}
+		device := item.(*gen.Device)
+		return deviceMatchesQuery(query, device)
+	})
 }

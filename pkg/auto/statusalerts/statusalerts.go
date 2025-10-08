@@ -8,7 +8,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/auto/statusalerts/config"
@@ -91,23 +90,23 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 					return
 				default:
 				}
-				for change := range a.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits", "location", "membership")) {
-					if s := ignore.Replace(change.Name); len(s) == 0 || s[0] == '!' {
+				for change := range a.Node.PullDevices(ctx, resource.WithReadPaths(&gen.Device{}, "metadata.traits", "metadata.location", "metadata.membership")) {
+					if s := ignore.Replace(change.Id); len(s) == 0 || s[0] == '!' {
 						continue // ignore
 					}
 					hadTrait, hasTrait := hasStatusTrait(change.OldValue), hasStatusTrait(change.NewValue)
 					switch {
 					case hadTrait && !hasTrait: // remove
-						err := tasks.Stop(change.Name)
+						err := tasks.Stop(change.Id)
 						if err != nil && !errors.Is(err, ErrNotRunning) {
-							logger.Debug("error during stop", zap.String("name", change.Name), zap.Error(err))
+							logger.Debug("error during stop", zap.String("name", change.Id), zap.Error(err))
 						}
 					case !hadTrait && hasTrait: // add
 						source := config.Source{
-							Name:      change.Name,
-							Floor:     change.NewValue.GetLocation().GetFloor(),
-							Zone:      change.NewValue.GetLocation().GetZone(),
-							Subsystem: change.NewValue.GetMembership().GetSubsystem(),
+							Name:      change.Id,
+							Floor:     change.NewValue.GetMetadata().GetLocation().GetFloor(),
+							Zone:      change.NewValue.GetMetadata().GetLocation().GetZone(),
+							Subsystem: change.NewValue.GetMetadata().GetMembership().GetSubsystem(),
 						}
 						go pullFrom(source)
 					}
@@ -119,7 +118,8 @@ func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	return nil
 }
 
-func hasStatusTrait(md *traits.Metadata) bool {
+func hasStatusTrait(device *gen.Device) bool {
+	md := device.GetMetadata()
 	for _, t := range md.GetTraits() {
 		if t.Name == statuspb.TraitName.String() {
 			return true

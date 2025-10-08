@@ -55,8 +55,8 @@ func Open(ctx context.Context, path string, options ...Option) (*Database, error
 	// The database/sql.DB is a connection pool. We want to have certain PRAGMAs run at the start of each connection.
 	// By putting them in the URI, they are automatically run for each new connection.
 	// If we just ran the PRAGMAs after opening the connection, they would only be on one of the connections.
-	readerURI := buildFileURI(path, false)
-	writerURI := buildFileURI(path, true)
+	readerURI := buildFileURI(path, false, o.readerPragmas)
+	writerURI := buildFileURI(path, true, o.writerPragmas)
 	return openURI(ctx, readerURI, writerURI, &o)
 }
 
@@ -67,8 +67,8 @@ func OpenMemory(options ...Option) *Database {
 	memdb.Create(name, nil)
 	o := resolveOpts(options...)
 
-	readerURI := buildMemoryURI(name, false)
-	writerURI := buildMemoryURI(name, true)
+	readerURI := buildMemoryURI(name, false, o.readerPragmas)
+	writerURI := buildMemoryURI(name, true, o.writerPragmas)
 	db, err := openURI(context.Background(), readerURI, writerURI, &o)
 	if err != nil {
 		// opening an in-memory database doesn't access any external resources, so this should never happen
@@ -176,9 +176,38 @@ func WithApplicationID(appID ApplicationID) Option {
 	}
 }
 
+// WithReaderPragma sets a PRAGMA for the reader connections only.
+func WithReaderPragma(key, value string) Option {
+	return func(o *opts) {
+		o.readerPragmas = append(o.readerPragmas, pragma{Key: key, Value: value})
+	}
+}
+
+// WithWriterPragma sets a PRAGMA for the writer connection only.
+func WithWriterPragma(key, value string) Option {
+	return func(o *opts) {
+		o.writerPragmas = append(o.writerPragmas, pragma{Key: key, Value: value})
+	}
+}
+
+// WithPragma sets a PRAGMA for both the reader and writer connections.
+func WithPragma(key, value string) Option {
+	return func(o *opts) {
+		o.readerPragmas = append(o.readerPragmas, pragma{Key: key, Value: value})
+		o.writerPragmas = append(o.writerPragmas, pragma{Key: key, Value: value})
+	}
+}
+
 type opts struct {
 	logger        *zap.Logger
 	expectedAppID ApplicationID
+	readerPragmas []pragma
+	writerPragmas []pragma
+}
+
+type pragma struct {
+	Key   string
+	Value string
 }
 
 func (db *Database) Close() error {
@@ -302,7 +331,7 @@ func (ft *Timestamp) Scan(v any) error {
 	if !ok {
 		return fmt.Errorf("cannot parse %T as timestamp", v)
 	}
-	t, err := time.Parse(dateTimeFormat, str)
+	t, err := time.Parse(DateTimeFormat, str)
 	if err != nil {
 		return err
 	}
@@ -310,17 +339,20 @@ func (ft *Timestamp) Scan(v any) error {
 	return nil
 }
 
-func buildFileURI(path string, writer bool) string {
+func buildFileURI(path string, writer bool, pragmas []pragma) string {
 	query := make(url.Values)
 	if writer {
 		query.Add("mode", "rwc")
 	} else {
 		query.Add("mode", "ro")
 	}
-	query.Add("_timefmt", dateTimeFormat)
+	query.Add("_timefmt", DateTimeFormat)
 	query.Add("_pragma", "journal_mode(WAL)")
 	query.Add("_pragma", "synchronous(NORMAL)")
 	query.Add("_pragma", "foreign_keys(ON)")
+	for _, p := range pragmas {
+		query.Add("_pragma", fmt.Sprintf("%s(%s)", p.Key, p.Value))
+	}
 	uri := &url.URL{
 		Scheme:   "file",
 		Path:     filepath.ToSlash(path),
@@ -330,15 +362,18 @@ func buildFileURI(path string, writer bool) string {
 	return uri.String()
 }
 
-func buildMemoryURI(name string, writer bool) string {
+func buildMemoryURI(name string, writer bool, pragmas []pragma) string {
 	query := make(url.Values)
 	if writer {
 		query.Add("mode", "rwc")
 	} else {
 		query.Add("mode", "ro")
 	}
-	query.Add("_timefmt", dateTimeFormat)
+	query.Add("_timefmt", DateTimeFormat)
 	query.Add("_pragma", "foreign_keys(ON)")
+	for _, p := range pragmas {
+		query.Add("_pragma", fmt.Sprintf("%s(%s)", p.Key, p.Value))
+	}
 	query.Add("vfs", "memdb")
 	uri := &url.URL{
 		Scheme:   "file",
@@ -348,4 +383,6 @@ func buildMemoryURI(name string, writer bool) string {
 	return uri.String()
 }
 
-const dateTimeFormat = string(sqlite3.TimeFormat4) // SQLite format with millisecconds
+// DateTimeFormat is the default format for encoding/decoding time.Time values in the database.
+// It uses the SQLite format with millisecond precision.
+const DateTimeFormat = string(sqlite3.TimeFormat4)

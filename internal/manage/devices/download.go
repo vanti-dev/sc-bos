@@ -197,11 +197,11 @@ func (c *csvWriter) HasAny(headers ...string) bool {
 	return false
 }
 
-func (s *Server) writeLiveData(ctx context.Context, out writer, devices []*traits.Metadata, traitInfo map[string]traitInfo) {
+func (s *Server) writeLiveData(ctx context.Context, out writer, devices []*gen.Device, traitInfo map[string]traitInfo) {
 	for _, d := range devices {
 		row := make(map[string]string)
 		captureMDValues(d, row)
-		for _, t := range d.Traits {
+		for _, t := range d.GetMetadata().GetTraits() {
 			info, ok := traitInfo[t.Name]
 			if !ok {
 				continue
@@ -223,12 +223,12 @@ func (s *Server) writeLiveData(ctx context.Context, out writer, devices []*trait
 }
 
 type source struct {
-	device *traits.Metadata
+	device *gen.Device
 	cursor *historyCursor
 	skip   bool
 }
 
-func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []*traits.Metadata, traitInfo map[string]traitInfo, period *timepb.Period) {
+func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []*gen.Device, traitInfo map[string]traitInfo, period *timepb.Period) {
 	// we might want to allow the user to specify the order in the future
 	const (
 		// pageSize = 100
@@ -241,7 +241,11 @@ func (s *Server) writeHistoricalData(ctx context.Context, out writer, devices []
 
 	var sources []*source
 	for _, d := range devices {
-		for _, t := range d.Traits {
+		if d.Metadata == nil {
+			continue
+		}
+		md := d.Metadata
+		for _, t := range md.Traits {
 			info, ok := traitInfo[t.Name]
 			if !ok || info.history == nil {
 				continue
@@ -410,18 +414,15 @@ func (s *Server) parseAndValidateDownloadToken(tokenStr string) (*DownloadToken,
 	return token, nil
 }
 
-func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[string]traitInfo) (devices []*traits.Metadata, headers []string, err error) {
-	devices = s.node.ListAllMetadata(
+func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[string]traitInfo) (devices []*gen.Device, headers []string, err error) {
+	devices = s.m.ListDevices(
 		resource.WithInclude(func(id string, item proto.Message) bool {
 			if item == nil {
 				return false
 			}
-			md := item.(*traits.Metadata)
-			device := &gen.Device{
-				Name:     id,
-				Metadata: md,
-			}
-			if len(md.Traits) == 0 {
+			device := item.(*gen.Device)
+			md := device.Metadata
+			if len(md.GetTraits()) == 0 {
 				return false
 			}
 			// Skip boring devices, aka those that have no metadata or other trait data.
@@ -477,7 +478,7 @@ func (s *Server) listDevicesAndHeaders(token *DownloadToken, traitInfo map[strin
 	return devices, headers, nil
 }
 
-func collectMetadataHeaders(dst map[string]struct{}, deviceList []*traits.Metadata) error {
+func collectMetadataHeaders(dst map[string]struct{}, deviceList []*gen.Device) error {
 	// collect headers for all populated metadata fields
 	for _, d := range deviceList {
 		err := protorange.Range(d.ProtoReflect(), func(values protopath.Values) error {
@@ -520,15 +521,20 @@ func collectMetadataHeaders(dst map[string]struct{}, deviceList []*traits.Metada
 			return httpError{http.StatusInternalServerError, "failed to collect headers"}
 		}
 	}
-	delete(dst, "md.traits.name") // we process these separately
+	// we process these separately
+	delete(dst, "md.name")
+	delete(dst, "md.traits.name")
 	return nil
 }
 
-func collectTraitHeaders(dst map[string]struct{}, deviceList []*traits.Metadata, traitInfo map[string]traitInfo) {
+func collectTraitHeaders(dst map[string]struct{}, deviceList []*gen.Device, traitInfo map[string]traitInfo) {
 	// capture trait headers
 	traitNameSet := make(map[string]struct{})
 	for _, d := range deviceList {
-		for _, t := range d.Traits {
+		if d.Metadata == nil {
+			continue
+		}
+		for _, t := range d.Metadata.Traits {
 			traitNameSet[t.Name] = struct{}{}
 		}
 	}
@@ -544,8 +550,8 @@ func collectTraitHeaders(dst map[string]struct{}, deviceList []*traits.Metadata,
 	}
 }
 
-func captureMDValues(md *traits.Metadata, row map[string]string) {
-	_ = protorange.Range(md.ProtoReflect(), func(values protopath.Values) error {
+func captureMDValues(device *gen.Device, row map[string]string) {
+	_ = protorange.Range(device.ProtoReflect(), func(values protopath.Values) error {
 		p := values.Path
 		leafStep := p.Index(-1)
 		switch leafStep.Kind() {
@@ -585,7 +591,16 @@ func captureMDValues(md *traits.Metadata, row map[string]string) {
 
 func sortHeaders(headers iter.Seq[string]) []string {
 	return slices.SortedFunc(headers, func(a string, b string) int {
-		// sort metadata fields first
+		// sort name first
+		switch {
+		case a == "name" && b == "name":
+			return 0
+		case a == "name":
+			return -1
+		case b == "name":
+			return 1
+		}
+		// sort metadata fields next
 		aIsMD := strings.HasPrefix(a, "md.")
 		bIsMD := strings.HasPrefix(b, "md.")
 		switch {
@@ -593,18 +608,6 @@ func sortHeaders(headers iter.Seq[string]) []string {
 			return -1
 		case !aIsMD && bIsMD:
 			return 1
-		case aIsMD && bIsMD:
-			// make sure md.name is first
-			switch {
-			case a == "md.name" && b == "md.name":
-				return 0
-			case a == "md.name":
-				return -1
-			case b == "md.name":
-				return 1
-			default:
-				return strings.Compare(a, b)
-			}
 		default:
 			return strings.Compare(a, b)
 		}
@@ -636,7 +639,10 @@ func protoPathToHeader(p protopath.Path) string {
 	if len(parts) == 0 {
 		return ""
 	}
-	return "md." + strings.Join(parts, ".")
+	if len(parts) >= 1 && parts[0] == "metadata" {
+		parts[0] = "md" // shorten metadata to md as it's a common field
+	}
+	return strings.Join(parts, ".")
 }
 
 func (s *Server) RegisterHTTPMux(mux *http.ServeMux) {

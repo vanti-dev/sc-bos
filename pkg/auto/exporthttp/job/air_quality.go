@@ -20,10 +20,6 @@ type AirQualityJob struct {
 	Sensors []string
 }
 
-func (a *AirQualityJob) GetName() string {
-	return "air_quality"
-}
-
 func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {
 	sum := float32(0)
 	count := 0
@@ -51,7 +47,7 @@ func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {
 
 	body := &types.AverageCo2{
 		Meta: types.Meta{
-			Site:      a.GetSite(),
+			Site:      a.Site,
 			Timestamp: time.Now(),
 		},
 		AverageCo2: types.Float32Measure{
@@ -65,5 +61,5 @@ func (a *AirQualityJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	return sendFn(ctx, a.GetUrl(), bytes)
+	return sendFn(ctx, a.Url, bytes)
 }

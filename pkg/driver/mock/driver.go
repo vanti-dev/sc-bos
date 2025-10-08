@@ -8,6 +8,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
@@ -33,8 +34,10 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylightpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/soundsensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
@@ -176,7 +179,21 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		// todo: return []any{emergency.WrapApi(emergency.NewModelServer(emergency.NewModel()))}, nil
 		return nil, nil
 	case trait.EnergyStorage:
-		return []wrap.ServiceUnwrapper{energystoragepb.WrapApi(energystoragepb.NewModelServer(energystoragepb.NewModel()))}, nil
+		model := energystoragepb.NewModel()
+		kind := auto.EnergyStorageDeviceTypeBattery
+		if k, ok := traitMd.GetMore()["type"]; ok {
+			switch auto.EnergyStorageDeviceType(k) {
+			case auto.EnergyStorageDeviceTypeBattery:
+				kind = auto.EnergyStorageDeviceTypeBattery
+			case auto.EnergyStorageDeviceTypeEV:
+				kind = auto.EnergyStorageDeviceTypeEV
+			case auto.EnergyStorageDeviceTypeDrone:
+				kind = auto.EnergyStorageDeviceTypeDrone
+			default:
+				logger.Sugar().Warnf("Unknown energy storage device type '%s' for %s, defaulting to battery", k, deviceName)
+			}
+		}
+		return []wrap.ServiceUnwrapper{energystoragepb.WrapApi(energystoragepb.NewModelServer(model))}, auto.EnergyStorage(model, kind)
 	case trait.EnterLeaveSensor:
 		return []wrap.ServiceUnwrapper{enterleavesensorpb.WrapApi(enterleavesensorpb.NewModelServer(enterleavesensorpb.NewModel()))}, nil
 	case trait.ExtendRetract:
@@ -223,7 +240,7 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		model := occupancysensorpb.NewModel()
 		return []wrap.ServiceUnwrapper{occupancysensorpb.WrapApi(occupancysensorpb.NewModelServer(model))}, auto.OccupancySensorAuto(model)
 	case trait.OnOff:
-		return []wrap.ServiceUnwrapper{onoffpb.WrapApi(onoffpb.NewModelServer(onoffpb.NewModel()))}, nil
+		return []wrap.ServiceUnwrapper{onoffpb.WrapApi(onoffpb.NewModelServer(onoffpb.NewModel(resource.WithInitialValue(&traits.OnOff{State: traits.OnOff_OFF}))))}, nil
 	case trait.OpenClose:
 		return mockOpenClose(traitMd, deviceName, logger)
 	case trait.Parent:
@@ -247,6 +264,11 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		return []wrap.ServiceUnwrapper{gen.WrapAccessApi(accesspb.NewModelServer(model))}, auto.Access(model)
 	case button.TraitName:
 		return []wrap.ServiceUnwrapper{gen.WrapButtonApi(button.NewModelServer(button.NewModel(gen.ButtonState_UNPRESSED)))}, nil
+	case emergencylightpb.TraitName:
+		model := emergencylightpb.NewModel()
+		model.SetLastDurationTest(gen.EmergencyTestResult_TEST_PASSED)
+		model.SetLastFunctionalTest(gen.EmergencyTestResult_TEST_PASSED)
+		return []wrap.ServiceUnwrapper{gen.WrapEmergencyLightApi(emergencylightpb.NewModelServer(model))}, nil
 	case meter.TraitName:
 		var (
 			unit string
@@ -269,6 +291,9 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 	case securityevent.TraitName:
 		model := securityevent.NewModel()
 		return []wrap.ServiceUnwrapper{gen.WrapSecurityEventApi(securityevent.NewModelServer(model))}, auto.SecurityEventAuto(model)
+	case soundsensorpb.TraitName:
+		model := soundsensorpb.NewModel()
+		return []wrap.ServiceUnwrapper{gen.WrapSoundSensorApi(soundsensorpb.NewModelServer(model))}, auto.SoundSensorAuto(model)
 	case statuspb.TraitName:
 		model := statuspb.NewModel()
 		// set an initial value or Pull methods can hang

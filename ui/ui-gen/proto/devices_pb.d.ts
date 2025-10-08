@@ -1,5 +1,6 @@
 import * as jspb from 'google-protobuf'
 
+import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb'; // proto import: "google/protobuf/empty.proto"
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
 import * as traits_metadata_pb from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb'; // proto import: "traits/metadata.proto"
@@ -75,6 +76,52 @@ export namespace Device {
       hasStringInFold(): boolean;
       clearStringInFold(): Condition;
 
+      getTimestampEqual(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampEqual(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampEqual(): boolean;
+      clearTimestampEqual(): Condition;
+
+      getTimestampGt(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampGt(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampGt(): boolean;
+      clearTimestampGt(): Condition;
+
+      getTimestampGte(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampGte(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampGte(): boolean;
+      clearTimestampGte(): Condition;
+
+      getTimestampLt(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampLt(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampLt(): boolean;
+      clearTimestampLt(): Condition;
+
+      getTimestampLte(): google_protobuf_timestamp_pb.Timestamp | undefined;
+      setTimestampLte(value?: google_protobuf_timestamp_pb.Timestamp): Condition;
+      hasTimestampLte(): boolean;
+      clearTimestampLte(): Condition;
+
+      getNameDescendant(): string;
+      setNameDescendant(value: string): Condition;
+
+      getNameDescendantInc(): string;
+      setNameDescendantInc(value: string): Condition;
+
+      getNameDescendantIn(): Device.Query.StringList | undefined;
+      setNameDescendantIn(value?: Device.Query.StringList): Condition;
+      hasNameDescendantIn(): boolean;
+      clearNameDescendantIn(): Condition;
+
+      getNameDescendantIncIn(): Device.Query.StringList | undefined;
+      setNameDescendantIncIn(value?: Device.Query.StringList): Condition;
+      hasNameDescendantIncIn(): boolean;
+      clearNameDescendantIncIn(): Condition;
+
+      getPresent(): google_protobuf_empty_pb.Empty | undefined;
+      setPresent(value?: google_protobuf_empty_pb.Empty): Condition;
+      hasPresent(): boolean;
+      clearPresent(): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -94,6 +141,16 @@ export namespace Device {
         stringContainsFold: string,
         stringIn?: Device.Query.StringList.AsObject,
         stringInFold?: Device.Query.StringList.AsObject,
+        timestampEqual?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        timestampGt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        timestampGte?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        timestampLt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        timestampLte?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        nameDescendant: string,
+        nameDescendantInc: string,
+        nameDescendantIn?: Device.Query.StringList.AsObject,
+        nameDescendantIncIn?: Device.Query.StringList.AsObject,
+        present?: google_protobuf_empty_pb.Empty.AsObject,
       }
 
       export enum ValueCase { 
@@ -104,6 +161,16 @@ export namespace Device {
         STRING_CONTAINS_FOLD = 5,
         STRING_IN = 6,
         STRING_IN_FOLD = 7,
+        TIMESTAMP_EQUAL = 20,
+        TIMESTAMP_GT = 21,
+        TIMESTAMP_GTE = 22,
+        TIMESTAMP_LT = 23,
+        TIMESTAMP_LTE = 24,
+        NAME_DESCENDANT = 30,
+        NAME_DESCENDANT_INC = 31,
+        NAME_DESCENDANT_IN = 32,
+        NAME_DESCENDANT_INC_IN = 33,
+        PRESENT = 40,
       }
     }
 
@@ -364,6 +431,11 @@ export class GetDevicesMetadataRequest extends jspb.Message {
   hasIncludes(): boolean;
   clearIncludes(): GetDevicesMetadataRequest;
 
+  getQuery(): Device.Query | undefined;
+  setQuery(value?: Device.Query): GetDevicesMetadataRequest;
+  hasQuery(): boolean;
+  clearQuery(): GetDevicesMetadataRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetDevicesMetadataRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetDevicesMetadataRequest): GetDevicesMetadataRequest.AsObject;
@@ -376,6 +448,7 @@ export namespace GetDevicesMetadataRequest {
   export type AsObject = {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     includes?: DevicesMetadata.Include.AsObject,
+    query?: Device.Query.AsObject,
   }
 }
 
@@ -393,6 +466,11 @@ export class PullDevicesMetadataRequest extends jspb.Message {
   getUpdatesOnly(): boolean;
   setUpdatesOnly(value: boolean): PullDevicesMetadataRequest;
 
+  getQuery(): Device.Query | undefined;
+  setQuery(value?: Device.Query): PullDevicesMetadataRequest;
+  hasQuery(): boolean;
+  clearQuery(): PullDevicesMetadataRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PullDevicesMetadataRequest.AsObject;
   static toObject(includeInstance: boolean, msg: PullDevicesMetadataRequest): PullDevicesMetadataRequest.AsObject;
@@ -406,6 +484,7 @@ export namespace PullDevicesMetadataRequest {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     includes?: DevicesMetadata.Include.AsObject,
     updatesOnly: boolean,
+    query?: Device.Query.AsObject,
   }
 }
 

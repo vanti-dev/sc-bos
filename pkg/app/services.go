@@ -51,6 +51,7 @@ func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, e
 	ctxServices := auto.Services{
 		Logger:          c.Logger.Named("auto"),
 		Node:            c.Node,
+		Devices:         c.Devices,
 		Database:        c.Database,
 		Stores:          c.Stores,
 		GRPCServices:    c.GRPC,
@@ -79,7 +80,7 @@ func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, e
 }
 
 func (c *Controller) startSystems() (*service.Map, error) {
-	grpcEndpoint, err := c.grpcEndpoint()
+	grpcEndpoint, err := c.SystemConfig.ExternalGRPCEndpoint()
 	if err != nil {
 		return nil, err
 	}

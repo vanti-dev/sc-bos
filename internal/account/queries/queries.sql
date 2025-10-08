@@ -35,7 +35,7 @@ RETURNING *;
 
 -- name: CreateUserAccount :one
 INSERT INTO user_accounts (account_id, username, password_hash)
-VALUES (:account_id, :username, :password_hash)
+VALUES (:account_id, :username, nullif(:password_hash, x''))
 RETURNING *;
 
 -- name: CreateServiceAccount :one
@@ -45,7 +45,7 @@ RETURNING *;
 
 -- name: UpdateAccountPasswordHash :exec
 UPDATE user_accounts
-SET password_hash = :password_hash
+SET password_hash = nullif(:password_hash, x'')
 WHERE account_id = :account_id;
 
 -- name: RotateServiceAccountSecret :exec

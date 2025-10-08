@@ -1,4 +1,4 @@
-package serviceticket
+package serviceticketpb
 
 import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"

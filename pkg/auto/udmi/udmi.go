@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
@@ -103,18 +102,18 @@ func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
 					return
 				default:
 				}
-				for change := range e.services.Node.PullAllMetadata(ctx, resource.WithReadPaths(&traits.Metadata{}, "traits")) {
+				for change := range e.services.Node.PullDevices(ctx, resource.WithReadPaths(&gen.Device{}, "metadata.traits")) {
 					hadTrait, hasTrait := hasUDMITrait(change.OldValue), hasUDMITrait(change.NewValue)
 					if hadTrait && !hasTrait {
 						// remove
-						err := tasks.Stop(change.Name)
+						err := tasks.Stop(change.Id)
 						if err != nil && !errors.Is(err, ErrNotRunning) {
-							e.services.Logger.Debug("error during stop", zap.String("name", change.Name), zap.Error(err))
+							e.services.Logger.Debug("error during stop", zap.String("name", change.Id), zap.Error(err))
 						}
 					}
 					if !hadTrait && hasTrait {
 						// add
-						go pullFrom(change.Name)
+						go pullFrom(change.Id)
 					}
 				}
 			}
@@ -124,7 +123,8 @@ func (e *udmiAuto) applyConfig(ctx context.Context, cfg config.Root) error {
 	return nil
 }
 
-func hasUDMITrait(md *traits.Metadata) bool {
+func hasUDMITrait(device *gen.Device) bool {
+	md := device.GetMetadata()
 	for _, t := range md.GetTraits() {
 		if t.Name == udmipb.TraitName.String() {
 			return true

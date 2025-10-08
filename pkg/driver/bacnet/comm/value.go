@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strconv"
 	"sync"
 
 	"go.uber.org/multierr"
@@ -377,4 +378,115 @@ func massageValueForWrite(_ bactypes.Device, obj bactypes.Object, prop property.
 		}
 	}
 	return value
+}
+
+// EngineeringUnits is the BACnet engineering units type (uint16).
+type EngineeringUnits uint16
+
+// unitSymbols maps BACnet EngineeringUnits → shorthand symbol.
+var unitSymbols = map[EngineeringUnits]string{
+	0:  "m²",
+	1:  "ft²",
+	2:  "mA",
+	3:  "A",
+	4:  "Ω",
+	5:  "V",
+	6:  "kV",
+	7:  "MV",
+	8:  "V·A",
+	9:  "kV·A",
+	10: "MV·A",
+	14: "° phase",
+	15: "power factor",
+	16: "J",
+	17: "kJ",
+	18: "W·h",
+	19: "kW·h",
+	20: "Btu",
+	21: "thm (US)",
+	22: "ton/h",
+	23: "J/kg·dry air",
+	24: "Btu/lb·dry air",
+	25: "cph", // cycles per hour
+	26: "cpm", // cycles per minute
+	27: "Hz",
+	28: "g/kg·dry air",
+	29: "%RH",
+	30: "mm",
+	31: "m",
+	32: "in",
+	33: "ft",
+	34: "W/ft²",
+	35: "W/m²",
+	36: "lm",
+	37: "lx",
+	38: "fc",
+	39: "kg",
+	40: "lb",
+	41: "ton",
+	42: "kg/s",
+	43: "kg/min",
+	44: "kg/h",
+	45: "lb/min",
+	46: "lb/h",
+	47: "W",
+	48: "kW",
+	49: "MW",
+	50: "Btu/h",
+	51: "hp",
+	52: "TR", // ton of refrigeration
+	53: "Pa",
+	54: "kPa",
+	55: "bar",
+	56: "psi",
+	57: "cmH₂O",
+	58: "inH₂O",
+	59: "mmHg",
+	60: "cmHg",
+	61: "inHg",
+	62: "°C",
+	63: "K",
+	64: "°F",
+	65: "°C·d", // degree days Celsius
+	66: "°F·d", // degree days Fahrenheit
+	67: "yr",
+	68: "mo",
+	69: "wk",
+	70: "d",
+	71: "h",
+	72: "min",
+	73: "s",
+	74: "m/s",
+	75: "km/h",
+	76: "ft/s",
+	77: "ft/min",
+	78: "mph",
+	79: "ft³",
+	80: "m³",
+	81: "gal (Imp)",
+	82: "L",
+	83: "gal (US)",
+	84: "cfm",
+	85: "m³/s",
+	86: "gal (Imp)/min",
+	87: "L/s",
+	88: "L/min",
+	89: "gpm (US)",
+	90: "°",
+	91: "°C/h",
+	92: "°C/min",
+	93: "°F/h",
+	94: "°F/min",
+	95: "unitless",
+	96: "ppm",
+	97: "ppb",
+	98: "%",
+}
+
+// String implements fmt.Stringer.
+func (u EngineeringUnits) String() string {
+	if s, ok := unitSymbols[u]; ok {
+		return s
+	}
+	return "Unknown(" + strconv.Itoa(int(u)) + ")"
 }

@@ -2,6 +2,7 @@ package token
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/vanti-dev/sc-bos/internal/auth/permission"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
@@ -30,10 +31,44 @@ func ParseResourceType(s string) (ResourceType, bool) {
 	return ResourceType(rt), true
 }
 
+//goland:noinspection GoMixedReceiverTypes
 func (rt ResourceType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(gen.RoleAssignment_ResourceType(rt))
+	rtp := gen.RoleAssignment_ResourceType(rt)
+	desc := rtp.Descriptor().Values().ByNumber(rtp.Number())
+	if desc == nil {
+		return json.Marshal(int32(rtp.Number()))
+	} else {
+		return json.Marshal(string(desc.Name()))
+	}
 }
 
+//goland:noinspection GoMixedReceiverTypes
+func (rt *ResourceType) UnmarshalJSON(b []byte) error {
+	if len(b) == 0 {
+		return errors.New("want string or int")
+	}
+	if b[0] == '"' {
+		var s string
+		if err := json.Unmarshal(b, &s); err != nil {
+			return err
+		}
+		parsed, ok := ParseResourceType(s)
+		if !ok {
+			return errors.New("invalid resource type: " + s)
+		}
+		*rt = parsed
+		return nil
+	} else {
+		var i int32
+		if err := json.Unmarshal(b, &i); err != nil {
+			return err
+		}
+		*rt = ResourceType(i)
+		return nil
+	}
+}
+
+//goland:noinspection GoMixedReceiverTypes
 func (rt ResourceType) String() string {
 	return gen.RoleAssignment_ResourceType(rt).String()
 }

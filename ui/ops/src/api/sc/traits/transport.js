@@ -1,11 +1,9 @@
 import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setValue, trackAction} from '@/api/resource.js';
-import {
-  TransportApiPromiseClient,
-  TransportInfoPromiseClient
-} from '@vanti-dev/sc-bos-ui-gen/proto/transport_grpc_web_pb.js';
-import {DescribeTransportRequest, PullTransportRequest} from '@vanti-dev/sc-bos-ui-gen/proto/transport_pb';
+import {periodFromObject} from '@/api/sc/types/period.js';
+import {TransportApiPromiseClient,TransportHistoryPromiseClient, TransportInfoPromiseClient} from '@vanti-dev/sc-bos-ui-gen/proto/transport_grpc_web_pb.js';
+import {DescribeTransportRequest, ListTransportHistoryRequest, PullTransportRequest} from '@vanti-dev/sc-bos-ui-gen/proto/transport_pb';
 
 /**
  * @param {Partial<PullTransportRequest.AsObject>} request
@@ -39,6 +37,19 @@ export function describeTransport(request, tracker) {
 }
 
 /**
+ *
+ * @param {Partial<ListTransportHistoryRequest.AsObject>} request
+ * @param {ActionTracker<ListTransportHistoryResponse.AsObject>} [tracker]
+ * @return {Promise<ListTransportHistoryResponse.AsObject>}
+ */
+export function listTransportHistory(request, tracker) {
+  return trackAction('TransportHistory.listTransportHistory', tracker ?? {}, endpoint => {
+    const api = historyClient(endpoint);
+    return api.listTransportHistory(listTransportHistoryRequestFromObject(request));
+  });
+}
+
+/**
  * @param {string} endpoint
  * @return {TransportApiPromiseClient}
  */
@@ -52,6 +63,15 @@ function apiClient(endpoint) {
  */
 function infoClient(endpoint) {
   return new TransportInfoPromiseClient(endpoint, null, clientOptions());
+}
+
+/**
+ *
+ * @param {string} endpoint
+ * @return {TransportHistoryPromiseClient}
+ */
+function historyClient(endpoint) {
+  return new TransportHistoryPromiseClient(endpoint, null, clientOptions());
 }
 
 /**
@@ -79,3 +99,15 @@ function pullTransportRequestFromObject(obj) {
   return dst;
 }
 
+/**
+ * @param {Partial<ListTransportHistoryRequest.AsObject>} obj
+ * @return {ListTransportHistoryRequest|undefined}
+ */
+function listTransportHistoryRequestFromObject(obj) {
+  if (!obj) return undefined;
+  const dst = new ListTransportHistoryRequest();
+  setProperties(dst, obj, 'name', 'pageToken', 'pageSize', 'orderBy');
+  dst.setReadMask(fieldMaskFromObject(obj.readMask));
+  dst.setPeriod(periodFromObject(obj.period));
+  return dst;
+}

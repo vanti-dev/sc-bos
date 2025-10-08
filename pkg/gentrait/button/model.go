@@ -2,9 +2,9 @@ package button
 
 import (
 	"context"
-	"time"
 
 	"github.com/smart-core-os/sc-golang/pkg/resource"
+	"github.com/vanti-dev/sc-bos/pkg/util/resources"
 
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
@@ -34,25 +34,7 @@ func (m *Model) UpdateButtonState(value *gen.ButtonState, options ...resource.Wr
 }
 
 func (m *Model) PullButtonState(ctx context.Context, options ...resource.ReadOption) <-chan PullButtonStateChange {
-	tx := make(chan PullButtonStateChange)
-
-	rx := m.buttonState.Pull(ctx, options...)
-	go func() {
-		defer close(tx)
-		for change := range rx {
-			value := change.Value.(*gen.ButtonState)
-			tx <- PullButtonStateChange{
-				Value:         value,
-				ChangeTime:    change.ChangeTime,
-				LastSeedValue: change.LastSeedValue,
-			}
-		}
-	}()
-	return tx
+	return resources.PullValue[*gen.ButtonState](ctx, m.buttonState.Pull(ctx, options...))
 }
 
-type PullButtonStateChange struct {
-	Value         *gen.ButtonState
-	ChangeTime    time.Time
-	LastSeedValue bool
-}
+type PullButtonStateChange = resources.ValueChange[*gen.ButtonState]

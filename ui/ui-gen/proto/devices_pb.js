@@ -21,6 +21,8 @@ var global =
     (function () { return this; }).call(null) ||
     Function('return this')();
 
+var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
+goog.object.extend(proto, google_protobuf_empty_pb);
 var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/field_mask_pb.js');
 goog.object.extend(proto, google_protobuf_field_mask_pb);
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
@@ -729,7 +731,7 @@ proto.smartcore.bos.Device.Query.serializeBinaryToWriter = function(message, wri
  * @private {!Array<!Array<number>>}
  * @const
  */
-proto.smartcore.bos.Device.Query.Condition.oneofGroups_ = [[2,3,4,5,6,7]];
+proto.smartcore.bos.Device.Query.Condition.oneofGroups_ = [[2,3,4,5,6,7,20,21,22,23,24,30,31,32,33,40]];
 
 /**
  * @enum {number}
@@ -741,7 +743,17 @@ proto.smartcore.bos.Device.Query.Condition.ValueCase = {
   STRING_CONTAINS: 4,
   STRING_CONTAINS_FOLD: 5,
   STRING_IN: 6,
-  STRING_IN_FOLD: 7
+  STRING_IN_FOLD: 7,
+  TIMESTAMP_EQUAL: 20,
+  TIMESTAMP_GT: 21,
+  TIMESTAMP_GTE: 22,
+  TIMESTAMP_LT: 23,
+  TIMESTAMP_LTE: 24,
+  NAME_DESCENDANT: 30,
+  NAME_DESCENDANT_INC: 31,
+  NAME_DESCENDANT_IN: 32,
+  NAME_DESCENDANT_INC_IN: 33,
+  PRESENT: 40
 };
 
 /**
@@ -788,7 +800,17 @@ stringEqualFold: (f = jspb.Message.getField(msg, 3)) == null ? undefined : f,
 stringContains: (f = jspb.Message.getField(msg, 4)) == null ? undefined : f,
 stringContainsFold: (f = jspb.Message.getField(msg, 5)) == null ? undefined : f,
 stringIn: (f = msg.getStringIn()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f),
-stringInFold: (f = msg.getStringInFold()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f)
+stringInFold: (f = msg.getStringInFold()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f),
+timestampEqual: (f = msg.getTimestampEqual()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+timestampGt: (f = msg.getTimestampGt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+timestampGte: (f = msg.getTimestampGte()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+timestampLt: (f = msg.getTimestampLt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+timestampLte: (f = msg.getTimestampLte()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f),
+nameDescendant: (f = jspb.Message.getField(msg, 30)) == null ? undefined : f,
+nameDescendantInc: (f = jspb.Message.getField(msg, 31)) == null ? undefined : f,
+nameDescendantIn: (f = msg.getNameDescendantIn()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f),
+nameDescendantIncIn: (f = msg.getNameDescendantIncIn()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f),
+present: (f = msg.getPresent()) && google_protobuf_empty_pb.Empty.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -854,6 +876,54 @@ proto.smartcore.bos.Device.Query.Condition.deserializeBinaryFromReader = functio
       var value = new proto.smartcore.bos.Device.Query.StringList;
       reader.readMessage(value,proto.smartcore.bos.Device.Query.StringList.deserializeBinaryFromReader);
       msg.setStringInFold(value);
+      break;
+    case 20:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampEqual(value);
+      break;
+    case 21:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampGt(value);
+      break;
+    case 22:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampGte(value);
+      break;
+    case 23:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampLt(value);
+      break;
+    case 24:
+      var value = new google_protobuf_timestamp_pb.Timestamp;
+      reader.readMessage(value,google_protobuf_timestamp_pb.Timestamp.deserializeBinaryFromReader);
+      msg.setTimestampLte(value);
+      break;
+    case 30:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setNameDescendant(value);
+      break;
+    case 31:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setNameDescendantInc(value);
+      break;
+    case 32:
+      var value = new proto.smartcore.bos.Device.Query.StringList;
+      reader.readMessage(value,proto.smartcore.bos.Device.Query.StringList.deserializeBinaryFromReader);
+      msg.setNameDescendantIn(value);
+      break;
+    case 33:
+      var value = new proto.smartcore.bos.Device.Query.StringList;
+      reader.readMessage(value,proto.smartcore.bos.Device.Query.StringList.deserializeBinaryFromReader);
+      msg.setNameDescendantIncIn(value);
+      break;
+    case 40:
+      var value = new google_protobuf_empty_pb.Empty;
+      reader.readMessage(value,google_protobuf_empty_pb.Empty.deserializeBinaryFromReader);
+      msg.setPresent(value);
       break;
     default:
       reader.skipField();
@@ -933,6 +1003,84 @@ proto.smartcore.bos.Device.Query.Condition.serializeBinaryToWriter = function(me
       7,
       f,
       proto.smartcore.bos.Device.Query.StringList.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampEqual();
+  if (f != null) {
+    writer.writeMessage(
+      20,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampGt();
+  if (f != null) {
+    writer.writeMessage(
+      21,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampGte();
+  if (f != null) {
+    writer.writeMessage(
+      22,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampLt();
+  if (f != null) {
+    writer.writeMessage(
+      23,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = message.getTimestampLte();
+  if (f != null) {
+    writer.writeMessage(
+      24,
+      f,
+      google_protobuf_timestamp_pb.Timestamp.serializeBinaryToWriter
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 30));
+  if (f != null) {
+    writer.writeString(
+      30,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 31));
+  if (f != null) {
+    writer.writeString(
+      31,
+      f
+    );
+  }
+  f = message.getNameDescendantIn();
+  if (f != null) {
+    writer.writeMessage(
+      32,
+      f,
+      proto.smartcore.bos.Device.Query.StringList.serializeBinaryToWriter
+    );
+  }
+  f = message.getNameDescendantIncIn();
+  if (f != null) {
+    writer.writeMessage(
+      33,
+      f,
+      proto.smartcore.bos.Device.Query.StringList.serializeBinaryToWriter
+    );
+  }
+  f = message.getPresent();
+  if (f != null) {
+    writer.writeMessage(
+      40,
+      f,
+      google_protobuf_empty_pb.Empty.serializeBinaryToWriter
     );
   }
 };
@@ -1171,6 +1319,374 @@ proto.smartcore.bos.Device.Query.Condition.prototype.clearStringInFold = functio
  */
 proto.smartcore.bos.Device.Query.Condition.prototype.hasStringInFold = function() {
   return jspb.Message.getField(this, 7) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_equal = 20;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampEqual = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 20));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampEqual = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 20, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampEqual = function() {
+  return this.setTimestampEqual(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampEqual = function() {
+  return jspb.Message.getField(this, 20) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_gt = 21;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampGt = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 21));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampGt = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 21, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampGt = function() {
+  return this.setTimestampGt(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampGt = function() {
+  return jspb.Message.getField(this, 21) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_gte = 22;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampGte = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 22));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampGte = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 22, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampGte = function() {
+  return this.setTimestampGte(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampGte = function() {
+  return jspb.Message.getField(this, 22) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_lt = 23;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampLt = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 23));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampLt = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 23, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampLt = function() {
+  return this.setTimestampLt(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampLt = function() {
+  return jspb.Message.getField(this, 23) != null;
+};
+
+
+/**
+ * optional google.protobuf.Timestamp timestamp_lte = 24;
+ * @return {?proto.google.protobuf.Timestamp}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getTimestampLte = function() {
+  return /** @type{?proto.google.protobuf.Timestamp} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 24));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Timestamp|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setTimestampLte = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 24, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearTimestampLte = function() {
+  return this.setTimestampLte(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasTimestampLte = function() {
+  return jspb.Message.getField(this, 24) != null;
+};
+
+
+/**
+ * optional string name_descendant = 30;
+ * @return {string}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getNameDescendant = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 30, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.setNameDescendant = function(value) {
+  return jspb.Message.setOneofField(this, 30, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearNameDescendant = function() {
+  return jspb.Message.setOneofField(this, 30, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasNameDescendant = function() {
+  return jspb.Message.getField(this, 30) != null;
+};
+
+
+/**
+ * optional string name_descendant_inc = 31;
+ * @return {string}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getNameDescendantInc = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 31, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.setNameDescendantInc = function(value) {
+  return jspb.Message.setOneofField(this, 31, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearNameDescendantInc = function() {
+  return jspb.Message.setOneofField(this, 31, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasNameDescendantInc = function() {
+  return jspb.Message.getField(this, 31) != null;
+};
+
+
+/**
+ * optional StringList name_descendant_in = 32;
+ * @return {?proto.smartcore.bos.Device.Query.StringList}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getNameDescendantIn = function() {
+  return /** @type{?proto.smartcore.bos.Device.Query.StringList} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.Device.Query.StringList, 32));
+};
+
+
+/**
+ * @param {?proto.smartcore.bos.Device.Query.StringList|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setNameDescendantIn = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 32, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearNameDescendantIn = function() {
+  return this.setNameDescendantIn(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasNameDescendantIn = function() {
+  return jspb.Message.getField(this, 32) != null;
+};
+
+
+/**
+ * optional StringList name_descendant_inc_in = 33;
+ * @return {?proto.smartcore.bos.Device.Query.StringList}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getNameDescendantIncIn = function() {
+  return /** @type{?proto.smartcore.bos.Device.Query.StringList} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.Device.Query.StringList, 33));
+};
+
+
+/**
+ * @param {?proto.smartcore.bos.Device.Query.StringList|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setNameDescendantIncIn = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 33, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearNameDescendantIncIn = function() {
+  return this.setNameDescendantIncIn(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasNameDescendantIncIn = function() {
+  return jspb.Message.getField(this, 33) != null;
+};
+
+
+/**
+ * optional google.protobuf.Empty present = 40;
+ * @return {?proto.google.protobuf.Empty}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getPresent = function() {
+  return /** @type{?proto.google.protobuf.Empty} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_empty_pb.Empty, 40));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Empty|undefined} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+*/
+proto.smartcore.bos.Device.Query.Condition.prototype.setPresent = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 40, proto.smartcore.bos.Device.Query.Condition.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.clearPresent = function() {
+  return this.setPresent(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.hasPresent = function() {
+  return jspb.Message.getField(this, 40) != null;
 };
 
 
@@ -3153,7 +3669,8 @@ proto.smartcore.bos.GetDevicesMetadataRequest.prototype.toObject = function(opt_
 proto.smartcore.bos.GetDevicesMetadataRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
 readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
-includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f)
+includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f),
+query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3200,6 +3717,11 @@ proto.smartcore.bos.GetDevicesMetadataRequest.deserializeBinaryFromReader = func
       reader.readMessage(value,proto.smartcore.bos.DevicesMetadata.Include.deserializeBinaryFromReader);
       msg.setIncludes(value);
       break;
+    case 4:
+      var value = new proto.smartcore.bos.Device.Query;
+      reader.readMessage(value,proto.smartcore.bos.Device.Query.deserializeBinaryFromReader);
+      msg.setQuery(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3243,6 +3765,14 @@ proto.smartcore.bos.GetDevicesMetadataRequest.serializeBinaryToWriter = function
       3,
       f,
       proto.smartcore.bos.DevicesMetadata.Include.serializeBinaryToWriter
+    );
+  }
+  f = message.getQuery();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      proto.smartcore.bos.Device.Query.serializeBinaryToWriter
     );
   }
 };
@@ -3322,6 +3852,43 @@ proto.smartcore.bos.GetDevicesMetadataRequest.prototype.hasIncludes = function()
 };
 
 
+/**
+ * optional Device.Query query = 4;
+ * @return {?proto.smartcore.bos.Device.Query}
+ */
+proto.smartcore.bos.GetDevicesMetadataRequest.prototype.getQuery = function() {
+  return /** @type{?proto.smartcore.bos.Device.Query} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.Device.Query, 4));
+};
+
+
+/**
+ * @param {?proto.smartcore.bos.Device.Query|undefined} value
+ * @return {!proto.smartcore.bos.GetDevicesMetadataRequest} returns this
+*/
+proto.smartcore.bos.GetDevicesMetadataRequest.prototype.setQuery = function(value) {
+  return jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.GetDevicesMetadataRequest} returns this
+ */
+proto.smartcore.bos.GetDevicesMetadataRequest.prototype.clearQuery = function() {
+  return this.setQuery(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.GetDevicesMetadataRequest.prototype.hasQuery = function() {
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
 
 
 
@@ -3356,7 +3923,8 @@ proto.smartcore.bos.PullDevicesMetadataRequest.toObject = function(includeInstan
   var f, obj = {
 readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
 includes: (f = msg.getIncludes()) && proto.smartcore.bos.DevicesMetadata.Include.toObject(includeInstance, f),
-updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
+updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+query: (f = msg.getQuery()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3406,6 +3974,11 @@ proto.smartcore.bos.PullDevicesMetadataRequest.deserializeBinaryFromReader = fun
     case 4:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setUpdatesOnly(value);
+      break;
+    case 5:
+      var value = new proto.smartcore.bos.Device.Query;
+      reader.readMessage(value,proto.smartcore.bos.Device.Query.deserializeBinaryFromReader);
+      msg.setQuery(value);
       break;
     default:
       reader.skipField();
@@ -3457,6 +4030,14 @@ proto.smartcore.bos.PullDevicesMetadataRequest.serializeBinaryToWriter = functio
     writer.writeBool(
       4,
       f
+    );
+  }
+  f = message.getQuery();
+  if (f != null) {
+    writer.writeMessage(
+      5,
+      f,
+      proto.smartcore.bos.Device.Query.serializeBinaryToWriter
     );
   }
 };
@@ -3551,6 +4132,43 @@ proto.smartcore.bos.PullDevicesMetadataRequest.prototype.getUpdatesOnly = functi
  */
 proto.smartcore.bos.PullDevicesMetadataRequest.prototype.setUpdatesOnly = function(value) {
   return jspb.Message.setProto3BooleanField(this, 4, value);
+};
+
+
+/**
+ * optional Device.Query query = 5;
+ * @return {?proto.smartcore.bos.Device.Query}
+ */
+proto.smartcore.bos.PullDevicesMetadataRequest.prototype.getQuery = function() {
+  return /** @type{?proto.smartcore.bos.Device.Query} */ (
+    jspb.Message.getWrapperField(this, proto.smartcore.bos.Device.Query, 5));
+};
+
+
+/**
+ * @param {?proto.smartcore.bos.Device.Query|undefined} value
+ * @return {!proto.smartcore.bos.PullDevicesMetadataRequest} returns this
+*/
+proto.smartcore.bos.PullDevicesMetadataRequest.prototype.setQuery = function(value) {
+  return jspb.Message.setWrapperField(this, 5, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.PullDevicesMetadataRequest} returns this
+ */
+proto.smartcore.bos.PullDevicesMetadataRequest.prototype.clearQuery = function() {
+  return this.setQuery(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.PullDevicesMetadataRequest.prototype.hasQuery = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 

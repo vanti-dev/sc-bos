@@ -39,7 +39,7 @@ type lightCfg struct {
 type sceneCfg struct {
 	Name       string  `json:"name,omitempty"`       // the name of the scene
 	Title      string  `json:"title,omitempty"`      // the title of the scene, used for display
-	SetValue   int     `json:"setValue,omitempty"`   // the value on the point to activate this scene
+	SetValue   float32 `json:"setValue,omitempty"`   // the value on the point to activate this scene
 	Brightness float32 `json:"brightness,omitempty"` // the brightness to set when activating this scene
 }
 
@@ -212,7 +212,7 @@ func (l *light) findSceneByValue(sceneCmd float32) (*sceneCfg, error) {
 	}
 
 	for _, scene := range l.config.Scenes {
-		if scene.SetValue == int(sceneCmd) {
+		if scene.SetValue == sceneCmd {
 			return &scene, nil
 		}
 	}

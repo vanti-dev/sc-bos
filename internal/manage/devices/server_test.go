@@ -91,7 +91,7 @@ func TestServer_ListDevices(t *testing.T) {
 			node.HasTrait(trait.AirTemperature))
 	}
 
-	server := &Server{parentName: "test", node: n}
+	server := &Server{m: n}
 	server.ChildPageSize = 5 // force multiple pages to be read from the parent
 
 	mdNamed := func(name string) *traits.Metadata {
@@ -186,10 +186,137 @@ func TestServer_ListDevices(t *testing.T) {
 	}
 }
 
-func assertAllLights(t *testing.T, listResponse *gen.ListDevicesResponse) {
-	for i, device := range listResponse.Devices {
-		if device.GetMetadata().GetMembership().GetSubsystem() != "Lighting" {
-			t.Fatalf("device %d is not a light: %+v", i, device)
+func TestServer_GetDevicesMetadata(t *testing.T) {
+	n := node.New("test")
+
+	// create devices with different subsystems and locations
+	for i := range 10 {
+		n.Announce(fmt.Sprintf("devices/LTF-%03d", i+1),
+			node.HasMetadata(&traits.Metadata{
+				Membership: &traits.Metadata_Membership{
+					Subsystem: "Lighting",
+				},
+				Location: &traits.Metadata_Location{
+					More: map[string]string{
+						"floor": fmt.Sprintf("%d", i%3+1), // floors 1, 2, 3
+					},
+				},
+			}),
+			node.HasTrait(trait.Light))
+	}
+	for i := range 5 {
+		n.Announce(fmt.Sprintf("devices/FCU-%03d", i+1),
+			node.HasMetadata(&traits.Metadata{
+				Membership: &traits.Metadata_Membership{
+					Subsystem: "HVAC",
+				},
+				Location: &traits.Metadata_Location{
+					More: map[string]string{
+						"floor": fmt.Sprintf("%d", i%2+1), // floors 1, 2
+					},
+				},
+			}),
+			node.HasTrait(trait.AirTemperature))
+	}
+
+	server := &Server{m: n}
+
+	t.Run("all devices", func(t *testing.T) {
+		metadata, err := server.GetDevicesMetadata(context.Background(), &gen.GetDevicesMetadataRequest{
+			Includes: &gen.DevicesMetadata_Include{
+				Fields: []string{"metadata.membership.subsystem", "metadata.location.more.floor"},
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if metadata.TotalCount != 16 {
+			t.Errorf("Expected total count 16, got %d", metadata.TotalCount)
+		}
+
+		// Check field counts
+		subsystemCounts := findFieldCount(metadata.FieldCounts, "metadata.membership.subsystem")
+		if subsystemCounts == nil {
+			t.Fatal("Missing subsystem field counts")
+		}
+		if subsystemCounts.Counts["Lighting"] != 10 {
+			t.Errorf("Expected 10 Lighting devices, got %d", subsystemCounts.Counts["Lighting"])
+		}
+		if subsystemCounts.Counts["HVAC"] != 5 {
+			t.Errorf("Expected 5 HVAC devices, got %d", subsystemCounts.Counts["HVAC"])
+		}
+
+		floorCounts := findFieldCount(metadata.FieldCounts, "metadata.location.more.floor")
+		if floorCounts == nil {
+			t.Fatal("Missing floor field counts")
+		}
+		if floorCounts.Counts["1"] != 4+3 { // 4 lights + 3 hvac
+			t.Errorf("Expected 6 devices on floor 1, got %d", floorCounts.Counts["1"])
+		}
+		if floorCounts.Counts["2"] != 3+2 { // 3 lights + 2 hvac
+			t.Errorf("Expected 6 devices on floor 2, got %d", floorCounts.Counts["2"])
+		}
+		if floorCounts.Counts["3"] != 3 { // 3 lights
+			t.Errorf("Expected 3 devices on floor 3, got %d", floorCounts.Counts["3"])
+		}
+	})
+
+	t.Run("filtered by subsystem", func(t *testing.T) {
+		metadata, err := server.GetDevicesMetadata(context.Background(), &gen.GetDevicesMetadataRequest{
+			Query: &gen.Device_Query{
+				Conditions: []*gen.Device_Query_Condition{
+					{Field: "metadata.membership.subsystem", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "Lighting"}},
+				},
+			},
+			Includes: &gen.DevicesMetadata_Include{
+				Fields: []string{"metadata.location.more.floor"},
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if metadata.TotalCount != 10 {
+			t.Fatalf("Expected total count 10, got %d", metadata.TotalCount)
+		}
+
+		floorCounts := findFieldCount(metadata.FieldCounts, "metadata.location.more.floor")
+		if floorCounts == nil {
+			t.Fatal("Missing floor field counts")
+		}
+		if floorCounts.Counts["1"] != 4 {
+			t.Fatalf("Expected 4 lighting devices on floor 1, got %d", floorCounts.Counts["1"])
+		}
+		if floorCounts.Counts["2"] != 3 {
+			t.Fatalf("Expected 3 lighting devices on floor 2, got %d", floorCounts.Counts["2"])
+		}
+		if floorCounts.Counts["3"] != 3 {
+			t.Fatalf("Expected 3 lighting devices on floor 3, got %d", floorCounts.Counts["3"])
+		}
+	})
+
+	t.Run("no includes", func(t *testing.T) {
+		metadata, err := server.GetDevicesMetadata(context.Background(), &gen.GetDevicesMetadataRequest{})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if metadata.TotalCount != 16 {
+			t.Fatalf("Expected total count 16, got %d", metadata.TotalCount)
+		}
+
+		if len(metadata.FieldCounts) != 0 {
+			t.Fatalf("Expected no field counts when includes is empty, got %d", len(metadata.FieldCounts))
+		}
+	})
+}
+
+func findFieldCount(fieldCounts []*gen.DevicesMetadata_StringFieldCount, field string) *gen.DevicesMetadata_StringFieldCount {
+	for _, fc := range fieldCounts {
+		if fc.Field == field {
+			return fc
 		}
 	}
+	return nil
 }

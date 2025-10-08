@@ -19,10 +19,6 @@ type WaterJob struct {
 	Meters     []string
 }
 
-func (w *WaterJob) GetName() string {
-	return "water"
-}
-
 func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 	consumption := float32(.0)
 
@@ -57,7 +53,7 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 	body := &types.WaterConsumption{
 		Meta: types.Meta{
 			Timestamp: now,
-			Site:      w.GetSite(),
+			Site:      w.Site,
 		},
 		TodaysWaterConsumption: types.IntMeasure{
 			Value: int32(consumption),
@@ -71,11 +67,7 @@ func (w *WaterJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	err = sendFn(ctx, w.GetUrl(), bytes)
-
-	w.PreviousExecution = time.Now().UTC()
-
-	return err
+	return sendFn(ctx, w.Url, bytes)
 }
 
 func (w *WaterJob) getUnitMultiplier(ctx context.Context, meter string) (float32, error) {

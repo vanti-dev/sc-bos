@@ -23,6 +23,15 @@ Can show consumption and generation, above and below the line respectively.
 
 Compares the current power consumption of one or more sources, showing a total.
 
+### Energy Demand History Widget
+
+![Energy Demand History Widget](../assets/dashboard/widgets/energy-demand-history.png)
+
+Shows comparative or stacked historical electrical demand for one or more sources over time.
+Has similar controls to the [Energy History Widget](#energy-history-widget), but averages the kW usage over each time
+period, rather than summing the kWh used.
+Can be configured to show different power metrics such as apparent power (kVA), reactive power (kVAR), or current (A).
+
 ### Energy Power Widget
 
 ![Energy Power Widget](../assets/dashboard/widgets/energy-power-history.png)

@@ -29,10 +29,6 @@ import (
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/shared"
-	// make sure that test caching updates based on changes to these files too
-	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/ac"
-	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/gw"
-	_ "github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/hub"
 )
 
 var skipBuild = flag.Bool("skip-build", false, "skip building and running binaries")

@@ -20,10 +20,6 @@ type TemperatureJob struct {
 	Sensors []string
 }
 
-func (t *TemperatureJob) GetName() string {
-	return "temperature"
-}
-
 func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {
 	sum := .0
 	count := 0
@@ -51,7 +47,7 @@ func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {
 
 	body := &types.AverageTemperature{
 		Meta: types.Meta{
-			Site:      t.GetSite(),
+			Site:      t.Site,
 			Timestamp: time.Now(),
 		},
 		AverageTemperature: types.Float64Measure{
@@ -66,5 +62,5 @@ func (t *TemperatureJob) Do(ctx context.Context, sendFn sender) error {
 		return err
 	}
 
-	return sendFn(ctx, t.GetUrl(), bytes)
+	return sendFn(ctx, t.Url, bytes)
 }

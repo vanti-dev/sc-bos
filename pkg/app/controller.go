@@ -7,7 +7,6 @@ import (
 	"crypto/x509/pkix"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"net/http/pprof"
 	"net/url"
@@ -24,6 +23,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/account"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/interceptors"
@@ -114,7 +114,13 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	}
 
 	// configurable shared storage for more permanent data
-	store := stores.New(config.Stores)
+	storesConfig := config.Stores
+	if storesConfig == nil {
+		storesConfig = &stores.Config{}
+	}
+	storesConfig.DataDir = config.DataDir
+	storesConfig.Logger = logger.Named("stores")
+	store := stores.New(storesConfig)
 
 	certConfig := config.CertConfig
 	// Create a private key if it doesn't exist.
@@ -255,20 +261,14 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	// DevicesApi
 	var devicesApiOpts []devices.Option
 	// work out the url download links should be using for targeting this controller
-	lisHost, lisPort, _ := net.SplitHostPort(config.ListenHTTPS)
-	if lisHost == "" {
-		lisHost = config.HTTPAddr // populated via network interface scanning or config
-	}
-	if lisHost != "" {
-		hostAndPort := lisHost
-		if lisPort != "" {
-			hostAndPort = net.JoinHostPort(lisHost, lisPort)
-		}
+	if hostPort, err := config.ExternalHTTPEndpoint(); err == nil {
 		devicesApiOpts = append(devicesApiOpts, devices.WithDownloadUrlBase(url.URL{
 			Scheme: "https",
-			Host:   hostAndPort,
+			Host:   hostPort,
 			Path:   "/dl/devices",
 		}))
+	} else {
+		logger.Error("failed to determine external http endpoint - download URLs unavailable", zap.Error(err))
 	}
 	devicesApi := devices.NewServer(rootNode, devicesApiOpts...)
 	devicesApi.Register(grpcServer)
@@ -337,6 +337,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Enrollment:       enrollServer,
 		Logger:           logger,
 		Node:             rootNode,
+		Devices:          gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, devicesApi)),
 		Tasks:            &task.Group{},
 		Database:         db,
 		Stores:           store,
@@ -410,6 +411,7 @@ type Controller struct {
 	// services for drivers/automations
 	Logger          *zap.Logger
 	Node            *node.Node
+	Devices         gen.DevicesApiClient
 	Tasks           *task.Group
 	Database        *bolthold.Store
 	TokenValidators *token.ValidatorSet
@@ -497,26 +499,6 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 
 	err = multierr.Append(err, group.Wait())
 	return
-}
-
-func (c *Controller) grpcEndpoint() (string, error) {
-	lisAddr := c.SystemConfig.ListenGRPC
-	addr := c.SystemConfig.GRPCAddr
-	_, p, err := net.SplitHostPort(lisAddr)
-	if err != nil {
-		return "", err
-	}
-	return net.JoinHostPort(addr, p), nil
-}
-
-func (c *Controller) httpEndpoint() (string, error) {
-	lisAddr := c.SystemConfig.ListenHTTPS
-	addr := c.SystemConfig.HTTPAddr
-	_, p, err := net.SplitHostPort(lisAddr)
-	if err != nil {
-		return "", err
-	}
-	return net.JoinHostPort(addr, p), nil
 }
 
 const (

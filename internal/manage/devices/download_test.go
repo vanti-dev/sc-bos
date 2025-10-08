@@ -87,7 +87,7 @@ func TestServer_DownloadDevicesHTTPHandler(t *testing.T) {
 	ct := newCsvTester(t, res.Body)
 	assertHeaderOrder(t, ct.headerRow)
 	// the query should include this
-	ct.assertCellValue("d1", "md.name", "d1")
+	ct.assertCellValue("d1", "name", "d1")
 	ct.assertCellValue("d1", "md.location.floor", "01")
 	ct.assertCellValue("d1", "meter.usage", "200.000")
 	ct.assertCellValue("d1", "meter.unit", "tests per second")
@@ -187,8 +187,8 @@ func newCsvTester(t *testing.T, r io.Reader) *csvTester {
 		headerIndex[col] = i
 	}
 
-	if _, ok := headerIndex["md.name"]; !ok {
-		t.Fatalf("expected md.name column in header")
+	if _, ok := headerIndex["name"]; !ok {
+		t.Fatalf("expected name column in header")
 	}
 
 	ct := &csvTester{
@@ -213,7 +213,7 @@ func newCsvTester(t *testing.T, r io.Reader) *csvTester {
 			t.Errorf("expected %d columns, got %d, for line %d", len(header), len(row), i)
 		}
 		ct.rows = append(ct.rows, row)
-		name := row[ct.headerIndex["md.name"]]
+		name := row[ct.headerIndex["name"]]
 		ct.rowsByName[name] = row
 	}
 
@@ -247,17 +247,22 @@ func assertHeaderOrder(t *testing.T, row []string) {
 	if len(row) == 0 {
 		t.Fatalf("expected non-empty header row")
 	}
-	if row[0] != "md.name" {
-		t.Fatalf("expected first column to be 'md.name', got %q", row[0])
+	if row[0] != "name" {
+		t.Fatalf("expected first column to be 'name', got %q", row[0])
 	}
 
 	if len(row) == 1 {
 		return // no metadata
 	}
 
-	// headers should start with md.* cols
+	// headers should start with name, then md.* cols, then everything else.
+	// There should be no md.name column, as that would duplicate "name" in the first column.
 	lastMdIndex := -1
-	for i, col := range row[1:] {
+	for i, col := range row {
+		// skip the first column which is "name"
+		if i == 0 {
+			continue
+		}
 		if lastMdIndex >= 0 {
 			if strings.HasPrefix(col, "md.") {
 				t.Fatalf("expected md.* cols to be before non-md cols, got %q at %d", col, i)
@@ -270,7 +275,12 @@ func assertHeaderOrder(t *testing.T, row []string) {
 	}
 	if lastMdIndex == -1 {
 		// there were no non-md cols
-		lastMdIndex = len(row) - 1
+		lastMdIndex = 0
+	}
+	for i, s := range row[1:lastMdIndex] {
+		if s == "md.name" {
+			t.Fatalf("expected no md.name column, found at index %d", i+1)
+		}
 	}
 
 	// headers should be sorted: md.* cols sorted as one group, then non-md cols sorted as the rest

@@ -1,8 +1,9 @@
 import {closeResource, newActionTracker, newResourceValue} from '@/api/resource.js';
-import {describeTransport, pullTransport} from '@/api/sc/traits/transport.js';
+import {describeTransport, listTransportHistory, pullTransport} from '@/api/sc/traits/transport.js';
 import {toQueryObject, watchResource} from '@/util/traits.js';
+import {isNullOrUndef} from '@/util/types.js';
 import {Transport} from '@vanti-dev/sc-bos-ui-gen/proto/transport_pb';
-import {computed, onScopeDispose, reactive, toRefs, toValue} from 'vue';
+import {computed, onScopeDispose, reactive, ref, toRefs, toValue, watch} from 'vue';
 
 /**
  * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/transport_pb').DescribeTransportRequest} DescribeTransportRequest
@@ -69,6 +70,78 @@ export function useDescribeTransport(query) {
 }
 
 /**
+ * Returns a ref containing the transport history for the given transport name for the given period.
+ * Name must implement a TransportHistory trait aspect.
+ *
+ * @param {import('vue').MaybeRefOrGetter<string>} name - The name of the transport device
+ * @param {import('vue').MaybeRefOrGetter<Period.AsObject>} period - The start, end period
+ * @return {import('vue').UnwrapRef<Array<TransportRecord.AsObject|null>>}
+ */
+export function useTransportHistory(name, period) {
+  const transportFromT = ref(/** @type {Array<null | TransportRecord.AsObject>} */ []);
+  const fetching = ref(/**@type {null | {period: Period.AsObject, cancel: () => void}}*/ null);
+
+  const periodsDifferent = (a, b) => {
+    return a.startTime.seconds !== b.startTime.seconds &&
+    a.endTime.seconds !== b.endTime.seconds;
+  };
+  watch([() => toValue(name), () => toValue(period)], async ([name, period]) => {
+    const cancelled = () => {
+      if (fetching.value === null) return true;
+      return periodsDifferent(fetching.value.period, period);
+    };
+
+    if (fetching.value !== null) {
+      if (!periodsDifferent(fetching.value.period, period)) {
+        // already fetching this timestamp
+        return;
+      }
+      // cancel the previous fetch
+      fetching.value.cancel();
+    }
+
+    // if we don't have a name or timestamp, clear the history
+    if (isNullOrUndef(name) || isNullOrUndef(period)) {
+      fetching.value = null;
+      return;
+    }
+    transportFromT.value = [];
+
+    // note: currently no way to cancel unary RPCs,
+    // see: https://github.com/grpc/grpc-web/issues/946
+    fetching.value = {period, cancel: () => {}};
+    try {
+      const req = {
+        name,
+        pageSize: 1000,
+        period: period,
+      };
+
+      do {
+        const res = await listTransportHistory(req, {});
+        if (res.transportRecordsList.length === 0) break; // just in case, no infinite loop
+        req.pageToken = res.nextPageToken;
+        transportFromT.value.push(...res.transportRecordsList);
+        if (cancelled()) {
+          return;
+        }
+      } while (req.pageToken && req.pageToken !== '');
+
+    } catch (e) {
+      if (!cancelled()) {
+        console.warn('Failed to fetch transport history', period, e);
+      }
+    } finally {
+      if (!cancelled()) {
+        fetching.value = null;
+      }
+    }
+  }, {immediate: true});
+
+  return transportFromT;
+}
+
+/**
  * Convert a proto enum value to a display name. e.g. "DOOR_OPEN" -> "Door Open"
  * replace underscores with spaces, capitalize the first letter of each word
  *
@@ -104,6 +177,11 @@ export function useTransport(value, support = null) {
     return all;
   }, {});
 
+  const operatingModeById = Object.entries(Transport.OperatingMode).reduce((all, [name, id]) => {
+    all[id] = name;
+    return all;
+  }, {});
+
   const doorStatusById = Object.entries(Transport.Door.DoorStatus).reduce((all, [name, id]) => {
     all[id] = name;
     return all;
@@ -112,7 +190,16 @@ export function useTransport(value, support = null) {
   const actualPosition = computed(() => {
     const v = _v.value;
     if (!v) return '';
-    return v.actualPosition?.floor ?? '';
+    if (v.actualPosition?.floor && v.actualPosition?.floor !== '') {
+      return v.actualPosition?.floor;
+    }
+    if (v.actualPosition?.title && v.actualPosition?.title !== '') {
+      return v.actualPosition?.title;
+    }
+    if (v.actualPosition?.id && v.actualPosition?.id !== '') {
+      return v.actualPosition?.id;
+    }
+    return '';
   });
 
   const doorStatus = computed(() => {
@@ -121,7 +208,7 @@ export function useTransport(value, support = null) {
     let res = [];
     for (const door of v.doorsList) {
       res.push({
-        label: door.title,
+        label: door.title !== '' ? door.title : 'Door',
         value: enumToDisplayName(doorStatusById[door.status] ?? '')
       });
     }
@@ -132,6 +219,12 @@ export function useTransport(value, support = null) {
     const v = _v.value;
     if (!v) return '';
     return enumToDisplayName(movingDirectionById[v.movingDirection] ?? '');
+  });
+
+  const operatingMode = computed(() => {
+    const v = _v.value;
+    if (!v) return '';
+    return enumToDisplayName(operatingModeById[v.operatingMode] ?? '');
   });
 
   const nextDestination = computed(() => {
@@ -155,9 +248,8 @@ export function useTransport(value, support = null) {
   });
 
   const loadStr = computed(() => {
-    if (load.value)
-    {
-        return `${load.value} ${loadUnit.value}`;
+    if (load.value) {
+      return `${load.value} ${loadUnit.value}`;
     }
     return '-';
   });
@@ -167,14 +259,19 @@ export function useTransport(value, support = null) {
       label: 'Actual Position',
       value: actualPosition.value
     },
-    {
-      label: 'Moving Direction',
-      value: movingDirection.value
-    },
-    {
-      label: 'Next Destination',
-      value: nextDestination.value
-    }];
+      {
+        label: 'Moving Direction',
+        value: movingDirection.value
+      },
+      {
+        label: 'Next Destination',
+        value: nextDestination.value
+      },
+      {
+        label: 'Operating Mode',
+        value: operatingMode.value
+      }
+    ];
 
     for (const door of doorStatus.value) {
       t.push(door);
@@ -191,6 +288,7 @@ export function useTransport(value, support = null) {
     doorStatus,
     movingDirection,
     nextDestination,
+    operatingMode,
     loadStr,
     table
   };

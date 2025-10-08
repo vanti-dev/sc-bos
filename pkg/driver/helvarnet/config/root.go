@@ -30,9 +30,10 @@ type Root struct {
 
 	ConnectTimeout *jsontypes.Duration `json:"connectTimeout,omitempty"`
 
-	Lights         []*Device `json:"lights,omitempty"`
-	LightingGroups []*Device `json:"lightingGroups,omitempty"`
-	Pirs           []*Device `json:"pirs,omitempty"`
+	EmergencyLights []*Device `json:"emergencyLights,omitempty"`
+	Lights          []*Device `json:"lights,omitempty"`
+	LightingGroups  []*Device `json:"lightingGroups,omitempty"`
+	Pirs            []*Device `json:"pirs,omitempty"`
 	// RefreshOccupancy is the duration at which the pir sensors refresh their occupancy status
 	// Defaults to every 10 seconds
 	RefreshOccupancy *jsontypes.Duration `json:"refreshOccupancy,omitempty,omitzero"`
@@ -60,12 +61,16 @@ type Root struct {
 // GroupNumber is the Helvarnet group number.
 // IpAddress is the device's IP address.
 // Meta contains additional metadata for the device.
+// DurationTestLength is the length of the duration test for emergency lights, if known.
+// TopicPrefix is the topic prefix to use for the UDMI automation, without the trailing '/'. If empty, the device name will be used.
 type Device struct {
-	Name        string           `json:"name,omitempty"`
-	Address     string           `json:"address,omitempty"`
-	GroupNumber *int             `json:"groupNumber,omitempty"`
-	IpAddress   string           `json:"ipAddress,omitempty"`
-	Meta        *traits.Metadata `json:"meta,omitempty"`
+	Name               string              `json:"name,omitempty"`
+	Address            string              `json:"address,omitempty"`
+	GroupNumber        *int                `json:"groupNumber,omitempty"`
+	IpAddress          string              `json:"ipAddress,omitempty"`
+	Meta               *traits.Metadata    `json:"meta,omitempty"`
+	DurationTestLength *jsontypes.Duration `json:"durationTestLength,omitempty,omitzero"`
+	TopicPrefix        string              `json:"topicPrefix,omitempty"`
 }
 
 // Scene represents a HelvarNet lighting scene, which is a combination of a block (address), scene, and title.
@@ -129,13 +134,34 @@ func ParseConfig(data []byte) (Root, error) {
 		root.RetrySleepDuration = &jsontypes.Duration{Duration: 500 * time.Microsecond}
 	}
 
+	for _, device := range root.EmergencyLights {
+		if device.TopicPrefix == "" {
+			device.TopicPrefix = device.Name
+		}
+	}
+	for _, device := range root.Lights {
+		if device.TopicPrefix == "" {
+			device.TopicPrefix = device.Name
+		}
+	}
+	for _, device := range root.LightingGroups {
+		if device.TopicPrefix == "" {
+			device.TopicPrefix = device.Name
+		}
+	}
+	for _, device := range root.Pirs {
+		if device.TopicPrefix == "" {
+			device.TopicPrefix = device.Name
+		}
+	}
+
 	return root, nil
 }
 
 type State struct {
 	State       string              `json:"state,omitempty"`
 	Description string              `json:"description,omitempty"`
-	FlagValue   int                 `json:"flagValue,omitempty"`
+	FlagValue   uint32              `json:"flagValue,omitempty"`
 	Level       gen.StatusLog_Level `json:"smartcoreStatusLevel,omitempty"`
 }
 
@@ -164,4 +190,25 @@ var DeviceStatuses = []State{
 	{"SevereError", "Indicates that a load is either over temperature or drawing too much current, or both", 0x10000000, gen.StatusLog_REDUCED_FUNCTION},
 	{"BadReply", "Indicates that a reply to a query was malformed", 0x20000000, gen.StatusLog_NOTICE},
 	{"DeviceMismatch", "The actual load type does not match the expected type", 0x80000000, gen.StatusLog_NOTICE},
+}
+
+func GetStatusListFromFlag(flag uint32) []string {
+
+	if flag == 0 {
+		return []string{"OK"}
+	}
+
+	var statusList []string
+	for _, ds := range DeviceStatuses {
+		if flag&ds.FlagValue != 0 {
+			statusList = append(statusList, ds.State)
+		}
+	}
+
+	if len(statusList) == 0 {
+		// There are some flags which are NSReserved / Internal use only, so if none of the known flags are set, just return OK
+		statusList = append(statusList, "OK")
+	}
+
+	return statusList
 }

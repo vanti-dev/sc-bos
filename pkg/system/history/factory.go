@@ -17,6 +17,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/history"
 	"github.com/vanti-dev/sc-bos/pkg/history/boltstore"
 	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
+	"github.com/vanti-dev/sc-bos/pkg/history/sqlitestore"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/history/config"
@@ -127,6 +128,29 @@ func (s *System) applyConfig(ctx context.Context, cfg config.Root) error {
 				}
 			}
 			return st
+		}
+	case config.StorageTypeSqlite:
+		store = func(source string) history.Store {
+			db, err := s.stores.SqliteHistory(ctx)
+			if err != nil {
+				s.logger.Error("failed to create sqlite store",
+					zap.Error(err),
+					zap.String("source", source),
+				)
+				return nil
+			}
+
+			var opts []sqlitestore.WriteOption
+			if ttl := cfg.Storage.TTL; ttl != nil {
+				if ttl.MaxAge.Duration > 0 {
+					opts = append(opts, sqlitestore.WithMaxAge(ttl.MaxAge.Duration))
+				}
+				if ttl.MaxCount > 0 {
+					opts = append(opts, sqlitestore.WithMaxCount(ttl.MaxCount))
+				}
+			}
+
+			return db.OpenStore(source, opts...)
 		}
 	default:
 		return fmt.Errorf("unsuported storage type %s", cfg.Storage.Type)

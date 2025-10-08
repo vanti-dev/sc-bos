@@ -1,4 +1,4 @@
-import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
+import {convertProperties, fieldMaskFromObject, setProperties, timestampFromObject} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setCollection, setValue} from '@/api/resource';
 import {trackAction} from '@/api/resource.js';
@@ -13,6 +13,7 @@ import {
   PullDevicesMetadataRequest,
   PullDevicesRequest
 } from '@vanti-dev/sc-bos-ui-gen/proto/devices_pb';
+import {Empty} from 'google-protobuf/google/protobuf/empty_pb.js';
 
 /**
  * @param {Partial<ListDevicesRequest.AsObject>} request
@@ -142,13 +143,26 @@ function deviceQueryConditionFromObject(obj) {
   const dst = new Device.Query.Condition();
   setProperties(dst, obj, 'field',
       'stringEqual', 'stringEqualFold',
-      'stringContains', 'stringContainsFold'
+      'stringContains', 'stringContainsFold',
+      'nameDescendant', 'nameDescendantInc'
   );
   if (obj.stringIn) {
     dst.setStringIn(new Device.Query.StringList().setStringsList(obj.stringIn.stringsList));
   }
   if (obj.stringInFold) {
     dst.setStringInFold(new Device.Query.StringList().setStringsList(obj.stringInFold.stringsList));
+  }
+  if (obj.nameDescendantIn) {
+    dst.setNameDescendantIn(new Device.Query.StringList().setStringsList(obj.nameDescendantIn.stringsList));
+  }
+  if (obj.nameDescendantIncIn) {
+    dst.setNameDescendantIncIn(new Device.Query.StringList().setStringsList(obj.nameDescendantIncIn.stringsList));
+  }
+  convertProperties(dst, obj, timestampFromObject,
+      'timestampEqual', 'timestampGt', 'timestampGte', 'timestampLt', 'timestampLte');
+
+  if (obj.present) {
+    dst.setPresent(new Empty())
   }
   return dst;
 }
@@ -175,6 +189,7 @@ function getDevicesMetadataRequestFromObject(obj) {
   const dst = new GetDevicesMetadataRequest();
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setIncludes(devicesMetadataIncludeFromObject(obj.includes));
+  dst.setQuery(deviceQueryFromObject(obj.query));
   return dst;
 }
 
@@ -189,6 +204,7 @@ function pullDevicesMetadataRequestFromObject(obj) {
   setProperties(dst, obj, 'updatesOnly');
   dst.setReadMask(fieldMaskFromObject(obj.readMask));
   dst.setIncludes(devicesMetadataIncludeFromObject(obj.includes));
+  dst.setQuery(deviceQueryFromObject(obj.query));
   return dst;
 }
 

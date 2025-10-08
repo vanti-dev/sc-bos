@@ -5,7 +5,8 @@
     <v-tooltip location="bottom">
       <template #activator="{ props: _props }">
         <span v-bind="_props">
-          <span>{{ powerUseStr }}</span>
+          <span v-if="realPower">{{ powerUseStr }}</span>
+          <span v-else-if="current">{{ currentStr }} </span>
           <v-icon end size="20">mdi-meter-electric-outline</v-icon>
         </span>
       </template>
@@ -35,8 +36,9 @@ const props = defineProps({
   }
 });
 
-const {realPower, realPowerUnit} = useElectricDemand(() => props.value);
+const {realPower, realPowerUnit, current, currentUnit} = useElectricDemand(() => props.value);
 const powerUseStr = computed(() => format(realPower.value, realPowerUnit.value));
+const currentStr = computed(() => format(current.value, currentUnit.value));
 </script>
 
 <style scoped>

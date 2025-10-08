@@ -40,9 +40,9 @@ func (f factory) New(services auto.Services) service.Lifecycle {
 }
 
 func (a *autoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
-	logger := a.Logger.Named(cfg.Name).With(zap.String("baseUrl", cfg.BaseUrl))
+	logger := a.Logger.Named(cfg.Name)
 
-	jobs := job.FromConfig(cfg, logger, a.Node)
+	jobs := job.FromConfig(cfg, a.Database, AutoName, cfg.Name, logger, a.Node)
 
 	if len(jobs) < 1 {
 		return nil

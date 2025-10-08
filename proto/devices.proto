@@ -4,6 +4,7 @@ package smartcore.bos;
 
 option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 
+import "google/protobuf/empty.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
 import "traits/metadata.proto";
@@ -29,7 +30,6 @@ message Device {
     message Condition {
       // The name of a field relative to Device using '.' as a path separator.
       // For example "metadata.membership.group".
-      // If absent then any field may be matched against the value.
       string field = 1;
       oneof value {
         // Compare the field to this string using a case sensitive comparison
@@ -48,6 +48,41 @@ message Device {
         // Compare the field to any of these strings using a simple unicode case folding comparison.
         // The server may have limits on the number of strings that can be compared.
         StringList string_in_fold = 7;
+
+        // The condition matches if the field is equal to this timestamp.
+        google.protobuf.Timestamp timestamp_equal = 20;
+        // The condition matches if the field is greater than this timestamp.
+        google.protobuf.Timestamp timestamp_gt = 21;
+        // The condition matches if the field is greater than or equal to this timestamp.
+        google.protobuf.Timestamp timestamp_gte = 22;
+        // The condition matches if the field is less than this timestamp.
+        google.protobuf.Timestamp timestamp_lt = 23;
+        // The condition matches if the field is less than or equal to this timestamp.
+        google.protobuf.Timestamp timestamp_lte = 24;
+
+        // The condition matches if the field is a descendant of this name.
+        // For example "a/b" would match "a/b/c" but not "a/bc".
+        //
+        // Names are used to identify resources: devices, services, etc.
+        // Names are usually comprised of '/' separated path segments indicating a hierarchy,
+        // for example "a/b/c" is a child of "a/b".
+        // Some of the authorization claims use this hierarchy to grant access to collections of resources.
+        string name_descendant = 30;
+        // The condition matches if the field is equal to or a descendant of this name.
+        // For example "a/b" would match "a/b" and "a/b/c" but not "a/bc".
+        string name_descendant_inc = 31;
+        // The condition matches if the field is a descendant of any of these names.
+        // The server may have limits on the number of names that can be compared.
+        // See the name_descendant description for details of how descendant matching works.
+        StringList name_descendant_in = 32;
+        // The condition matches if the field is equal to or a descendant of any of these names.
+        // The server may have limits on the number of names that can be compared.
+        // See the name_descendant_inc description for details of how descendant matching works.
+        StringList name_descendant_inc_in = 33;
+
+        // The condition matches if the field is present.
+        // Default values are not present unless explicit presences is tracked for the field.
+        google.protobuf.Empty present = 40;
 
         // there's room here for additional rhs values for the field, but we don't need any
       }
@@ -149,6 +184,8 @@ message GetDevicesMetadataRequest {
   // Which fields to include in the metadata calculations.
   // If absent DeviceMetadata.field_counts will be empty.
   DevicesMetadata.Include includes = 3;
+  // A query for filtering the devices that will be included in the metadata calculations.
+  Device.Query query = 4;
 }
 
 message PullDevicesMetadataRequest {
@@ -162,6 +199,8 @@ message PullDevicesMetadataRequest {
   // When true the device will only send changes to the resource value.
   // The default behaviour is to send the current value immediately followed by any updates as they happen.
   bool updates_only = 4;
+  // A query for filtering the devices that will be included in the metadata calculations.
+  Device.Query query = 5;
 }
 
 message PullDevicesMetadataResponse {

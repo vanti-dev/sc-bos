@@ -1,52 +1,116 @@
 package node
 
 import (
-	"context"
-	"errors"
+	"fmt"
+	"slices"
+	"strings"
 
-	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
+	"github.com/vanti-dev/sc-bos/internal/node/nodeopts"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-var MetadataTraitNotSupported = errors.New("metadata is not supported")
-
-type MetadataChange = metadatapb.CollectionChange
-
-// ListAllMetadata returns a slice containing all metadata set via Announce.
-func (n *Node) ListAllMetadata(opts ...resource.ReadOption) []*traits.Metadata {
-	return n.allMetadata.ListMetadata(opts...)
-}
-
-// PullAllMetadata returns a chan that emits MetadataChange whenever Announce or that announcement is undone.
-func (n *Node) PullAllMetadata(ctx context.Context, opts ...resource.ReadOption) <-chan MetadataChange {
-	return n.allMetadata.PullAllMetadata(ctx, opts...)
-}
-
-func (n *Node) mergeMetadata(name string, md *traits.Metadata) (Undo, error) {
-	for i := range 5 {
-		_, err := n.allMetadata.MergeMetadata(name, md, resource.WithCreateIfAbsent())
-		if isConcurrentUpdateDetectedError(err) && i < 4 {
-			n.Logger.Debug("writing metadata, will try again", zap.Int("attempt", i), zap.String("name", name))
-			continue
-		}
-		if err != nil {
-			return NilUndo, err
-		}
-		break // no err
+// mergeAllMetadata uses the metadatapb.Merge algorithm to merge multiple metadata objects into one.
+// The input metadata objects will not be modified.
+// Metadata at higher indexes in the mds slice will override metadata at lower indexes.
+func mergeAllMetadata(name string, mds ...*traits.Metadata) *traits.Metadata {
+	if len(mds) == 0 {
+		return nil
+	}
+	if len(mds) == 1 {
+		md := mds[0]
+		md.Name = name
+		// for consistency, sort the traits by name
+		slices.SortFunc(md.Traits, func(a, b *traits.TraitMetadata) int {
+			return strings.Compare(a.Name, b.Name)
+		})
+		return md
 	}
 
-	undo := Undo(func() {
-		_, _ = n.allMetadata.DeleteMetadata(name, resource.WithAllowMissing(true))
-	})
-
-	return undo, nil
+	md := &traits.Metadata{
+		Name: name,
+	}
+	for _, m := range mds {
+		m = proto.Clone(m).(*traits.Metadata)
+		metadatapb.Merge(md, m)
+		md = m
+	}
+	return md
 }
 
-func (n *Node) isNotFound(err error) bool {
-	return status.Code(err) == codes.NotFound
+// metadataList is a list of metadata entries, each with a unique, strictly increasing, ID.
+type metadataList []metadataEntry
+
+type metadataEntry struct {
+	id uint64
+	md *traits.Metadata
+}
+
+func (ml *metadataList) add(md *traits.Metadata) uint64 {
+	if len(*ml) == 0 {
+		*ml = append(*ml, metadataEntry{id: 0, md: md})
+		return 0
+	}
+	id := (*ml)[len(*ml)-1].id + 1
+	*ml = append(*ml, metadataEntry{id: id, md: md})
+	return id
+}
+
+func (ml *metadataList) remove(id uint64) {
+	i, found := slices.BinarySearchFunc(*ml, id, func(e metadataEntry, id uint64) int {
+		if e.id < id {
+			return -1
+		} else if e.id > id {
+			return 1
+		}
+		return 0
+	})
+	if !found {
+		return
+	}
+	*ml = slices.Replace(*ml, i, i+1)
+}
+
+func (ml *metadataList) merge() *traits.Metadata {
+	if len(*ml) == 0 {
+		return nil
+	}
+	if len(*ml) == 1 {
+		return (*ml)[0].md
+	}
+
+	name := ""
+	mds := make([]*traits.Metadata, len(*ml))
+	for i, entry := range *ml {
+		mds[i] = entry.md
+		if name == "" && entry.md.Name != "" {
+			name = entry.md.Name
+		}
+	}
+	return mergeAllMetadata(name, mds...)
+}
+
+func (ml *metadataList) isEmpty() bool {
+	return len(*ml) == 0
+}
+
+func (ml *metadataList) updateCollection(c nodeopts.Store, opts ...resource.WriteOption) error {
+	if ml.isEmpty() {
+		return fmt.Errorf("no name: empty metadata list")
+	}
+	name := (*ml)[0].md.Name
+	if name == "" {
+		return fmt.Errorf("no name: list item has no name")
+	}
+	md := ml.merge()
+	opts = append(opts, resource.WithUpdatePaths("name", "metadata"), resource.InterceptAfter(func(old, new proto.Message) {
+		newDevice := new.(*gen.Device)
+		newDevice.Metadata = md
+	}))
+	_, err := c.Update(&gen.Device{Name: name}, opts...)
+	return err
 }
