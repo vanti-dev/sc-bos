@@ -689,7 +689,12 @@ func getDeviceOkHealthCheck(s int64) *gen.HealthCheck {
 	} else {
 		reliability.State = gen.HealthCheck_Reliability_RELIABLE
 		statuses := config.GetStatusListFromFlag(s)
-
+		if statuses[0] == "OK" {
+			check.State = gen.HealthCheck_Check_NORMAL
+		} else {
+			// Any other status for the normal check is considered abnormal, even if it is a minor warning
+			check.State = gen.HealthCheck_Check_ABNORMAL
+		}
 	}
 
 	return &gen.HealthCheck{
