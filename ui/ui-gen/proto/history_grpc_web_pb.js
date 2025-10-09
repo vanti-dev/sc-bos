@@ -35,6 +35,8 @@ var traits_occupancy_sensor_pb = require('@smart-core-os/sc-api-grpc-web/traits/
 var traits_air_quality_sensor_pb = require('@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb.js')
 
 var meter_pb = require('./meter_pb.js')
+
+var sound_sensor_pb = require('./sound_sensor_pb.js')
 const proto = {};
 proto.smartcore = {};
 proto.smartcore.bos = require('./history_pb.js');
@@ -775,6 +777,119 @@ proto.smartcore.bos.AirQualitySensorHistoryPromiseClient.prototype.listAirQualit
       request,
       metadata || {},
       methodDescriptor_AirQualitySensorHistory_ListAirQualityHistory);
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.SoundSensorHistoryClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.SoundSensorHistoryPromiseClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.ListSoundLevelHistoryRequest,
+ *   !proto.smartcore.bos.ListSoundLevelHistoryResponse>}
+ */
+const methodDescriptor_SoundSensorHistory_ListSoundLevelHistory = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.SoundSensorHistory/ListSoundLevelHistory',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.ListSoundLevelHistoryRequest,
+  proto.smartcore.bos.ListSoundLevelHistoryResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListSoundLevelHistoryRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListSoundLevelHistoryResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.ListSoundLevelHistoryRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListSoundLevelHistoryResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListSoundLevelHistoryResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.SoundSensorHistoryClient.prototype.listSoundLevelHistory =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.SoundSensorHistory/ListSoundLevelHistory',
+      request,
+      metadata || {},
+      methodDescriptor_SoundSensorHistory_ListSoundLevelHistory,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.ListSoundLevelHistoryRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.ListSoundLevelHistoryResponse>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.SoundSensorHistoryPromiseClient.prototype.listSoundLevelHistory =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.SoundSensorHistory/ListSoundLevelHistory',
+      request,
+      metadata || {},
+      methodDescriptor_SoundSensorHistory_ListSoundLevelHistory);
 };
 
 

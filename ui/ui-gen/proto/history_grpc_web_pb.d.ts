@@ -94,6 +94,20 @@ export class AirQualitySensorHistoryClient {
 
 }
 
+export class SoundSensorHistoryClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  listSoundLevelHistory(
+    request: history_pb.ListSoundLevelHistoryRequest,
+    metadata: grpcWeb.Metadata | undefined,
+    callback: (err: grpcWeb.RpcError,
+               response: history_pb.ListSoundLevelHistoryResponse) => void
+  ): grpcWeb.ClientReadableStream<history_pb.ListSoundLevelHistoryResponse>;
+
+}
+
 export class HistoryAdminApiPromiseClient {
   constructor (hostname: string,
                credentials?: null | { [index: string]: string; },
@@ -168,6 +182,18 @@ export class AirQualitySensorHistoryPromiseClient {
     request: history_pb.ListAirQualityHistoryRequest,
     metadata?: grpcWeb.Metadata
   ): Promise<history_pb.ListAirQualityHistoryResponse>;
+
+}
+
+export class SoundSensorHistoryPromiseClient {
+  constructor (hostname: string,
+               credentials?: null | { [index: string]: string; },
+               options?: null | { [index: string]: any; });
+
+  listSoundLevelHistory(
+    request: history_pb.ListSoundLevelHistoryRequest,
+    metadata?: grpcWeb.Metadata
+  ): Promise<history_pb.ListSoundLevelHistoryResponse>;
 
 }
 
