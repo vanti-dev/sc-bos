@@ -12,6 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/soundsensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 )
 
@@ -285,6 +286,42 @@ func (s *Server) getTraitInfo() map[string]traitInfo {
 				return openClosePositionsToRow(data), nil
 			},
 		},
+		string(soundsensorpb.TraitName): {
+			headers: []string{"sound.soundpressurelevel"},
+			get: func(ctx context.Context, name string) (map[string]string, error) {
+				c := gen.NewSoundSensorApiClient(s.m.ClientConn())
+				data, err := c.GetSoundLevel(ctx, &gen.GetSoundLevelRequest{Name: name})
+				if err != nil {
+					return nil, err
+				}
+				return soundLevelToRow(data), nil
+			},
+			history: func(name string, period *timepb.Period, pageSize int32) *historyCursor {
+				c := gen.NewSoundSensorHistoryClient(s.m.ClientConn())
+				return &historyCursor{
+					getPage: func(ctx context.Context, token string) ([]historyRecord, string, error) {
+						page, err := c.ListSoundLevelHistory(ctx, &gen.ListSoundLevelHistoryRequest{
+							Name:      name,
+							PageToken: token,
+							PageSize:  pageSize,
+							Period:    period,
+						})
+						if err != nil {
+							return nil, "", err
+						}
+
+						records := make([]historyRecord, 0, len(page.SoundLevelRecords))
+						for _, record := range page.SoundLevelRecords {
+							records = append(records, historyRecord{
+								at:   record.GetRecordTime().AsTime(),
+								vals: soundLevelToRow(record.GetSoundLevel()),
+							})
+						}
+						return records, page.NextPageToken, nil
+					},
+				}
+			},
+		},
 	}
 }
 
@@ -470,4 +507,10 @@ func openClosePositionsToRow(d *traits.OpenClosePositions) map[string]string {
 	pos := d.States[0]
 	vals["openclose.openpercent"] = fmt.Sprintf("%.1f", pos.OpenPercent)
 	return vals
+}
+
+func soundLevelToRow(d *gen.SoundLevel) map[string]string {
+	return map[string]string{
+		"sound.pressurelevel": fmt.Sprintf("%.1f", d.GetSoundPressureLevel()),
+	}
 }
