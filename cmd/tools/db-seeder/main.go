@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"path"
+	"slices"
 	"sync"
 	"time"
 
@@ -45,15 +46,17 @@ func main() {
 		panic(err)
 	}
 
-	aqs, occs, meters, err := parseZoneConfig(appConf)
+	var sd seedDevices
+	err = parseZoneConfig(&sd, appConf)
 	if err != nil {
 		panic(err)
 	}
 
-	sd, err := parseDeviceConfig(appConf)
+	err = parseDeviceConfig(&sd, appConf)
 	if err != nil {
 		panic(err)
 	}
+	sd.normalise()
 
 	ctx := context.Background()
 
@@ -84,58 +87,12 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for _, aq := range aqs {
-			err = SeedAirQuality(ctx, db, aq.Name, lookBack)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("seeded air quality zone %s\n", aq.Name)
-		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, occ := range occs {
-			err = SeedOccupancy(ctx, db, occ.Name, lookBack)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("seeded occupancycfg zone %s\n", occ.Name)
-		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, mtr := range meters {
-			err = SeedMeter(ctx, db, mtr.Name, lookBack)
-			if err != nil {
-				panic(err)
-			}
-			for name, group := range mtr.MeterGroups {
-				for _, met := range group {
-					err = SeedMeter(ctx, db, met, lookBack)
-					if err != nil {
-						panic(err)
-					}
-					fmt.Printf("seeded meter %s in group %s in zone %s\n", met, name, mtr.Name)
-				}
-				fmt.Printf("seeded meter group %s in zone %s\n", name, mtr.Name)
-			}
-			fmt.Printf("seeded meter zone %s\n", mtr.Name)
-		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
 		for _, d := range sd.airQuality {
-			err = SeedAirQuality(ctx, db, d, lookBack)
+			err = SeedAirTemperature(ctx, db, d, lookBack)
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("seeded air quality device %s\n", d)
+			fmt.Printf("seeded air temperature device %s\n", d)
 		}
 	}()
 
@@ -143,18 +100,18 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for _, d := range sd.electric {
-			err = SeedElectric(ctx, db, d, lookBack)
+			err = SeedMeter(ctx, db, d, lookBack)
 			if err != nil {
 				panic(err)
 			}
-			fmt.Printf("seeded electric device %s\n", d)
+			fmt.Printf("seeded meter device %s\n", d)
 		}
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		for _, d := range sd.airQuality {
+		for _, d := range sd.airTemperature {
 			err = SeedAirTemperature(ctx, db, d, lookBack)
 			if err != nil {
 				panic(err)
@@ -175,6 +132,18 @@ func main() {
 		}
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, d := range sd.occupancy {
+			err = SeedOccupancy(ctx, db, d, lookBack)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("seeded occupancy device %s\n", d)
+		}
+	}()
+
 	wg.Wait()
 }
 
@@ -188,11 +157,7 @@ func loadSystemConfig() (sysconf.Config, error) {
 	return systemConfig, err
 }
 
-func parseZoneConfig(appConf *appconf.Config) ([]*airqualitycfg.Root, []*occupancycfg.Root, []*meterscfg.Root, error) {
-	var aqs []*airqualitycfg.Root
-	var occs []*occupancycfg.Root
-	var meters []*meterscfg.Root
-
+func parseZoneConfig(sd *seedDevices, appConf *appconf.Config) error {
 	for _, conf := range appConf.Zones {
 		if conf.Type != "area" {
 			continue
@@ -203,33 +168,44 @@ func parseZoneConfig(appConf *appconf.Config) ([]*airqualitycfg.Root, []*occupan
 
 		buf, err := conf.MarshalJSON()
 		if err != nil {
-			return nil, nil, nil, err
+			return err
 		}
 
 		err = json.Unmarshal(buf, &aq)
 		if err != nil {
-			return nil, nil, nil, err
+			return err
 		}
 
-		aqs = append(aqs, &aq)
+		if len(aq.AirQualitySensors) > 0 {
+			sd.airQuality = append(sd.airQuality, conf.Name)
+		}
 
 		err = json.Unmarshal(buf, &occ)
 		if err != nil {
-			return nil, nil, nil, err
+			return err
 		}
 
-		occs = append(occs, &occ)
+		if len(occ.OccupancySensors) > 0 || len(occ.EnterLeaveOccupancySensors) > 0 {
+			sd.occupancy = append(sd.occupancy, conf.Name)
+		}
 
 		err = json.Unmarshal(buf, &mtr)
 		if err != nil {
-			return nil, nil, nil, err
+			return err
 		}
 
-		meters = append(meters, &mtr)
+		if len(mtr.Meters) > 0 {
+			sd.electric = append(sd.electric, conf.Name)
+		}
+		for _, group := range mtr.MeterGroups {
+			for _, met := range group {
+				sd.electric = append(sd.electric, met)
+			}
+		}
 
 	}
 
-	return aqs, occs, meters, nil
+	return nil
 }
 
 type seedDevices struct {
@@ -237,21 +213,33 @@ type seedDevices struct {
 	electric       []string
 	airTemperature []string
 	soundSensor    []string
+	occupancy      []string
 }
 
-func parseDeviceConfig(appConf *appconf.Config) (seedDevices, error) {
-	var sd seedDevices
+func (sd *seedDevices) normalise() {
+	slices.Sort(sd.airQuality)
+	slices.Sort(sd.electric)
+	slices.Sort(sd.airTemperature)
+	slices.Sort(sd.soundSensor)
+	slices.Sort(sd.occupancy)
+	slices.Compact(sd.airQuality)
+	slices.Compact(sd.electric)
+	slices.Compact(sd.airTemperature)
+	slices.Compact(sd.soundSensor)
+	slices.Compact(sd.occupancy)
+}
 
+func parseDeviceConfig(sd *seedDevices, appConf *appconf.Config) error {
 	for _, dr := range appConf.Drivers {
 		buf, err := dr.MarshalJSON()
 		if err != nil {
-			return seedDevices{}, err
+			return err
 		}
 
 		var devices mockcfg.Root
 		err = json.Unmarshal(buf, &devices)
 		if err != nil {
-			return seedDevices{}, err
+			return err
 		}
 
 		for _, device := range devices.Devices {
@@ -270,5 +258,5 @@ func parseDeviceConfig(appConf *appconf.Config) (seedDevices, error) {
 		}
 	}
 
-	return sd, nil
+	return nil
 }
