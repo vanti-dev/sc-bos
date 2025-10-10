@@ -1845,6 +1845,55 @@
       "type": "history",
       "source": {"name": "van/uk/brum/ugs/devices/lift", "trait": "smartcore.bos.Transport"},
       "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L00-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L00-01", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L00-02",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L00-02", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L00-03",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L00-03", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L01-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L01-01", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L01-02",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L01-02", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L01-03",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L01-03", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L01-04",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L01-04", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L02-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L02-01", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
     }
+
   ]
 }

@@ -153,6 +153,13 @@
                           "metadata.location.zone": "Copper Room"
                         }
                       }
+                    },
+                    {
+                      "component": "builtin:environmental/SoundSensorHistoryCard",
+                      "props": {
+                        "source": "van/uk/brum/ugs/devices/SND-L00-01",
+                        "title": "Copper Room Sound Levels"
+                      }
                     }
                   ],
                   "after": [
