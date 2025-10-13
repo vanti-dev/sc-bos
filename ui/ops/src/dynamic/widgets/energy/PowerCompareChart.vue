@@ -54,8 +54,8 @@ const props = defineProps({
   }
 });
 
-const totalUsage = usePullElectricDemandRecord(toRef(props, 'totalSource'));
-const otherUsages = usePullElectricDemands(toRef(props, 'sources'));
+const totalUsage = usePullElectricDemandRecord(toRef(props, 'totalSource'), toRef(props, 'unit'));
+const otherUsages = usePullElectricDemands(toRef(props, 'sources'), toRef(props, 'unit'));
 
 const records = useChartTotalDataset(totalUsage, otherUsages);
 const recordValues = computed(() => records.value.datasets[0].data);
