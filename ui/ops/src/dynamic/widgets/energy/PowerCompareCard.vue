@@ -3,7 +3,7 @@
     <v-toolbar v-if="!props.hideToolbar" color="transparent">
       <v-toolbar-title class="text-h4">{{ props.title }}</v-toolbar-title>
     </v-toolbar>
-    <power-compare-chart class="content" :total-source="props.totalSource" :sources="props.sources"/>
+    <power-compare-chart class="content" :total-source="props.totalSource" :sources="props.sources" :unit="props.unit"/>
   </v-card>
 </template>
 
@@ -27,6 +27,10 @@ const props = defineProps({
     type: Array, // of String or {title: String, name: String}
     default: () => [],
   },
+  unit: {
+    type: String,
+    default: 'kW',
+  }
 });
 </script>
 

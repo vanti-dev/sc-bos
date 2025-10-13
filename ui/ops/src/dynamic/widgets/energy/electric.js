@@ -76,8 +76,15 @@ export function usePullElectricDemands(queries) {
 export function usePullElectricDemandRecord(query) {
   const {value} = usePullElectricDemand(query);
   return computed(() => {
-    if (!value.value) return null;
-    return value.value.realPower / 1000; // in kW
+    const v = value.value;
+    if (!v) return null;
+    if (typeof v.realPower === 'number' && !isNaN(v.realPower)) {
+      return v.realPower / 1000; // in kW
+    }
+    if (typeof v.current === 'number' && !isNaN(v.current)) {
+      return v.current;
+    }
+    return null;
   })
 }
 

@@ -48,6 +48,10 @@ const props = defineProps({
     type: Array, // of String or {title: String, name: String}
     default: () => [],
   },
+  unit: {
+    type: String,
+    default: 'kW',
+  }
 });
 
 const totalUsage = usePullElectricDemandRecord(toRef(props, 'totalSource'));
@@ -82,7 +86,7 @@ const totalStr = computed(() => {
   })}`;
 });
 const totalUnits = computed(() => {
-  return 'kW';
+  return props.unit;
 });
 
 const chartOptions = computed(() => {
