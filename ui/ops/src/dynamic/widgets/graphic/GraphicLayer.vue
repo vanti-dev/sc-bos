@@ -223,17 +223,19 @@ watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
   if (!svgEl || !svgElReady || !config) return; // do nothing, not ready yet
 
   const scope = effectScope();
-  scope.run(() => {
+  scope.run( () => {
     const elements = config.elements ?? [];
     const maxInteractiveElements = 100; // limit the number of interactive elements to avoid performance issues
     if (elements.length >= maxInteractiveElements) {
       console.warn(`Large number of elements in the graphical layer, will poll instead of pull`, elements.length);
+      console.warn('Batching reactivity to mitigate long for loops freezing the UI');
     }
-    for (let ei = 0; ei < elements.length; ei++) {
+
+    const process = (ei) => {
       const element = elements[ei];
-      if (!element.sources) continue; // no source of info, so skip
+      if (!element.sources) return; // no source of info, so skip
       const els = svgEl.querySelectorAll(element.selector);
-      if (!els) continue; // no point continuing as we can't update the element
+      if (!els) return; // no point continuing as we can't update the element
 
       // capture information from the server
       const sources = {};
@@ -259,6 +261,34 @@ watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
           widgets.value.push(w);
         }
       }
+    }
+
+    if (elements.length < maxInteractiveElements) {
+      // small number of elements, so just process them all at once
+      for (let ei = 0; ei < elements.length; ei++) {
+        process(ei);
+      }
+      return;
+    }
+    const processBatch = (eis) => {
+      for (let ei of eis) {
+        process(ei);
+      }
+    }
+
+    const batchSize = 10;
+    let batch = [];
+    for (let ei = 0; ei < elements.length; ei++) {
+      batch.push(ei);
+
+      if (batch.length >= batchSize) {
+        nextTick(() => processBatch(batch));
+        batch = [];
+      }
+    }
+
+    if (batch.length > 0) {
+      nextTick(() => processBatch(batch));
     }
   });
   scopeClosers.value.push(() => scope.stop());
