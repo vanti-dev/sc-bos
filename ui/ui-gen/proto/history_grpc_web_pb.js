@@ -34,6 +34,8 @@ var traits_occupancy_sensor_pb = require('@smart-core-os/sc-api-grpc-web/traits/
 
 var traits_air_quality_sensor_pb = require('@smart-core-os/sc-api-grpc-web/traits/air_quality_sensor_pb.js')
 
+var traits_enter_leave_sensor_pb = require('@smart-core-os/sc-api-grpc-web/traits/enter_leave_sensor_pb.js')
+
 var meter_pb = require('./meter_pb.js')
 
 var sound_sensor_pb = require('./sound_sensor_pb.js')
@@ -890,6 +892,119 @@ proto.smartcore.bos.SoundSensorHistoryPromiseClient.prototype.listSoundLevelHist
       request,
       metadata || {},
       methodDescriptor_SoundSensorHistory_ListSoundLevelHistory);
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.EnterLeaveHistoryClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.smartcore.bos.EnterLeaveHistoryPromiseClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.smartcore.bos.ListEnterLeaveHistoryRequest,
+ *   !proto.smartcore.bos.ListEnterLeaveHistoryResponse>}
+ */
+const methodDescriptor_EnterLeaveHistory_ListEnterLeaveSensorHistory = new grpc.web.MethodDescriptor(
+  '/smartcore.bos.EnterLeaveHistory/ListEnterLeaveSensorHistory',
+  grpc.web.MethodType.UNARY,
+  proto.smartcore.bos.ListEnterLeaveHistoryRequest,
+  proto.smartcore.bos.ListEnterLeaveHistoryResponse,
+  /**
+   * @param {!proto.smartcore.bos.ListEnterLeaveHistoryRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.smartcore.bos.ListEnterLeaveHistoryResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.smartcore.bos.ListEnterLeaveHistoryRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.ListEnterLeaveHistoryResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.ListEnterLeaveHistoryResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.smartcore.bos.EnterLeaveHistoryClient.prototype.listEnterLeaveSensorHistory =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/smartcore.bos.EnterLeaveHistory/ListEnterLeaveSensorHistory',
+      request,
+      metadata || {},
+      methodDescriptor_EnterLeaveHistory_ListEnterLeaveSensorHistory,
+      callback);
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.ListEnterLeaveHistoryRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.smartcore.bos.ListEnterLeaveHistoryResponse>}
+ *     Promise that resolves to the response
+ */
+proto.smartcore.bos.EnterLeaveHistoryPromiseClient.prototype.listEnterLeaveSensorHistory =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/smartcore.bos.EnterLeaveHistory/ListEnterLeaveSensorHistory',
+      request,
+      metadata || {},
+      methodDescriptor_EnterLeaveHistory_ListEnterLeaveSensorHistory);
 };
 
 

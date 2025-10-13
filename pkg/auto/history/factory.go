@@ -183,6 +183,9 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	case trait.Electric:
 		serverClient = gen.WrapElectricHistory(historypb.NewElectricServer(store))
 		collect = a.collectElectricDemandChanges
+	case trait.EnterLeaveSensor:
+		serverClient = gen.WrapEnterLeaveHistory(historypb.NewEnterLeaveSensorServer(store))
+		collect = a.collectEnterLeaveEventChanges
 	case meter.TraitName:
 		serverClient = gen.WrapMeterHistory(historypb.NewMeterServer(store))
 		collect = a.collectMeterReadingChanges
