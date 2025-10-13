@@ -105,7 +105,7 @@ const chartOptions = computed(() => {
     },
     scales: {
       y: {
-        stacked: true,
+        stacked: false,
         beginAtZero: false, // temperature doesn't need to start at zero
         title: {
           display: true,
@@ -131,7 +131,7 @@ const chartOptions = computed(() => {
       },
       x: {
         type: 'time',
-        stacked: true,
+        stacked: false,
         grid: {
           color: '#fff1'
         },

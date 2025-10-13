@@ -100,7 +100,7 @@ const chartOptions = computed(() => {
     },
     scales: {
       y: {
-        stacked: true,
+        stacked: false,
         beginAtZero: true,
         title: {
           display: true,
@@ -126,7 +126,7 @@ const chartOptions = computed(() => {
       },
       x: {
         type: 'time',
-        stacked: true,
+        stacked: false,
         grid: {
           color: '#fff1'
         },
