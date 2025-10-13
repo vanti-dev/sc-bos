@@ -1021,9 +1021,13 @@
                 },
                 {
                   "loc": {"x": 5, "y": 9, "w": 2, "h": 4},
-                  "id": "Visitors",
+                  "id": "Environment",
+                  "component": "builtin:environmental/EnvironmentalCard",
                   "props": {
-                    "title": "Visitors"
+                    "title": "Building Environment",
+                    "external": "van/uk/brum/ugs/devices/TMP-L02-01",
+                    "internal": "van/uk/brum/ugs/zones/building",
+                    "leftToRightGauges": true
                   }
                 },
                 {
