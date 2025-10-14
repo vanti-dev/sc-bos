@@ -234,7 +234,7 @@ watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
     const process = (ei) => {
       const element = elements[ei];
       if (!element.sources) return; // no source of info, so skip
-      const els = svgEl.querySelectorAll(element.selector);
+      let els = svgEl.querySelectorAll(element.selector);
       if (!els) return; // no point continuing as we can't update the element
 
       // capture information from the server
@@ -254,11 +254,13 @@ watch([svgEl, svgElReady, config], ([svgEl, svgElReady, config]) => {
       for (let i = 0; i < els.length; i++) {
         const el = els[i];
         useSvgEffects(el, element, sources);
-        const w = useWidgetEffects(el, element, sources);
-        if (w) {
-          w.key = `${element.selector}-${i}`;
-          w.elementIdx = ei;
-          widgets.value.push(w);
+        const ws = useWidgetEffects(el, element, sources);
+        if (ws) {
+          ws.forEach((w, i) => {
+            w.key = `${element.selector}-${i}`;
+            w.elementIdx = ei;
+            widgets.value.push(w);
+          });
         }
       }
     }
