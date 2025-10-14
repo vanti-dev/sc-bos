@@ -54,7 +54,7 @@ const props = defineProps({
   },
   unit: {
     type: String,
-    default: 'kW',
+    default: undefined,
   }
 });
 
@@ -90,7 +90,17 @@ const totalStr = computed(() => {
   })}`;
 });
 const totalUnits = computed(() => {
-  return props.unit;
+  if (props.unit) {
+    return props.unit;
+  }
+  switch (props.metric) {
+    case 'realPower':
+      return 'kW';
+    case 'current':
+      return 'A';
+    default:
+      return '';
+  }
 });
 
 const chartOptions = computed(() => {

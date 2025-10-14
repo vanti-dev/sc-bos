@@ -33,7 +33,7 @@ const props = defineProps({
   },
   unit: {
     type: String,
-    default: 'kW',
+    default: undefined,
   }
 });
 </script>
