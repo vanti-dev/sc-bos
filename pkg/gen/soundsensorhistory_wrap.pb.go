@@ -7,7 +7,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// WrapSoundSensorHistory	adapts a gen.SoundSensorHistoryServer	and presents it as a gen.SoundSensorHistoryClient
+// WrapSoundSensorHistory	adapts a SoundSensorHistoryServer	and presents it as a SoundSensorHistoryClient
 func WrapSoundSensorHistory(server SoundSensorHistoryServer) *SoundSensorHistoryWrapper {
 	conn := wrap.ServerToClient(SoundSensorHistory_ServiceDesc, server)
 	client := NewSoundSensorHistoryClient(conn)
