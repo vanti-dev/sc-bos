@@ -25,7 +25,7 @@ const props = defineProps({
   },
   metric: {
     type: String,
-    default: 'power',
+    default: 'realPower',
   },
   sources: {
     type: Array, // of String or {title: String, name: String}

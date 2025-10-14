@@ -50,7 +50,7 @@ const props = defineProps({
   },
   metric: {
     type: String,
-    default: 'power',
+    default: 'realPower',
   },
   unit: {
     type: String,

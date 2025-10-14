@@ -13,10 +13,10 @@ import * as colors from 'vuetify/util/colors';
 
 /**
  * @param {import('vue').MaybeRefOrGetter<(string | {title?:string, name:string})[]>} queries
- * @param {import('vue').ComputedRef<string>} unit
+ * @param {import('vue').ComputedRef<string>} metric
  * @return {import('vue').ComputedRef<ElectricDemandRecord[]>} - in queries order
  */
-export function usePullElectricDemands(queries, unit) {
+export function usePullElectricDemands(queries, metric) {
   const res = reactive(
       /** @type {Record<string, ElectricDemandRecord>} */
       {}
@@ -37,7 +37,7 @@ export function usePullElectricDemands(queries, unit) {
       }
       const scope = effectScope();
       scope.run(() => {
-        const record = {demand: usePullElectricDemandRecord(name, unit), stop: () => scope.stop()};
+        const record = {demand: usePullElectricDemandRecord(name, metric), stop: () => scope.stop()};
         if (title) {
           // make sure record.title is always a computed ref as Vue optimises this kind of thing
           record.title = computed(() => title);
@@ -81,7 +81,7 @@ export function usePullElectricDemandRecord(query, metric) {
     const v = value.value;
     if (!v) return null;
     const m = toValue(metric);
-    if ((m === 'power') && (typeof v.realPower === 'number' && !isNaN(v.realPower))) {
+    if ((m === 'realPower') && (typeof v.realPower === 'number' && !isNaN(v.realPower))) {
       return v.realPower / 1000; // in kW
     }
     if ((m === 'current') && (typeof v.current === 'number' && !isNaN(v.current))) {
