@@ -9,7 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// SoundSensorHistoryRouter is a gen.SoundSensorHistoryServer that allows routing named requests to specific gen.SoundSensorHistoryClient
+// SoundSensorHistoryRouter is a SoundSensorHistoryServer that allows routing named requests to specific SoundSensorHistoryClient
 type SoundSensorHistoryRouter struct {
 	UnimplementedSoundSensorHistoryServer
 
@@ -37,10 +37,10 @@ func (r *SoundSensorHistoryRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterSoundSensorHistoryServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type gen.SoundSensorHistoryClient.
+// Add extends Router.Add to panic if client is not of type SoundSensorHistoryClient.
 func (r *SoundSensorHistoryRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a gen.SoundSensorHistoryClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a SoundSensorHistoryClient", client))
 	}
 	return r.Router.Add(name, client)
 }
