@@ -294,7 +294,7 @@ export default function useCollection(request, client, options) {
   function processChanges() {
     const _items = items.value;
     const _changes = unprocessedChanges.value;
-    if (!_changes.length) return; // no changes, nothing to do
+    if (!_changes.length) return 0; // no changes, nothing to do
     const opts = toValue(options);
     const transform = opts?.transform ?? (v => v);
     const filterFn = opts?.filterFn;
