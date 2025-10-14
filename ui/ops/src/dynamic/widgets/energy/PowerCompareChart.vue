@@ -48,14 +48,18 @@ const props = defineProps({
     type: Array, // of String or {title: String, name: String}
     default: () => [],
   },
+  metric: {
+    type: String,
+    default: 'power',
+  },
   unit: {
     type: String,
     default: 'kW',
   }
 });
 
-const totalUsage = usePullElectricDemandRecord(toRef(props, 'totalSource'), toRef(props, 'unit'));
-const otherUsages = usePullElectricDemands(toRef(props, 'sources'), toRef(props, 'unit'));
+const totalUsage = usePullElectricDemandRecord(toRef(props, 'totalSource'), toRef(props, 'metric'));
+const otherUsages = usePullElectricDemands(toRef(props, 'sources'), toRef(props, 'metric'));
 
 const records = useChartTotalDataset(totalUsage, otherUsages);
 const recordValues = computed(() => records.value.datasets[0].data);

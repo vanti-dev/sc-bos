@@ -72,19 +72,19 @@ export function usePullElectricDemands(queries, unit) {
 
 /**
  * @param {import('vue').MaybeRefOrGetter<string|PullDemandRequest.AsObject>} query
- * @param {import('vue').ComputedRef<string>} unit
+ * @param {import('vue').ComputedRef<string>} metric
  * @return {import('vue').ComputedRef<number|null>}
  */
-export function usePullElectricDemandRecord(query, unit) {
+export function usePullElectricDemandRecord(query, metric) {
   const {value} = usePullElectricDemand(query);
   return computed(() => {
     const v = value.value;
     if (!v) return null;
-    const u = toValue(unit);
-    if ((u === 'kWh') && (typeof v.realPower === 'number' && !isNaN(v.realPower))) {
+    const m = toValue(metric);
+    if ((m === 'power') && (typeof v.realPower === 'number' && !isNaN(v.realPower))) {
       return v.realPower / 1000; // in kW
     }
-    if ((u === 'A' || u === 'mA') && (typeof v.current === 'number' && !isNaN(v.current))) {
+    if ((m === 'current') && (typeof v.current === 'number' && !isNaN(v.current))) {
       return v.current;
     }
     return null;
