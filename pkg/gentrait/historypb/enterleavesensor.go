@@ -41,7 +41,7 @@ var enterLeaveEventPager = NewPageReader(func(r history.Record) (*gen.EnterLeave
 	}, nil
 })
 
-func (e *EnterLeaveSensorServer) ListEnterLeaveEventHistory(ctx context.Context, request *gen.ListEnterLeaveHistoryRequest) (*gen.ListEnterLeaveHistoryResponse, error) {
+func (e *EnterLeaveSensorServer) ListEnterLeaveSensorHistory(ctx context.Context, request *gen.ListEnterLeaveHistoryRequest) (*gen.ListEnterLeaveHistoryResponse, error) {
 	page, size, nextToken, err := enterLeaveEventPager.ListRecords(ctx, e.store, request.Period, int(request.PageSize), request.PageToken, request.OrderBy)
 	if err != nil {
 		return nil, err
