@@ -24,7 +24,7 @@ const abnormalCounts = reactive(newResourceValue())
 pullDevicesMetadata({
   query: {
     conditionsList: [
-      {field: 'health_checks.check.state', stringIn: {stringsList: ['ABNORMAL', 'HIGH', 'LOW']}},
+      {field: 'health_checks.normality', stringIn: {stringsList: ['ABNORMAL', 'HIGH', 'LOW']}},
     ]
   },
   includes: {
