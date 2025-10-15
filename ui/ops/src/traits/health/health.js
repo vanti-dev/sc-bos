@@ -163,7 +163,7 @@ function useImpactTable(currentCounts, oldCounts, conditions, opts) {
       },
       includes: {
         fieldsList: [
-          'health_checks.check.state',
+          'health_checks.normality',
           'health_checks.reliability.state'
         ],
       }
@@ -250,9 +250,9 @@ export function totalUnreliableCount(counts) {
  * @param {import('@vanti-dev/sc-bos-ui-gen/proto/health_pb').HealthCheck.Check.State} state
  * @return {number}
  */
-export function countChecksByState(checks, state) {
+export function countChecksByNormality(checks, state) {
   return checks?.reduce((acc, check) => {
-    if (check.check.state === state) acc++;
+    if (check.normality === state) acc++;
     return acc;
   }, 0);
 }
@@ -264,9 +264,9 @@ export function countChecksByState(checks, state) {
  * @return {{normalCount: number, abnormalCount: number, totalCount: number}}
  */
 export function countChecks(checks) {
-  const normalCount = countChecksByState(checks, HealthCheck.Check.State.NORMAL);
+  const normalCount = countChecksByNormality(checks, HealthCheck.Normality.NORMAL);
   const abnormalCount = checks?.reduce((acc, check) => {
-    if (check.check.state > HealthCheck.Check.State.NORMAL) acc++;
+    if (check.normality > HealthCheck.Normality.NORMAL) acc++;
     return acc;
   }, 0);
   return {

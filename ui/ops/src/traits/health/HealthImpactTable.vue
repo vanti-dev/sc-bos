@@ -3,7 +3,8 @@
     <h3 class="title">{{ props.title }}</h3>
     <div class="totals mt-2">
       <value-scaled prefix="Checks" stacked>{{ props.totalCount }}</value-scaled>
-      <value-scaled prefix="Issues" stacked><span :class="abnormalCountClass">{{ totalAbnormalCount }}</span>
+      <value-scaled prefix="Issues" stacked>
+        <span :class="abnormalCountClass">{{ totalAbnormalCount }}</span>
       </value-scaled>
     </div>
     <div class="bar my-3">
