@@ -71,6 +71,7 @@ func ExampleFaultCheck() {
 		ComplianceImpacts: []*gen.HealthCheck_ComplianceImpact{
 			{Standard: standard.BS5266_1_2016, Contribution: gen.HealthCheck_ComplianceImpact_FAIL},
 		},
+		AckExpected: AckBitset(gen.HealthCheck_TO_ABNORMAL),
 	})
 	defer funcTest.Dispose()
 	durTest, _ := checks.NewFaultCheck(deviceName, &gen.HealthCheck{
@@ -82,6 +83,7 @@ func ExampleFaultCheck() {
 		ComplianceImpacts: []*gen.HealthCheck_ComplianceImpact{
 			{Standard: standard.BS5266_1_2016, Contribution: gen.HealthCheck_ComplianceImpact_FAIL},
 		},
+		AckExpected: AckBitset(gen.HealthCheck_TO_ABNORMAL),
 	})
 	defer durTest.Dispose()
 
