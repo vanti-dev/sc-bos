@@ -2,6 +2,8 @@ package meter
 
 import (
 	"context"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"go.uber.org/zap"
@@ -18,6 +20,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/util/once"
 	"github.com/vanti-dev/sc-bos/pkg/util/pull"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
+	"github.com/vanti-dev/sc-bos/pkg/zone/feature/meter/config"
 	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
@@ -33,7 +36,8 @@ type Group struct {
 	unit     string
 	unitOnce once.RetryError
 
-	useHistoryBackupOnErr bool
+	historyBackupConf *config.HistoryBackup
+	now               func() time.Time
 
 	logger *zap.Logger
 }
@@ -74,29 +78,30 @@ func (g *Group) DescribeMeterReading(ctx context.Context, _ *gen.DescribeMeterRe
 func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadingRequest) (*gen.MeterReading, error) {
 	allRes := make([]value, len(g.names))
 	fns := make([]func(), len(g.names))
+
+	countedErrs := atomic.Int32{}
+
 	for i, name := range g.names {
 		request := proto.Clone(request).(*gen.GetMeterReadingRequest)
 		request.Name = name
 		i := i
 		fns[i] = func() {
 			res, err := g.apiClient.GetMeterReading(ctx, request)
-			if err != nil && g.useHistoryBackupOnErr {
-				// try to get the latest backup reading from the history table if the main read fails
-				latest, historyErr := g.historyApiClient.ListMeterReadingHistory(ctx, &gen.ListMeterReadingHistoryRequest{
-					Name:     name,
-					PageSize: 1,
-					OrderBy:  "record_time DESC",
-				})
 
-				if historyErr != nil || len(latest.GetMeterReadingRecords()) == 0 {
-					allRes[i] = value{name: name, err: err} // we forward the original error
-					return
+			if err != nil {
+				countedErrs.Add(1)
+
+				historyRes, historyErr := g.attemptHistoricalReading(ctx, name, res, err)
+
+				if historyErr == nil {
+					if float32(100*(countedErrs.Load()/int32(len(g.names)))) < g.historyBackupConf.PercentageOfAcceptableErrors {
+						// use historical reading if available, within lookback limit, and we haven't exceeded the acceptable error percentage
+						res = historyRes
+						err = nil
+					}
 				}
-
-				res = latest.GetMeterReadingRecords()[0].MeterReading
-				err = nil
-
 			}
+
 			allRes[i] = value{name: name, val: res, err: err}
 		}
 	}
@@ -104,6 +109,30 @@ func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadin
 		return nil, err
 	}
 	return mergeMeterReading(allRes)
+}
+
+type nameToError struct {
+	sync.Map // meter name key -> error value
+}
+
+func newNameToError() *nameToError {
+	return &nameToError{}
+}
+
+func (n *nameToError) store(name string, v error) {
+	n.Store(name, v)
+}
+
+func (n *nameToError) countErrs() int {
+	count := 0
+	n.Range(func(key, value any) bool {
+		if value != nil && value.(error) != nil {
+			count++
+		}
+		return true
+	})
+
+	return count
 }
 
 func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server gen.MeterApi_PullMeterReadingsServer) error {
@@ -114,28 +143,36 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 	changes := make(chan value)
 	defer close(changes)
 
+	// we use a map to track errors per name
+	// so that we can calculate the percentage of errors across all names
+	// and decide whether to use historical readings as a backup
+	// based on the configured acceptable error percentage
+	errs := newNameToError()
+
 	group, ctx := errgroup.WithContext(server.Context())
 	for _, name := range g.names {
 		request := proto.Clone(request).(*gen.PullMeterReadingsRequest)
 		request.Name = name
-		handleErr := func(err error) error {
-			if g.useHistoryBackupOnErr {
-				latest, historyErr := g.historyApiClient.ListMeterReadingHistory(ctx, &gen.ListMeterReadingHistoryRequest{
-					Name:     request.Name,
-					PageSize: 1,
-					OrderBy:  "record_time DESC",
-				})
+		handleResp := func(res *gen.MeterReading, err error) error {
+			if err != nil {
+				errs.store(request.Name, err)
+				historyRes, historyErr := g.attemptHistoricalReading(ctx, request.Name, res, err)
 
-				if historyErr != nil || len(latest.GetMeterReadingRecords()) == 0 {
-					changes <- value{name: request.Name, err: err}
-					return err // we forward the original error
+				if historyErr == nil {
+					if float32(100*(errs.countErrs())/len(g.names)) < g.historyBackupConf.PercentageOfAcceptableErrors {
+						// use historical reading if available, within lookback limit, and we haven't exceeded the acceptable error percentage
+						changes <- value{name: request.Name, val: historyRes}
+						return nil
+					}
 				}
-				// use the latest backup reading from the history table if it exists
-				changes <- value{name: request.Name, val: latest.GetMeterReadingRecords()[0].MeterReading}
-				return nil
+
+				changes <- value{name: request.Name, err: err}
+				return err
 			}
 
-			changes <- value{name: request.Name, err: err}
+			errs.store(request.Name, nil)
+
+			changes <- value{name: request.Name, val: res, err: err}
 			return err
 		}
 		group.Go(func() error {
@@ -143,14 +180,15 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				func(ctx context.Context, changes chan<- value) error {
 					stream, err := g.apiClient.PullMeterReadings(ctx, request)
 					if err != nil {
-						return handleErr(err)
+						return handleResp(nil, err)
 					}
 					for {
 						res, err := stream.Recv()
 						if err != nil {
-							if err2 := handleErr(err); err2 != nil {
+							if err2 := handleResp(nil, err); err2 != nil {
 								return err
 							}
+							continue
 						}
 						for _, change := range res.Changes {
 							changes <- value{name: request.Name, val: change.MeterReading}
@@ -160,7 +198,7 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				func(ctx context.Context, changes chan<- value) error {
 					res, err := g.apiClient.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: name, ReadMask: request.ReadMask})
 					if err != nil {
-						if err2 := handleErr(err); err2 != nil {
+						if err2 := handleResp(res, err); err2 != nil {
 							return err
 						}
 					}
@@ -202,11 +240,15 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				}
 				last = r
 
-				err = server.Send(&gen.PullMeterReadingsResponse{Changes: []*gen.PullMeterReadingsResponse_Change{{
-					Name:         request.Name,
-					ChangeTime:   timestamppb.Now(),
-					MeterReading: r,
-				}}})
+				err = server.Send(&gen.PullMeterReadingsResponse{
+					Changes: []*gen.PullMeterReadingsResponse_Change{
+						{
+							Name:         request.Name,
+							ChangeTime:   timestamppb.Now(),
+							MeterReading: r,
+						},
+					},
+				})
 				if err != nil {
 					return err
 				}
@@ -215,6 +257,36 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 	})
 
 	return group.Wait()
+}
+
+func (g *Group) attemptHistoricalReading(ctx context.Context, name string, originalReading *gen.MeterReading, originalErr error) (*gen.MeterReading, error) {
+	if originalErr == nil {
+		return originalReading, nil
+	}
+
+	if g.historyBackupConf == nil || g.historyBackupConf.Disabled {
+		return nil, originalErr
+	}
+
+	// try to get the latest backup reading from the history table if the main read fails
+	latest, historyErr := g.historyApiClient.ListMeterReadingHistory(ctx, &gen.ListMeterReadingHistoryRequest{
+		Name:     name,
+		PageSize: 1,
+		OrderBy:  "record_time DESC",
+	})
+
+	if historyErr != nil || len(latest.GetMeterReadingRecords()) == 0 {
+		return nil, originalErr // we forward the original error
+	}
+
+	if g.historyBackupConf.LookbackLimit != nil {
+		if g.now().After(latest.GetMeterReadingRecords()[0].GetRecordTime().AsTime().Add(g.historyBackupConf.LookbackLimit.Duration)) {
+			// latest history record is too old
+			return nil, originalErr // we forward the original error
+		}
+	}
+
+	return latest.GetMeterReadingRecords()[0].MeterReading, nil
 }
 
 type value struct {

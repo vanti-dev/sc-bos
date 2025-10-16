@@ -3,6 +3,7 @@ package meter
 import (
 	"context"
 	"path"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -22,7 +23,7 @@ var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 		clients:   services.Node,
 		logger:    services.Logger,
 	}
-	f.Service = service.New(service.MonoApply(f.applyConfig))
+	f.Service = service.New(service.MonoApply(f.applyConfig), service.WithParser(config.ParseConfig))
 	return f
 })
 
@@ -54,7 +55,9 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			names:            devices,
 			logger:           logger,
 
-			useHistoryBackupOnErr: cfg.UseHistoryBackupOnErr,
+			now: time.Now,
+
+			historyBackupConf: cfg.HistoryBackup,
 		}
 		f.devices.Add(devices...)
 		announce.Announce(name, node.HasTrait(meter.TraitName, node.WithClients(gen.WrapMeterApi(group), gen.WrapMeterInfo(group))))
