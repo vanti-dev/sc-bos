@@ -89,6 +89,7 @@ func (c *Controller) startSystems() (*service.Map, error) {
 		DataDir:          c.SystemConfig.DataDir,
 		Logger:           c.Logger.Named("system"),
 		Node:             c.Node,
+		DeviceStore:      c.DeviceStore,
 		GRPCEndpoint:     grpcEndpoint,
 		Database:         c.Database,
 		Stores:           c.Stores,
