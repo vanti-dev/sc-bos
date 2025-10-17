@@ -6,6 +6,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
@@ -16,6 +17,7 @@ type Services struct {
 	ClientTLSConfig *tls.Config // for connecting to other smartcore nodes
 	HTTPMux         *http.ServeMux
 	Config          service.ConfigUpdater
+	Health          *healthpb.Checks
 }
 
 type Factory interface {

@@ -12,6 +12,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
@@ -31,6 +32,7 @@ func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, err
 		driverServices := ctxServices
 		driverServices.Config = &serviceConfigStore{store: c.ControllerConfig.Drivers(), id: id}
 		driverServices.Logger = loggerWithServiceInfo(driverServices.Logger, id, kind)
+		driverServices.Health = healthChecksForService(c.CheckRegistry, id, kind)
 
 		f, ok := c.SystemConfig.DriverFactories[kind]
 		if !ok {
@@ -63,6 +65,7 @@ func (c *Controller) startAutomations(configs []auto.RawConfig) (*service.Map, e
 		autoServices := ctxServices
 		autoServices.Config = &serviceConfigStore{store: c.ControllerConfig.Automations(), id: id}
 		autoServices.Logger = loggerWithServiceInfo(autoServices.Logger, id, kind)
+		autoServices.Health = healthChecksForService(c.CheckRegistry, id, kind)
 
 		f, ok := c.SystemConfig.AutoFactories[kind]
 		if !ok {
@@ -130,6 +133,7 @@ func (c *Controller) startZones(configs []zone.RawConfig) (*service.Map, error) 
 		zoneServices := ctxServices
 		zoneServices.Config = &serviceConfigStore{store: c.ControllerConfig.Zones(), id: id}
 		zoneServices.Logger = loggerWithServiceInfo(zoneServices.Logger, id, kind)
+		zoneServices.Health = healthChecksForService(c.CheckRegistry, id, kind)
 
 		f, ok := c.SystemConfig.ZoneFactories[kind]
 		if !ok {
@@ -193,6 +197,11 @@ func logServiceRecordChange(logger *zap.Logger, oldVal, newVal *service.StateRec
 
 func loggerWithServiceInfo(logger *zap.Logger, id, kind string) *zap.Logger {
 	return logger.With(zap.String("service.id", id), zap.String("service.kind", kind))
+}
+
+func healthChecksForService(r *healthpb.Registry, id, kind string) *healthpb.Checks {
+	owner := fmt.Sprintf("%s:%s", kind, id)
+	return r.ForOwner(owner)
 }
 
 func announceServices[M ~map[string]T, T any](c *Controller, name string, services *service.Map, factories M, store serviceapi.Store) node.Undo {
