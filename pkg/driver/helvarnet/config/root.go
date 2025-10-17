@@ -192,22 +192,17 @@ var DeviceStatuses = []State{
 	{"DeviceMismatch", "The actual load type does not match the expected type", 0x80000000, gen.StatusLog_NOTICE},
 }
 
-func GetStatusListFromFlag(flag int64) []string {
+func GetStatusListFromFlag(flag int64) []State {
 
 	if flag == 0 {
-		return []string{"OK"}
+		return []State{}
 	}
 
-	var statusList []string
+	var statusList []State
 	for _, ds := range DeviceStatuses {
 		if flag&int64(ds.FlagValue) != 0 {
-			statusList = append(statusList, ds.State)
+			statusList = append(statusList, ds)
 		}
-	}
-
-	if len(statusList) == 0 {
-		// There are some flags which are NSReserved / Internal use only, so if none of the known flags are set, just return OK
-		statusList = append(statusList, "OK")
 	}
 
 	return statusList
