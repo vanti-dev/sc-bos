@@ -68,7 +68,7 @@ func (c *tcpClient) sendAndReceive(pkt string, want string) (string, error) {
 		err = c.sendPacket(pkt)
 		if err != nil {
 			c.logger.Error("failed to send packet", zap.Error(err))
-			time.Sleep(c.cfg.SendPacketTimeout.Duration)
+			time.Sleep(c.cfg.RetrySleepDuration.Duration)
 			c.close()
 			continue
 		}
