@@ -23,9 +23,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/internal/account"
 	"github.com/vanti-dev/sc-bos/internal/manage/devices"
+	"github.com/vanti-dev/sc-bos/internal/node/nodeopts"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/interceptors"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/internal/util/pki"
@@ -38,6 +40,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
 	"github.com/vanti-dev/sc-bos/pkg/auth/token"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
 	"github.com/vanti-dev/sc-bos/pkg/manage/enrollment"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task"
@@ -89,7 +92,16 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 	if cName == "" {
 		cName = config.Name
 	}
-	rootNode := node.New(cName)
+
+	// external store for devices so we can attach multiple resources to it,
+	// like metadata and health checks.
+	deviceStore := devicespb.NewCollection(resource.WithIDInterceptor(func(oldID string) (newID string) {
+		if oldID == "" {
+			return cName
+		}
+		return oldID
+	}))
+	rootNode := node.New(cName, nodeopts.WithStore(deviceStore))
 	rootNode.Logger = logger.Named("node")
 
 	var accountStore *account.Store
