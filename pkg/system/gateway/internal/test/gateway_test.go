@@ -26,6 +26,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/shared"
@@ -266,6 +267,15 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 		}
 	})
 
+	t.Run("devices api includes devices", func(t *testing.T) {
+		client := gen.NewDevicesApiClient(conn)
+		testDevicesApiHasNames(t, ctx, addr, onOffDevices, client, &gen.ListDevicesRequest{
+			Query: &gen.Device_Query{Conditions: []*gen.Device_Query_Condition{
+				{Field: "metadata.traits.name", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: string(trait.OnOff)}},
+			}},
+		})
+	})
+
 	t.Run("onOff devices respond", func(t *testing.T) {
 		client := traits.NewOnOffApiClient(conn)
 		for _, name := range onOffDevices {
@@ -296,6 +306,23 @@ func waitForDevice(t *testing.T, ctx context.Context, conn *grpc.ClientConn, nam
 	}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
 	if err != nil {
 		t.Fatalf("wait for device %s: %v", name, err)
+	}
+}
+
+func testDevicesApiHasNames(t *testing.T, ctx context.Context, addr string, names []string, client gen.DevicesApiClient, request *gen.ListDevicesRequest) {
+	t.Helper()
+
+	res, err := client.ListDevices(ctx, request)
+	if err != nil {
+		t.Fatalf("[%s] list devices: %v", addr, err)
+	}
+	gotNames := make([]string, len(res.Devices))
+	for i, d := range res.Devices {
+		gotNames[i] = d.Name
+	}
+	sortStrings := cmpopts.SortSlices(func(a, b string) bool { return a < b })
+	if diff := cmp.Diff(names, gotNames, sortStrings); diff != "" {
+		t.Fatalf("[%s] list devices: unexpected response (-want +got):\n%s", addr, diff)
 	}
 }
 
