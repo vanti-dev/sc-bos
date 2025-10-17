@@ -92,6 +92,8 @@ func (s *System) pullSelf(ctx context.Context, node *remoteNode) (task.Next, err
 		}
 		c := cs.Changes[len(cs.Changes)-1]
 		md := c.Metadata
+		// note: we don't fetch health checks for the self node,
+		// this will be handled by the devices query
 		node.Self.Set(remoteDesc{name: md.Name, md: md})
 	}
 }
@@ -157,6 +159,7 @@ func (s *System) pullDevices(ctx context.Context, node *remoteNode) (task.Next, 
 		}
 
 		for _, c := range msg.Changes {
+			// todo: support updates properly instead of treating them as delete+add
 			// for anything that isn't an add stop the existing task for the device
 			if c.OldValue != nil {
 				node.Devices.Remove(remoteDesc{name: c.OldValue.Name})
@@ -165,7 +168,7 @@ func (s *System) pullDevices(ctx context.Context, node *remoteNode) (task.Next, 
 				continue // was a deletion
 			}
 
-			node.Devices.Set(remoteDesc{name: c.NewValue.Name, md: c.NewValue.Metadata})
+			node.Devices.Set(remoteDesc{name: c.NewValue.Name, md: c.NewValue.Metadata, health: c.NewValue.HealthChecks})
 		}
 	}
 }

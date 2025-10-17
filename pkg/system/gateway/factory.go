@@ -68,6 +68,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 	s := &System{
 		self:       services.Node,
 		hub:        services.CohortManager,
+		checks:     services.HealthChecks,
 		ignore:     []string{services.GRPCEndpoint}, // avoid infinite recursion
 		tlsConfig:  services.ClientTLSConfig,
 		reflection: services.ReflectionServer,
@@ -80,6 +81,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 type System struct {
 	self       *node.Node
 	hub        node.Remote
+	checks     system.HealthCheckCollection
 	ignore     []string
 	tlsConfig  *tls.Config
 	reflection *reflectionapi.Server

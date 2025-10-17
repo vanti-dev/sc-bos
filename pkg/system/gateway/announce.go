@@ -248,10 +248,37 @@ func (a *announcer) announceName(d remoteDesc) node.Undo {
 		return node.NilUndo
 	}
 
-	return a.Announce(d.name,
+	undoAnnounce := a.Announce(d.name,
 		node.HasMetadata(d.md),
 		node.HasProxy(a.node.conn),
 	)
+	undoHealth := node.NilUndo
+	if len(d.health) > 0 {
+		addedIds := make([]string, 0, len(d.health))
+		for _, c := range d.health {
+			addedIds = append(addedIds, c.Id)
+		}
+		err := a.checks.MergeHealthChecks(d.name, d.health...)
+		if err != nil {
+			a.logger.Warn("failed to announce health checks for remote name",
+				zap.String("name", d.name),
+				zap.Strings("addedCheckIds", addedIds),
+				zap.Error(err),
+			)
+		}
+		undoHealth = func() {
+			err := a.checks.RemoveHealthChecks(d.name, addedIds...)
+			if err != nil {
+				a.logger.Warn("failed to unannounce health checks for remote name",
+					zap.String("name", d.name),
+					zap.Strings("removedCheckIds", addedIds),
+					zap.Error(err),
+				)
+			}
+		}
+	}
+
+	return node.UndoAll(undoHealth, undoAnnounce)
 }
 
 // announceNames calls announceName for each remoteDesc in seq, collecting the results into tasks keyed by remoteDesc.name.
