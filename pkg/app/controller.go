@@ -351,6 +351,7 @@ func Bootstrap(ctx context.Context, config sysconf.Config) (*Controller, error) 
 		Logger:           logger,
 		Node:             rootNode,
 		Devices:          gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, devicesApi)),
+		DeviceStore:      deviceStore,
 		Tasks:            &task.Group{},
 		Database:         db,
 		Stores:           store,
@@ -425,6 +426,7 @@ type Controller struct {
 	Logger          *zap.Logger
 	Node            *node.Node
 	Devices         gen.DevicesApiClient
+	DeviceStore     *devicespb.Collection // for low level control of devices
 	Tasks           *task.Group
 	Database        *bolthold.Store
 	TokenValidators *token.ValidatorSet
