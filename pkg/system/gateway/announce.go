@@ -11,9 +11,13 @@ import (
 	"go.uber.org/zap"
 	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
 	reflectionv1alphapb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
+	"github.com/smart-core-os/sc-golang/pkg/masks"
+	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/rx"
 	"github.com/vanti-dev/sc-bos/pkg/util/chans"
@@ -248,10 +252,46 @@ func (a *announcer) announceName(d remoteDesc) node.Undo {
 		return node.NilUndo
 	}
 
-	return a.Announce(d.name,
+	undoAnnounce := a.Announce(d.name,
 		node.HasMetadata(d.md),
 		node.HasProxy(a.node.conn),
 	)
+	undoHealth := node.NilUndo
+	if len(d.health) > 0 {
+		addedIds := make([]string, 0, len(d.health))
+		for _, c := range d.health {
+			addedIds = append(addedIds, c.Id)
+		}
+		// note: the device should already exist because we announce the name above
+		_, err := a.devices.Update(&gen.Device{Name: d.name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, src proto.Message) {
+			dstDev := dst.(*gen.Device)
+			dstDev.HealthChecks = healthpb.MergeChecks(mask.Merge, dstDev.HealthChecks, d.health...)
+		}))
+		if err != nil {
+			a.logger.Warn("failed to announce health checks for remote name",
+				zap.String("name", d.name),
+				zap.Strings("addedCheckIds", addedIds),
+				zap.Error(err),
+			)
+		}
+		undoHealth = func() {
+			_, err := a.devices.Update(&gen.Device{Name: d.name}, resource.WithMerger(func(mask *masks.FieldUpdater, dst, _ proto.Message) {
+				dstDev := dst.(*gen.Device)
+				for _, id := range addedIds {
+					dstDev.HealthChecks = healthpb.RemoveCheck(dstDev.HealthChecks, id)
+				}
+			}))
+			if err != nil {
+				a.logger.Warn("failed to unannounce health checks for remote name",
+					zap.String("name", d.name),
+					zap.Strings("removedCheckIds", addedIds),
+					zap.Error(err),
+				)
+			}
+		}
+	}
+
+	return node.UndoAll(undoHealth, undoAnnounce)
 }
 
 // announceNames calls announceName for each remoteDesc in seq, collecting the results into tasks keyed by remoteDesc.name.
