@@ -46,6 +46,7 @@ import (
 
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/system"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/config"
@@ -68,6 +69,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 	s := &System{
 		self:       services.Node,
 		hub:        services.CohortManager,
+		devices:    services.DeviceStore,
 		ignore:     []string{services.GRPCEndpoint}, // avoid infinite recursion
 		tlsConfig:  services.ClientTLSConfig,
 		reflection: services.ReflectionServer,
@@ -80,6 +82,7 @@ func (f *factory) New(services system.Services) service.Lifecycle {
 type System struct {
 	self       *node.Node
 	hub        node.Remote
+	devices    *devicespb.Collection
 	ignore     []string
 	tlsConfig  *tls.Config
 	reflection *reflectionapi.Server
