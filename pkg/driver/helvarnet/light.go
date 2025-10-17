@@ -28,8 +28,6 @@ import (
 const NoResponse = -1
 const BadResponse = -2
 
-const HealthCheckLightNormal = "light_normal"
-
 // Light represents a single light device within the HelvarNet system.
 type Light struct {
 	gen.UnimplementedStatusApiServer
@@ -256,7 +254,17 @@ func (l *Light) udmiPointsetFromData() (*gen.MqttMessage, error) {
 	}
 
 	statuses := config.GetStatusListFromFlag(l.helvarnetStatus)
-	points["Status"] = udmi.PointValue{PresentValue: strings.Join(statuses, ", ")}
+	statusStr := ""
+	// loop through statues and add all the names to a comma separated string
+	if len(statuses) == 0 {
+		statusStr = "OK"
+	} else {
+		for _, s := range statuses {
+			statusStr += s.State + ", "
+		}
+	}
+
+	points["Status"] = udmi.PointValue{PresentValue: strings.TrimSuffix(statusStr, ", ")}
 
 	b, err := json.Marshal(points)
 	if err != nil {
@@ -667,41 +675,20 @@ func (l *Light) OnMessage(context.Context, *gen.OnMessageRequest) (*gen.OnMessag
 
 func (l *Light) GetHealthCheck(_ context.Context, req *gen.GetHealthCheckRequest) (*gen.HealthCheck, error) {
 	switch req.Id {
-	case HealthCheckLightNormal:
-		c := getDeviceOkHealthCheck(l.helvarnetStatus)
+	case deviceStatusCheck.Id:
+		// this assumes we are regularly refreshing the device status in the background, which we do
+		c := getDeviceStatusCheck(l.helvarnetStatus)
 		return c, nil
 	default:
 		return nil, status.Error(codes.InvalidArgument, "unknown health check id")
 	}
 }
 
-func getDeviceOkHealthCheck(s int64) *gen.HealthCheck {
+func (l *Light) ListHealthChecks(context.Context, *gen.ListHealthChecksRequest) (*gen.ListHealthChecksResponse, error) {
 
-	reliability := &gen.HealthCheck_Reliability{}
-	check := &gen.HealthCheck_Check{}
-	if s < 0 {
-		if s == NoResponse {
-			reliability.State = gen.HealthCheck_Reliability_NO_RESPONSE
-		} else if s == BadResponse {
-			reliability.State = gen.HealthCheck_Reliability_BAD_RESPONSE
-		}
-		check.State = gen.HealthCheck_Check_ABNORMAL
-	} else {
-		reliability.State = gen.HealthCheck_Reliability_RELIABLE
-		statuses := config.GetStatusListFromFlag(s)
-		if statuses[0] == "OK" {
-			check.State = gen.HealthCheck_Check_NORMAL
-		} else {
-			// Any other status for the normal check is considered abnormal, even if it is a minor warning
-			check.State = gen.HealthCheck_Check_ABNORMAL
-		}
+	resp := &gen.ListHealthChecksResponse{}
+	for _, check := range allHealthChecks {
+		resp.HealthChecks = append(resp.HealthChecks, check)
 	}
-
-	return &gen.HealthCheck{
-		Id:          HealthCheckLightNormal,
-		DisplayName: "Light Normal Operation",
-		Description: "The Light is under normal operation, no faults detected, no emergency tests running or pending",
-		Reliability: reliability,
-		Check:       check,
-	}
+	return resp, nil
 }
