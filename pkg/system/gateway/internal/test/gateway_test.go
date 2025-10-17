@@ -26,6 +26,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/shared"
@@ -266,6 +267,15 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 		}
 	})
 
+	t.Run("devices api includes devices", func(t *testing.T) {
+		client := gen.NewDevicesApiClient(conn)
+		testDevicesApiHasNames(t, ctx, addr, onOffDevices, client, &gen.ListDevicesRequest{
+			Query: &gen.Device_Query{Conditions: []*gen.Device_Query_Condition{
+				{Field: "metadata.traits.name", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: string(trait.OnOff)}},
+			}},
+		})
+	})
+
 	t.Run("onOff devices respond", func(t *testing.T) {
 		client := traits.NewOnOffApiClient(conn)
 		for _, name := range onOffDevices {
@@ -277,6 +287,20 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 		for _, name := range serviceDevices {
 			testServicesApi(t, ctx, addr, name, client)
 		}
+	})
+	t.Run("has health check", func(t *testing.T) {
+		client := gen.NewHealthApiClient(conn)
+		for _, name := range onOffDevices {
+			testHealthApi(t, ctx, addr, name, client)
+		}
+	})
+	t.Run("devices api has health checks", func(t *testing.T) {
+		client := gen.NewDevicesApiClient(conn)
+		testDevicesApiHasNames(t, ctx, addr, onOffDevices, client, &gen.ListDevicesRequest{
+			Query: &gen.Device_Query{Conditions: []*gen.Device_Query_Condition{
+				{Field: "health_checks.bounds.normal_value.string_value", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "ON"}},
+			}},
+		})
 	})
 
 	t.Run("reflection", func(t *testing.T) {
@@ -296,6 +320,23 @@ func waitForDevice(t *testing.T, ctx context.Context, conn *grpc.ClientConn, nam
 	}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
 	if err != nil {
 		t.Fatalf("wait for device %s: %v", name, err)
+	}
+}
+
+func testDevicesApiHasNames(t *testing.T, ctx context.Context, addr string, names []string, client gen.DevicesApiClient, request *gen.ListDevicesRequest) {
+	t.Helper()
+
+	res, err := client.ListDevices(ctx, request)
+	if err != nil {
+		t.Fatalf("[%s] list devices: %v", addr, err)
+	}
+	gotNames := make([]string, len(res.Devices))
+	for i, d := range res.Devices {
+		gotNames[i] = d.Name
+	}
+	sortStrings := cmpopts.SortSlices(func(a, b string) bool { return a < b })
+	if diff := cmp.Diff(names, gotNames, sortStrings); diff != "" {
+		t.Fatalf("[%s] list devices: unexpected response (-want +got):\n%s", addr, diff)
 	}
 }
 
@@ -380,6 +421,29 @@ func testServicesApi(t *testing.T, ctx context.Context, addr, name string, clien
 	}
 }
 
+func testHealthApi(t *testing.T, ctx context.Context, addr, name string, client gen.HealthApiClient) {
+	t.Helper()
+	res, err := client.ListHealthChecks(ctx, &gen.ListHealthChecksRequest{Name: name})
+	if err != nil {
+		t.Fatalf("[%s] list health checks %s: %v", addr, name, err)
+	}
+	if len(res.HealthChecks) == 0 {
+		t.Fatalf("[%s] list health checks %s: no health checks found", addr, name)
+	}
+	// the checks we've set up are looking for OnOff being ON,
+	// make sure they exist and the checks we see aren't just some defaults
+	foundOnOffCheck := false
+	for _, check := range res.HealthChecks {
+		if want := check.GetBounds().GetNormalValue().GetStringValue(); want == "ON" {
+			foundOnOffCheck = true
+			break
+		}
+	}
+	if !foundOnOffCheck {
+		t.Fatalf("[%s] list health checks %s: no OnOff=ON health check found", addr, name)
+	}
+}
+
 func testReflection(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 	ctx, stop := context.WithCancel(ctx)
 	defer stop()
@@ -399,6 +463,8 @@ func testReflection(t *testing.T, ctx context.Context, conn *grpc.ClientConn) {
 		{Name: "grpc.reflection.v1alpha.ServerReflection"},
 		{Name: "smartcore.bos.DevicesApi"},
 		{Name: "smartcore.bos.EnrollmentApi"},
+		{Name: "smartcore.bos.HealthApi"},
+		{Name: "smartcore.bos.HealthHistory"},
 		{Name: "smartcore.bos.HubApi"},
 		{Name: "smartcore.bos.ServicesApi"},
 		{Name: "smartcore.traits.MetadataApi"},
