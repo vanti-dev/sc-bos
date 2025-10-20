@@ -2,6 +2,7 @@ package occupancy
 
 import (
 	"context"
+	"sync"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -61,6 +62,32 @@ func (e *enterLeave) PullOccupancy(request *traits.PullOccupancyRequest, server 
 	changes := make(chan c, len(e.names))
 	group, ctx := errgroup.WithContext(server.Context())
 
+	errs := &sync.Map{}
+
+	// we only fail the whole pull if all names error
+	allErrored := func() bool {
+		totalErrors := 0
+		errs.Range(func(k, v interface{}) bool {
+			if e, ok := v.(error); ok && e != nil {
+				totalErrors++
+			}
+			return true
+		})
+
+		return totalErrors == len(e.names)
+	}
+
+	mergeErrors := func() error {
+		var combined error
+		errs.Range(func(k, v interface{}) bool {
+			if e, ok := v.(error); ok && e != nil {
+				combined = multierr.Append(combined, e)
+			}
+			return true
+		})
+		return combined
+	}
+
 	// for each name fetch the enter leave events and push them onto changes chan
 	for _, name := range e.names {
 		group.Go(func() error {
@@ -68,13 +95,33 @@ func (e *enterLeave) PullOccupancy(request *traits.PullOccupancyRequest, server 
 				func(ctx context.Context, changes chan<- c) error {
 					stream, err := e.client.PullEnterLeaveEvents(ctx, &traits.PullEnterLeaveEventsRequest{Name: name})
 					if err != nil {
-						return err
+						errs.Store(name, err)
+
+						if allErrored() {
+							return mergeErrors()
+						}
+						if e.logger != nil {
+							e.logger.Error("failed to pull enter leave events", zap.String("name", name), zap.Error(err))
+						}
+						return nil
 					}
+					errs.Delete(name)
+
 					for {
 						res, err := stream.Recv()
 						if err != nil {
-							return err
+							errs.Store(name, err)
+
+							if allErrored() {
+								return mergeErrors()
+							}
+							if e.logger != nil {
+								e.logger.Error("failed to receive enter leave event", zap.String("name", name), zap.Error(err))
+							}
+							continue
 						}
+						errs.Delete(name)
+
 						for _, change := range res.Changes {
 							changes <- c{name: request.Name, val: change.EnterLeaveEvent}
 						}
