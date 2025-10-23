@@ -35,9 +35,9 @@ func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 // conditionMatches returns true if the condition matches values in device.
 // If the condition has a path, only values matching the path are considered,
 // otherwise all leafs in device are considered.
-func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool {
+func conditionMatches(cond *gen.Device_Query_Condition, msg proto.Message) bool {
 	cmp := conditionToCmpFunc(cond)
-	values, err := rangeValues(cond.Field, device)
+	values, err := rangeValues(cond.Field, msg)
 	if err != nil {
 		return false
 	}
@@ -171,6 +171,23 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(value) bool {
 		return func(v value) bool {
 			return v.v.IsValid()
 		}
+
+	case *gen.Device_Query_Condition_Matches:
+		return func(v value) bool {
+			if v.fd.Message() == nil {
+				return false
+			}
+			msg := v.v.Message()
+			if !msg.IsValid() {
+				return false
+			}
+			for _, condition := range c.Matches.GetConditions() {
+				if !conditionMatches(condition, msg.Interface()) {
+					return false
+				}
+			}
+			return true // implies any present 'matches' field without conditions will match
+		}
 	}
 
 	return func(v value) bool {
@@ -284,15 +301,14 @@ func scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
 		if !vm.IsValid() {
 			return emptyValues // field exists but has no value
 		}
-		if isLeaf(fd) {
-			if len(path) == 1 {
-				// end of the path, return the value
-				return func(yield func(value) bool) {
-					yield(value{fd, v})
-				}
+		if isLeaf(fd) && len(path) > 1 {
+			return emptyValues // path has more segments, but the value is a value
+		}
+		if len(path) == 1 {
+			// end of the path, return the value
+			return func(yield func(value) bool) {
+				yield(value{fd, v})
 			}
-			// path has more segments, but the value is a value
-			return emptyValues
 		}
 		return scanMessage(path[1:], vm)
 	case isLeaf(fd) && len(path) == 1:
@@ -309,7 +325,14 @@ func scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
 // If path is empty, all values in the map are returned.
 func scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[value] {
 	if len(path) == 0 {
-		return emptyValues // no more path segments, nothing to return
+		return func(yield func(value) bool) {
+			m.Range(func(key protoreflect.MapKey, v protoreflect.Value) bool {
+				if !yield(value{fd.MapValue(), v}) {
+					return false
+				}
+				return true
+			})
+		}
 	}
 
 	head := path[0]
@@ -326,33 +349,27 @@ func scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect
 		return emptyValues // key doesn't exist in the map
 	}
 
-	// more to the path
-	if len(path) > 1 {
-		if isLeaf(fd.MapValue()) {
-			return emptyValues // path has more segments, but the map value is a value
+	if len(path) == 1 {
+		// end of the path
+		return func(yield func(value) bool) {
+			yield(value{fd.MapValue(), v})
 		}
-		if md := fd.MapValue().Message(); md != nil {
-			return scanMessage(path[1:], v.Message())
-		}
-		return emptyValues // there's more to the path but the value has no properties
 	}
 
-	// end of the path
-	if !isLeaf(fd.MapValue()) {
-		return emptyValues // path ends at a map value, but the map value is not a value
+	// more to the path
+	if isLeaf(fd.MapValue()) {
+		return emptyValues // path has more segments, but the map value is a value
 	}
-	return func(yield func(value) bool) {
-		yield(value{fd.MapValue(), v})
+	if md := fd.MapValue().Message(); md != nil {
+		return scanMessage(path[1:], v.Message())
 	}
+	return emptyValues // there's more to the path but the value has no properties
 }
 
 // scanList returns all values identified by path in the list l.
 // If path is empty, all values in the list are returned.
 func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[value] {
 	if len(path) == 0 {
-		if !isLeaf(fd) {
-			return emptyValues // path ends at this list, but the list contains non-value values
-		}
 		return func(yield func(value) bool) {
 			for i := 0; i < l.Len(); i++ {
 				if !yield(value{fd, l.Get(i)}) {
@@ -373,15 +390,14 @@ func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflec
 			return emptyValues // index out of range
 		}
 		v := l.Get(i)
-		if isLeaf(fd) {
-			if len(path) == 1 {
-				// end of the path, return the value
-				return func(yield func(value) bool) {
-					yield(value{fd, v})
-				}
+		if isLeaf(fd) && len(path) > 1 {
+			return emptyValues // path has more segments, but the list contains values
+		}
+		if len(path) == 1 {
+			// end of the path, return the value
+			return func(yield func(value) bool) {
+				yield(value{fd, v})
 			}
-			// path has more segments, but the value is a value
-			return emptyValues
 		}
 
 		if fd.Message() == nil {
@@ -391,6 +407,7 @@ func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflec
 		return scanMessage(path[1:], v.Message())
 	}
 
+	// there's more to the path, but this is a list of leafs which can't have more path segments
 	if isLeaf(fd) {
 		return emptyValues // path has more segments, but the list contains value values
 	}

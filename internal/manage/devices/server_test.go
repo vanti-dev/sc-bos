@@ -21,6 +21,12 @@ func Test_deviceMatchesQuery(t *testing.T) {
 			Conditions: []*gen.Device_Query_Condition{
 				{Field: "metadata.membership.subsystem", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "Lighting"}},
 				{Field: "metadata.location.more.floor", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "4"}},
+				{Field: "metadata.nics", Value: &gen.Device_Query_Condition_Matches{Matches: &gen.Device_Query{
+					Conditions: []*gen.Device_Query_Condition{
+						{Field: "gateway", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "1.2.3.4"}},
+						{Field: "assignment", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "DHCP"}},
+					},
+				}}},
 			},
 		}
 		device := &gen.Device{
@@ -34,6 +40,11 @@ func Test_deviceMatchesQuery(t *testing.T) {
 						"floor": "4",
 					},
 				},
+				Nics: []*traits.Metadata_NIC{
+					{Gateway: "1.2.3.4", Assignment: traits.Metadata_NIC_STATIC},
+					{Gateway: "not1.2.3.4", Assignment: traits.Metadata_NIC_DHCP},
+					{Gateway: "1.2.3.4", Assignment: traits.Metadata_NIC_DHCP},
+				},
 			},
 		}
 		got := deviceMatchesQuery(query, device)
@@ -43,10 +54,38 @@ func Test_deviceMatchesQuery(t *testing.T) {
 	})
 
 	t.Run("not matches", func(t *testing.T) {
-		query := &gen.Device_Query{
-			Conditions: []*gen.Device_Query_Condition{
-				{Field: "metadata.membership.subsystem", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "Lighting"}},
-				{Field: "metadata.location.more.floor", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "4"}},
+		tests := []struct {
+			name  string
+			query *gen.Device_Query
+		}{
+			{
+				"floor mismatch",
+				&gen.Device_Query{
+					Conditions: []*gen.Device_Query_Condition{
+						{Field: "metadata.location.more.floor", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "4"}},
+					},
+				},
+			},
+			{
+				"subsystem mismatch",
+				&gen.Device_Query{
+					Conditions: []*gen.Device_Query_Condition{
+						{Field: "metadata.membership.subsystem", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "BMS"}},
+					},
+				},
+			},
+			{
+				"nested mismatch",
+				&gen.Device_Query{
+					Conditions: []*gen.Device_Query_Condition{
+						{Field: "metadata.nics", Value: &gen.Device_Query_Condition_Matches{Matches: &gen.Device_Query{
+							Conditions: []*gen.Device_Query_Condition{
+								{Field: "gateway", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "static.gw"}},
+								{Field: "assignment", Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "DHCP"}},
+							},
+						}}},
+					},
+				},
 			},
 		}
 		device := &gen.Device{
@@ -60,12 +99,21 @@ func Test_deviceMatchesQuery(t *testing.T) {
 						"floor": "5",
 					},
 				},
+				Nics: []*traits.Metadata_NIC{
+					{Gateway: "static.gw", Assignment: traits.Metadata_NIC_STATIC},
+					{Gateway: "dhcp.gw", Assignment: traits.Metadata_NIC_DHCP},
+				},
 			},
 		}
-		got := deviceMatchesQuery(query, device)
-		if got {
-			t.Fatalf("deviceMatchesQuery want false, got true")
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				got := deviceMatchesQuery(tt.query, device)
+				if got {
+					t.Fatalf("deviceMatchesQuery want false, got true")
+				}
+			})
 		}
+
 	})
 }
 
