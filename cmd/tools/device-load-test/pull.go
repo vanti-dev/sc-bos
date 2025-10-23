@@ -110,8 +110,8 @@ func pullStream(ctx context.Context, dst chan<- pullResult, recv func() (proto.M
 			select {
 			case dst <- msg:
 			case <-ctx.Done():
-				return
 			}
+			return
 		}
 
 		msg := pullResult{

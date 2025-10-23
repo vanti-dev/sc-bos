@@ -10,6 +10,7 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/benchmark/latency"
 )
 
 func ServeHTTPS(ctx context.Context, server *http.Server, timeout time.Duration, logger *zap.Logger) error {
@@ -41,17 +42,34 @@ func ServeHTTPS(ctx context.Context, server *http.Server, timeout time.Duration,
 	return ctx.Err()
 }
 
+func ServeGRPCLatency(ctx context.Context, server *grpc.Server, listen string, timeout time.Duration, logger *zap.Logger, addLatency time.Duration) error {
+	network := latency.Network{
+		Latency: addLatency,
+	}
+	listener, err := net.Listen("tcp", listen)
+	if err != nil {
+		return err
+	}
+	latencyListener := network.Listener(listener)
+
+	return serveGrpc(ctx, server, latencyListener, timeout, logger)
+}
+
 func ServeGRPC(ctx context.Context, server *grpc.Server, listen string, timeout time.Duration, logger *zap.Logger) error {
 	listener, err := net.Listen("tcp", listen)
 	if err != nil {
 		return err
 	}
 
+	return serveGrpc(ctx, server, listener, timeout, logger)
+}
+
+func serveGrpc(ctx context.Context, server *grpc.Server, listener net.Listener, timeout time.Duration, logger *zap.Logger) error {
 	serveErr := make(chan error, 1)
 	go func() {
 		serveErr <- server.Serve(listener)
 	}()
-	logger.Info("now serving gRPC", zap.String("addr", listen))
+	logger.Info("now serving gRPC", zap.String("addr", listener.Addr().String()))
 
 	// The server may return an error early if there was a problem starting up.
 	select {

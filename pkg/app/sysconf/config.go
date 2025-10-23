@@ -13,6 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
 	"github.com/vanti-dev/sc-bos/pkg/system"
+	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
 	"github.com/vanti-dev/sc-bos/pkg/zone"
 )
@@ -192,7 +193,8 @@ func Default() Config {
 // These features are not considered stable and may be changed. They are not recommended for production use, so
 // are disabled by default.
 type Experimental struct {
-	Accounts bool `json:"accounts,omitempty"` // enable account management features
+	Accounts        bool               `json:"accounts,omitempty"`        // enable account management features
+	SimulateLatency jsontypes.Duration `json:"simulateLatency,omitempty"` // add artificial latency to gRPC streams
 }
 
 // Normalize adjusts c to apply defaults that are based on the values of other fields.

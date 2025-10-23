@@ -17,6 +17,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"slices"
@@ -24,6 +25,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/benchmark/latency"
 	"google.golang.org/grpc/credentials"
 )
 
@@ -38,15 +40,19 @@ func main() {
 }
 
 var (
-	flagServer string
-	flagConfig string
-	flagPage   string
+	flagServer  string
+	flagConfig  string
+	flagPage    string
+	flagLatency time.Duration
+	flagVerbose bool
 )
 
 func init() {
 	flag.StringVar(&flagServer, "server", "127.0.0.1:23557", "server gRPC address (host:port)")
 	flag.StringVar(&flagConfig, "config", "", "path to UI config file")
 	flag.StringVar(&flagPage, "page", "", "page path to load, under /ops/overview (e.g. building/Ground Floor)")
+	flag.DurationVar(&flagLatency, "latency", 0, "artificial latency to add on stream open")
+	flag.BoolVar(&flagVerbose, "verbose", false, "enable verbose logging")
 }
 
 func run(ctx context.Context) error {
@@ -83,9 +89,28 @@ func run(ctx context.Context) error {
 	}
 	slices.SortFunc(dts, compareDeviceTrait)
 
-	conn, err := grpc.NewClient(flagServer, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
-		InsecureSkipVerify: true,
-	})))
+	counter := &channelCounter{}
+	dialOptions := []grpc.DialOption{
+		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+			InsecureSkipVerify: true,
+		})),
+		grpc.WithUnaryInterceptor(counter.UnaryInterceptor()),
+		grpc.WithStreamInterceptor(counter.StreamInterceptor()),
+	}
+	if flagLatency > 0 {
+		log.Printf("adding artificial latency of %s", flagLatency)
+		network := latency.Network{
+			Latency: flagLatency,
+		}
+		baseDialer := &net.Dialer{}
+		latencyDialer := network.ContextDialer(baseDialer.DialContext)
+		dialOptions = append(dialOptions,
+			grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
+				return latencyDialer(ctx, "tcp", addr)
+			}),
+		)
+	}
+	conn, err := grpc.NewClient(flagServer, dialOptions...)
 	if err != nil {
 		return fmt.Errorf("failed to connect to server: %w", err)
 	}
@@ -108,18 +133,41 @@ func run(ctx context.Context) error {
 	defer cancel()
 	completed := make(chan pullResult)
 
+	grp.Go(func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				printCounts(counter)
+			}
+		}
+	})
 	start := time.Now()
 	for _, dt := range dts {
 		grp.Go(func() {
 			pull(ctx, completed, conn, dt)
 		})
 	}
+	fmt.Printf("%d device traits subscribed to.\n", len(dts))
 
 	for len(remaining) > 0 {
 		select {
 		case res := <-completed:
+			if res.Err != nil {
+				fmt.Printf("failed to pull %s (%s): %v\n", res.Name, res.Trait, res.Err)
+			} else if _, ok := remaining[res.deviceTrait]; ok {
+				if flagVerbose {
+					fmt.Printf("first value: %s\t\t\t%s\t\tat %v\n", res.Name, res.Trait.String(), res.Time)
+				}
+			} else {
+				if flagVerbose {
+					fmt.Printf("extra value: %s\t\t\t%s\t\tat %v\n", res.Name, res.Trait.String(), res.Time)
+				}
+			}
 			delete(remaining, res.deviceTrait)
-			fmt.Printf("first value: %s\t\t\t%s\t\tat %v\n", res.Name, res.Trait.String(), res.Time)
 		case <-ctx.Done():
 			return ctx.Err()
 		}
@@ -128,5 +176,13 @@ func run(ctx context.Context) error {
 	elapsed := time.Since(start)
 	log.Printf("completed pulling first value of %d device traits in %s", len(dts), elapsed)
 
+	maxCounts := counter.MaxCounts()
+	log.Printf("max open channels %d, unary: %d, stream: %d", maxCounts.Channel, maxCounts.Unary, maxCounts.Stream)
+
 	return nil
+}
+
+func printCounts(counts *channelCounter) {
+	current := counts.CurrentCounts()
+	log.Printf("current open channels %d, unary: %d, stream: %d", current.Channel, current.Unary, current.Stream)
 }

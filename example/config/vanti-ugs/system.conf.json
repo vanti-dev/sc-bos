@@ -30,6 +30,7 @@
     "tenants": {"storage": {"type": "postgres"}}
   },
   "experimental": {
-    "accounts": true
+    "accounts": true,
+    "simulateLatency": "5ms"
   }
 }

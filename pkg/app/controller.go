@@ -458,9 +458,16 @@ func (c *Controller) Run(ctx context.Context) (err error) {
 		})
 	}
 	if c.SystemConfig.ListenGRPC != "" {
-		group.Go(func() error {
-			return ServeGRPC(ctx, c.GRPC, c.SystemConfig.ListenGRPC, 15*time.Second, c.Logger.Named("server.grpc"))
-		})
+		if c.SystemConfig.Experimental != nil && c.SystemConfig.Experimental.SimulateLatency.Duration > 0 {
+			addLatency := c.SystemConfig.Experimental.SimulateLatency.Duration
+			group.Go(func() error {
+				return ServeGRPCLatency(ctx, c.GRPC, c.SystemConfig.ListenGRPC, 15*time.Second, c.Logger.Named("server.grpc"), addLatency)
+			})
+		} else {
+			group.Go(func() error {
+				return ServeGRPC(ctx, c.GRPC, c.SystemConfig.ListenGRPC, 15*time.Second, c.Logger.Named("server.grpc"))
+			})
+		}
 	}
 	if c.SystemConfig.ListenHTTPS != "" {
 		group.Go(func() error {
