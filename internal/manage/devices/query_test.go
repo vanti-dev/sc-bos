@@ -189,6 +189,37 @@ func Test_rangeValues(t *testing.T) {
 		tests = append(tests, newLeafCase(fmt.Sprintf("r_%s[-2]", scalarType), leafIdx))
 	}
 
+	newValueCase := func(path string, fd protoreflect.FieldDescriptor, vals ...any) testCase {
+		t.Helper()
+		tt := testCase{path: path}
+		for _, val := range vals {
+			var v protoreflect.Value
+			switch val := val.(type) {
+			case string:
+				v = protoreflect.ValueOfString(val)
+			case proto.Message:
+				v = protoreflect.ValueOfMessage(val.ProtoReflect())
+			default:
+				t.Fatalf("invalid value type for %q: %T", path, val)
+			}
+			tt.wantVals = append(tt.wantVals, value{fd: fd, v: v})
+		}
+		return tt
+	}
+
+	// explicit paths can resolve to any value type
+	tests = append(tests, []testCase{
+		newValueCase("result", resultFd("result"), m.Result),
+		newValueCase("m_string_result", resultMapFd("m_string_result"), m.MStringResult["a"], m.MStringResult["b"], m.MStringResult["c"]),
+		newValueCase("m_string_result.a", resultMapFd("m_string_result"), m.MStringResult["a"]),
+		newValueCase("m_string_result.a.result", resultFd("result"), m.MStringResult["a"].Result),
+		newValueCase("m_string_string", resultMapFd("m_string_string"), m.MStringString["a"], m.MStringString["b"]),
+		newValueCase("r_result", resultFd("r_result"), m.RResult[0], m.RResult[1], m.RResult[2]),
+		newValueCase("r_result.result", resultFd("result"), m.RResult[0].Result, m.RResult[1].Result),
+		newValueCase("r_result[0]", resultFd("r_result"), m.RResult[0]),
+		newValueCase("r_result[0].result", resultFd("result"), m.RResult[0].Result),
+	}...)
+
 	// tests for when path doesn't match any value, return empty iterator
 	for _, path := range []string{
 		// value doesn't exist, or is default
@@ -204,13 +235,6 @@ func Test_rangeValues(t *testing.T) {
 		"m_string_range.c.result.int32_val",
 		"m_string_range.c.result.string_val",
 		"m_string_range.c.result.timestamp_val",
-		// path isn't a value (or repeated value)
-		"result",
-		"m_string_result",
-		"m_string_string",
-		"r_result",
-		"r_result.result",
-		"r_result[0].result",
 		// message fields that don't exist
 		"not_found",
 		"r_string.not_found",
@@ -258,6 +282,8 @@ func Test_rangeValues(t *testing.T) {
 		"m_sfixed32_string.not_sfixed",
 		"m_sfixed64_string.not_sfixed",
 		"m_bool_string.not_bool",
+		// attempting to treat maps as repeating fields (non-leaf)
+		"m_string_result.result",
 	} {
 		tests = append(tests, testCase{path: path})
 	}
@@ -575,6 +601,132 @@ func Test_conditionToCmpFunc(t *testing.T) {
 				for _, l := range tt.negative {
 					if cmpFunc(l) {
 						t.Errorf("expected %v to not match condition %s", l, tt.cond)
+					}
+				}
+			})
+		}
+	})
+
+	t.Run("matches", func(t *testing.T) {
+		newVal := func(msg *querypb.Result) value {
+			return value{
+				fd: resultFd("r_result"),
+				v:  protoreflect.ValueOfMessage(msg.ProtoReflect()),
+			}
+		}
+
+		tests := []struct {
+			name     string
+			conds    []*gen.Device_Query_Condition
+			positive []value
+			negative []value
+		}{
+			{
+				name:  "no conds",
+				conds: nil,
+				positive: []value{
+					{fd: resultFd("r_result"), v: protoreflect.ValueOfMessage((&querypb.Result{}).ProtoReflect())},
+				},
+			},
+			{
+				name:  "match any",
+				conds: []*gen.Device_Query_Condition{{Value: &gen.Device_Query_Condition_StringContains{StringContains: "apple"}}},
+				positive: []value{
+					newVal(&querypb.Result{StringVal: "apple"}),
+					newVal(&querypb.Result{RString: []string{"apple"}}),
+					newVal(&querypb.Result{Result: &querypb.Result{StringVal: "apple"}}),
+				},
+				negative: []value{
+					newVal(&querypb.Result{}),
+					newVal(&querypb.Result{StringVal: "banana"}),
+					newVal(&querypb.Result{StringVal: ""}),
+				},
+			},
+			{
+				name:     "match field",
+				conds:    []*gen.Device_Query_Condition{{Field: "string_val", Value: &gen.Device_Query_Condition_StringContains{StringContains: "apple"}}},
+				positive: []value{newVal(&querypb.Result{StringVal: "apple"})},
+				negative: []value{
+					newVal(&querypb.Result{}),
+					newVal(&querypb.Result{StringVal: "banana"}),
+					newVal(&querypb.Result{StringVal: ""}),
+					newVal(&querypb.Result{RString: []string{"apple"}}),
+					newVal(&querypb.Result{Result: &querypb.Result{StringVal: "apple"}}),
+				},
+			},
+			{
+				name: "match multiple any",
+				conds: []*gen.Device_Query_Condition{
+					{Value: &gen.Device_Query_Condition_StringContains{StringContains: "apple"}},
+					{Value: &gen.Device_Query_Condition_StringContains{StringContains: "pie"}},
+				},
+				positive: []value{
+					newVal(&querypb.Result{StringVal: "apple pie"}),
+					newVal(&querypb.Result{RString: []string{"apple", "pie"}}),
+					newVal(&querypb.Result{StringVal: "apple", Result: &querypb.Result{StringVal: "pie"}}),
+				},
+				negative: []value{
+					newVal(&querypb.Result{}),
+					newVal(&querypb.Result{StringVal: "banana"}),
+					newVal(&querypb.Result{StringVal: ""}),
+					newVal(&querypb.Result{StringVal: "apple"}),
+					newVal(&querypb.Result{StringVal: "pie"}),
+					newVal(&querypb.Result{RString: []string{"apple"}}),
+					newVal(&querypb.Result{Result: &querypb.Result{StringVal: "apple"}}),
+				},
+			},
+			{
+				name: "match multiple fields",
+				conds: []*gen.Device_Query_Condition{
+					{Field: "string_val", Value: &gen.Device_Query_Condition_StringContains{StringContains: "apple"}},
+					{Field: "r_string", Value: &gen.Device_Query_Condition_StringContains{StringContains: "pie"}},
+				},
+				positive: []value{
+					newVal(&querypb.Result{StringVal: "apple", RString: []string{"pie"}}),
+					newVal(&querypb.Result{StringVal: "apple tart", RString: []string{"pie"}}),
+					newVal(&querypb.Result{StringVal: "apple", RString: []string{"mince", "pie"}}),
+				},
+				negative: []value{
+					newVal(&querypb.Result{}),
+					newVal(&querypb.Result{StringVal: "banana"}),
+					newVal(&querypb.Result{StringVal: ""}),
+					newVal(&querypb.Result{StringVal: "apple"}),
+					newVal(&querypb.Result{StringVal: "pie"}),
+					newVal(&querypb.Result{RString: []string{"apple"}}),
+					newVal(&querypb.Result{Result: &querypb.Result{StringVal: "apple"}}),
+					newVal(&querypb.Result{StringVal: "apple pie"}),
+					newVal(&querypb.Result{RString: []string{"apple", "pie"}}),
+					newVal(&querypb.Result{StringVal: "apple", Result: &querypb.Result{StringVal: "pie"}}),
+				},
+			},
+			{
+				name: "mixed fields and any",
+				conds: []*gen.Device_Query_Condition{
+					{Field: "string_val", Value: &gen.Device_Query_Condition_StringContains{StringContains: "apple"}},
+					{Value: &gen.Device_Query_Condition_StringContains{StringContains: "pie"}},
+				},
+				positive: []value{
+					newVal(&querypb.Result{StringVal: "apple", RString: []string{"pie"}}),
+					newVal(&querypb.Result{StringVal: "apple", MStringString: map[string]string{"kind": "pie"}}),
+				},
+				negative: []value{
+					newVal(&querypb.Result{}),
+					newVal(&querypb.Result{RString: []string{"apple", "pie"}}),
+				},
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				cmpFunc := conditionToCmpFunc(&gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_Matches{Matches: &gen.Device_Query{Conditions: tt.conds}}})
+				for _, v := range tt.positive {
+					if !cmpFunc(v) {
+						t.Errorf("expected %v to match conditions %v", v, tt.conds)
+					}
+				}
+				for _, v := range tt.negative {
+					if cmpFunc(v) {
+						t.Errorf("expected %v to not match conditions %v", v, tt.conds)
 					}
 				}
 			})
