@@ -8,40 +8,13 @@
 </template>
 
 <script setup>
-import {newResourceValue} from '@/api/resource.js';
-import {pullDevicesMetadata} from '@/api/ui/devices';
-import {
-  useComplianceImpactTable,
-  useEquipmentImpactTable,
-  useOccupantImpactTable,
-  useRollingHistory
-} from '@/traits/health/health.js';
+import {useComplianceImpactTable, useEquipmentImpactTable, useOccupantImpactTable} from '@/traits/health/health.js';
 import HealthImpactTable from '@/traits/health/HealthImpactTable.vue';
-import {computed, reactive} from 'vue';
+import {computed} from 'vue';
 
-// tracks how many abnormal checks are in each category
-const abnormalCounts = reactive(newResourceValue())
-pullDevicesMetadata({
-  query: {
-    conditionsList: [
-      {field: 'health_checks.normality', stringIn: {stringsList: ['ABNORMAL', 'HIGH', 'LOW']}},
-    ]
-  },
-  includes: {
-    fieldsList: [
-      'health_checks.id',
-      'health_checks.occupant_impact',
-      'health_checks.equipment_impact',
-      'health_checks.compliance_impacts.contribution',
-    ]
-  }
-}, abnormalCounts);
-
-const {oldValue: initialCounts} = useRollingHistory(() => abnormalCounts.value);
-
-const {table: occupantTable} = useOccupantImpactTable(abnormalCounts, initialCounts);
-const {table: equipmentTable} = useEquipmentImpactTable(abnormalCounts, initialCounts);
-const {table: complianceTable} = useComplianceImpactTable(abnormalCounts, initialCounts);
+const {table: occupantTable} = useOccupantImpactTable();
+const {table: equipmentTable} = useEquipmentImpactTable();
+const {table: complianceTable} = useComplianceImpactTable();
 
 const impactTables = computed(() => {
   return [
