@@ -85,6 +85,7 @@ type DevicesMetadata struct {
 	// Field counts contain how many devices exist with specific field values.
 	// For example if there are 7 devices that have "metadata.membership.group" of "Lighting" then there will exist a
 	// field_counts entry that looks like `{field: "metadata.membership.group", counts: {"Lighting": 7}}`.
+	// If the matched field is repeated, the device will only be counted once per unique value.
 	FieldCounts   []*DevicesMetadata_StringFieldCount `protobuf:"bytes,2,rep,name=field_counts,json=fieldCounts,proto3" json:"field_counts,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
