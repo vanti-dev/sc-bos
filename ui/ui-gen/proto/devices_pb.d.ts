@@ -122,6 +122,11 @@ export namespace Device {
       hasPresent(): boolean;
       clearPresent(): Condition;
 
+      getMatches(): Device.Query | undefined;
+      setMatches(value?: Device.Query): Condition;
+      hasMatches(): boolean;
+      clearMatches(): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -151,6 +156,7 @@ export namespace Device {
         nameDescendantIn?: Device.Query.StringList.AsObject,
         nameDescendantIncIn?: Device.Query.StringList.AsObject,
         present?: google_protobuf_empty_pb.Empty.AsObject,
+        matches?: Device.Query.AsObject,
       }
 
       export enum ValueCase { 
@@ -171,6 +177,7 @@ export namespace Device {
         NAME_DESCENDANT_IN = 32,
         NAME_DESCENDANT_INC_IN = 33,
         PRESENT = 40,
+        MATCHES = 50,
       }
     }
 
