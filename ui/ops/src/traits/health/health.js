@@ -70,15 +70,13 @@ export function useRollingHistory(value, age = 5 * MINUTE, resolution = MINUTE) 
 /**
  * Returns properties that can be used for a ImpactTable component showing occupant impact health checks.
  *
- * @param {import('vue').MaybeRefOrGetter<import('@vanti-dev/sc-bos-ui-gen/proto/devices_pb').DevicesMetadata.AsObject>} currentCounts - should include the field 'health_checks.occupant_impact'
- * @param {import('vue').MaybeRefOrGetter<import('@vanti-dev/sc-bos-ui-gen/proto/devices_pb').DevicesMetadata.AsObject>} oldCounts - should include the field 'health_checks.occupant_impact'
  * @param {import('vue').MaybeRefOrGetter<Array<{field: string, stringIn?: {stringsList: string[]}}>>} [conditions] - additional conditions to filter devices
  * @return {{
  *   table: import('vue').ComputedRef<TableProps>,
  * }}
  */
-export function useOccupantImpactTable(currentCounts, oldCounts, conditions) {
-  return useImpactTable(currentCounts, oldCounts, conditions, {
+export function useOccupantImpactTable(conditions) {
+  return useImpactTable(conditions, {
     title: 'People',
     affectLabel: 'People affected',
     impactField: 'occupant_impact',
@@ -93,15 +91,13 @@ export function useOccupantImpactTable(currentCounts, oldCounts, conditions) {
 /**
  * Returns properties that can be used for a ImpactTable component showing equipment impact health checks.
  *
- * @param {import('vue').MaybeRefOrGetter<import('@vanti-dev/sc-bos-ui-gen/proto/devices_pb').DevicesMetadata.AsObject>} currentCounts - should include the field 'health_checks.equipment_impact'
- * @param {import('vue').MaybeRefOrGetter<import('@vanti-dev/sc-bos-ui-gen/proto/devices_pb').DevicesMetadata.AsObject>} oldCounts - should include the field 'health_checks.equipment_impact'
  * @param {import('vue').MaybeRefOrGetter<Array<{field: string, stringIn?: {stringsList: string[]}}>>} [conditions] - additional conditions to filter devices
  * @return {{
  *   table: import('vue').ComputedRef<TableProps>,
  * }}
  */
-export function useEquipmentImpactTable(currentCounts, oldCounts, conditions) {
-  return useImpactTable(currentCounts, oldCounts, conditions, {
+export function useEquipmentImpactTable(conditions) {
+  return useImpactTable(conditions, {
     title: 'Equipment',
     affectLabel: 'Units affected',
     impactField: 'equipment_impact',
@@ -116,15 +112,13 @@ export function useEquipmentImpactTable(currentCounts, oldCounts, conditions) {
 /**
  * Returns properties that can be used for a ImpactTable component showing compliance impact health checks.
  *
- * @param {import('vue').MaybeRefOrGetter<import('@vanti-dev/sc-bos-ui-gen/proto/devices_pb').DevicesMetadata.AsObject>} currentCounts - should include the field 'health_checks.compliance_impacts.contribution'
- * @param {import('vue').MaybeRefOrGetter<import('@vanti-dev/sc-bos-ui-gen/proto/devices_pb').DevicesMetadata.AsObject>} oldCounts - should include the field 'health_checks.compliance_impacts.contribution'
  * @param {import('vue').MaybeRefOrGetter<Array<{field: string, stringIn?: {stringsList: string[]}}>>} [conditions] - additional conditions to filter devices
  * @return {{
  *   table: import('vue').ComputedRef<TableProps>,
  * }}
  */
-export function useComplianceImpactTable(currentCounts, oldCounts, conditions) {
-  return useImpactTable(currentCounts, oldCounts, conditions, {
+export function useComplianceImpactTable(conditions) {
+  return useImpactTable(conditions, {
     title: 'Compliance',
     affectLabel: 'Standards affected',
     impactField: 'compliance_impacts.contribution',
@@ -140,8 +134,6 @@ export function useComplianceImpactTable(currentCounts, oldCounts, conditions) {
 /**
  * Generic function to create an impact table for a specific type of health check.
  *
- * @param {import('vue').MaybeRefOrGetter<import('@vanti-dev/sc-bos-ui-gen/proto/devices_pb').DevicesMetadata.AsObject>} currentCounts
- * @param {import('vue').MaybeRefOrGetter<import('@vanti-dev/sc-bos-ui-gen/proto/devices_pb').DevicesMetadata.AsObject>} oldCounts
  * @param {import('vue').MaybeRefOrGetter<Array<{field: string, stringIn?: {stringsList: string[]}}>>} [conditions]
  * @param {Object} opts
  * @param {string} opts.title - title of the table
@@ -153,9 +145,9 @@ export function useComplianceImpactTable(currentCounts, oldCounts, conditions) {
  *   table: import('vue').ComputedRef<TableProps>,
  * }}
  */
-function useImpactTable(currentCounts, oldCounts, conditions, opts) {
+function useImpactTable(conditions, opts) {
   const impactFieldPath = 'health_checks.' + opts.impactField;
-  const mdQuery = computed(() => {
+  const totalsQuery = computed(() => {
     const moreConditions = toValue(conditions) ?? [];
     return {
       query: {
@@ -166,29 +158,60 @@ function useImpactTable(currentCounts, oldCounts, conditions, opts) {
       },
       includes: {
         fieldsList: [
-          'health_checks.normality',
-          'health_checks.reliability.state'
+          impactFieldPath,
+          'health_checks.reliability.state',
+        ]
+      }
+    }
+  });
+  const abnormalQuery = computed(() => {
+    const moreConditions = toValue(conditions) ?? [];
+    return {
+      query: {
+        conditionsList: [
+          {
+            // devices with health checks that are both abnormal and have the specified impact
+            field: 'health_checks', matches: {
+              conditionsList: [
+                {field: 'normality', stringIn: {stringsList: ['ABNORMAL', 'HIGH', 'LOW']}},
+                {field: opts.impactField, stringIn: {stringsList: opts.fields.map(f => f.key)}}
+              ]
+            }
+          },
+          ...moreConditions
+        ],
+      },
+      includes: {
+        fieldsList: [
+          impactFieldPath,
         ],
       }
     }
-  })
-  const {value: md} = usePullDevicesMetadata(mdQuery);
-  const {oldValue: oldMd} = useRollingHistory(() => md.value);
+  });
+  const {value: totals} = usePullDevicesMetadata(totalsQuery);
+  const {oldValue: oldTotals} = useRollingHistory(() => totals.value);
+  const {value: abnormals} = usePullDevicesMetadata(abnormalQuery);
+  const {oldValue: oldAbnormals} = useRollingHistory(() => abnormals.value);
   const table = computed(() => {
-    const totalCount = md.value?.totalCount ?? 0;
-    const oldTotals = getMetadataField(oldCounts.value, impactFieldPath)
-    const newTotals = getMetadataField(currentCounts.value, impactFieldPath)
+    const oldCounts = getMetadataField(oldAbnormals.value, impactFieldPath)
+    const newCounts = getMetadataField(abnormals.value, impactFieldPath)
+    const totalCount = getMetadataField(totals.value, impactFieldPath).reduce((acc, curr) => acc + curr[1], 0);
     const issues = opts.fields.map(f => {
-      const count = getCountField(newTotals, f.key);
+      const count = getCountField(newCounts, f.key);
       return {
         title: f.title,
         count,
-        prevCount: getCountField(oldTotals, f.key) ?? count,
+        prevCount: getCountField(oldCounts, f.key) ?? count,
         affect: '-',
       }
     });
-    const errorCount = totalUnreliableCount(getMetadataField(md.value, 'health_checks.reliability.state'));
-    const prevErrorCount = totalUnreliableCount(getMetadataField(oldMd.value, 'health_checks.reliability.state'));
+    // todo: fix abnormal counts including checks that aren't matched by the the query
+    // The issue is that we are including reliability counts for all checks on devices where some,
+    // but not all, of the checks match our base impact query. If there was a device with 2 health checks,
+    // one matches our impact query and the other doesn't, the first is reliable and the second is unreliable,
+    // our unreliable count will be 1 even though the matching check is reliable.
+    const errorCount = totalUnreliableCount(getMetadataField(totals.value, 'health_checks.reliability.state'));
+    const prevErrorCount = totalUnreliableCount(getMetadataField(oldTotals.value, 'health_checks.reliability.state'));
     return {
       title: opts.title,
       totalCount,
