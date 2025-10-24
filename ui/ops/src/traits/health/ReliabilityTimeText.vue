@@ -26,7 +26,7 @@ const time = computed(() => {
     case HealthCheck.Reliability.State.RELIABLE:
       return timestampToDate(props.modelValue?.reliability?.reliableTime);
     default:
-      return timestampToDate(props.modelValue?.reliability?.unreliableTime);
+      return timestampToDate(props.modelValue?.reliability?.unreliableTime ?? new Date());
   }
 });
 </script>
