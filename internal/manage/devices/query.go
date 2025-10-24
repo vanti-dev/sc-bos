@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"iter"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -259,7 +260,7 @@ func (opts rangeValuesOptions) Range(path string, msg proto.Message) (iter.Seq[v
 	if err != nil {
 		return nil, fmt.Errorf("path: %w", err)
 	}
-	return scanMessage(segments, msg.ProtoReflect()), nil
+	return opts.scanMessage(segments, msg.ProtoReflect()), nil
 }
 
 // rangeValues returns an iterator over values of msg matching path.
@@ -272,7 +273,7 @@ func rangeValues(path string, msg proto.Message) (iter.Seq[value], error) {
 
 // scanMessage returns all values identified by path in msg.
 // The first entry of path should be a field name in msg, otherwise an empty iterator is returned.
-func scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
+func (opts rangeValuesOptions) scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
 	if len(path) == 0 {
 		return emptyValues // callers should handle empty paths
 	}
@@ -293,9 +294,9 @@ func scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
 
 	switch {
 	case fd.IsMap():
-		return scanMap(path[1:], fd, v.Map())
+		return opts.scanMap(path[1:], fd, v.Map())
 	case fd.IsList():
-		return scanList(path[1:], fd, v.List())
+		return opts.scanList(path[1:], fd, v.List())
 	case fd.Message() != nil:
 		vm := v.Message()
 		if !vm.IsValid() {
@@ -310,7 +311,7 @@ func scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
 				yield(value{fd, v})
 			}
 		}
-		return scanMessage(path[1:], vm)
+		return opts.scanMessage(path[1:], vm)
 	case isLeaf(fd) && len(path) == 1:
 		return func(yield func(value) bool) {
 			yield(value{fd, v})
@@ -323,15 +324,52 @@ func scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
 
 // scanMap returns all values identified by path in the map m.
 // If path is empty, all values in the map are returned.
-func scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[value] {
+func (opts rangeValuesOptions) scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[value] {
 	if len(path) == 0 {
 		return func(yield func(value) bool) {
+			if !opts.Stable {
+				m.Range(func(key protoreflect.MapKey, v protoreflect.Value) bool {
+					if !yield(value{fd.MapValue(), v}) {
+						return false
+					}
+					return true
+				})
+			}
+
+			// need stable order, capture and sort the entries
+			type entry struct {
+				k protoreflect.MapKey
+				v protoreflect.Value
+			}
+			entries := make([]entry, 0, m.Len())
 			m.Range(func(key protoreflect.MapKey, v protoreflect.Value) bool {
-				if !yield(value{fd.MapValue(), v}) {
-					return false
-				}
+				entries = append(entries, entry{key, v})
 				return true
 			})
+			// same logic that exists in the protorange package.
+			// sorts false before true, numeric keys in ascending order,
+			// and strings in lexicographical ordering according to UTF-8 codepoints.
+			sort.Slice(entries, func(xe, ye int) bool {
+				x := entries[xe].k.Value()
+				y := entries[ye].k.Value()
+				switch x.Interface().(type) {
+				case bool:
+					return !x.Bool() && y.Bool()
+				case int32, int64:
+					return x.Int() < y.Int()
+				case uint32, uint64:
+					return x.Uint() < y.Uint()
+				case string:
+					return x.String() < y.String()
+				default:
+					panic("invalid map key type")
+				}
+			})
+			for _, e := range entries {
+				if !yield(value{fd.MapValue(), e.v}) {
+					return
+				}
+			}
 		}
 	}
 
@@ -361,14 +399,14 @@ func scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect
 		return emptyValues // path has more segments, but the map value is a value
 	}
 	if md := fd.MapValue().Message(); md != nil {
-		return scanMessage(path[1:], v.Message())
+		return opts.scanMessage(path[1:], v.Message())
 	}
 	return emptyValues // there's more to the path but the value has no properties
 }
 
 // scanList returns all values identified by path in the list l.
 // If path is empty, all values in the list are returned.
-func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[value] {
+func (opts rangeValuesOptions) scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[value] {
 	if len(path) == 0 {
 		return func(yield func(value) bool) {
 			for i := 0; i < l.Len(); i++ {
@@ -404,7 +442,7 @@ func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflec
 			return emptyValues // it's not a value, but also not a message. Not sure what it is.
 		}
 
-		return scanMessage(path[1:], v.Message())
+		return opts.scanMessage(path[1:], v.Message())
 	}
 
 	// there's more to the path, but this is a list of leafs which can't have more path segments
@@ -415,7 +453,7 @@ func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflec
 	return func(yield func(value) bool) {
 		for i := 0; i < l.Len(); i++ {
 			v := l.Get(i)
-			for leaf := range scanMessage(path, v.Message()) {
+			for leaf := range opts.scanMessage(path, v.Message()) {
 				if !yield(leaf) {
 					return
 				}
