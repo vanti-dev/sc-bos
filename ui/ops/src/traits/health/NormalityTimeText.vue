@@ -26,7 +26,7 @@ const time = computed(() => {
     case HealthCheck.Normality.NORMAL:
       return timestampToDate(props.modelValue?.normalTime);
     default:
-      return timestampToDate(props.modelValue?.abnormalTime);
+      return timestampToDate(props.modelValue?.abnormalTime ?? new Date());
   }
 });
 </script>
