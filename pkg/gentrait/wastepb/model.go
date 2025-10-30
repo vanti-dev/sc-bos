@@ -70,9 +70,7 @@ func (m *Model) AddWasteRecord(wr *gen.WasteRecord, opts ...resource.WriteOption
 
 // GenerateWasteRecord generates a new waste record with the given timestamp and adds it to the model
 func (m *Model) GenerateWasteRecord(ts *timestamppb.Timestamp) (*gen.WasteRecord, error) {
-	co2 := rand.Float32() * 100
-	land := rand.Float32() * 100
-	trees := rand.Float32() * 5
+
 	wr := &gen.WasteRecord{
 		WasteCreateTime:  ts,
 		RecordCreateTime: ts,
@@ -82,10 +80,19 @@ func (m *Model) GenerateWasteRecord(ts *timestamppb.Timestamp) (*gen.WasteRecord
 		Area:             areas[m.genId%len(areas)],
 		System:           systems[m.genId%len(systems)],
 		Stream:           streams[m.genId%len(streams)],
-		Co2Saved:         &co2,
-		LandSaved:        &land,
-		TreesSaved:       &trees,
 	}
+
+	if m.genId%5 != 0 {
+		// don't always add this info, it is not always available
+		co2 := rand.Float32() * 100
+		land := rand.Float32() * 100
+		trees := rand.Float32() * 5
+
+		wr.Co2Saved = &co2
+		wr.LandSaved = &land
+		wr.TreesSaved = &trees
+	}
+
 	return m.AddWasteRecord(wr)
 }
 
