@@ -91,7 +91,7 @@ func (g *Group) GetMeterReading(ctx context.Context, request *gen.GetMeterReadin
 			if err != nil {
 				countedErrs.Add(1)
 
-				historyRes, historyErr := g.attemptHistoricalReading(ctx, name, res, err)
+				historyRes, historyErr := g.attemptHistoricalReading(ctx, name, err)
 
 				if historyErr == nil {
 					if float32(100*(countedErrs.Load()/int32(len(g.names)))) < g.historyBackupConf.PercentageOfAcceptableErrors {
@@ -153,26 +153,19 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 	for _, name := range g.names {
 		request := proto.Clone(request).(*gen.PullMeterReadingsRequest)
 		request.Name = name
-		handleResp := func(res *gen.MeterReading, err error) error {
-			if err != nil {
-				errs.store(request.Name, err)
-				historyRes, historyErr := g.attemptHistoricalReading(ctx, request.Name, res, err)
+		handleResp := func(err error) error {
+			errs.store(request.Name, err)
+			historyRes, historyErr := g.attemptHistoricalReading(ctx, request.Name, err)
 
-				if historyErr == nil {
-					if float32(100*(errs.countErrs())/len(g.names)) < g.historyBackupConf.PercentageOfAcceptableErrors {
-						// use historical reading if available, within lookback limit, and we haven't exceeded the acceptable error percentage
-						changes <- value{name: request.Name, val: historyRes}
-						return nil
-					}
-				}
-
+			if historyErr != nil {
 				changes <- value{name: request.Name, err: err}
 				return err
 			}
-
-			errs.store(request.Name, nil)
-
-			changes <- value{name: request.Name, val: res, err: err}
+			if float32(100*(errs.countErrs())/len(g.names)) < g.historyBackupConf.PercentageOfAcceptableErrors {
+				// use historical reading if available, within lookback limit, and we haven't exceeded the acceptable error percentage
+				changes <- value{name: request.Name, val: historyRes}
+				return nil
+			}
 			return err
 		}
 		group.Go(func() error {
@@ -180,16 +173,23 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				func(ctx context.Context, changes chan<- value) error {
 					stream, err := g.apiClient.PullMeterReadings(ctx, request)
 					if err != nil {
-						return handleResp(nil, err)
+						errs.Store(request.Name, err)
+						// if the stream fails pull.Changes should fall back to Get/Polling
+						changes <- value{name: request.Name, err: err}
+						return err
 					}
+					errs.Delete(request.Name)
 					for {
 						res, err := stream.Recv()
 						if err != nil {
-							if err2 := handleResp(nil, err); err2 != nil {
+							if err2 := handleResp(err); err2 != nil {
 								return err
 							}
+							// since the stream has errored and a history reading (if any) has been used
+							// we don't delete the original error from the errs map
 							continue
 						}
+						errs.Delete(request.Name)
 						for _, change := range res.Changes {
 							changes <- value{name: request.Name, val: change.MeterReading}
 						}
@@ -198,9 +198,10 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 				func(ctx context.Context, changes chan<- value) error {
 					res, err := g.apiClient.GetMeterReading(ctx, &gen.GetMeterReadingRequest{Name: name, ReadMask: request.ReadMask})
 					if err != nil {
-						if err2 := handleResp(res, err); err2 != nil {
+						if err2 := handleResp(err); err2 != nil {
 							return err
 						}
+						return nil
 					}
 					changes <- value{name: request.Name, val: res}
 					return nil
@@ -259,11 +260,7 @@ func (g *Group) PullMeterReadings(request *gen.PullMeterReadingsRequest, server 
 	return group.Wait()
 }
 
-func (g *Group) attemptHistoricalReading(ctx context.Context, name string, originalReading *gen.MeterReading, originalErr error) (*gen.MeterReading, error) {
-	if originalErr == nil {
-		return originalReading, nil
-	}
-
+func (g *Group) attemptHistoricalReading(ctx context.Context, name string, originalErr error) (*gen.MeterReading, error) {
 	if g.historyBackupConf == nil || g.historyBackupConf.Disabled {
 		return nil, originalErr
 	}
