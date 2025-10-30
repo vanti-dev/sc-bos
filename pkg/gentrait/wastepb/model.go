@@ -64,12 +64,12 @@ func (m *Model) AddWasteRecord(wr *gen.WasteRecord, opts ...resource.WriteOption
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.allWasteRecords = append(m.allWasteRecords, wr)
+	m.genId++
 	return v.(*gen.WasteRecord), nil
 }
 
 // GenerateWasteRecord generates a new waste record with the given timestamp and adds it to the model
 func (m *Model) GenerateWasteRecord(ts *timestamppb.Timestamp) (*gen.WasteRecord, error) {
-	m.mu.Lock()
 	co2 := rand.Float32() * 100
 	land := rand.Float32() * 100
 	trees := rand.Float32() * 5
@@ -86,8 +86,6 @@ func (m *Model) GenerateWasteRecord(ts *timestamppb.Timestamp) (*gen.WasteRecord
 		LandSaved:        &land,
 		TreesSaved:       &trees,
 	}
-	m.genId++
-	m.mu.Unlock()
 	return m.AddWasteRecord(wr)
 }
 
