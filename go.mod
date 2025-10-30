@@ -12,7 +12,7 @@ require (
 	github.com/google/renameio/v2 v2.0.0
 	github.com/gopcua/opcua v0.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
-	github.com/hashicorp/go-retryablehttp v0.7.7
+	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v4 v4.18.2
@@ -29,7 +29,7 @@ require (
 	github.com/rs/cors v1.8.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/smart-core-os/sc-api/go v1.0.0-beta.57
-	github.com/smart-core-os/sc-golang v0.0.0-20250922083951-02a304e4d844
+	github.com/smart-core-os/sc-golang v0.0.0-20251030120622-735d53ae1132
 	github.com/stretchr/testify v1.10.0
 	github.com/timshannon/bolthold v0.0.0-20210913165410-232392fc8a6a
 	github.com/vanti-dev/gobacnet v0.0.0-20250122134204-5b55cc2d13fe
