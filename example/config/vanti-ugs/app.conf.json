@@ -899,7 +899,7 @@
           "name": "van/uk/brum/ugs/devices/waste",
           "traits": [
             {
-              "name": "smartcore.traits.Waste"
+              "name": "smartcore.bos.Waste"
             }
           ],
           "appearance": {"title": "Waste"}

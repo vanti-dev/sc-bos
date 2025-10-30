@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/smart-core-os/sc-golang/pkg/trait/wastepb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/wastepb"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
