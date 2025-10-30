@@ -3,6 +3,7 @@ package merge
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"sync"
 
 	"go.uber.org/multierr"
@@ -228,7 +229,20 @@ func (f *udmiMerge) pollPeer(ctx context.Context) error {
 	return nil
 }
 
+func sanitise(points udmi.PointsEvent) {
+	for k, v := range points {
+		if pv, ok := v.PresentValue.(float64); ok {
+			if math.IsNaN(pv) || math.IsInf(pv, 0) {
+				points[k] = udmi.PointValue{PresentValue: nil}
+			}
+		}
+	}
+}
+
 func (f *udmiMerge) pointsToPointSet(topicPrefix string, points udmi.PointsEvent) (*gen.MqttMessage, error) {
+
+	sanitise(points)
+
 	b, err := json.Marshal(points)
 	if err != nil {
 		return nil, err

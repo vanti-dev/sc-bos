@@ -225,6 +225,27 @@
           "appearance": {"title": "Kaolin Door Blackout"},
           "membership": {"subsystem": "shades"},
           "location": {"floor": "Basement", "zone": "Kaolin Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L00-01",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Copper Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Basement", "zone": "Copper Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L00-02",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Cotswold Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Basement", "zone": "Cotswold Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L00-03",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Kaolin Sound Sensor"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Basement", "zone": "Kaolin Room"}
         }
       ]
     },
@@ -634,6 +655,34 @@
           "appearance": {"title": "Project Door Blackout"},
           "membership": {"subsystem": "shades"},
           "location": {"floor": "Ground Floor", "zone": "Project Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L01-01",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Reception"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Ground Floor", "zone": "Reception"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L01-02",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Teal Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Ground Floor", "zone": "Teal Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L01-03",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Green Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Ground Floor", "zone": "Green Room"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L01-04",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "Yellow Room"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "Ground Floor", "zone": "Yellow Room"}
         }
       ]
     },
@@ -792,6 +841,13 @@
           "appearance": {"title": "Open Plan Window 4"},
           "membership": {"subsystem": "shades"},
           "location": {"floor": "First Floor", "zone": "Open Plan", "description": "Left to right"}
+        },
+        {
+          "name": "van/uk/brum/ugs/devices/SND-L02-01",
+          "traits": [{"name":  "smartcore.bos.SoundSensor"}],
+          "appearance": {"title": "The Bank"},
+          "membership": {"subsystem": "sensors"},
+          "location": {"floor": "First Floor", "zone": "The Bank"}
         }
       ]
     },
@@ -843,7 +899,7 @@
           "name": "van/uk/brum/ugs/devices/waste",
           "traits": [
             {
-              "name": "smartcore.traits.Waste"
+              "name": "smartcore.bos.Waste"
             }
           ],
           "appearance": {"title": "Waste"}
@@ -1782,6 +1838,156 @@
       "name": "van/uk/brum/ugs/automation/air-quality-history/IAQ-L01-04",
       "type": "history",
       "source": {"name": "van/uk/brum/ugs/devices/IAQ-L01-04", "trait": "smartcore.traits.AirQualitySensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/lift-history/lift",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/lift", "trait": "smartcore.bos.Transport"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L00-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L00-01", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L00-02",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L00-02", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L00-03",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L00-03", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L01-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L01-01", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L01-02",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L01-02", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L01-03",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L01-03", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L01-04",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L01-04", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/sound-history/SND-L02-01",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/devices/SND-L02-01", "trait": "smartcore.bos.SoundSensor"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/building",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/building", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/floors/basement",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/floors/basement", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/floors/ground",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/floors/ground", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/floors/first",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/floors/first", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/rooms/copper",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/rooms/copper", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/rooms/cotswold",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/rooms/cotswold", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/rooms/kaolin",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/rooms/kaolin", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/rooms/teal",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/rooms/teal", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/rooms/green",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/rooms/green", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/rooms/yellow",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/rooms/yellow", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/areas/reception",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/areas/reception", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/areas/project",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/areas/project", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/areas/lab",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/areas/lab", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/rooms/bank",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/rooms/bank", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/areas/open-plan",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/areas/open-plan", "trait": "smartcore.traits.AirTemperature"},
+      "storage": {"type": "postgres"}
+    },
+    {
+      "name": "van/uk/brum/ugs/automation/air-temperature-history/areas/service",
+      "type": "history",
+      "source": {"name": "van/uk/brum/ugs/zones/areas/service", "trait": "smartcore.traits.AirTemperature"},
       "storage": {"type": "postgres"}
     }
   ]

@@ -2,27 +2,36 @@ package helvarnet
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
+	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 	"github.com/vanti-dev/sc-bos/pkg/driver/helvarnet/config"
+	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/minibus"
 )
 
 // Pir represents a single PIR sensor within the HelvarNet system.
 type Pir struct {
 	traits.UnimplementedOccupancySensorApiServer
+	gen.UnimplementedUdmiServiceServer
 
 	client    *tcpClient
 	conf      *config.Device
 	logger    *zap.Logger
 	occupancy *resource.Value // *traits.Occupancy
+	udmiBus   minibus.Bus[*gen.PullExportMessagesResponse]
 }
 
 func newPir(client *tcpClient, l *zap.Logger, conf *config.Device) *Pir {
@@ -111,4 +120,59 @@ func (p *Pir) runUpdateState(ctx context.Context, t time.Duration) error {
 			}
 		}
 	}
+}
+
+func (p *Pir) udmiPointsetFromData() (*gen.MqttMessage, error) {
+	points := make(udmi.PointsEvent)
+	occupancy := p.occupancy.Get().(*traits.Occupancy)
+	points["OccupancyStatus"] = udmi.PointValue{PresentValue: occupancy.State.String()}
+
+	b, err := json.Marshal(points)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal udmi points: %w", err)
+	}
+	return &gen.MqttMessage{
+		Topic:   p.conf.TopicPrefix + "/event/pointset/points",
+		Payload: string(b),
+	}, nil
+}
+
+func (p *Pir) sendUdmiMessage(ctx context.Context) {
+	m, err := p.udmiPointsetFromData()
+	if err != nil {
+		p.logger.Error("failed to create udmi pointset message", zap.Error(err))
+		return
+	}
+
+	p.udmiBus.Send(ctx, &gen.PullExportMessagesResponse{
+		Name:    p.conf.Name,
+		Message: m,
+	})
+}
+
+func (p *Pir) GetExportMessage(context.Context, *gen.GetExportMessageRequest) (*gen.MqttMessage, error) {
+	m, err := p.udmiPointsetFromData()
+	if err != nil {
+		p.logger.Error("failed to create udmi pointset message", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to create udmi pointset message")
+	}
+	return m, nil
+}
+
+func (p *Pir) PullExportMessages(_ *gen.PullExportMessagesRequest, server gen.UdmiService_PullExportMessagesServer) error {
+	for msg := range p.udmiBus.Listen(server.Context()) {
+		err := server.Send(msg)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (p *Pir) PullControlTopics(*gen.PullControlTopicsRequest, grpc.ServerStreamingServer[gen.PullControlTopicsResponse]) error {
+	return status.Error(codes.Unimplemented, "PullControlTopics is not implemented for Pir")
+}
+
+func (p *Pir) OnMessage(context.Context, *gen.OnMessageRequest) (*gen.OnMessageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "OnMessage is not implemented for Pir")
 }

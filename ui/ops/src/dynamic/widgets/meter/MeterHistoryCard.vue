@@ -47,7 +47,7 @@ import {useExternalTooltip, useThemeColorPlugin, useVueLegendPlugin} from '@/com
 import {triggerDownload} from '@/components/download/download.js';
 import {computeDatasets, datasetSourceName} from '@/dynamic/widgets/meter/chart.js';
 import MeterTooltip from '@/dynamic/widgets/meter/MeterTooltip.vue';
-import PeriodChooserRows from '@/dynamic/widgets/meter/PeriodChooserRows.vue';
+import PeriodChooserRows from '@/components/PeriodChooserRows.vue';
 import {useDescribeMeterReading} from '@/traits/meter/meter.js';
 import {isNullOrUndef} from '@/util/types.js';
 import {useLocalProp} from '@/util/vue.js';

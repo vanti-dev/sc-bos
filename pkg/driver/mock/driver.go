@@ -25,7 +25,6 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait/parentpb"
 	"github.com/smart-core-os/sc-golang/pkg/trait/publicationpb"
 	"github.com/smart-core-os/sc-golang/pkg/trait/vendingpb"
-	"github.com/smart-core-os/sc-golang/pkg/trait/wastepb"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/driver"
@@ -37,9 +36,11 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylightpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/soundsensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/wastepb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
 	"github.com/vanti-dev/sc-bos/pkg/task/service"
 	"github.com/vanti-dev/sc-bos/pkg/util/maps"
@@ -254,9 +255,6 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		return nil, nil
 	case trait.Vending:
 		return []wrap.ServiceUnwrapper{vendingpb.WrapApi(vendingpb.NewModelServer(vendingpb.NewModel()))}, nil
-	case trait.Waste:
-		model := wastepb.NewModel()
-		return []wrap.ServiceUnwrapper{wastepb.WrapApi(wastepb.NewModelServer(model))}, auto.WasteRecordsAuto(model)
 
 	case accesspb.TraitName:
 		model := accesspb.NewModel()
@@ -290,6 +288,9 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 	case securityevent.TraitName:
 		model := securityevent.NewModel()
 		return []wrap.ServiceUnwrapper{gen.WrapSecurityEventApi(securityevent.NewModelServer(model))}, auto.SecurityEventAuto(model)
+	case soundsensorpb.TraitName:
+		model := soundsensorpb.NewModel()
+		return []wrap.ServiceUnwrapper{gen.WrapSoundSensorApi(soundsensorpb.NewModelServer(model))}, auto.SoundSensorAuto(model)
 	case statuspb.TraitName:
 		model := statuspb.NewModel()
 		// set an initial value or Pull methods can hang
@@ -309,6 +310,9 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		return []wrap.ServiceUnwrapper{gen.WrapTransportApi(transport.NewModelServer(model))}, auto.TransportAuto(model, maxFloor)
 	case udmipb.TraitName:
 		return []wrap.ServiceUnwrapper{gen.WrapUdmiService(auto.NewUdmiServer(logger, deviceName))}, nil
+	case wastepb.TraitName:
+		model := wastepb.NewModel()
+		return []wrap.ServiceUnwrapper{gen.WrapWasteApi(wastepb.NewModelServer(model))}, auto.WasteRecordsAuto(model)
 	}
 
 	return nil, nil

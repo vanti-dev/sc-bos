@@ -19,6 +19,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/soundsensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/wastepb"
 )
 
 var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
@@ -51,7 +52,6 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	trait.Ptz:              {traits.PtzApi_ServiceDesc, traits.PtzInfo_ServiceDesc},
 	trait.Speaker:          {traits.SpeakerApi_ServiceDesc, traits.SpeakerInfo_ServiceDesc},
 	trait.Vending:          {traits.VendingApi_ServiceDesc, traits.VendingInfo_ServiceDesc},
-	trait.Waste:            {traits.WasteApi_ServiceDesc, traits.WasteInfo_ServiceDesc},
 
 	// sc-bos private traits
 	accesspb.TraitName:         {gen.AccessApi_ServiceDesc},
@@ -68,6 +68,7 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	statusTraitName:            {gen.StatusApi_ServiceDesc, gen.StatusHistory_ServiceDesc},
 	transport.TraitName:        {gen.TransportApi_ServiceDesc, gen.TransportInfo_ServiceDesc},
 	udmipb.TraitName:           {gen.UdmiService_ServiceDesc},
+	wastepb.TraitName:          {gen.WasteApi_ServiceDesc, gen.WasteInfo_ServiceDesc},
 }
 
 // ServiceDesc returns the gRPC service descriptors for all services associated with the given trait.

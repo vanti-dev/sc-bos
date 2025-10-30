@@ -1,6 +1,6 @@
 {
   "name": "@vanti-dev/sc-bos-ui-gen",
-  "version": "1.0.0-beta.20",
+  "version": "1.0.0-beta.21",
   "type": "commonjs",
   "scripts": {
     "gen": "node gen.mjs"
