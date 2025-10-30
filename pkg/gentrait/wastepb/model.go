@@ -14,10 +14,16 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-var wasteTypes = [3]gen.WasteRecord_Type{
+var wasteTypes = [9]gen.WasteRecord_Type{
 	gen.WasteRecord_TYPE_UNSPECIFIED,
 	gen.WasteRecord_MIXED_RECYCLING,
 	gen.WasteRecord_GENERAL_WASTE,
+	gen.WasteRecord_ELECTRONICS,
+	gen.WasteRecord_CHEMICAL,
+	gen.WasteRecord_FOOD,
+	gen.WasteRecord_PAPER,
+	gen.WasteRecord_GLASS,
+	gen.WasteRecord_PLASTIC,
 }
 
 var areas = [3]string{"Area 1", "Area 2", "Area 3"}
