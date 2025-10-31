@@ -1093,10 +1093,10 @@ type Device_Query_Condition_Present struct {
 }
 
 type Device_Query_Condition_Matches struct {
-	// The condition matches when when the field matches all conditions in the given query.
+	// The condition matches when the field matches all conditions in the given query.
 	// Fields in the sub-query are relative to value resolved by the parent condition.
 	// For non-repeated fields, this is equivalent to providing multiple conditions on the root query.
-	// For repeated fields, or sub fields of those, all conditions must match the same element for this condition to be satisfied.
+	// For repeated fields, or sub fields of those, there must exist at least one entry where all sub-query conditions match.
 	Matches *Device_Query `protobuf:"bytes,50,opt,name=matches,proto3,oneof"`
 }
 

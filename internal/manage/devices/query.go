@@ -321,7 +321,8 @@ func scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
 	}
 }
 
-// scanMap returns all leafs identified by path in the map m.
+// scanMap returns all values identified by path in the map m.
+// If path is empty, all values in the map are returned.
 func scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[value] {
 	if len(path) == 0 {
 		return func(yield func(value) bool) {
@@ -365,7 +366,8 @@ func scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect
 	return emptyValues // there's more to the path but the value has no properties
 }
 
-// scanList returns all leafs identified by path in the list l.
+// scanList returns all values identified by path in the list l.
+// If path is empty, all values in the list are returned.
 func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[value] {
 	if len(path) == 0 {
 		return func(yield func(value) bool) {
