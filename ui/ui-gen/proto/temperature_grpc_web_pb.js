@@ -85,13 +85,13 @@ proto.smartcore.bos.TemperatureApiPromiseClient =
  * @const
  * @type {!grpc.web.MethodDescriptor<
  *   !proto.smartcore.bos.GetTemperatureRequest,
- *   !proto.smartcore.bos.Temperature>}
+ *   !proto.smartcore.bos.GetTemperatureResponse>}
  */
 const methodDescriptor_TemperatureApi_GetTemperature = new grpc.web.MethodDescriptor(
   '/smartcore.bos.TemperatureApi/GetTemperature',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.GetTemperatureRequest,
-  proto.smartcore.bos.Temperature,
+  proto.smartcore.bos.GetTemperatureResponse,
   /**
    * @param {!proto.smartcore.bos.GetTemperatureRequest} request
    * @return {!Uint8Array}
@@ -99,7 +99,7 @@ const methodDescriptor_TemperatureApi_GetTemperature = new grpc.web.MethodDescri
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.Temperature.deserializeBinary
+  proto.smartcore.bos.GetTemperatureResponse.deserializeBinary
 );
 
 
@@ -108,9 +108,9 @@ const methodDescriptor_TemperatureApi_GetTemperature = new grpc.web.MethodDescri
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Temperature)}
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.GetTemperatureResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Temperature>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.GetTemperatureResponse>|undefined}
  *     The XHR Node Readable Stream
  */
 proto.smartcore.bos.TemperatureApiClient.prototype.getTemperature =
@@ -129,7 +129,7 @@ proto.smartcore.bos.TemperatureApiClient.prototype.getTemperature =
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.smartcore.bos.Temperature>}
+ * @return {!Promise<!proto.smartcore.bos.GetTemperatureResponse>}
  *     Promise that resolves to the response
  */
 proto.smartcore.bos.TemperatureApiPromiseClient.prototype.getTemperature =
@@ -202,13 +202,13 @@ proto.smartcore.bos.TemperatureApiPromiseClient.prototype.pullTemperature =
  * @const
  * @type {!grpc.web.MethodDescriptor<
  *   !proto.smartcore.bos.UpdateTemperatureRequest,
- *   !proto.smartcore.bos.Temperature>}
+ *   !proto.smartcore.bos.UpdateTemperatureResponse>}
  */
 const methodDescriptor_TemperatureApi_UpdateTemperature = new grpc.web.MethodDescriptor(
   '/smartcore.bos.TemperatureApi/UpdateTemperature',
   grpc.web.MethodType.UNARY,
   proto.smartcore.bos.UpdateTemperatureRequest,
-  proto.smartcore.bos.Temperature,
+  proto.smartcore.bos.UpdateTemperatureResponse,
   /**
    * @param {!proto.smartcore.bos.UpdateTemperatureRequest} request
    * @return {!Uint8Array}
@@ -216,7 +216,7 @@ const methodDescriptor_TemperatureApi_UpdateTemperature = new grpc.web.MethodDes
   function(request) {
     return request.serializeBinary();
   },
-  proto.smartcore.bos.Temperature.deserializeBinary
+  proto.smartcore.bos.UpdateTemperatureResponse.deserializeBinary
 );
 
 
@@ -225,9 +225,9 @@ const methodDescriptor_TemperatureApi_UpdateTemperature = new grpc.web.MethodDes
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.Temperature)}
+ * @param {function(?grpc.web.RpcError, ?proto.smartcore.bos.UpdateTemperatureResponse)}
  *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.Temperature>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.smartcore.bos.UpdateTemperatureResponse>|undefined}
  *     The XHR Node Readable Stream
  */
 proto.smartcore.bos.TemperatureApiClient.prototype.updateTemperature =
@@ -246,7 +246,7 @@ proto.smartcore.bos.TemperatureApiClient.prototype.updateTemperature =
  *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.smartcore.bos.Temperature>}
+ * @return {!Promise<!proto.smartcore.bos.UpdateTemperatureResponse>}
  *     Promise that resolves to the response
  */
 proto.smartcore.bos.TemperatureApiPromiseClient.prototype.updateTemperature =

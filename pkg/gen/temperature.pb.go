@@ -30,7 +30,10 @@ type Temperature struct {
 	// Read/write, the target temperature.
 	SetPoint *types.Temperature `protobuf:"bytes,1,opt,name=set_point,json=setPoint,proto3" json:"set_point,omitempty"`
 	// Output only, the measured temperature.
-	Measured      *types.Temperature `protobuf:"bytes,2,opt,name=measured,proto3" json:"measured,omitempty"`
+	Measured *types.Temperature `protobuf:"bytes,2,opt,name=measured,proto3" json:"measured,omitempty"`
+	// Title of the Temperature context (e.g., "primary flow", "primary return").
+	// Required if there are multiple Temperature instances per device as it is used as ID. Must be unique per device.
+	Title         string `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -77,6 +80,13 @@ func (x *Temperature) GetMeasured() *types.Temperature {
 		return x.Measured
 	}
 	return nil
+}
+
+func (x *Temperature) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
 }
 
 type GetTemperatureRequest struct {
@@ -131,6 +141,50 @@ func (x *GetTemperatureRequest) GetReadMask() *fieldmaskpb.FieldMask {
 	return nil
 }
 
+type GetTemperatureResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Temperatures  []*Temperature         `protobuf:"bytes,1,rep,name=temperatures,proto3" json:"temperatures,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTemperatureResponse) Reset() {
+	*x = GetTemperatureResponse{}
+	mi := &file_temperature_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTemperatureResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTemperatureResponse) ProtoMessage() {}
+
+func (x *GetTemperatureResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_temperature_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTemperatureResponse.ProtoReflect.Descriptor instead.
+func (*GetTemperatureResponse) Descriptor() ([]byte, []int) {
+	return file_temperature_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetTemperatureResponse) GetTemperatures() []*Temperature {
+	if x != nil {
+		return x.Temperatures
+	}
+	return nil
+}
+
 type PullTemperatureRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -142,7 +196,7 @@ type PullTemperatureRequest struct {
 
 func (x *PullTemperatureRequest) Reset() {
 	*x = PullTemperatureRequest{}
-	mi := &file_temperature_proto_msgTypes[2]
+	mi := &file_temperature_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -154,7 +208,7 @@ func (x *PullTemperatureRequest) String() string {
 func (*PullTemperatureRequest) ProtoMessage() {}
 
 func (x *PullTemperatureRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_temperature_proto_msgTypes[2]
+	mi := &file_temperature_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -167,7 +221,7 @@ func (x *PullTemperatureRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PullTemperatureRequest.ProtoReflect.Descriptor instead.
 func (*PullTemperatureRequest) Descriptor() ([]byte, []int) {
-	return file_temperature_proto_rawDescGZIP(), []int{2}
+	return file_temperature_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *PullTemperatureRequest) GetName() string {
@@ -200,7 +254,7 @@ type PullTemperatureResponse struct {
 
 func (x *PullTemperatureResponse) Reset() {
 	*x = PullTemperatureResponse{}
-	mi := &file_temperature_proto_msgTypes[3]
+	mi := &file_temperature_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -212,7 +266,7 @@ func (x *PullTemperatureResponse) String() string {
 func (*PullTemperatureResponse) ProtoMessage() {}
 
 func (x *PullTemperatureResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_temperature_proto_msgTypes[3]
+	mi := &file_temperature_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -225,7 +279,7 @@ func (x *PullTemperatureResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PullTemperatureResponse.ProtoReflect.Descriptor instead.
 func (*PullTemperatureResponse) Descriptor() ([]byte, []int) {
-	return file_temperature_proto_rawDescGZIP(), []int{3}
+	return file_temperature_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *PullTemperatureResponse) GetChanges() []*PullTemperatureResponse_Change {
@@ -235,11 +289,13 @@ func (x *PullTemperatureResponse) GetChanges() []*PullTemperatureResponse_Change
 	return nil
 }
 
+// Update temperatures. Multiple temperature set points can be updated in one request,
+// use the Title as the identifier in Temperatures to uniquely identify each Temperature.
 type UpdateTemperatureRequest struct {
-	state       protoimpl.MessageState `protogen:"open.v1"`
-	Name        string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Temperature *Temperature           `protobuf:"bytes,2,opt,name=temperature,proto3" json:"temperature,omitempty"`
-	UpdateMask  *fieldmaskpb.FieldMask `protobuf:"bytes,3,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	Name         string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Temperatures []*Temperature         `protobuf:"bytes,2,rep,name=temperatures,proto3" json:"temperatures,omitempty"`
+	UpdateMask   *fieldmaskpb.FieldMask `protobuf:"bytes,3,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
 	// When true, temperature is a change to the devices current value.
 	Delta         bool `protobuf:"varint,4,opt,name=delta,proto3" json:"delta,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -248,7 +304,7 @@ type UpdateTemperatureRequest struct {
 
 func (x *UpdateTemperatureRequest) Reset() {
 	*x = UpdateTemperatureRequest{}
-	mi := &file_temperature_proto_msgTypes[4]
+	mi := &file_temperature_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -260,7 +316,7 @@ func (x *UpdateTemperatureRequest) String() string {
 func (*UpdateTemperatureRequest) ProtoMessage() {}
 
 func (x *UpdateTemperatureRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_temperature_proto_msgTypes[4]
+	mi := &file_temperature_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -273,7 +329,7 @@ func (x *UpdateTemperatureRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTemperatureRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTemperatureRequest) Descriptor() ([]byte, []int) {
-	return file_temperature_proto_rawDescGZIP(), []int{4}
+	return file_temperature_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdateTemperatureRequest) GetName() string {
@@ -283,9 +339,9 @@ func (x *UpdateTemperatureRequest) GetName() string {
 	return ""
 }
 
-func (x *UpdateTemperatureRequest) GetTemperature() *Temperature {
+func (x *UpdateTemperatureRequest) GetTemperatures() []*Temperature {
 	if x != nil {
-		return x.Temperature
+		return x.Temperatures
 	}
 	return nil
 }
@@ -304,6 +360,50 @@ func (x *UpdateTemperatureRequest) GetDelta() bool {
 	return false
 }
 
+type UpdateTemperatureResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Temperatures  []*Temperature         `protobuf:"bytes,1,rep,name=temperatures,proto3" json:"temperatures,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateTemperatureResponse) Reset() {
+	*x = UpdateTemperatureResponse{}
+	mi := &file_temperature_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateTemperatureResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateTemperatureResponse) ProtoMessage() {}
+
+func (x *UpdateTemperatureResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_temperature_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateTemperatureResponse.ProtoReflect.Descriptor instead.
+func (*UpdateTemperatureResponse) Descriptor() ([]byte, []int) {
+	return file_temperature_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UpdateTemperatureResponse) GetTemperatures() []*Temperature {
+	if x != nil {
+		return x.Temperatures
+	}
+	return nil
+}
+
 type PullTemperatureResponse_Change struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -315,7 +415,7 @@ type PullTemperatureResponse_Change struct {
 
 func (x *PullTemperatureResponse_Change) Reset() {
 	*x = PullTemperatureResponse_Change{}
-	mi := &file_temperature_proto_msgTypes[5]
+	mi := &file_temperature_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -327,7 +427,7 @@ func (x *PullTemperatureResponse_Change) String() string {
 func (*PullTemperatureResponse_Change) ProtoMessage() {}
 
 func (x *PullTemperatureResponse_Change) ProtoReflect() protoreflect.Message {
-	mi := &file_temperature_proto_msgTypes[5]
+	mi := &file_temperature_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -340,7 +440,7 @@ func (x *PullTemperatureResponse_Change) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PullTemperatureResponse_Change.ProtoReflect.Descriptor instead.
 func (*PullTemperatureResponse_Change) Descriptor() ([]byte, []int) {
-	return file_temperature_proto_rawDescGZIP(), []int{3, 0}
+	return file_temperature_proto_rawDescGZIP(), []int{4, 0}
 }
 
 func (x *PullTemperatureResponse_Change) GetName() string {
@@ -368,13 +468,16 @@ var File_temperature_proto protoreflect.FileDescriptor
 
 const file_temperature_proto_rawDesc = "" +
 	"\n" +
-	"\x11temperature.proto\x12\rsmartcore.bos\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x10types/unit.proto\"\x82\x01\n" +
+	"\x11temperature.proto\x12\rsmartcore.bos\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x10types/unit.proto\"\x98\x01\n" +
 	"\vTemperature\x129\n" +
 	"\tset_point\x18\x01 \x01(\v2\x1c.smartcore.types.TemperatureR\bsetPoint\x128\n" +
-	"\bmeasured\x18\x02 \x01(\v2\x1c.smartcore.types.TemperatureR\bmeasured\"d\n" +
+	"\bmeasured\x18\x02 \x01(\v2\x1c.smartcore.types.TemperatureR\bmeasured\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\"d\n" +
 	"\x15GetTemperatureRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
-	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\"\x88\x01\n" +
+	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\"X\n" +
+	"\x16GetTemperatureResponse\x12>\n" +
+	"\ftemperatures\x18\x01 \x03(\v2\x1a.smartcore.bos.TemperatureR\ftemperatures\"\x88\x01\n" +
 	"\x16PullTemperatureRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
 	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\x12!\n" +
@@ -385,17 +488,19 @@ const file_temperature_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12;\n" +
 	"\vchange_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"changeTime\x12<\n" +
-	"\vtemperature\x18\x03 \x01(\v2\x1a.smartcore.bos.TemperatureR\vtemperature\"\xbf\x01\n" +
+	"\vtemperature\x18\x03 \x01(\v2\x1a.smartcore.bos.TemperatureR\vtemperature\"\xc1\x01\n" +
 	"\x18UpdateTemperatureRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12<\n" +
-	"\vtemperature\x18\x02 \x01(\v2\x1a.smartcore.bos.TemperatureR\vtemperature\x12;\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12>\n" +
+	"\ftemperatures\x18\x02 \x03(\v2\x1a.smartcore.bos.TemperatureR\ftemperatures\x12;\n" +
 	"\vupdate_mask\x18\x03 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
 	"updateMask\x12\x14\n" +
-	"\x05delta\x18\x04 \x01(\bR\x05delta2\xa8\x02\n" +
-	"\x0eTemperatureApi\x12T\n" +
-	"\x0eGetTemperature\x12$.smartcore.bos.GetTemperatureRequest\x1a\x1a.smartcore.bos.Temperature\"\x00\x12d\n" +
-	"\x0fPullTemperature\x12%.smartcore.bos.PullTemperatureRequest\x1a&.smartcore.bos.PullTemperatureResponse\"\x000\x01\x12Z\n" +
-	"\x11UpdateTemperature\x12'.smartcore.bos.UpdateTemperatureRequest\x1a\x1a.smartcore.bos.Temperature\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x05delta\x18\x04 \x01(\bR\x05delta\"[\n" +
+	"\x19UpdateTemperatureResponse\x12>\n" +
+	"\ftemperatures\x18\x01 \x03(\v2\x1a.smartcore.bos.TemperatureR\ftemperatures2\xc1\x02\n" +
+	"\x0eTemperatureApi\x12_\n" +
+	"\x0eGetTemperature\x12$.smartcore.bos.GetTemperatureRequest\x1a%.smartcore.bos.GetTemperatureResponse\"\x00\x12d\n" +
+	"\x0fPullTemperature\x12%.smartcore.bos.PullTemperatureRequest\x1a&.smartcore.bos.PullTemperatureResponse\"\x000\x01\x12h\n" +
+	"\x11UpdateTemperature\x12'.smartcore.bos.UpdateTemperatureRequest\x1a(.smartcore.bos.UpdateTemperatureResponse\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_temperature_proto_rawDescOnce sync.Once
@@ -409,39 +514,43 @@ func file_temperature_proto_rawDescGZIP() []byte {
 	return file_temperature_proto_rawDescData
 }
 
-var file_temperature_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_temperature_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_temperature_proto_goTypes = []any{
 	(*Temperature)(nil),                    // 0: smartcore.bos.Temperature
 	(*GetTemperatureRequest)(nil),          // 1: smartcore.bos.GetTemperatureRequest
-	(*PullTemperatureRequest)(nil),         // 2: smartcore.bos.PullTemperatureRequest
-	(*PullTemperatureResponse)(nil),        // 3: smartcore.bos.PullTemperatureResponse
-	(*UpdateTemperatureRequest)(nil),       // 4: smartcore.bos.UpdateTemperatureRequest
-	(*PullTemperatureResponse_Change)(nil), // 5: smartcore.bos.PullTemperatureResponse.Change
-	(*types.Temperature)(nil),              // 6: smartcore.types.Temperature
-	(*fieldmaskpb.FieldMask)(nil),          // 7: google.protobuf.FieldMask
-	(*timestamppb.Timestamp)(nil),          // 8: google.protobuf.Timestamp
+	(*GetTemperatureResponse)(nil),         // 2: smartcore.bos.GetTemperatureResponse
+	(*PullTemperatureRequest)(nil),         // 3: smartcore.bos.PullTemperatureRequest
+	(*PullTemperatureResponse)(nil),        // 4: smartcore.bos.PullTemperatureResponse
+	(*UpdateTemperatureRequest)(nil),       // 5: smartcore.bos.UpdateTemperatureRequest
+	(*UpdateTemperatureResponse)(nil),      // 6: smartcore.bos.UpdateTemperatureResponse
+	(*PullTemperatureResponse_Change)(nil), // 7: smartcore.bos.PullTemperatureResponse.Change
+	(*types.Temperature)(nil),              // 8: smartcore.types.Temperature
+	(*fieldmaskpb.FieldMask)(nil),          // 9: google.protobuf.FieldMask
+	(*timestamppb.Timestamp)(nil),          // 10: google.protobuf.Timestamp
 }
 var file_temperature_proto_depIdxs = []int32{
-	6,  // 0: smartcore.bos.Temperature.set_point:type_name -> smartcore.types.Temperature
-	6,  // 1: smartcore.bos.Temperature.measured:type_name -> smartcore.types.Temperature
-	7,  // 2: smartcore.bos.GetTemperatureRequest.read_mask:type_name -> google.protobuf.FieldMask
-	7,  // 3: smartcore.bos.PullTemperatureRequest.read_mask:type_name -> google.protobuf.FieldMask
-	5,  // 4: smartcore.bos.PullTemperatureResponse.changes:type_name -> smartcore.bos.PullTemperatureResponse.Change
-	0,  // 5: smartcore.bos.UpdateTemperatureRequest.temperature:type_name -> smartcore.bos.Temperature
-	7,  // 6: smartcore.bos.UpdateTemperatureRequest.update_mask:type_name -> google.protobuf.FieldMask
-	8,  // 7: smartcore.bos.PullTemperatureResponse.Change.change_time:type_name -> google.protobuf.Timestamp
-	0,  // 8: smartcore.bos.PullTemperatureResponse.Change.temperature:type_name -> smartcore.bos.Temperature
-	1,  // 9: smartcore.bos.TemperatureApi.GetTemperature:input_type -> smartcore.bos.GetTemperatureRequest
-	2,  // 10: smartcore.bos.TemperatureApi.PullTemperature:input_type -> smartcore.bos.PullTemperatureRequest
-	4,  // 11: smartcore.bos.TemperatureApi.UpdateTemperature:input_type -> smartcore.bos.UpdateTemperatureRequest
-	0,  // 12: smartcore.bos.TemperatureApi.GetTemperature:output_type -> smartcore.bos.Temperature
-	3,  // 13: smartcore.bos.TemperatureApi.PullTemperature:output_type -> smartcore.bos.PullTemperatureResponse
-	0,  // 14: smartcore.bos.TemperatureApi.UpdateTemperature:output_type -> smartcore.bos.Temperature
-	12, // [12:15] is the sub-list for method output_type
-	9,  // [9:12] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	8,  // 0: smartcore.bos.Temperature.set_point:type_name -> smartcore.types.Temperature
+	8,  // 1: smartcore.bos.Temperature.measured:type_name -> smartcore.types.Temperature
+	9,  // 2: smartcore.bos.GetTemperatureRequest.read_mask:type_name -> google.protobuf.FieldMask
+	0,  // 3: smartcore.bos.GetTemperatureResponse.temperatures:type_name -> smartcore.bos.Temperature
+	9,  // 4: smartcore.bos.PullTemperatureRequest.read_mask:type_name -> google.protobuf.FieldMask
+	7,  // 5: smartcore.bos.PullTemperatureResponse.changes:type_name -> smartcore.bos.PullTemperatureResponse.Change
+	0,  // 6: smartcore.bos.UpdateTemperatureRequest.temperatures:type_name -> smartcore.bos.Temperature
+	9,  // 7: smartcore.bos.UpdateTemperatureRequest.update_mask:type_name -> google.protobuf.FieldMask
+	0,  // 8: smartcore.bos.UpdateTemperatureResponse.temperatures:type_name -> smartcore.bos.Temperature
+	10, // 9: smartcore.bos.PullTemperatureResponse.Change.change_time:type_name -> google.protobuf.Timestamp
+	0,  // 10: smartcore.bos.PullTemperatureResponse.Change.temperature:type_name -> smartcore.bos.Temperature
+	1,  // 11: smartcore.bos.TemperatureApi.GetTemperature:input_type -> smartcore.bos.GetTemperatureRequest
+	3,  // 12: smartcore.bos.TemperatureApi.PullTemperature:input_type -> smartcore.bos.PullTemperatureRequest
+	5,  // 13: smartcore.bos.TemperatureApi.UpdateTemperature:input_type -> smartcore.bos.UpdateTemperatureRequest
+	2,  // 14: smartcore.bos.TemperatureApi.GetTemperature:output_type -> smartcore.bos.GetTemperatureResponse
+	4,  // 15: smartcore.bos.TemperatureApi.PullTemperature:output_type -> smartcore.bos.PullTemperatureResponse
+	6,  // 16: smartcore.bos.TemperatureApi.UpdateTemperature:output_type -> smartcore.bos.UpdateTemperatureResponse
+	14, // [14:17] is the sub-list for method output_type
+	11, // [11:14] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_temperature_proto_init() }
@@ -455,7 +564,7 @@ func file_temperature_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_temperature_proto_rawDesc), len(file_temperature_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

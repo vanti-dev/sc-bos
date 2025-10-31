@@ -12,8 +12,8 @@ export class TemperatureApiClient {
     request: temperature_pb.GetTemperatureRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: temperature_pb.Temperature) => void
-  ): grpcWeb.ClientReadableStream<temperature_pb.Temperature>;
+               response: temperature_pb.GetTemperatureResponse) => void
+  ): grpcWeb.ClientReadableStream<temperature_pb.GetTemperatureResponse>;
 
   pullTemperature(
     request: temperature_pb.PullTemperatureRequest,
@@ -24,8 +24,8 @@ export class TemperatureApiClient {
     request: temperature_pb.UpdateTemperatureRequest,
     metadata: grpcWeb.Metadata | undefined,
     callback: (err: grpcWeb.RpcError,
-               response: temperature_pb.Temperature) => void
-  ): grpcWeb.ClientReadableStream<temperature_pb.Temperature>;
+               response: temperature_pb.UpdateTemperatureResponse) => void
+  ): grpcWeb.ClientReadableStream<temperature_pb.UpdateTemperatureResponse>;
 
 }
 
@@ -37,7 +37,7 @@ export class TemperatureApiPromiseClient {
   getTemperature(
     request: temperature_pb.GetTemperatureRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<temperature_pb.Temperature>;
+  ): Promise<temperature_pb.GetTemperatureResponse>;
 
   pullTemperature(
     request: temperature_pb.PullTemperatureRequest,
@@ -47,7 +47,7 @@ export class TemperatureApiPromiseClient {
   updateTemperature(
     request: temperature_pb.UpdateTemperatureRequest,
     metadata?: grpcWeb.Metadata
-  ): Promise<temperature_pb.Temperature>;
+  ): Promise<temperature_pb.UpdateTemperatureResponse>;
 
 }
 

@@ -78,7 +78,7 @@ func (r *TemperatureApiRouter) GetTemperatureApiClient(name string) (Temperature
 	return res.(TemperatureApiClient), nil
 }
 
-func (r *TemperatureApiRouter) GetTemperature(ctx context.Context, request *GetTemperatureRequest) (*Temperature, error) {
+func (r *TemperatureApiRouter) GetTemperature(ctx context.Context, request *GetTemperatureRequest) (*GetTemperatureResponse, error) {
 	child, err := r.GetTemperatureApiClient(request.Name)
 	if err != nil {
 		return nil, err
@@ -146,7 +146,7 @@ func (r *TemperatureApiRouter) PullTemperature(request *PullTemperatureRequest, 
 	}
 }
 
-func (r *TemperatureApiRouter) UpdateTemperature(ctx context.Context, request *UpdateTemperatureRequest) (*Temperature, error) {
+func (r *TemperatureApiRouter) UpdateTemperature(ctx context.Context, request *UpdateTemperatureRequest) (*UpdateTemperatureResponse, error) {
 	child, err := r.GetTemperatureApiClient(request.Name)
 	if err != nil {
 		return nil, err

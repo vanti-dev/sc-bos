@@ -31,9 +31,9 @@ const (
 // Trait for devices that have or measure temperature like an oven or shower,
 // distinct from the AirTemperature trait (HVAC, thermostats).
 type TemperatureApiClient interface {
-	GetTemperature(ctx context.Context, in *GetTemperatureRequest, opts ...grpc.CallOption) (*Temperature, error)
+	GetTemperature(ctx context.Context, in *GetTemperatureRequest, opts ...grpc.CallOption) (*GetTemperatureResponse, error)
 	PullTemperature(ctx context.Context, in *PullTemperatureRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PullTemperatureResponse], error)
-	UpdateTemperature(ctx context.Context, in *UpdateTemperatureRequest, opts ...grpc.CallOption) (*Temperature, error)
+	UpdateTemperature(ctx context.Context, in *UpdateTemperatureRequest, opts ...grpc.CallOption) (*UpdateTemperatureResponse, error)
 }
 
 type temperatureApiClient struct {
@@ -44,9 +44,9 @@ func NewTemperatureApiClient(cc grpc.ClientConnInterface) TemperatureApiClient {
 	return &temperatureApiClient{cc}
 }
 
-func (c *temperatureApiClient) GetTemperature(ctx context.Context, in *GetTemperatureRequest, opts ...grpc.CallOption) (*Temperature, error) {
+func (c *temperatureApiClient) GetTemperature(ctx context.Context, in *GetTemperatureRequest, opts ...grpc.CallOption) (*GetTemperatureResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Temperature)
+	out := new(GetTemperatureResponse)
 	err := c.cc.Invoke(ctx, TemperatureApi_GetTemperature_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -73,9 +73,9 @@ func (c *temperatureApiClient) PullTemperature(ctx context.Context, in *PullTemp
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type TemperatureApi_PullTemperatureClient = grpc.ServerStreamingClient[PullTemperatureResponse]
 
-func (c *temperatureApiClient) UpdateTemperature(ctx context.Context, in *UpdateTemperatureRequest, opts ...grpc.CallOption) (*Temperature, error) {
+func (c *temperatureApiClient) UpdateTemperature(ctx context.Context, in *UpdateTemperatureRequest, opts ...grpc.CallOption) (*UpdateTemperatureResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Temperature)
+	out := new(UpdateTemperatureResponse)
 	err := c.cc.Invoke(ctx, TemperatureApi_UpdateTemperature_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -90,9 +90,9 @@ func (c *temperatureApiClient) UpdateTemperature(ctx context.Context, in *Update
 // Trait for devices that have or measure temperature like an oven or shower,
 // distinct from the AirTemperature trait (HVAC, thermostats).
 type TemperatureApiServer interface {
-	GetTemperature(context.Context, *GetTemperatureRequest) (*Temperature, error)
+	GetTemperature(context.Context, *GetTemperatureRequest) (*GetTemperatureResponse, error)
 	PullTemperature(*PullTemperatureRequest, grpc.ServerStreamingServer[PullTemperatureResponse]) error
-	UpdateTemperature(context.Context, *UpdateTemperatureRequest) (*Temperature, error)
+	UpdateTemperature(context.Context, *UpdateTemperatureRequest) (*UpdateTemperatureResponse, error)
 	mustEmbedUnimplementedTemperatureApiServer()
 }
 
@@ -103,13 +103,13 @@ type TemperatureApiServer interface {
 // pointer dereference when methods are called.
 type UnimplementedTemperatureApiServer struct{}
 
-func (UnimplementedTemperatureApiServer) GetTemperature(context.Context, *GetTemperatureRequest) (*Temperature, error) {
+func (UnimplementedTemperatureApiServer) GetTemperature(context.Context, *GetTemperatureRequest) (*GetTemperatureResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTemperature not implemented")
 }
 func (UnimplementedTemperatureApiServer) PullTemperature(*PullTemperatureRequest, grpc.ServerStreamingServer[PullTemperatureResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method PullTemperature not implemented")
 }
-func (UnimplementedTemperatureApiServer) UpdateTemperature(context.Context, *UpdateTemperatureRequest) (*Temperature, error) {
+func (UnimplementedTemperatureApiServer) UpdateTemperature(context.Context, *UpdateTemperatureRequest) (*UpdateTemperatureResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateTemperature not implemented")
 }
 func (UnimplementedTemperatureApiServer) mustEmbedUnimplementedTemperatureApiServer() {}

@@ -16,6 +16,9 @@ export class Temperature extends jspb.Message {
   hasMeasured(): boolean;
   clearMeasured(): Temperature;
 
+  getTitle(): string;
+  setTitle(value: string): Temperature;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Temperature.AsObject;
   static toObject(includeInstance: boolean, msg: Temperature): Temperature.AsObject;
@@ -28,6 +31,7 @@ export namespace Temperature {
   export type AsObject = {
     setPoint?: types_unit_pb.Temperature.AsObject,
     measured?: types_unit_pb.Temperature.AsObject,
+    title: string,
   }
 }
 
@@ -52,6 +56,26 @@ export namespace GetTemperatureRequest {
   export type AsObject = {
     name: string,
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
+  }
+}
+
+export class GetTemperatureResponse extends jspb.Message {
+  getTemperaturesList(): Array<Temperature>;
+  setTemperaturesList(value: Array<Temperature>): GetTemperatureResponse;
+  clearTemperaturesList(): GetTemperatureResponse;
+  addTemperatures(value?: Temperature, index?: number): Temperature;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetTemperatureResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetTemperatureResponse): GetTemperatureResponse.AsObject;
+  static serializeBinaryToWriter(message: GetTemperatureResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetTemperatureResponse;
+  static deserializeBinaryFromReader(message: GetTemperatureResponse, reader: jspb.BinaryReader): GetTemperatureResponse;
+}
+
+export namespace GetTemperatureResponse {
+  export type AsObject = {
+    temperaturesList: Array<Temperature.AsObject>,
   }
 }
 
@@ -138,10 +162,10 @@ export class UpdateTemperatureRequest extends jspb.Message {
   getName(): string;
   setName(value: string): UpdateTemperatureRequest;
 
-  getTemperature(): Temperature | undefined;
-  setTemperature(value?: Temperature): UpdateTemperatureRequest;
-  hasTemperature(): boolean;
-  clearTemperature(): UpdateTemperatureRequest;
+  getTemperaturesList(): Array<Temperature>;
+  setTemperaturesList(value: Array<Temperature>): UpdateTemperatureRequest;
+  clearTemperaturesList(): UpdateTemperatureRequest;
+  addTemperatures(value?: Temperature, index?: number): Temperature;
 
   getUpdateMask(): google_protobuf_field_mask_pb.FieldMask | undefined;
   setUpdateMask(value?: google_protobuf_field_mask_pb.FieldMask): UpdateTemperatureRequest;
@@ -162,9 +186,29 @@ export class UpdateTemperatureRequest extends jspb.Message {
 export namespace UpdateTemperatureRequest {
   export type AsObject = {
     name: string,
-    temperature?: Temperature.AsObject,
+    temperaturesList: Array<Temperature.AsObject>,
     updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     delta: boolean,
+  }
+}
+
+export class UpdateTemperatureResponse extends jspb.Message {
+  getTemperaturesList(): Array<Temperature>;
+  setTemperaturesList(value: Array<Temperature>): UpdateTemperatureResponse;
+  clearTemperaturesList(): UpdateTemperatureResponse;
+  addTemperatures(value?: Temperature, index?: number): Temperature;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateTemperatureResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateTemperatureResponse): UpdateTemperatureResponse.AsObject;
+  static serializeBinaryToWriter(message: UpdateTemperatureResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateTemperatureResponse;
+  static deserializeBinaryFromReader(message: UpdateTemperatureResponse, reader: jspb.BinaryReader): UpdateTemperatureResponse;
+}
+
+export namespace UpdateTemperatureResponse {
+  export type AsObject = {
+    temperaturesList: Array<Temperature.AsObject>,
   }
 }
 
