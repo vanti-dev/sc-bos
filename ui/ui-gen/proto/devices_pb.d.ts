@@ -6,6 +6,7 @@ import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/t
 import * as traits_metadata_pb from '@smart-core-os/sc-api-grpc-web/traits/metadata_pb'; // proto import: "traits/metadata.proto"
 import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb'; // proto import: "types/change.proto"
 import * as types_time_period_pb from '@smart-core-os/sc-api-grpc-web/types/time/period_pb'; // proto import: "types/time/period.proto"
+import * as health_pb from './health_pb'; // proto import: "health.proto"
 
 
 export class Device extends jspb.Message {
@@ -16,6 +17,11 @@ export class Device extends jspb.Message {
   setMetadata(value?: traits_metadata_pb.Metadata): Device;
   hasMetadata(): boolean;
   clearMetadata(): Device;
+
+  getHealthChecksList(): Array<health_pb.HealthCheck>;
+  setHealthChecksList(value: Array<health_pb.HealthCheck>): Device;
+  clearHealthChecksList(): Device;
+  addHealthChecks(value?: health_pb.HealthCheck, index?: number): health_pb.HealthCheck;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Device.AsObject;
@@ -29,6 +35,7 @@ export namespace Device {
   export type AsObject = {
     name: string,
     metadata?: traits_metadata_pb.Metadata.AsObject,
+    healthChecksList: Array<health_pb.HealthCheck.AsObject>,
   }
 
   export class Query extends jspb.Message {
@@ -122,6 +129,11 @@ export namespace Device {
       hasPresent(): boolean;
       clearPresent(): Condition;
 
+      getMatches(): Device.Query | undefined;
+      setMatches(value?: Device.Query): Condition;
+      hasMatches(): boolean;
+      clearMatches(): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -151,6 +163,7 @@ export namespace Device {
         nameDescendantIn?: Device.Query.StringList.AsObject,
         nameDescendantIncIn?: Device.Query.StringList.AsObject,
         present?: google_protobuf_empty_pb.Empty.AsObject,
+        matches?: Device.Query.AsObject,
       }
 
       export enum ValueCase { 
@@ -171,6 +184,7 @@ export namespace Device {
         NAME_DESCENDANT_IN = 32,
         NAME_DESCENDANT_INC_IN = 33,
         PRESENT = 40,
+        MATCHES = 50,
       }
     }
 
