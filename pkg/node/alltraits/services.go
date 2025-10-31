@@ -17,6 +17,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/serviceticketpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/soundsensorpb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/temperaturepb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/wastepb"
@@ -66,6 +67,7 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	serviceticketpb.TraitName:  {gen.ServiceTicketApi_ServiceDesc, gen.ServiceTicketInfo_ServiceDesc},
 	soundsensorpb.TraitName:    {gen.SoundSensorApi_ServiceDesc, gen.SoundSensorInfo_ServiceDesc},
 	statusTraitName:            {gen.StatusApi_ServiceDesc, gen.StatusHistory_ServiceDesc},
+	temperaturepb.TraitName:    {gen.TemperatureApi_ServiceDesc},
 	transport.TraitName:        {gen.TransportApi_ServiceDesc, gen.TransportInfo_ServiceDesc},
 	udmipb.TraitName:           {gen.UdmiService_ServiceDesc},
 	wastepb.TraitName:          {gen.WasteApi_ServiceDesc, gen.WasteInfo_ServiceDesc},
