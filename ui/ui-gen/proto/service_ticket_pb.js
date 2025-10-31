@@ -587,8 +587,9 @@ proto.smartcore.bos.Ticket.Severity.prototype.toObject = function(opt_includeIns
  */
 proto.smartcore.bos.Ticket.Severity.toObject = function(includeInstance, msg) {
   var f, obj = {
-title: jspb.Message.getFieldWithDefault(msg, 1, ""),
-description: jspb.Message.getFieldWithDefault(msg, 2, "")
+id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+title: jspb.Message.getFieldWithDefault(msg, 2, ""),
+description: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -627,9 +628,13 @@ proto.smartcore.bos.Ticket.Severity.deserializeBinaryFromReader = function(msg, 
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setTitle(value);
+      msg.setId(value);
       break;
     case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTitle(value);
+      break;
+    case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setDescription(value);
       break;
@@ -662,17 +667,24 @@ proto.smartcore.bos.Ticket.Severity.prototype.serializeBinary = function() {
  */
 proto.smartcore.bos.Ticket.Severity.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getTitle();
+  f = message.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getDescription();
+  f = message.getTitle();
   if (f.length > 0) {
     writer.writeString(
       2,
+      f
+    );
+  }
+  f = message.getDescription();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
       f
     );
   }
@@ -680,10 +692,10 @@ proto.smartcore.bos.Ticket.Severity.serializeBinaryToWriter = function(message, 
 
 
 /**
- * optional string title = 1;
+ * optional string id = 1;
  * @return {string}
  */
-proto.smartcore.bos.Ticket.Severity.prototype.getTitle = function() {
+proto.smartcore.bos.Ticket.Severity.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -692,16 +704,16 @@ proto.smartcore.bos.Ticket.Severity.prototype.getTitle = function() {
  * @param {string} value
  * @return {!proto.smartcore.bos.Ticket.Severity} returns this
  */
-proto.smartcore.bos.Ticket.Severity.prototype.setTitle = function(value) {
+proto.smartcore.bos.Ticket.Severity.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
- * optional string description = 2;
+ * optional string title = 2;
  * @return {string}
  */
-proto.smartcore.bos.Ticket.Severity.prototype.getDescription = function() {
+proto.smartcore.bos.Ticket.Severity.prototype.getTitle = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -710,8 +722,26 @@ proto.smartcore.bos.Ticket.Severity.prototype.getDescription = function() {
  * @param {string} value
  * @return {!proto.smartcore.bos.Ticket.Severity} returns this
  */
-proto.smartcore.bos.Ticket.Severity.prototype.setDescription = function(value) {
+proto.smartcore.bos.Ticket.Severity.prototype.setTitle = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string description = 3;
+ * @return {string}
+ */
+proto.smartcore.bos.Ticket.Severity.prototype.getDescription = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.Ticket.Severity} returns this
+ */
+proto.smartcore.bos.Ticket.Severity.prototype.setDescription = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 

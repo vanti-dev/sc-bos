@@ -76,6 +76,9 @@ export namespace Ticket {
 
 
   export class Severity extends jspb.Message {
+    getId(): string;
+    setId(value: string): Severity;
+
     getTitle(): string;
     setTitle(value: string): Severity;
 
@@ -92,6 +95,7 @@ export namespace Ticket {
 
   export namespace Severity {
     export type AsObject = {
+      id: string,
       title: string,
       description: string,
     }

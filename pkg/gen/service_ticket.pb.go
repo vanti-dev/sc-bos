@@ -402,11 +402,12 @@ func (x *Ticket_Classification) GetDescription() string {
 
 type Ticket_Severity struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// The ID of the severity. This is unique within the context of the implementing system.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// The title of the severity.
-	// This is unique within the context of the implementing system.
-	Title string `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	// Optional. A more detailed description can be displayed to a user to help them decide the correct severity.
-	Description   string `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Description   string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -441,6 +442,13 @@ func (*Ticket_Severity) Descriptor() ([]byte, []int) {
 	return file_service_ticket_proto_rawDescGZIP(), []int{0, 1}
 }
 
+func (x *Ticket_Severity) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
 func (x *Ticket_Severity) GetTitle() string {
 	if x != nil {
 		return x.Title
@@ -459,7 +467,7 @@ var File_service_ticket_proto protoreflect.FileDescriptor
 
 const file_service_ticket_proto_rawDesc = "" +
 	"\n" +
-	"\x14service_ticket.proto\x12\rsmartcore.bos\x1a\x10types/info.proto\"\xc4\x03\n" +
+	"\x14service_ticket.proto\x12\rsmartcore.bos\x1a\x10types/info.proto\"\xd4\x03\n" +
 	"\x06Ticket\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\asummary\x18\x02 \x01(\tR\asummary\x12 \n" +
@@ -471,10 +479,11 @@ const file_service_ticket_proto_rawDesc = "" +
 	"\x0eClassification\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x1aB\n" +
-	"\bSeverity\x12\x14\n" +
-	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\"X\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x1aR\n" +
+	"\bSeverity\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"X\n" +
 	"\x13CreateTicketRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12-\n" +
 	"\x06ticket\x18\x02 \x01(\v2\x15.smartcore.bos.TicketR\x06ticket\"X\n" +
