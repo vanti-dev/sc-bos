@@ -5,10 +5,10 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	reflectionpb "google.golang.org/grpc/reflection/grpc_reflection_v1"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
@@ -27,7 +27,7 @@ import (
 func (s *System) scanRemoteHub(ctx context.Context, c *cohort, hubConn *grpc.ClientConn) {
 	hubClient := gen.NewHubApiClient(hubConn)
 	hubAddr := hubConn.Target()
-	if hubAddr == "dialchan:ignored" {
+	if strings.HasPrefix(hubAddr, "dialchan:") || strings.HasPrefix(hubAddr, "passthrough:") {
 		hubAddr = s.hub.Target()
 	}
 	hubNode := newRemoteNode(hubAddr, hubConn)
@@ -219,7 +219,7 @@ func (s *System) pullEnrolledNodes(ctx context.Context, hubClient gen.HubApiClie
 			nodeCtx, stop := context.WithCancel(ctx)
 			stops = append(stops, stop)
 
-			conn, err := grpc.NewClient(node.Address, grpc.WithTransportCredentials(credentials.NewTLS(s.tlsConfig)))
+			conn, err := s.newClient(node.Address)
 			if err != nil {
 				// An error here means there's something wrong with the params we passed to grpc.NewClient.
 				// It's unlikely that retrying will help, so skip this node and log an error.
