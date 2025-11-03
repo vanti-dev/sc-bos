@@ -446,11 +446,13 @@ func filter2[K, V any](seq iter.Seq2[K, V], f func(K, V) bool) iter.Seq2[K, V] {
 	}
 }
 
+const waitTimeout = 5 * time.Second
+
 // waitForFunc returns when a value received from c satisfies the function f, or a timeout has expired.
 // Each value received will be assigned to v, which is a pointer to the current value.
 func waitForFunc[T any](ctx context.Context, v *T, c <-chan T, f func(T) bool) {
 	if !f(*v) {
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, waitTimeout)
 		defer cancel()
 		_, _ = chans.RecvContextFunc(ctx, c, func(new T) error {
 			*v = new
