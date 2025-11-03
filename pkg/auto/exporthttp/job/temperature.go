@@ -13,7 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/types"
 )
 
-// TemperatureJob gets average air temperature at current point in time
+// TemperatureJob gets average air temperature in Celsius at current point in time
 type TemperatureJob struct {
 	BaseJob
 	client  traits.AirTemperatureApiClient
