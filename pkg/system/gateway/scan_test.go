@@ -18,8 +18,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
+	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/onoffpb"
@@ -82,18 +84,33 @@ func TestSystem_scanRemoteHub(t *testing.T) {
 		_, ac1DeviceChanges := gw1CohortTester.node("ac1").node.Devices.Sub(t.Context())
 		ac1.announceDeviceTraits("ac1/dev2", meter.TraitName) // a new trait for an existing device
 		synctest.Wait()
-		// todo: updates should be treated as rx.Update, not remove+add
 		assertChanVal(t, ac1DeviceChanges, func(c rx.Change[remoteDesc]) {
-			// remove
-			if c.Type != rx.Remove || c.Old.name != "ac1/dev2" {
-				t.Fatalf("unexpected device change for ac1/dev2 removal: %+v", c)
+			if c.Type != rx.Update {
+				t.Fatalf("device update: want Update, got %v", c.Type)
 			}
-		})
-		synctest.Wait()
-		assertChanVal(t, ac1DeviceChanges, func(c rx.Change[remoteDesc]) {
-			// add
-			if c.Type != rx.Add || c.New.name != "ac1/dev2" {
-				t.Fatalf("unexpected device change for ac1/dev2 addition: %+v", c)
+			if want := "ac1/dev2"; c.Old.name != want || c.New.name != want {
+				t.Fatalf("device update: unexpected names: want=%q, got old=%q new=%q", want, c.Old.name, c.New.name)
+			}
+			wantOldMd := &traits.Metadata{
+				Name: "ac1/dev2",
+				Traits: []*traits.TraitMetadata{
+					{Name: string(trait.Metadata)},
+					{Name: string(trait.OnOff)},
+				},
+			}
+			wantNewMd := &traits.Metadata{
+				Name: "ac1/dev2",
+				Traits: []*traits.TraitMetadata{
+					{Name: string(meter.TraitName)},
+					{Name: string(trait.Metadata)},
+					{Name: string(trait.OnOff)},
+				},
+			}
+			if diff := cmp.Diff(wantOldMd, c.Old.md, protocmp.Transform()); diff != "" {
+				t.Fatalf("unexpected old metadata for device update (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(wantNewMd, c.New.md, protocmp.Transform()); diff != "" {
+				t.Fatalf("unexpected new metadata for device update (-want +got):\n%s", diff)
 			}
 		})
 	})

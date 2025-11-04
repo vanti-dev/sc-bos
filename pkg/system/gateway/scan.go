@@ -157,14 +157,11 @@ func (s *System) pullDevices(ctx context.Context, node *remoteNode) (task.Next, 
 		}
 
 		for _, c := range msg.Changes {
-			// for anything that isn't an add stop the existing task for the device
-			if c.OldValue != nil {
-				node.Devices.Remove(remoteDesc{name: c.OldValue.Name})
-			}
 			if c.NewValue == nil {
-				continue // was a deletion
+				node.Devices.Remove(remoteDesc{name: c.OldValue.Name})
+				continue // device deleted
 			}
-
+			// Set covers both add and update cases
 			node.Devices.Set(remoteDesc{name: c.NewValue.Name, md: c.NewValue.Metadata})
 		}
 	}
