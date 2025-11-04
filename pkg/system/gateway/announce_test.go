@@ -29,9 +29,11 @@ func TestSystem_announceCohort(t *testing.T) {
 		th.assertSimpleDevices("ac1/d1", "ac1/d2")
 	})
 	newAnnounceTest("preloaded gateway", t, func(th *announceTester) {
-		th.addGateway("gw1", "ac1/d1", "ac1/d2")
+		th.addGateway("gw1",
+			"gw1", "systems", "gw1/systems",
+			"ac1/d1", "ac1/d2")
 		th.runAnnounceCohort()
-		th.assertSimpleDevices() // no extra devices announced because it's a gateway
+		th.assertSimpleDevices("gw1", "gw1/systems") // only the node and full service names get proxied
 	})
 	newAnnounceTest("preloaded hub", t, func(th *announceTester) {
 		th.addHub("hub", "hub/d1")
@@ -76,22 +78,36 @@ func TestSystem_announceCohort(t *testing.T) {
 		th.assertSimpleDevices("gw1/d1") // now we have devices
 	})
 	newAnnounceTest("node becomes gateway", t, func(th *announceTester) {
-		gw1 := th.addNode("gw1", "gw1/d1")
+		gw1 := th.addNode("gw1", "gw1/d1",
+			// devices with special handling
+			"gw1", "drivers", "gw1/drivers")
 		th.runAnnounceCohort()
-		th.assertSimpleDevices("gw1/d1") // we have devices
+		th.assertSimpleDevices("gw1/d1", "gw1", "gw1/drivers") // we have devices
 
 		gw1.Systems.Set(remoteSystems{msgRecvd: true, gateway: &gen.Service{Active: true}})
 		synctest.Wait()
-		th.assertSimpleDevices() // devices are removed
+		th.assertSimpleDevices("gw1", "gw1/drivers") // devices are removed
 	})
 	newAnnounceTest("gateway stops being gateway", t, func(th *announceTester) {
-		gw1 := th.addGateway("gw1", "gw1/d1")
+		gw1 := th.addGateway("gw1", "gw1/d1",
+			// devices with special handling
+			"gw1", "zones", "gw1/zones")
 		th.runAnnounceCohort()
-		th.assertSimpleDevices() // no devices because it's a gateway
+		th.assertSimpleDevices("gw1", "gw1/zones") // no devices because it's a gateway
 
 		gw1.Systems.Set(remoteSystems{msgRecvd: true})
 		synctest.Wait()
-		th.assertSimpleDevices("gw1/d1") // now we have devices
+		th.assertSimpleDevices("gw1/d1", "gw1", "gw1/zones") // now we have devices
+	})
+	newAnnounceTest("simple service names aren't proxied", t, func(th *announceTester) {
+		th.addNode("ac1", "drivers", "automations", "zones", "systems")
+		th.runAnnounceCohort()
+		th.assertSimpleDevices() // no devices because these names are special
+	})
+	newAnnounceTest("expanded service names are proxied", t, func(th *announceTester) {
+		th.addNode("ac1", "ac1/drivers", "ac1/automations", "ac1/zones", "ac1/systems")
+		th.runAnnounceCohort()
+		th.assertSimpleDevices("ac1/drivers", "ac1/automations", "ac1/zones", "ac1/systems")
 	})
 	newAnnounceTest("node added", t, func(th *announceTester) {
 		th.addNode("ac1", "ac1/d1")
@@ -153,6 +169,20 @@ func TestSystem_announceCohort(t *testing.T) {
 		}
 		assertDeviceUpdate(th.T, stream, wantOldDevice, wantNewDevice, now)
 	})
+	newAnnounceTest("gateway device added", t, func(th *announceTester) {
+		gw1 := th.addGateway("gw1")
+		th.runAnnounceCohort()
+		th.assertSimpleDevices()
+		// should not be added
+		gw1.Devices.Set(rd("gw1/d1"))
+		synctest.Wait()
+		th.assertSimpleDevices()
+		// should be added
+		gw1.Devices.Set(rd("gw1"))
+		gw1.Devices.Set(rd("gw1/zones"))
+		synctest.Wait()
+		th.assertSimpleDevices("gw1", "gw1/zones")
+	})
 }
 
 func newAnnounceTest(name string, t *testing.T, f func(t *announceTester)) {
@@ -165,10 +195,19 @@ func newAnnounceTest(name string, t *testing.T, f func(t *announceTester)) {
 }
 
 // assertDeviceUpdate asserts that a device update is received on the stream.
-// Right now device updates are implemented as remove+add, so we assert both.
+// Updates are subject to a backpressure mechanism that can cause complications in tests.
+// The full expanded steps for an update are:
+// 1. Reset the device back to the minimum metadata state, aka undo the previous metadata announcement
+// 2. Announce the new metadata on the device
+// With backpressure mitigation, these two steps can be coalesced into one step which skips the empty md state.
 func assertDeviceUpdate(t *testing.T, stream <-chan devicespb.DevicesChange, wantOld, wantNew *gen.Device, now time.Time) {
 	t.Helper()
-	// todo: update test to cover update instead of remove+add once implemented
+	// all updates look a bit like this, with different old/new values
+	want := devicespb.DevicesChange{
+		Id:         "ac1/d1",
+		ChangeType: types.ChangeType_UPDATE,
+		ChangeTime: now,
+	}
 
 	synctest.Wait()
 	got, ok := <-stream
@@ -176,46 +215,32 @@ func assertDeviceUpdate(t *testing.T, stream <-chan devicespb.DevicesChange, wan
 		t.Fatal("device update stream closed")
 	}
 
-	// Sometimes a remove+add is merged into a replace.
-	// This is not easy to control in the tests as it relates to resource.Value
-	// channel backpressure handling.
-	if got.ChangeType == types.ChangeType_REPLACE {
-		want := devicespb.DevicesChange{
-			Id:         "ac1/d1",
-			ChangeType: types.ChangeType_REPLACE,
-			ChangeTime: now,
-			OldValue:   wantOld,
-			NewValue:   wantNew,
-		}
-		if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
-			t.Errorf("device update mismatch (-want +got):\n%s", diff)
-		}
-		return
+	// first check for the coalesced update
+	want.OldValue = wantOld
+	want.NewValue = wantNew
+	if diff := cmp.Diff(want, got, protocmp.Transform()); diff == "" {
+		return // the update was coalesced directly to the new state
 	}
-	// remove
-	want := devicespb.DevicesChange{
-		Id:         "ac1/d1",
-		ChangeType: types.ChangeType_REMOVE,
-		ChangeTime: now,
-		OldValue:   wantOld,
+
+	// expected, but optional, intermediate state undoing the previous metadata announcement
+	want.NewValue = &gen.Device{
+		Name:     wantOld.Name,
+		Metadata: &traits.Metadata{Name: wantOld.Name, Traits: ts(trait.Metadata)},
 	}
 	if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
-		t.Errorf("device update mismatch (-want +got):\n%s", diff)
+		t.Fatalf("device update mismatch (-want +got):\n%s", diff)
 	}
-	// add
+
 	synctest.Wait()
 	got, ok = <-stream
 	if !ok {
 		t.Fatal("device update stream closed")
 	}
-	want = devicespb.DevicesChange{
-		Id:         "ac1/d1",
-		ChangeType: types.ChangeType_ADD,
-		ChangeTime: now,
-		NewValue:   wantNew,
-	}
+	// the new announcement
+	want.OldValue = want.NewValue
+	want.NewValue = wantNew
 	if diff := cmp.Diff(want, got, protocmp.Transform()); diff != "" {
-		t.Errorf("device update mismatch (-want +got):\n%s", diff)
+		t.Fatalf("device update mismatch (-want +got):\n%s", diff)
 	}
 }
 
@@ -318,9 +343,7 @@ func (t *announceTester) assertSimpleDevices(wantNames ...string) {
 
 func (t *announceTester) assertDevices(want ...*gen.Device) {
 	t.Helper()
-	if !slices.IsSortedFunc(want, cmpDevices) {
-		t.Fatalf("devices not sorted by name")
-	}
+	slices.SortFunc(want, cmpDevices)
 	// add in the self node t the right place keeping want sorted by name
 	selfDevice := &gen.Device{Name: "self", Metadata: &traits.Metadata{Name: "self", Traits: ts(trait.Metadata, trait.Parent)}}
 	if i, ok := slices.BinarySearchFunc(want, selfDevice, cmpDevices); !ok {
