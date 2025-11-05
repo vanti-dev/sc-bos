@@ -239,6 +239,9 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 				undoMD.remove(c.Old.name)
 			case rx.Update:
 				undoMD.remove(c.Old.name)
+				if !shouldProxyDevice(c.New) {
+					continue
+				}
 				undoMD[c.New.name] = a.announceMetadata(c.New)
 			}
 		}

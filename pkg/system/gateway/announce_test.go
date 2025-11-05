@@ -183,6 +183,24 @@ func TestSystem_announceCohort(t *testing.T) {
 		synctest.Wait()
 		th.assertSimpleDevices("gw1", "gw1/zones")
 	})
+	newAnnounceTest("gateway device updated", t, func(th *announceTester) {
+		gw1 := th.addGateway("gw1", "ac1/d1")
+		th.runAnnounceCohort()
+		th.assertSimpleDevices() // no devices because it's a gateway
+
+		stream := th.n.PullDevices(th.Context(), resource.WithUpdatesOnly(true))
+		gw1.Devices.Set(remoteDesc{name: "ac1/d1", md: &traits.Metadata{
+			Name:       "ac1/d1",
+			Membership: &traits.Metadata_Membership{Subsystem: "test devices"},
+		}})
+		synctest.Wait()
+		select {
+		case c := <-stream:
+			th.Fatalf("unexpected device update received: %+v", c)
+		default:
+			// expected, no update should be sent
+		}
+	})
 }
 
 func newAnnounceTest(name string, t *testing.T, f func(t *announceTester)) {
