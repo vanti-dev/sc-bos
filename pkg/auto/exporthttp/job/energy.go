@@ -13,7 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-// EnergyJob gets energy consumed over the previous execution interval (typically 24 hours)
+// EnergyJob gets the energy consumed over the previous execution interval (typically 24 hours)
 type EnergyJob struct {
 	BaseJob
 	client     gen.MeterHistoryClient
