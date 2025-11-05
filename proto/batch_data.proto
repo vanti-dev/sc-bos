@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package smartcore.bos;
+
+option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/field_mask.proto";
+
+// BatchDataApi allows reads to many devices to be aggregated into a single channel to reduce RPC overhead
+// and concurrent stream limits.
+service BatchDataApi {
+  rpc GetBatchData(GetBatchDataRequest) returns (GetBatchDataResponse);
+  rpc PullBatchData(PullBatchDataRequest) returns (stream PullBatchDataResponse);
+}
+
+message BatchData {
+  string name = 1;
+  string trait = 2;
+  google.protobuf.Any data = 3;
+}
+
+message GetBatchDataRequest {
+  repeated BatchDataSource sources = 1;
+}
+
+message BatchDataSource {
+  string name = 1;
+  string trait = 2;
+  google.protobuf.FieldMask field_mask = 3;
+}
+
+message GetBatchDataResponse {
+  repeated BatchData data = 1;
+}
+
+message PullBatchDataRequest {
+  repeated BatchDataSource sources = 1;
+}
+
+message PullBatchDataResponse {
+  repeated BatchData data = 1;
+}
