@@ -207,7 +207,7 @@ func (e *enterLeave) groupErrored() bool {
 	failed := false
 	totalErrors := 0
 	e.sla.errs.Range(func(k, v interface{}) bool {
-		if _, found := e.sla.cantFail[v.(string)]; found {
+		if _, found := e.sla.cantFail[k.(string)]; found {
 			failed = true
 			return false // fail on first non-permitted error
 		}
