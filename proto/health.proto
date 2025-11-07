@@ -7,6 +7,7 @@ option go_package = "github.com/vanti-dev/sc-bos/pkg/gen";
 import "google/protobuf/duration.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "actor.proto";
 import "types/change.proto";
 
 // The HealthApi provides access to health checks for a device.
@@ -27,6 +28,7 @@ service HealthApi {
 
   // todo: RunHealthCheck(s), and other long running operation management RPCs
   // todo: CreateHealthCheck, and other CRUD RPCs
+  // todo: AcknowledgeHealthCheck, and other ack state changing RPCs
 }
 
 // HealthCheck represents some check against the health of a device.
@@ -54,6 +56,10 @@ service HealthApi {
 // An absent cause implies the device is responsible for its own reliability issues.
 // Similarly, poor reliability of a device may affect the reliability of other devices,
 // see the Reliability.affects field.
+//
+// Each check can specify that it should be acknowledged when it changes state.
+// Health changes that require acknowledgement but have not been acknowledged still require attention from operators.
+// The ack_required field says which health state transitions require acknowledgement.
 message HealthCheck {
   // An id uniquely representing this check against this device.
   // An equivalent check against a different device may have the same id, for example "ping" or "temperature".
@@ -352,6 +358,62 @@ message HealthCheck {
     // This check is looking for faults or alarms on the device.
     Faults faults = 31;
   }
+
+  // An acknowledgement for a change in health state.
+  // Some changes in health state require acknowledgement from another person or system before they can be considered
+  // resolved.
+  //
+  // For example, a fire detection system may detect smoke, which will cause the health check to change to ABNORMAL.
+  // Even if the smoke clears and the check returns to NORMAL, the system should still require a person to investigate
+  // the abnormality.
+  // Requiring an acknowledgement allows the system to track whether the abnormality has been investigated,
+  // or whether the system is still in a state that requires attention.
+  //
+  // Each check can specify whether it expects an acknowledgement independently for each health state transition.
+  // The possible transitions are represented by the HealthChange enum.
+  // Changing the expected acks will not change any existing acks, but will change the required acks for future changes
+  // in health state.
+  //
+  // The Ack itself can come from user interaction with a Smart Core app, via this API,
+  // from an interaction with a system managing a device, like a headend workstation,
+  // or from physical interaction with the device, like pressing a reset button.
+  // The source field should identify the source of the acknowledgement.
+  message Ack {
+    google.protobuf.Timestamp ack_time = 1;
+    // The actor that has acknowledged the change in health, if known.
+    smartcore.bos.Actor actor = 2;
+    // The source of the acknowledgement.
+    // This should identify the app or system that acknowledged the change in health.
+    // For example, "smartcore.app.ops", "reset button", or "device".
+    string source = 3;
+  }
+  // Health state transitions as different bit mask values.
+  // See Ack for details.
+  enum HealthChange {
+    HEALTH_CHANGE_UNSPECIFIED = 0;
+    // A change from an unhealthy state to the healthy state.
+    TO_HEALTHY = 1;
+    // A change to a reliability state that is not RELIABLE.
+    TO_UNRELIABLE = 2;
+    // A change to a check state that is not NORMAL.
+    TO_ABNORMAL = 4;
+  }
+  // A bit mask of health state transitions that will require acknowledgement.
+  // See Ack for details.
+  int32 ack_expected = 40;
+  // A bit mask of health state transitions that currently require acknowledgement but don't have one.
+  // Output only.
+  // See Ack for details.
+  int32 ack_required = 41;
+  // An acknowledgement for the change to a healthy state.
+  // See Ack for details.
+  Ack to_healthy_ack = 42;
+  // An acknowledgement for the change to a reliability state that is not RELIABLE.
+  // See Ack for details.
+  Ack to_unreliable_ack = 43;
+  // An acknowledgement for the change to a check state that is not NORMAL.
+  // See Ack for details.
+  Ack to_abnormal_ack = 44;
 }
 
 message ListHealthChecksRequest {
