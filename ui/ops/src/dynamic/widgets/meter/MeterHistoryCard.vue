@@ -27,6 +27,13 @@
               <v-list-item title="Export CSV..."
                            @click="onDownloadClick" :disabled="downloadBtnDisabled"
                            v-tooltip:bottom="'Download a CSV of the chart data'"/>
+              <v-list-subheader title="Metric"/>
+              <v-list-item>
+                <v-radio-group v-model="metricType" inline>
+                  <v-radio :label="unit" :value="'kwh'"/>
+                  <v-radio v-if="Object.keys(props.areaSizes).length > 0" :label="props.areaUnit" :value="'area'"/>
+                </v-radio-group>
+              </v-list-item>
             </v-list>
           </v-card>
         </v-menu>
@@ -37,7 +44,7 @@
         <bar ref="chartRef" :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
       </div>
     </v-card-text>
-    <meter-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="unit"/>
+    <meter-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="metricType === 'area' ? props.areaUnit : unit"/>
   </v-card>
 </template>
 
@@ -60,6 +67,7 @@ import {useMeterConsumption, useMetersConsumption} from './consumption.js';
 
 ChartJS.register(Title, Tooltip, BarElement, LinearScale, TimeScale, Legend);
 const chartRef = ref(null);
+const metricType = ref('kwh');
 
 const props = defineProps({
   title: {
@@ -105,6 +113,14 @@ const props = defineProps({
   minChartHeight: {
     type: [String, Number],
     default: '500px',
+  },
+  areaSizes: {
+    type: Object,
+    default: () => ({}),
+  },
+  areaUnit: {
+    type: String,
+    default: 'kWh/m²',
   }
 });
 
@@ -171,7 +187,7 @@ const chartOptions = computed(() => {
         stacked: true,
         title: {
           display: true,
-          text: unit.value
+          text: metricType.value === 'area' ? props.areaUnit : 'kWh'
         },
         border: {
           color: 'transparent'
@@ -226,13 +242,21 @@ const chartOptions = computed(() => {
 
 const chartLabels = computed(() => edges.value.slice(0, -1));
 const chartData = computed(() => {
-  return {
+  const baseData = {
     labels: chartLabels.value,
     datasets: [
       ...computeDatasets('Consumption', totalConsumption, toRef(props, 'subConsumptionNames'), subConsumptions),
       ...computeDatasets('Production', totalProduction, toRef(props, 'subProductionNames'), subProductions, true),
     ]
   };
+  if (metricType.value === 'area') {
+    baseData.datasets.forEach(ds => {
+      const sourceName = ds[datasetSourceName];
+      const area = props.areaSizes[sourceName] || 1;
+      ds.data = ds.data.map(val => val / area);
+    });
+  }
+  return baseData;
 });
 
 // download CSV...
