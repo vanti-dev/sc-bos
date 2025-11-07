@@ -3,6 +3,7 @@ import * as jspb from 'google-protobuf'
 import * as google_protobuf_duration_pb from 'google-protobuf/google/protobuf/duration_pb'; // proto import: "google/protobuf/duration.proto"
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
+import * as actor_pb from './actor_pb'; // proto import: "actor.proto"
 import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb'; // proto import: "types/change.proto"
 
 
@@ -60,6 +61,27 @@ export class HealthCheck extends jspb.Message {
   hasFaults(): boolean;
   clearFaults(): HealthCheck;
 
+  getAckExpected(): number;
+  setAckExpected(value: number): HealthCheck;
+
+  getAckRequired(): number;
+  setAckRequired(value: number): HealthCheck;
+
+  getToHealthyAck(): HealthCheck.Ack | undefined;
+  setToHealthyAck(value?: HealthCheck.Ack): HealthCheck;
+  hasToHealthyAck(): boolean;
+  clearToHealthyAck(): HealthCheck;
+
+  getToUnreliableAck(): HealthCheck.Ack | undefined;
+  setToUnreliableAck(value?: HealthCheck.Ack): HealthCheck;
+  hasToUnreliableAck(): boolean;
+  clearToUnreliableAck(): HealthCheck;
+
+  getToAbnormalAck(): HealthCheck.Ack | undefined;
+  setToAbnormalAck(value?: HealthCheck.Ack): HealthCheck;
+  hasToAbnormalAck(): boolean;
+  clearToAbnormalAck(): HealthCheck;
+
   getCheckCase(): HealthCheck.CheckCase;
 
   serializeBinary(): Uint8Array;
@@ -85,6 +107,11 @@ export namespace HealthCheck {
     abnormalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     bounds?: HealthCheck.Bounds.AsObject,
     faults?: HealthCheck.Faults.AsObject,
+    ackExpected: number,
+    ackRequired: number,
+    toHealthyAck?: HealthCheck.Ack.AsObject,
+    toUnreliableAck?: HealthCheck.Ack.AsObject,
+    toAbnormalAck?: HealthCheck.Ack.AsObject,
   }
 
   export class ComplianceImpact extends jspb.Message {
@@ -517,6 +544,37 @@ export namespace HealthCheck {
   }
 
 
+  export class Ack extends jspb.Message {
+    getAckTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setAckTime(value?: google_protobuf_timestamp_pb.Timestamp): Ack;
+    hasAckTime(): boolean;
+    clearAckTime(): Ack;
+
+    getActor(): actor_pb.Actor | undefined;
+    setActor(value?: actor_pb.Actor): Ack;
+    hasActor(): boolean;
+    clearActor(): Ack;
+
+    getSource(): string;
+    setSource(value: string): Ack;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Ack.AsObject;
+    static toObject(includeInstance: boolean, msg: Ack): Ack.AsObject;
+    static serializeBinaryToWriter(message: Ack, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Ack;
+    static deserializeBinaryFromReader(message: Ack, reader: jspb.BinaryReader): Ack;
+  }
+
+  export namespace Ack {
+    export type AsObject = {
+      ackTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+      actor?: actor_pb.Actor.AsObject,
+      source: string,
+    }
+  }
+
+
   export enum OccupantImpact { 
     OCCUPANT_IMPACT_UNSPECIFIED = 0,
     NO_OCCUPANT_IMPACT = 1,
@@ -539,6 +597,13 @@ export namespace HealthCheck {
     ABNORMAL = 2,
     LOW = 3,
     HIGH = 4,
+  }
+
+  export enum HealthChange { 
+    HEALTH_CHANGE_UNSPECIFIED = 0,
+    TO_HEALTHY = 1,
+    TO_UNRELIABLE = 2,
+    TO_ABNORMAL = 4,
   }
 
   export enum CheckCase { 
