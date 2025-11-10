@@ -82,6 +82,8 @@
     <with-status v-if="hasCell('StatusLog')" v-slot="{ resource }" :name="props.item.name" :paused="props.paused">
       <status-log-cell v-bind="resource"/>
     </with-status>
+
+    <health-checks-cell :model-value="props.item.healthChecksList"/>
   </span>
 </template>
 
@@ -98,6 +100,7 @@ import EnergyStorageCell from '@/traits/energyStorage/EnergyStorageCell.vue';
 import WithEnergyStorage from '@/traits/energyStorage/WithEnergyStorage.vue';
 import EnterLeaveEventCell from '@/traits/enterLeave/EnterLeaveEventCell.vue';
 import WithEnterLeave from '@/traits/enterLeave/WithEnterLeave.vue';
+import HealthChecksCell from '@/traits/health/HealthChecksCell.vue';
 import LightCell from '@/traits/light/LightCell.vue';
 import MeterCell from '@/traits/meter/MeterCell.vue';
 import WithMeter from '@/traits/meter/WithMeter.vue';
