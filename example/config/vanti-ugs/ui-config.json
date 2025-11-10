@@ -1142,5 +1142,8 @@
         }
       }
     }
+  },
+  "experiments": {
+    "health": true
   }
 }
