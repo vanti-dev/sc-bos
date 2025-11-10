@@ -260,6 +260,25 @@ export function useDeviceFilters(forcedFilters) {
       }
     }
 
+    if (!Object.hasOwn(forced, 'health_checks.normality')) {
+      filters.push({
+        key: 'health_checks.normality',
+        icon: 'mdi-heart-pulse',
+        title: 'Health Status',
+        type: 'boolean',
+        valueToString(value) {
+          switch (value) {
+            case true:
+              return 'Healthy';
+            case false:
+              return 'Unhealthy';
+            default:
+              return 'All';
+          }
+        }
+      })
+    }
+
     return {filters, defaults};
   });
 
@@ -277,6 +296,15 @@ export function useDeviceFilters(forcedFilters) {
       case 'subsystem':
       case 'metadata.membership.subsystem':
         return {field: 'metadata.membership.subsystem', stringEqualFold: value === NO_SUBSYSTEM ? '' : value};
+      case 'health_checks.normality': {
+        const cond = {field: 'health_checks.normality'};
+        if (value) {
+          cond.stringEqual = 'NORMAL';
+        } else {
+          cond.stringIn = {stringsList: ['ABNORMAL', 'HIGH', 'LOW']}
+        }
+        return cond;
+      }
       default:
         return {field: field, stringEqualFold: value};
     }
