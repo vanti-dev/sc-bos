@@ -19,6 +19,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 	"github.com/vanti-dev/sc-bos/pkg/driver/helvarnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 )
 
@@ -27,20 +28,20 @@ type Pir struct {
 	traits.UnimplementedOccupancySensorApiServer
 	gen.UnimplementedUdmiServiceServer
 
-	client    *tcpClient
-	conf      *config.Device
-	logger    *zap.Logger
+	device
 	occupancy *resource.Value // *traits.Occupancy
 	udmiBus   minibus.Bus[*gen.PullExportMessagesResponse]
 }
 
-func newPir(client *tcpClient, l *zap.Logger, conf *config.Device) *Pir {
-	return &Pir{
-		client:    client,
-		conf:      conf,
-		logger:    l,
+func newPir(client *tcpClient, l *zap.Logger, conf *config.Device, fc *healthpb.FaultCheck) *Pir {
+	pir := &Pir{
 		occupancy: resource.NewValue(resource.WithInitialValue(&traits.Occupancy{}), resource.WithNoDuplicates()),
 	}
+	pir.client = client
+	pir.conf = conf
+	pir.logger = l
+	pir.faultCheck = fc
+	return pir
 }
 
 // refreshOccupancyStatus refreshes the occupancy by querying the input state of the sensor
@@ -103,6 +104,12 @@ func (p *Pir) PullOccupancy(_ *traits.PullOccupancyRequest, server traits.Occupa
 func (p *Pir) runUpdateState(ctx context.Context, t time.Duration) error {
 
 	err := p.refreshOccupancyStatus()
+	s, err := p.getHelvarnetStatus()
+	if err != nil {
+		p.logger.Error("failed to get helvarnet status", zap.Error(err))
+	}
+	updateDeviceFaults(ctx, s, p.faultCheck)
+
 	if err != nil {
 		p.logger.Error("failed to refresh occupancy status", zap.Error(err))
 	}

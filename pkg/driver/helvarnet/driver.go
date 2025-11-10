@@ -15,6 +15,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/driver/helvarnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylightpb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/healthpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -31,17 +32,19 @@ type factory struct{}
 
 type Driver struct {
 	*service.Service[config.Root]
-	announcer *node.ReplaceAnnouncer
-	logger    *zap.Logger
-	clients   map[string]*tcpClient
+	announcer     *node.ReplaceAnnouncer
+	logger        *zap.Logger
+	clients       map[string]*tcpClient
+	checkRegistry *healthpb.Checks
 }
 
 func (f factory) New(services driver.Services) service.Lifecycle {
 	logger := services.Logger.Named(DriverName)
 
 	d := &Driver{
-		logger:    logger,
-		announcer: node.NewReplaceAnnouncer(services.Node),
+		logger:        logger,
+		announcer:     node.NewReplaceAnnouncer(services.Node),
+		checkRegistry: services.Health,
 	}
 
 	d.Service = service.New(
@@ -96,7 +99,12 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 			d.clients[l.IpAddress] = newTcpClient(tcpAddr, d.logger, &cfg)
 		}
-		lum := newLight(d.clients[l.IpAddress], d.logger, l)
+
+		fc, err := d.checkRegistry.NewFaultCheck(l.Name, getDeviceHealthCheck())
+		if err != nil {
+			return err
+		}
+		lum := newLight(d.clients[l.IpAddress], d.logger, l, fc)
 
 		rootAnnouncer.Announce(l.Name,
 			node.HasTrait(trait.Light,
@@ -119,7 +127,12 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 			d.clients[pir.IpAddress] = newTcpClient(tcpAddr, d.logger, &cfg)
 		}
-		p := newPir(d.clients[pir.IpAddress], d.logger, pir)
+		fc, err := d.checkRegistry.NewFaultCheck(pir.Name, getDeviceHealthCheck())
+		if err != nil {
+			return err
+		}
+
+		p := newPir(d.clients[pir.IpAddress], d.logger, pir, fc)
 		rootAnnouncer.Announce(pir.Name,
 			node.HasTrait(trait.OccupancySensor,
 				node.WithClients(occupancysensorpb.WrapApi(p))),
@@ -139,7 +152,12 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 			d.clients[em.IpAddress] = newTcpClient(tcpAddr, d.logger, &cfg)
 		}
-		emergencyLight := newLight(d.clients[em.IpAddress], d.logger, em)
+		fc, err := d.checkRegistry.NewFaultCheck(em.Name, getDeviceHealthCheck())
+		if err != nil {
+			return err
+		}
+
+		emergencyLight := newLight(d.clients[em.IpAddress], d.logger, em, fc)
 		rootAnnouncer.Announce(em.Name,
 			node.HasTrait(trait.Light,
 				node.WithClients(lightpb.WrapApi(emergencyLight))),
