@@ -24,16 +24,19 @@
               </v-list-item>
               <v-list-subheader title="Data"/>
               <period-chooser-rows v-model:start="_start" v-model:end="_end" v-model:offset="_offset"/>
+              <v-list-subheader title="Metric" v-if="Object.keys(props.scaleValues).length > 0"/>
+              <v-list-item v-if="Object.keys(props.scaleValues).length > 0">
+                <v-btn-toggle
+                    mandatory v-model="metricType"
+                    variant="outlined" density="compact"
+                    divided class="ml-4">
+                  <v-btn :value="'unscaled'" size="small" :text="unit"/>
+                  <v-btn :value="'scaled'" size="small" :text="props.scaleUnit"/>
+                </v-btn-toggle>
+              </v-list-item>
               <v-list-item title="Export CSV..."
                            @click="onDownloadClick" :disabled="downloadBtnDisabled"
                            v-tooltip:bottom="'Download a CSV of the chart data'"/>
-              <v-list-subheader title="Metric"/>
-              <v-list-item>
-                <v-radio-group v-model="metricType" inline>
-                  <v-radio :label="unit" :value="'kwh'"/>
-                  <v-radio v-if="Object.keys(props.scaleValues).length > 0" :label="props.scaleUnit" :value="'scaled'"/>
-                </v-radio-group>
-              </v-list-item>
             </v-list>
           </v-card>
         </v-menu>
@@ -44,7 +47,7 @@
         <bar ref="chartRef" :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
       </div>
     </v-card-text>
-    <meter-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="metricType === 'scaled' ? props.scaleUnit : unit" :hide-total-consumption="metricType === 'scaled'"/>
+    <meter-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="displayUnit" :hide-total-consumption="metricType === 'scaled'"/>
   </v-card>
 </template>
 
@@ -67,7 +70,6 @@ import {useMeterConsumption, useMetersConsumption} from './consumption.js';
 
 ChartJS.register(Title, Tooltip, BarElement, LinearScale, TimeScale, Legend);
 const chartRef = ref(null);
-const metricType = ref('kwh');
 
 const props = defineProps({
   title: {
@@ -120,7 +122,7 @@ const props = defineProps({
   },
   scaleUnit: {
     type: String,
-    default: 'kWh/m²',
+    default: 'm²',
   }
 });
 
@@ -142,8 +144,11 @@ const nameForDescribe = computed(() => {
   if (props.subProductionNames.length > 0) return toName(props.subProductionNames[0]);
   return undefined;
 })
+
+const metricType = ref('unscaled');
 const {response: meterInfo} = useDescribeMeterReading(nameForDescribe);
 const unit = computed(() => meterInfo.value?.usageUnit);
+const displayUnit = computed(() => metricType.value === 'scaled' ? props.scaleUnit : unit.value);
 
 const _start = useLocalProp(toRef(props, 'start'));
 const _end = useLocalProp(toRef(props, 'end'));
@@ -160,7 +165,7 @@ const subProductions = useMetersConsumption(toRef(props, 'subProductionNames'), 
 const {
   external: tooltipExternal,
   data: tooltipData,
-} = useExternalTooltip(edges, tickUnit, unit);
+} = useExternalTooltip(edges, tickUnit, displayUnit);
 const {legendItems, vueLegendPlugin} = useVueLegendPlugin();
 const {themeColorPlugin} = useThemeColorPlugin();
 
@@ -187,7 +192,7 @@ const chartOptions = computed(() => {
         stacked: true,
         title: {
           display: true,
-          text: metricType.value === 'scaled' ? props.scaleUnit : 'kWh'
+          text: displayUnit.value
         },
         border: {
           color: 'transparent'
