@@ -31,7 +31,7 @@
               <v-list-item>
                 <v-radio-group v-model="metricType" inline>
                   <v-radio :label="unit" :value="'kwh'"/>
-                  <v-radio v-if="Object.keys(props.areaSizes).length > 0" :label="props.areaUnit" :value="'area'"/>
+                  <v-radio v-if="Object.keys(props.scaleValues).length > 0" :label="props.scaleUnit" :value="'scaled'"/>
                 </v-radio-group>
               </v-list-item>
             </v-list>
@@ -44,7 +44,7 @@
         <bar ref="chartRef" :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
       </div>
     </v-card-text>
-    <meter-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="metricType === 'area' ? props.areaUnit : unit"/>
+    <meter-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="metricType === 'scaled' ? props.scaleUnit : unit" :hide-total-consumption="metricType === 'scaled'"/>
   </v-card>
 </template>
 
@@ -114,11 +114,11 @@ const props = defineProps({
     type: [String, Number],
     default: '500px',
   },
-  areaSizes: {
+  scaleValues: {
     type: Object,
     default: () => ({}),
   },
-  areaUnit: {
+  scaleUnit: {
     type: String,
     default: 'kWh/m²',
   }
@@ -187,7 +187,7 @@ const chartOptions = computed(() => {
         stacked: true,
         title: {
           display: true,
-          text: metricType.value === 'area' ? props.areaUnit : 'kWh'
+          text: metricType.value === 'scaled' ? props.scaleUnit : 'kWh'
         },
         border: {
           color: 'transparent'
@@ -249,11 +249,11 @@ const chartData = computed(() => {
       ...computeDatasets('Production', totalProduction, toRef(props, 'subProductionNames'), subProductions, true),
     ]
   };
-  if (metricType.value === 'area') {
+  if (metricType.value === 'scaled') {
     baseData.datasets.forEach(ds => {
       const sourceName = ds[datasetSourceName];
-      const area = props.areaSizes[sourceName] || 1;
-      ds.data = ds.data.map(val => val / area);
+      const scale = props.scaleValues[sourceName] || 1;
+      ds.data = ds.data.map(val => val / scale);
     });
   }
   return baseData;
