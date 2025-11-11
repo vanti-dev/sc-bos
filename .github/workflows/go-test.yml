@@ -1,10 +1,24 @@
 name: Go Test
 
 on:
+  # run tests on any commit that touches Go files on main, or in any PR
   push:
     branches: [ main ]
+    paths:
+      - 'go.mod'
+      - 'go.sum'
+      - 'cmd/**'
+      - 'internal/**'
+      - 'pkg/**'
+      - '.github/**'
   pull_request:
-    branches: [ main ]
+    paths:
+      - 'go.mod'
+      - 'go.sum'
+      - 'cmd/**'
+      - 'internal/**'
+      - 'pkg/**'
+      - '.github/**'
 
 jobs:
   test-all:
