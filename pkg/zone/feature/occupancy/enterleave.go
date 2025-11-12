@@ -115,7 +115,7 @@ func (e *enterLeave) PullOccupancy(request *traits.PullOccupancyRequest, server 
 						e.removeErr(name)
 
 						for _, change := range res.Changes {
-							changes <- c{name: request.Name, val: change.EnterLeaveEvent}
+							changes <- c{name: name, val: change.EnterLeaveEvent}
 						}
 					}
 				},
@@ -124,7 +124,7 @@ func (e *enterLeave) PullOccupancy(request *traits.PullOccupancyRequest, server 
 					if err != nil {
 						return err
 					}
-					changes <- c{name: request.Name, val: res}
+					changes <- c{name: name, val: res}
 					return nil
 				}),
 				changes,
