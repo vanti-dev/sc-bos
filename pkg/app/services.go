@@ -25,6 +25,7 @@ func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, err
 		Node:            c.Node,
 		ClientTLSConfig: c.ClientTLSConfig,
 		HTTPMux:         c.Mux,
+		Database:        c.Database,
 	}
 
 	m := service.NewMap(func(id, kind string) (service.Lifecycle, error) {
