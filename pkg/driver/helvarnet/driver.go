@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
@@ -34,6 +35,7 @@ type Driver struct {
 	announcer *node.ReplaceAnnouncer
 	logger    *zap.Logger
 	clients   map[string]*tcpClient
+	database  *bolthold.Store
 }
 
 func (f factory) New(services driver.Services) service.Lifecycle {
@@ -42,6 +44,7 @@ func (f factory) New(services driver.Services) service.Lifecycle {
 	d := &Driver{
 		logger:    logger,
 		announcer: node.NewReplaceAnnouncer(services.Node),
+		database:  services.Database,
 	}
 
 	d.Service = service.New(
@@ -96,7 +99,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 			d.clients[l.IpAddress] = newTcpClient(tcpAddr, d.logger, &cfg)
 		}
-		lum := newLight(d.clients[l.IpAddress], d.logger, l)
+		lum := newLight(d.clients[l.IpAddress], d.logger, l, d.database)
 
 		rootAnnouncer.Announce(l.Name,
 			node.HasTrait(trait.Light,
@@ -139,7 +142,12 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 			d.clients[em.IpAddress] = newTcpClient(tcpAddr, d.logger, &cfg)
 		}
-		emergencyLight := newLight(d.clients[em.IpAddress], d.logger, em)
+		emergencyLight := newLight(d.clients[em.IpAddress], d.logger, em, d.database)
+		err := emergencyLight.loadTestResults()
+		if err != nil {
+			d.logger.Error("loadTestResults error", zap.Error(err))
+		}
+
 		rootAnnouncer.Announce(em.Name,
 			node.HasTrait(trait.Light,
 				node.WithClients(lightpb.WrapApi(emergencyLight))),

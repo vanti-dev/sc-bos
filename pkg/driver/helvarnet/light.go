@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -25,6 +26,13 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 )
 
+type TestResults struct {
+	FunctionResult   int32
+	FunctionTestTime *time.Time
+	DurationResult   int32
+	DurationTestTime *time.Time
+}
+
 // Light represents a single light device within the HelvarNet system.
 type Light struct {
 	gen.UnimplementedStatusApiServer
@@ -40,14 +48,17 @@ type Light struct {
 	status          *resource.Value // *gen.StatusLog
 	udmiBus         minibus.Bus[*gen.PullExportMessagesResponse]
 
+	// stores device test results, key is device name, value is TestResults
+	database      *bolthold.Store
 	testResultSet *resource.Value // *gen.TestResultSet
 }
 
-func newLight(client *tcpClient, l *zap.Logger, conf *config.Device) *Light {
+func newLight(client *tcpClient, l *zap.Logger, conf *config.Device, db *bolthold.Store) *Light {
 	return &Light{
 		brightness:    resource.NewValue(resource.WithInitialValue(&traits.Brightness{}), resource.WithNoDuplicates()),
 		client:        client,
 		conf:          conf,
+		database:      db,
 		logger:        l,
 		status:        resource.NewValue(resource.WithInitialValue(&gen.StatusLog{}), resource.WithNoDuplicates()),
 		testResultSet: resource.NewValue(resource.WithInitialValue(&gen.TestResultSet{}), resource.WithNoDuplicates()),
@@ -568,6 +579,11 @@ func (l *Light) GetTestResultSet(_ context.Context, req *gen.GetTestResultSetReq
 			}
 		}
 	}
+	
+	err := l.saveTestResults()
+	if err != nil {
+		l.logger.Error("Failed to save test results", zap.String("name", l.conf.Name), zap.Error(err))
+	}
 	return result, nil
 }
 
@@ -600,6 +616,9 @@ func getTestResult(getResult func() (*EmergencyState, error), getTime func() (*t
 		t, _ := getTime()
 		if t != nil {
 			result.EndTime = timestamppb.New(*t)
+		} else {
+			// treat this as an error, if there is no time the device as been reset and we cannot trust the result anyway
+			return nil, status.Error(codes.Internal, "failed to get test completion time")
 		}
 	}
 	return result, nil
@@ -653,4 +672,52 @@ func (l *Light) PullControlTopics(*gen.PullControlTopicsRequest, grpc.ServerStre
 
 func (l *Light) OnMessage(context.Context, *gen.OnMessageRequest) (*gen.OnMessageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "OnMessage is not implemented for Light")
+}
+
+func (l *Light) loadTestResults() error {
+
+	var testResult TestResults
+	if err := l.database.Get(l.conf.Name, &testResult); err != nil {
+		return err
+	}
+	result := &gen.TestResultSet{
+		FunctionTest: &gen.EmergencyTestResult{
+			Result: gen.EmergencyTestResult_Result(testResult.FunctionResult),
+		},
+		DurationTest: &gen.EmergencyTestResult{
+			Result: gen.EmergencyTestResult_Result(testResult.DurationResult),
+		},
+	}
+	if testResult.FunctionTestTime != nil {
+		result.FunctionTest.EndTime = timestamppb.New(*testResult.FunctionTestTime)
+	}
+	if testResult.DurationTestTime != nil {
+		result.DurationTest.EndTime = timestamppb.New(*testResult.DurationTestTime)
+	}
+	_, _ = l.testResultSet.Set(result)
+	return nil
+}
+
+func (l *Light) saveTestResults() error {
+
+	value := l.testResultSet.Get().(*gen.TestResultSet)
+	var testResult TestResults
+	if value.FunctionTest != nil {
+		testResult.FunctionResult = int32(value.FunctionTest.Result)
+		if value.FunctionTest.EndTime != nil {
+			t := value.FunctionTest.EndTime.AsTime()
+			testResult.FunctionTestTime = &t
+		}
+	}
+	if value.DurationTest != nil {
+		testResult.DurationResult = int32(value.DurationTest.Result)
+		if value.DurationTest.EndTime != nil {
+			t := value.DurationTest.EndTime.AsTime()
+			testResult.DurationTestTime = &t
+		}
+	}
+	if err := l.database.Upsert(l.conf.Name, &testResult); err != nil {
+		return err
+	}
+	return nil
 }
