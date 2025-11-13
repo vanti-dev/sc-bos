@@ -164,9 +164,9 @@ function deviceQueryConditionFromObject(obj) {
   if (obj.present) {
     dst.setPresent(new Empty())
   }
+  dst.setMatches(deviceQueryFromObject(obj.matches));
   return dst;
 }
-
 /**
  *
  * @param {Partial<DevicesMetadata.Include.AsObject>} obj

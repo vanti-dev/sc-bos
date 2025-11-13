@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"iter"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -17,7 +18,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-// deviceMatchesQuery returns true if all of the conditions in query match fields of device.
+// deviceMatchesQuery returns true if all the conditions in query match fields of device.
 func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 	if query == nil {
 		return true
@@ -32,16 +33,16 @@ func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 	return true
 }
 
-// conditionMatches returns true if the condition matches leaf values in device.
-// If the condition has a path, only leafs matching the path are considered,
+// conditionMatches returns true if the condition matches values in device.
+// If the condition has a path, only values matching the path are considered,
 // otherwise all leafs in device are considered.
-func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool {
+func conditionMatches(cond *gen.Device_Query_Condition, msg proto.Message) bool {
 	cmp := conditionToCmpFunc(cond)
-	leafs, err := rangeLeafs(cond.Field, device)
+	values, err := rangeValues(cond.Field, msg)
 	if err != nil {
 		return false
 	}
-	for v := range leafs {
+	for v := range values {
 		if cmp(v) {
 			return true
 		}
@@ -49,10 +50,10 @@ func conditionMatches(cond *gen.Device_Query_Condition, device *gen.Device) bool
 	return false
 }
 
-// conditionToCmpFunc converts a Device_Query_Condition into a function that checks if leaf values match the condition.
-func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
-	strCmp := func(f func(string) bool) func(v leaf) bool {
-		return func(v leaf) bool {
+// conditionToCmpFunc converts a Device_Query_Condition into a function that checks if value values match the condition.
+func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(value) bool {
+	strCmp := func(f func(string) bool) func(v value) bool {
+		return func(v value) bool {
 			s, ok := v.toString()
 			if !ok {
 				return false
@@ -60,8 +61,8 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
 			return f(s)
 		}
 	}
-	timestampCmp := func(f func(*timestamppb.Timestamp) bool) func(leaf) bool {
-		return func(v leaf) bool {
+	timestampCmp := func(f func(*timestamppb.Timestamp) bool) func(value) bool {
+		return func(v value) bool {
 			t, ok := v.toTimestamp()
 			if !ok {
 				return false
@@ -69,7 +70,7 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
 			return f(t)
 		}
 	}
-	descendantCmp := func(f func(string) bool) func(v leaf) bool {
+	descendantCmp := func(f func(string) bool) func(v value) bool {
 		return strCmp(func(s string) bool {
 			if strings.HasSuffix(s, "/") {
 				return false // trailing /'s don't match, they'd result in an empty segment
@@ -168,12 +169,29 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
 		})
 
 	case *gen.Device_Query_Condition_Present:
-		return func(v leaf) bool {
+		return func(v value) bool {
 			return v.v.IsValid()
+		}
+
+	case *gen.Device_Query_Condition_Matches:
+		return func(v value) bool {
+			if v.fd.Message() == nil {
+				return false
+			}
+			msg := v.v.Message()
+			if !msg.IsValid() {
+				return false
+			}
+			for _, condition := range c.Matches.GetConditions() {
+				if !conditionMatches(condition, msg.Interface()) {
+					return false
+				}
+			}
+			return true // implies any present 'matches' field without conditions will match
 		}
 	}
 
-	return func(v leaf) bool {
+	return func(v value) bool {
 		return false // no condition matches, return false
 	}
 }
@@ -182,11 +200,11 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(leaf) bool {
 // See valueString for details of string conversion.
 func getMessageString(path string, msg proto.Message) iter.Seq[string] {
 	return func(yield func(string) bool) {
-		leafs, err := rangeLeafs(path, msg)
+		values, err := rangeValues(path, msg)
 		if err != nil {
 			return
 		}
-		for v := range leafs {
+		for v := range values {
 			str, got := v.toString()
 			if !got || str == "" {
 				continue // not a string or empty
@@ -198,39 +216,39 @@ func getMessageString(path string, msg proto.Message) iter.Seq[string] {
 	}
 }
 
-// leaf is a searchable value in a proto message.
-// Searchable values are scalars and scalar-like messages including google.protobuf.Timestamp and google.protobuf.Duration.
-type leaf struct {
+// value is a searchable value in a proto message.
+// A searchable value can be matched against a query condition.
+type value struct {
 	fd protoreflect.FieldDescriptor
 	v  protoreflect.Value
 }
 
-// rangeLeafsOptions defines options for the rangeLeafs function.
+// rangeValuesOptions defines options for the rangeValues function.
 // Useful for testing where stable order is important, search matching doesn't need to be stable.
-type rangeLeafsOptions struct {
+type rangeValuesOptions struct {
 	// If true, the iterator will yield values in the same order as a stable protorange.Range.
 	Stable bool
 }
 
-var emptyLeafs = func(yield func(leaf) bool) {}
+var emptyValues = func(yield func(value) bool) {}
 
-func (opts rangeLeafsOptions) Range(path string, msg proto.Message) (iter.Seq[leaf], error) {
+func (opts rangeValuesOptions) Range(path string, msg proto.Message) (iter.Seq[value], error) {
 	if msg == nil {
-		return emptyLeafs, nil
+		return emptyValues, nil
 	}
 
 	if path == "" {
 		rangeOpts := protorange.Options{
 			Stable: opts.Stable,
 		}
-		return func(yield func(leaf) bool) {
+		return func(yield func(value) bool) {
 			// we never return an error from the Range, so we can ignore the error return value
 			_ = rangeOpts.Range(msg.ProtoReflect(), func(values protopath.Values) error {
 				fd, isLeaf := getLeafDescriptor(values)
 				if !isLeaf {
 					return nil
 				}
-				if !yield(leaf{fd, values.Index(-1).Value}) {
+				if !yield(value{fd, values.Index(-1).Value}) {
 					return protorange.Terminate
 				}
 				return nil
@@ -242,119 +260,157 @@ func (opts rangeLeafsOptions) Range(path string, msg proto.Message) (iter.Seq[le
 	if err != nil {
 		return nil, fmt.Errorf("path: %w", err)
 	}
-	return scanMessage(segments, msg.ProtoReflect()), nil
+	return opts.scanMessage(segments, msg.ProtoReflect()), nil
 }
 
-// rangeLeafs returns an iterator over leaf values of msg matching path.
-// If path is empty, it returns all leaf values in msg.
-// See isLeaf for details on what a leaf is.
-// If path is not empty and resolves to a non-leaf value, it returns an empty iterator.
+// rangeValues returns an iterator over values of msg matching path.
+// If path is empty, it returns all leaf values in msg,
+// see isLeaf for details on what a leaf value is.
 // An error is returned if the path is invalid.
-func rangeLeafs(path string, msg proto.Message) (iter.Seq[leaf], error) {
-	return rangeLeafsOptions{}.Range(path, msg)
+func rangeValues(path string, msg proto.Message) (iter.Seq[value], error) {
+	return rangeValuesOptions{}.Range(path, msg)
 }
 
-// scanMessage returns all leafs identified by path in msg.
+// scanMessage returns all values identified by path in msg.
 // The first entry of path should be a field name in msg, otherwise an empty iterator is returned.
-func scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[leaf] {
+func (opts rangeValuesOptions) scanMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
 	if len(path) == 0 {
-		return emptyLeafs // callers should handle empty paths
+		return emptyValues // callers should handle empty paths
 	}
 	head := path[0]
 	if head.IsIndex {
-		return emptyLeafs // path doesn't match the message structure
+		return emptyValues // path doesn't match the message structure
 	}
 
 	fd := msg.Descriptor().Fields().ByName(protoreflect.Name(head.Name))
 	if fd == nil {
-		return emptyLeafs // field doesn't exist in the message
+		return emptyValues // field doesn't exist in the message
 	}
 
 	v := msg.Get(fd)
 	if v.Equal(fd.Default()) {
-		return emptyLeafs // field exists but has no value
+		return emptyValues // field exists but has no value
 	}
 
 	switch {
 	case fd.IsMap():
-		return scanMap(path[1:], fd, v.Map())
+		return opts.scanMap(path[1:], fd, v.Map())
 	case fd.IsList():
-		return scanList(path[1:], fd, v.List())
+		return opts.scanList(path[1:], fd, v.List())
 	case fd.Message() != nil:
 		vm := v.Message()
 		if !vm.IsValid() {
-			return emptyLeafs // field exists but has no value
+			return emptyValues // field exists but has no value
 		}
-		if isLeaf(fd) {
-			if len(path) == 1 {
-				// end of the path, return the leaf
-				return func(yield func(leaf) bool) {
-					yield(leaf{fd, v})
-				}
+		if isLeaf(fd) && len(path) > 1 {
+			return emptyValues // path has more segments, but the value is a value
+		}
+		if len(path) == 1 {
+			// end of the path, return the value
+			return func(yield func(value) bool) {
+				yield(value{fd, v})
 			}
-			// path has more segments, but the value is a leaf
-			return emptyLeafs
 		}
-		return scanMessage(path[1:], vm)
+		return opts.scanMessage(path[1:], vm)
 	case isLeaf(fd) && len(path) == 1:
-		return func(yield func(leaf) bool) {
-			yield(leaf{fd, v})
+		return func(yield func(value) bool) {
+			yield(value{fd, v})
 		}
 	default:
-		return emptyLeafs // the field value is of an unknown type
+		return emptyValues // the field value is of an unknown type
 
 	}
 }
 
-// scanMap returns all leafs identified by path in the map m.
-func scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[leaf] {
+// scanMap returns all values identified by path in the map m.
+// If path is empty, all values in the map are returned.
+func (opts rangeValuesOptions) scanMap(path []pathSegment, fd protoreflect.FieldDescriptor, m protoreflect.Map) iter.Seq[value] {
 	if len(path) == 0 {
-		return emptyLeafs // no more path segments, nothing to return
+		return func(yield func(value) bool) {
+			if !opts.Stable {
+				m.Range(func(key protoreflect.MapKey, v protoreflect.Value) bool {
+					if !yield(value{fd.MapValue(), v}) {
+						return false
+					}
+					return true
+				})
+			}
+
+			// need stable order, capture and sort the entries
+			type entry struct {
+				k protoreflect.MapKey
+				v protoreflect.Value
+			}
+			entries := make([]entry, 0, m.Len())
+			m.Range(func(key protoreflect.MapKey, v protoreflect.Value) bool {
+				entries = append(entries, entry{key, v})
+				return true
+			})
+			// same logic that exists in the protorange package.
+			// sorts false before true, numeric keys in ascending order,
+			// and strings in lexicographical ordering according to UTF-8 codepoints.
+			sort.Slice(entries, func(xe, ye int) bool {
+				x := entries[xe].k.Value()
+				y := entries[ye].k.Value()
+				switch x.Interface().(type) {
+				case bool:
+					return !x.Bool() && y.Bool()
+				case int32, int64:
+					return x.Int() < y.Int()
+				case uint32, uint64:
+					return x.Uint() < y.Uint()
+				case string:
+					return x.String() < y.String()
+				default:
+					panic("invalid map key type")
+				}
+			})
+			for _, e := range entries {
+				if !yield(value{fd.MapValue(), e.v}) {
+					return
+				}
+			}
+		}
 	}
 
 	head := path[0]
 	if head.IsIndex {
-		return emptyLeafs // path expects a list, got a map
+		return emptyValues // path expects a list, got a map
 	}
 
 	k, ok := parseMapKey(head.Name, fd.MapKey())
 	if !ok {
-		return emptyLeafs // invalid map key
+		return emptyValues // invalid map key
 	}
 	v := m.Get(k)
 	if !v.IsValid() || v.Equal(fd.MapValue().Default()) {
-		return emptyLeafs // key doesn't exist in the map
+		return emptyValues // key doesn't exist in the map
+	}
+
+	if len(path) == 1 {
+		// end of the path
+		return func(yield func(value) bool) {
+			yield(value{fd.MapValue(), v})
+		}
 	}
 
 	// more to the path
-	if len(path) > 1 {
-		if isLeaf(fd.MapValue()) {
-			return emptyLeafs // path has more segments, but the map value is a leaf
-		}
-		if md := fd.MapValue().Message(); md != nil {
-			return scanMessage(path[1:], v.Message())
-		}
-		return emptyLeafs // there's more to the path but the value has no properties
+	if isLeaf(fd.MapValue()) {
+		return emptyValues // path has more segments, but the map value is a value
 	}
-
-	// end of the path
-	if !isLeaf(fd.MapValue()) {
-		return emptyLeafs // path ends at a map value, but the map value is not a leaf
+	if md := fd.MapValue().Message(); md != nil {
+		return opts.scanMessage(path[1:], v.Message())
 	}
-	return func(yield func(leaf) bool) {
-		yield(leaf{fd.MapValue(), v})
-	}
+	return emptyValues // there's more to the path but the value has no properties
 }
 
-// scanList returns all leafs identified by path in the list l.
-func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[leaf] {
+// scanList returns all values identified by path in the list l.
+// If path is empty, all values in the list are returned.
+func (opts rangeValuesOptions) scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflect.List) iter.Seq[value] {
 	if len(path) == 0 {
-		if !isLeaf(fd) {
-			return emptyLeafs // path ends at this list, but the list contains non-leaf values
-		}
-		return func(yield func(leaf) bool) {
+		return func(yield func(value) bool) {
 			for i := 0; i < l.Len(); i++ {
-				if !yield(leaf{fd, l.Get(i)}) {
+				if !yield(value{fd, l.Get(i)}) {
 					return
 				}
 			}
@@ -369,35 +425,35 @@ func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflec
 			i = l.Len() + i
 		}
 		if i < 0 || i >= l.Len() {
-			return emptyLeafs // index out of range
+			return emptyValues // index out of range
 		}
 		v := l.Get(i)
-		if isLeaf(fd) {
-			if len(path) == 1 {
-				// end of the path, return the leaf
-				return func(yield func(leaf) bool) {
-					yield(leaf{fd, v})
-				}
+		if isLeaf(fd) && len(path) > 1 {
+			return emptyValues // path has more segments, but the list contains values
+		}
+		if len(path) == 1 {
+			// end of the path, return the value
+			return func(yield func(value) bool) {
+				yield(value{fd, v})
 			}
-			// path has more segments, but the value is a leaf
-			return emptyLeafs
 		}
 
 		if fd.Message() == nil {
-			return emptyLeafs // it's not a leaf, but also not a message. Not sure what it is.
+			return emptyValues // it's not a value, but also not a message. Not sure what it is.
 		}
 
-		return scanMessage(path[1:], v.Message())
+		return opts.scanMessage(path[1:], v.Message())
 	}
 
+	// there's more to the path, but this is a list of leafs which can't have more path segments
 	if isLeaf(fd) {
-		return emptyLeafs // path has more segments, but the list contains leaf values
+		return emptyValues // path has more segments, but the list contains value values
 	}
 
-	return func(yield func(leaf) bool) {
+	return func(yield func(value) bool) {
 		for i := 0; i < l.Len(); i++ {
 			v := l.Get(i)
-			for leaf := range scanMessage(path, v.Message()) {
+			for leaf := range opts.scanMessage(path, v.Message()) {
 				if !yield(leaf) {
 					return
 				}
@@ -406,7 +462,7 @@ func scanList(path []pathSegment, fd protoreflect.FieldDescriptor, l protoreflec
 	}
 }
 
-// getLeafDescriptor returns the most relevant FieldDescriptor for values, and whether values is a leaf or not.
+// getLeafDescriptor returns the most relevant FieldDescriptor for values, and whether values is a value or not.
 func getLeafDescriptor(values protopath.Values) (protoreflect.FieldDescriptor, bool) {
 	// getFd returns the most useful FieldDescriptor for values at index i.
 	getFd := func(i int) protoreflect.FieldDescriptor {
@@ -430,7 +486,7 @@ func getLeafDescriptor(values protopath.Values) (protoreflect.FieldDescriptor, b
 
 	switch values.Index(-1).Step.Kind() {
 	case protopath.FieldAccessStep:
-		// check the parent isn't a leaf
+		// check the parent isn't a value
 		if parentFd := getFd(-2); parentFd != nil && isLeaf(parentFd) {
 			return nil, false
 		}
@@ -447,8 +503,8 @@ func getLeafDescriptor(values protopath.Values) (protoreflect.FieldDescriptor, b
 	}
 }
 
-// isLeaf returns true if fd is a leaf.
-// A leaf is a scalar value, or a well known value type.
+// isLeaf returns true if fd is a value.
+// A value is a scalar value, or a well known value type.
 func isLeaf(fd protoreflect.FieldDescriptor) bool {
 	if fd == nil {
 		return false
@@ -465,11 +521,11 @@ func isLeaf(fd protoreflect.FieldDescriptor) bool {
 	return true // all other types are scalars, aka leafs
 }
 
-// toString converts the leaf into a string ready for comparison to another string.
+// toString converts the value into a string ready for comparison to another string.
 // Unlike l.v.String() this converts enum values to their enum name where available,
 // otherwise converts them to a string representation of the enum number.
 // Bytes are converted to string.
-func (l leaf) toString() (string, bool) {
+func (l value) toString() (string, bool) {
 	fd, v := l.fd, l.v
 	if fd == nil {
 		return "", false
@@ -501,7 +557,7 @@ func (l leaf) toString() (string, bool) {
 	case protoreflect.BytesKind:
 		return string(v.Bytes()), true
 	default:
-		// for leaf messages, we rely on the json representation to turn them into strings.
+		// for value messages, we rely on the json representation to turn them into strings.
 		if msg := v.Message(); msg != nil {
 			bs, err := protojson.Marshal(msg.Interface())
 			if err != nil {
@@ -516,8 +572,8 @@ func (l leaf) toString() (string, bool) {
 	}
 }
 
-// toTimestamp converts the leaf into a *timestamppb.Timestamp if it is a valid timestamp.
-func (l leaf) toTimestamp() (*timestamppb.Timestamp, bool) {
+// toTimestamp converts the value into a *timestamppb.Timestamp if it is a valid timestamp.
+func (l value) toTimestamp() (*timestamppb.Timestamp, bool) {
 	if l.fd == nil {
 		return nil, false
 	}

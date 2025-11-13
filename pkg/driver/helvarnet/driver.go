@@ -127,7 +127,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				node.WithClients(gen.WrapUdmiService(p))),
 			node.HasMetadata(pir.Meta))
 		grp.Go(func() error {
-			return p.runUpdateState(ctx, cfg.RefreshStatus.Duration)
+			return p.runUpdateState(ctx, cfg.RefreshOccupancy.Duration)
 		})
 	}
 

@@ -13,7 +13,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/types"
 )
 
-// AirQualityJob gets average Co2 at current point in time
+// AirQualityJob gets average Co2 level at current point in time
 type AirQualityJob struct {
 	BaseJob
 	client  traits.AirQualitySensorApiClient

@@ -69,8 +69,6 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewSpeakerApiClient(conn)
 	case *traits.VendingApiClient:
 		*ptr = traits.NewVendingApiClient(conn)
-	case *traits.WasteApiClient:
-		*ptr = traits.NewWasteApiClient(conn)
 	case *gen.AlertApiClient:
 		*ptr = gen.NewAlertApiClient(conn)
 	case *gen.ButtonApiClient:
@@ -85,6 +83,8 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = gen.NewStatusApiClient(conn)
 	case *gen.UdmiServiceClient:
 		*ptr = gen.NewUdmiServiceClient(conn)
+	case *gen.WasteApiClient:
+		*ptr = gen.NewWasteApiClient(conn)
 
 	case *traits.AirQualitySensorInfoClient:
 		*ptr = traits.NewAirQualitySensorInfoClient(conn)
@@ -140,10 +140,10 @@ func NewClient(ptr any, conn grpc.ClientConnInterface) (ok bool) {
 		*ptr = traits.NewSpeakerInfoClient(conn)
 	case *traits.VendingInfoClient:
 		*ptr = traits.NewVendingInfoClient(conn)
-	case *traits.WasteInfoClient:
-		*ptr = traits.NewWasteInfoClient(conn)
 	case *gen.MeterInfoClient:
 		*ptr = gen.NewMeterInfoClient(conn)
+	case *gen.WasteInfoClient:
+		*ptr = gen.NewWasteInfoClient(conn)
 
 	case *gen.AirTemperatureHistoryClient:
 		*ptr = gen.NewAirTemperatureHistoryClient(conn)

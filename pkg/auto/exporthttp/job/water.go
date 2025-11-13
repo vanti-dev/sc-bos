@@ -11,7 +11,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
-// WaterJob gets water consumed over the previous execution interval (typically 24 hours)
+// WaterJob gets the water consumed over the previous execution interval (typically 24 hours)
 type WaterJob struct {
 	BaseJob
 	client     gen.MeterHistoryClient

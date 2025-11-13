@@ -34,22 +34,24 @@ message Ticket {
   string reporter_name = 4;
 
   message Classification {
+    // The ID of the classification. This is unique within the context of the implementing system.
+    string id = 1;
     // The title of the classification.
-    // This is unique within the context of the implementing system.
-    string title = 1;
+    string title = 2;
     // Optional. A more detailed description can be displayed to a user to help them decide the correct classification.
-    string description = 2;
+    string description = 3;
   }
   // What type of issue is this. e.g. "Fault", "Cleaning", "Maintenance".
   // Values supported by the implementing system are discovered via the ServiceTicketInfo service.
   Classification classification = 5;
 
   message Severity {
+    // The ID of the severity. This is unique within the context of the implementing system.
+    string id = 1;
     // The title of the severity.
-    // This is unique within the context of the implementing system.
-    string title = 1;
+    string title = 2;
     // Optional. A more detailed description can be displayed to a user to help them decide the correct severity.
-    string description = 2;
+    string description = 3;
   }
   // How severe is the issue. e.g. "Critical", "High", "Medium", "Low".
   // Values supported by the implementing system are discovered via the ServiceTicketInfo service.

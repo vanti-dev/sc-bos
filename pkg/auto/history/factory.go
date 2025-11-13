@@ -20,6 +20,7 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/soundsensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
 	"github.com/vanti-dev/sc-bos/pkg/history"
@@ -182,6 +183,9 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	case trait.Electric:
 		serverClient = gen.WrapElectricHistory(historypb.NewElectricServer(store))
 		collect = a.collectElectricDemandChanges
+	case trait.EnterLeaveSensor:
+		serverClient = gen.WrapEnterLeaveHistory(historypb.NewEnterLeaveSensorServer(store))
+		collect = a.collectEnterLeaveEventChanges
 	case meter.TraitName:
 		serverClient = gen.WrapMeterHistory(historypb.NewMeterServer(store))
 		collect = a.collectMeterReadingChanges
@@ -194,6 +198,9 @@ func (a *automation) applyConfig(ctx context.Context, cfg config.Root) error {
 	case transport.TraitName:
 		serverClient = gen.WrapTransportHistory(historypb.NewTransportServer(store))
 		collect = a.collectTransportChanges
+	case soundsensorpb.TraitName:
+		serverClient = gen.WrapSoundSensorHistory(historypb.NewSoundSensorServer(store))
+		collect = a.collectSoundSensorChanges
 	default:
 		return fmt.Errorf("unsupported trait %s", cfg.Source.Trait)
 	}

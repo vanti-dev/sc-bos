@@ -25,7 +25,7 @@ func Test_processMeter(t *testing.T) {
 	logger := zap.NewNop()
 
 	start := time.Time{}.Add(time.Nanosecond)
-
+	now := time.Now()
 	tests := []struct {
 		name         string
 		args         args
@@ -38,12 +38,12 @@ func Test_processMeter(t *testing.T) {
 			name: "happy path",
 			args: args{
 				historyFn: func(ctx context.Context, in *gen.ListMeterReadingHistoryRequest, opts ...grpc.CallOption) (*gen.ListMeterReadingHistoryResponse, error) {
-					return twoMeterReadingPages(ctx, start, in, opts...)
+					return twoMeterReadingPages(ctx, start, now, in, opts...)
 				},
-				now: time.Now(),
+				now:        now,
+				filterTime: -24 * time.Hour,
 			},
 			wantEarliest: &gen.MeterReadingRecord{
-
 				MeterReading: &gen.MeterReading{
 					Usage:     0,
 					StartTime: timestamppb.New(start),
@@ -90,8 +90,8 @@ func Test_processMeter(t *testing.T) {
 	}
 }
 
-func twoMeterReadingPages(_ context.Context, start time.Time, in *gen.ListMeterReadingHistoryRequest, _ ...grpc.CallOption) (*gen.ListMeterReadingHistoryResponse, error) {
-	if in.GetOrderBy() == "record_time DESC" {
+func twoMeterReadingPages(_ context.Context, start, now time.Time, in *gen.ListMeterReadingHistoryRequest, _ ...grpc.CallOption) (*gen.ListMeterReadingHistoryResponse, error) {
+	if in.GetPeriod().EndTime.AsTime().Equal(now) {
 		return &gen.ListMeterReadingHistoryResponse{
 			MeterReadingRecords: []*gen.MeterReadingRecord{
 				{

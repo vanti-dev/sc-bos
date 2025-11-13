@@ -14,7 +14,7 @@ import (
 const (
 	DefaultConnectTimeout    = 1 * time.Second
 	DefaultRefreshOccupancy  = 10 * time.Second
-	DefaultRefreshStatus     = 1 * time.Hour
+	DefaultRefreshStatus     = 1 * time.Minute
 	DefaultRxBufferSize      = 1024
 	DefaultRxBufferSizeMin   = 1024
 	DefaultRxBufferSizeMax   = 65536

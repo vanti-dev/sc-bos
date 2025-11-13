@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"net/http"
 
+	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
 	"github.com/vanti-dev/sc-bos/pkg/node"
@@ -16,6 +17,7 @@ type Services struct {
 	ClientTLSConfig *tls.Config // for connecting to other smartcore nodes
 	HTTPMux         *http.ServeMux
 	Config          service.ConfigUpdater
+	Database        *bolthold.Store
 }
 
 type Factory interface {

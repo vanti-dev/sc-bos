@@ -84,6 +84,12 @@ message Device {
         // Default values are not present unless explicit presences is tracked for the field.
         google.protobuf.Empty present = 40;
 
+        // The condition matches when the field matches all conditions in the given query.
+        // Fields in the sub-query are relative to value resolved by the parent condition.
+        // For non-repeated fields, this is equivalent to providing multiple conditions on the root query.
+        // For repeated fields, or sub fields of those, there must exist at least one entry where all sub-query conditions match.
+        Query matches = 50;
+
         // there's room here for additional rhs values for the field, but we don't need any
       }
     }
@@ -108,6 +114,7 @@ message DevicesMetadata {
   // Field counts contain how many devices exist with specific field values.
   // For example if there are 7 devices that have "metadata.membership.group" of "Lighting" then there will exist a
   // field_counts entry that looks like `{field: "metadata.membership.group", counts: {"Lighting": 7}}`.
+  // If the matched field is repeated, the device will only be counted once per unique value.
   repeated StringFieldCount field_counts = 2;
 
   message Include {

@@ -2,6 +2,7 @@ package occupancy
 
 import (
 	"context"
+	"sync"
 
 	"go.uber.org/zap"
 
@@ -22,7 +23,7 @@ var Feature = zone.FactoryFunc(func(services zone.Services) service.Lifecycle {
 		clients:   services.Node,
 		logger:    services.Logger,
 	}
-	f.Service = service.New(service.MonoApply(f.applyConfig))
+	f.Service = service.New(service.MonoApply(f.applyConfig), service.WithParser(config.ParseConfig))
 	return f
 })
 
@@ -53,6 +54,21 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 				names:  cfg.EnterLeaveOccupancySensors,
 				logger: logger,
 			}
+
+			if cfg.EnterLeaveOccupancySensorSLA != nil {
+				names := make(map[string]struct{})
+
+				for _, name := range cfg.EnterLeaveOccupancySensors {
+					names[name] = struct{}{}
+				}
+
+				elServer.sla = &sla{
+					cantFail:                       names,
+					percentageOfAcceptableFailures: cfg.EnterLeaveOccupancySensorSLA.PercentageOfAcceptableFailures,
+					errs:                           &sync.Map{},
+				}
+			}
+
 			group.clients = append(group.clients, occupancysensorpb.WrapApi(elServer))
 		}
 

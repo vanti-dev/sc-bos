@@ -68,7 +68,8 @@ func (c *tcpClient) sendAndReceive(pkt string, want string) (string, error) {
 		err = c.sendPacket(pkt)
 		if err != nil {
 			c.logger.Error("failed to send packet", zap.Error(err))
-			time.Sleep(c.cfg.SendPacketTimeout.Duration)
+			time.Sleep(c.cfg.RetrySleepDuration.Duration)
+			c.close()
 			continue
 		}
 
@@ -80,12 +81,14 @@ func (c *tcpClient) sendAndReceive(pkt string, want string) (string, error) {
 		response, err := c.receivePacket()
 		if err != nil {
 			c.logger.Error("failed to receive packet", zap.Error(err))
+			c.close()
 		} else {
 			if !(strings.HasPrefix(response, want) &&
 				strings.HasSuffix(response, "#")) {
 				c.logger.Error("unexpected response", zap.String("response", response),
 					zap.String("want", want))
 				time.Sleep(c.cfg.RetrySleepDuration.Duration)
+				c.close()
 				continue
 			}
 			_, _ = c.status.Set(&gen.StatusLog{

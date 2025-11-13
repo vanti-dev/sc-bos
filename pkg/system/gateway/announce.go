@@ -126,7 +126,8 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 	// All nodes have some devices that get proxied, but gateway nodes only proxy a subset of them.
 	var deviceChanges <-chan rx.Change[remoteDesc]
 	var stopDevicesSub context.CancelFunc
-	var undoDevices tasks
+	// So we can undo the API proxy and metadata announcement separately.
+	var undoDevices, undoMD tasks
 	shouldProxyDevice := func(c remoteDesc) bool {
 		if isGateway() {
 			// only special names get proxied for gateway nodes
@@ -141,7 +142,7 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 		devicesCtx, stopDevicesSub = context.WithCancel(ctx)
 		var devices *scslices.Sorted[remoteDesc]
 		devices, deviceChanges = a.node.Devices.Sub(devicesCtx)
-		undoDevices = a.announceNames(filter2(devices.All, func(_ int, v remoteDesc) bool {
+		undoDevices, undoMD = a.announceNames(filter2(devices.All, func(_ int, v remoteDesc) bool {
 			return shouldProxyDevice(v)
 		}))
 	}
@@ -150,8 +151,10 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 			stopDevicesSub()
 		}
 		undoDevices.callAll()
+		undoMD.callAll()
 		deviceChanges = nil
 		undoDevices = nil
+		undoMD = nil
 	}
 	renewDevicesSub := func() {
 		closeDevicesSub()
@@ -224,14 +227,22 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 			if !ok {
 				continue // we stopped watching
 			}
-			if c.Type != rx.Add {
-				undoDevices.remove(c.Old.name)
-			}
-			if c.Type != rx.Remove {
+			switch c.Type {
+			case rx.Add:
 				if !shouldProxyDevice(c.New) {
 					continue
 				}
-				undoDevices[c.New.name] = a.announceName(c.New)
+				undoDevices[c.New.name] = a.announceProxy(c.New)
+				undoMD[c.New.name] = a.announceMetadata(c.New)
+			case rx.Remove:
+				undoDevices.remove(c.Old.name)
+				undoMD.remove(c.Old.name)
+			case rx.Update:
+				undoMD.remove(c.Old.name)
+				if !shouldProxyDevice(c.New) {
+					continue
+				}
+				undoMD[c.New.name] = a.announceMetadata(c.New)
 			}
 		}
 	}
@@ -239,28 +250,47 @@ func (a *announcer) announceRemoteNode(ctx context.Context) {
 
 // announceName allows this node to answer requests aimed at the given remoteDesc.
 // This includes named RPCs (like trait requests) and DeviceApi / ParentApi requests that would include this name in their responses.
-func (a *announcer) announceName(d remoteDesc) node.Undo {
-	if d.name == "" {
+// The func returns undo functions for both the API proxy and metadata announcement.
+func (a *announcer) announceName(d remoteDesc) (device, md node.Undo) {
+	return a.announceProxy(d), a.announceMetadata(d)
+}
+
+// announceProxy updates this node to proxy requests for the given remoteDesc.
+func (a *announcer) announceProxy(d remoteDesc) node.Undo {
+	if !shouldAnnounceName(d.name) {
 		return node.NilUndo
+	}
+	return a.Announce(d.name, node.HasProxy(a.node.conn))
+}
+
+// announceMetadata updates this node to announce metadata for the given remoteDesc.
+func (a *announcer) announceMetadata(d remoteDesc) node.Undo {
+	if !shouldAnnounceName(d.name) {
+		return node.NilUndo
+	}
+	return a.Announce(d.name, node.HasMetadata(d.md))
+}
+
+// shouldAnnounceName returns true if we should announce the given name.
+func shouldAnnounceName(name string) bool {
+	if name == "" {
+		return false
 	}
 	// If the name is one of the ignored names, we don't announce it.
-	if isFixedServiceName(d.name) {
-		return node.NilUndo
+	if isFixedServiceName(name) {
+		return false
 	}
-
-	return a.Announce(d.name,
-		node.HasMetadata(d.md),
-		node.HasProxy(a.node.conn),
-	)
+	return true
 }
 
 // announceNames calls announceName for each remoteDesc in seq, collecting the results into tasks keyed by remoteDesc.name.
-func (a *announcer) announceNames(seq iter.Seq2[int, remoteDesc]) tasks {
-	dst := tasks{}
+func (a *announcer) announceNames(seq iter.Seq2[int, remoteDesc]) (devices, mds tasks) {
+	devices = tasks{}
+	mds = tasks{}
 	for _, d := range seq {
-		dst[d.name] = a.announceName(d)
+		devices[d.name], mds[d.name] = a.announceName(d)
 	}
-	return dst
+	return devices, mds
 }
 
 // announceRemoteService updates this node to respond to requests for the given remoteService.
@@ -446,11 +476,13 @@ func filter2[K, V any](seq iter.Seq2[K, V], f func(K, V) bool) iter.Seq2[K, V] {
 	}
 }
 
+const waitTimeout = 5 * time.Second
+
 // waitForFunc returns when a value received from c satisfies the function f, or a timeout has expired.
 // Each value received will be assigned to v, which is a pointer to the current value.
 func waitForFunc[T any](ctx context.Context, v *T, c <-chan T, f func(T) bool) {
 	if !f(*v) {
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, waitTimeout)
 		defer cancel()
 		_, _ = chans.RecvContextFunc(ctx, c, func(new T) error {
 			*v = new

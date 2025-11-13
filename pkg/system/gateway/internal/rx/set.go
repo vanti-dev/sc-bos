@@ -136,6 +136,8 @@ type Change[T any] struct {
 	New  T // non-zero during add and update
 }
 
+//go:generate go tool stringer -type=ChangeType
+
 type ChangeType int
 
 const (
