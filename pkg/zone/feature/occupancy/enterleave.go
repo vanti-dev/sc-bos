@@ -101,9 +101,6 @@ func (e *enterLeave) PullOccupancy(request *traits.PullOccupancyRequest, server 
 					for {
 						res, err := stream.Recv()
 						if err != nil {
-							if e.logger != nil {
-								e.logger.Error("failed to receive enter leave event", zap.String("name", name), zap.Error(err))
-							}
 							e.storeErr(name, err)
 
 							if e.groupErrored() {
