@@ -376,6 +376,26 @@ func massageValueForWrite(_ bactypes.Device, obj bactypes.Object, prop property.
 				return bactypes.Enumerated(v)
 			}
 		}
+	case objecttype.MultiStateOutput:
+		switch prop {
+		case property.PresentValue:
+			switch v := value.(type) {
+			case float32:
+				return uint32(v)
+			case float64:
+				return uint32(v)
+			case int:
+				return uint32(v)
+			case int8:
+				return uint32(v)
+			case int16:
+				return uint32(v)
+			case int32:
+				return uint32(v)
+			case int64:
+				return uint32(v)
+			}
+		}
 	}
 	return value
 }
