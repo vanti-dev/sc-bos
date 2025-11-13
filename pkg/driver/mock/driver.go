@@ -34,7 +34,9 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/button"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/emergencylightpb"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/fluidflowpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
+	"github.com/vanti-dev/sc-bos/pkg/gentrait/pressurepb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/soundsensorpb"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
@@ -266,6 +268,9 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 		model.SetLastDurationTest(gen.EmergencyTestResult_TEST_PASSED)
 		model.SetLastFunctionalTest(gen.EmergencyTestResult_TEST_PASSED)
 		return []wrap.ServiceUnwrapper{gen.WrapEmergencyLightApi(emergencylightpb.NewModelServer(model))}, nil
+	case fluidflowpb.TraitName:
+		model := fluidflowpb.NewModel()
+		return []wrap.ServiceUnwrapper{gen.WrapFluidFlowApi(fluidflowpb.NewModelServer(model))}, auto.FluidFlow(model)
 	case meter.TraitName:
 		var (
 			unit string
@@ -285,6 +290,9 @@ func newMockClient(traitMd *traits.TraitMetadata, deviceName string, logger *zap
 			UsageUnit: unit,
 		}}
 		return []wrap.ServiceUnwrapper{gen.WrapMeterApi(meter.NewModelServer(model)), gen.WrapMeterInfo(info)}, auto.MeterAuto(model)
+	case pressurepb.TraitName:
+		model := pressurepb.NewModel()
+		return []wrap.ServiceUnwrapper{gen.WrapPressureApi(pressurepb.NewModelServer(model))}, auto.Pressure(model)
 	case securityevent.TraitName:
 		model := securityevent.NewModel()
 		return []wrap.ServiceUnwrapper{gen.WrapSecurityEventApi(securityevent.NewModelServer(model))}, auto.SecurityEventAuto(model)
