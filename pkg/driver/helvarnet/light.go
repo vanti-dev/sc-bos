@@ -699,7 +699,6 @@ func (l *Light) loadTestResults() error {
 
 func (l *Light) saveTestResults() error {
 
-	l.logger.Debug("Saving test results", zap.String("name", l.conf.Name))
 	value := l.testResultSet.Get().(*gen.TestResultSet)
 	var testResult TestResults
 	if value.FunctionTest != nil {
