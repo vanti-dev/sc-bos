@@ -99,7 +99,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 			d.clients[l.IpAddress] = newTcpClient(tcpAddr, d.logger, &cfg)
 		}
-		lum := newLight(d.clients[l.IpAddress], d.logger, l, d.database)
+		lum := newLight(d.clients[l.IpAddress], d.logger, l, d.database, false)
 
 		rootAnnouncer.Announce(l.Name,
 			node.HasTrait(trait.Light,
@@ -110,7 +110,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				node.WithClients(gen.WrapUdmiService(lum))),
 			node.HasMetadata(l.Meta))
 		grp.Go(func() error {
-			return lum.runHealthCheck(ctx, cfg.RefreshStatus.Duration)
+			return lum.queryDevice(ctx, cfg.RefreshStatus.Duration)
 		})
 	}
 
@@ -142,7 +142,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 			}
 			d.clients[em.IpAddress] = newTcpClient(tcpAddr, d.logger, &cfg)
 		}
-		emergencyLight := newLight(d.clients[em.IpAddress], d.logger, em, d.database)
+		emergencyLight := newLight(d.clients[em.IpAddress], d.logger, em, d.database, true)
 		err := emergencyLight.loadTestResults()
 		if err != nil {
 			d.logger.Error("loadTestResults error", zap.Error(err))
@@ -159,7 +159,7 @@ func (d *Driver) applyConfig(ctx context.Context, cfg config.Root) error {
 				node.WithClients(gen.WrapUdmiService(emergencyLight))),
 			node.HasMetadata(em.Meta))
 		grp.Go(func() error {
-			return emergencyLight.runHealthCheck(ctx, cfg.RefreshStatus.Duration)
+			return emergencyLight.queryDevice(ctx, cfg.RefreshStatus.Duration)
 		})
 	}
 
