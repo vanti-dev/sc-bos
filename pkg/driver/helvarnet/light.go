@@ -297,26 +297,24 @@ func (l *Light) refreshData(ctx context.Context) {
 	// if this light is an emergency light, get the test results
 	if l.isEm {
 		currentResults := l.testResultSet.Get().(*gen.TestResultSet)
+		newResults := &gen.TestResultSet{}
 		fRes, err := getTestResult(l.getFunctionTestResult, l.getFunctionTestCompletionTime)
 		if err == nil {
 			// update the stored test result set with the new result
-			_, _ = l.testResultSet.Set(fRes, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
-				Paths: []string{"function_test"},
-			}))
+			newResults.FunctionTest = fRes
 		} else {
 			l.logger.Error("Failed to get function test result", zap.String("name", l.conf.Name), zap.Error(err))
 		}
 
 		dRes, err := getTestResult(l.getDurationTestResult, l.getDurationTestCompletionTime)
 		if err == nil {
-			_, _ = l.testResultSet.Set(dRes, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
-				Paths: []string{"duration_test"},
-			}))
+			newResults.DurationTest = dRes
 		} else {
 			l.logger.Error("Failed to get duration test result", zap.String("name", l.conf.Name), zap.Error(err))
 		}
 
-		if !testResultSetEqual(currentResults, l.testResultSet.Get().(*gen.TestResultSet)) {
+		_, _ = l.testResultSet.Set(newResults)
+		if !testResultSetEqual(currentResults, newResults) {
 			err = l.saveTestResults()
 			if err != nil {
 				l.logger.Error("Failed to save test results", zap.String("name", l.conf.Name), zap.Error(err))
