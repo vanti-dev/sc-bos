@@ -48,7 +48,14 @@ func newFanSpeed(client *gobacnet.Client, devices known.Context, statuses *statu
 	if err != nil {
 		return nil, err
 	}
-	model := fanspeedpb.NewModel()
+	var presets []fanspeedpb.Preset
+	for preset, speed := range cfg.Presets {
+		presets = append(presets, fanspeedpb.Preset{
+			Name:       preset,
+			Percentage: speed,
+		})
+	}
+	model := fanspeedpb.NewModel(fanspeedpb.WithPresets(presets...))
 	t := &fanSpeed{
 		client:      client,
 		known:       devices,
@@ -92,6 +99,7 @@ func (t *fanSpeed) UpdateFanSpeed(ctx context.Context, request *traits.UpdateFan
 		}
 		newFanSpeed = presetSpeed
 	}
+	
 	err := comm.WriteProperty(ctx, t.client, t.known, *t.config.Speed, newFanSpeed, 0)
 	if err != nil {
 		return nil, err
