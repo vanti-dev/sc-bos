@@ -24,15 +24,26 @@
               </v-list-item>
               <v-list-subheader title="Data"/>
               <period-chooser-rows v-model:start="_start" v-model:end="_end" v-model:offset="_offset"/>
-              <v-list-subheader title="Metric" v-if="Object.keys(props.scaleValues).length > 0"/>
-              <v-list-item v-if="Object.keys(props.scaleValues).length > 0">
-                <v-btn-toggle
-                    mandatory v-model="metricType"
-                    variant="outlined" density="compact"
-                    divided class="ml-4">
-                  <v-btn :value="'unscaled'" size="small" :text="unit"/>
-                  <v-btn :value="'scaled'" size="small" :text="props.scaleUnit"/>
-                </v-btn-toggle>
+              <v-list-item v-if="Object.keys(props.scaleValues).length > 0" title="Metric">
+                <template #append>
+                  <v-btn-toggle
+                      mandatory v-model="metricType"
+                      variant="outlined" density="compact"
+                      divided class="ml-4">
+                    <v-btn :value="'unscaled'"
+                           size="small"
+                           :text="unit"
+                           width="5rem"
+                           min-width="auto"
+                           class="px-0"/>
+                    <v-btn :value="'scaled'"
+                           :text="'/' + props.scaleUnit"
+                           size="small"
+                           width="5rem"
+                           min-width="auto"
+                           class="px-0"/>
+                  </v-btn-toggle>
+                </template>
               </v-list-item>
               <v-list-item title="Export CSV..."
                            @click="onDownloadClick" :disabled="downloadBtnDisabled"
@@ -148,7 +159,13 @@ const nameForDescribe = computed(() => {
 const metricType = ref('unscaled');
 const {response: meterInfo} = useDescribeMeterReading(nameForDescribe);
 const unit = computed(() => meterInfo.value?.usageUnit);
-const displayUnit = computed(() => metricType.value === 'scaled' ? props.scaleUnit : unit.value);
+const displayUnit = computed(() => {
+  const base = meterInfo.value?.usageUnit;
+  if (base && metricType.value === 'scaled') {
+    return `${base}/${props.scaleUnit}`;
+  }
+  return base;
+});
 
 const _start = useLocalProp(toRef(props, 'start'));
 const _end = useLocalProp(toRef(props, 'end'));
