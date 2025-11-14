@@ -24,6 +24,27 @@
               </v-list-item>
               <v-list-subheader title="Data"/>
               <period-chooser-rows v-model:start="_start" v-model:end="_end" v-model:offset="_offset"/>
+              <v-list-item v-if="Object.keys(props.scaleValues).length > 0" title="Metric">
+                <template #append>
+                  <v-btn-toggle
+                      mandatory v-model="metricType"
+                      variant="outlined" density="compact"
+                      divided class="ml-4">
+                    <v-btn :value="'unscaled'"
+                           size="small"
+                           :text="unit"
+                           width="5rem"
+                           min-width="auto"
+                           class="px-0"/>
+                    <v-btn :value="'scaled'"
+                           :text="'/' + props.scaleUnit"
+                           size="small"
+                           width="5rem"
+                           min-width="auto"
+                           class="px-0"/>
+                  </v-btn-toggle>
+                </template>
+              </v-list-item>
               <v-list-item title="Export CSV..."
                            @click="onDownloadClick" :disabled="downloadBtnDisabled"
                            v-tooltip:bottom="'Download a CSV of the chart data'"/>
@@ -37,7 +58,7 @@
         <bar ref="chartRef" :options="chartOptions" :data="chartData" :plugins="[vueLegendPlugin, themeColorPlugin]"/>
       </div>
     </v-card-text>
-    <meter-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="unit"/>
+    <meter-tooltip :data="tooltipData" :edges="edges" :tick-unit="tickUnit" :unit="displayUnit" :hide-total-consumption="metricType === 'scaled'"/>
   </v-card>
 </template>
 
@@ -105,6 +126,14 @@ const props = defineProps({
   minChartHeight: {
     type: [String, Number],
     default: '500px',
+  },
+  scaleValues: {
+    type: Object,
+    default: () => ({}),
+  },
+  scaleUnit: {
+    type: String,
+    default: 'm²',
   }
 });
 
@@ -126,8 +155,17 @@ const nameForDescribe = computed(() => {
   if (props.subProductionNames.length > 0) return toName(props.subProductionNames[0]);
   return undefined;
 })
+
+const metricType = ref('unscaled');
 const {response: meterInfo} = useDescribeMeterReading(nameForDescribe);
 const unit = computed(() => meterInfo.value?.usageUnit);
+const displayUnit = computed(() => {
+  const base = meterInfo.value?.usageUnit;
+  if (base && metricType.value === 'scaled') {
+    return `${base}/${props.scaleUnit}`;
+  }
+  return base;
+});
 
 const _start = useLocalProp(toRef(props, 'start'));
 const _end = useLocalProp(toRef(props, 'end'));
@@ -144,7 +182,7 @@ const subProductions = useMetersConsumption(toRef(props, 'subProductionNames'), 
 const {
   external: tooltipExternal,
   data: tooltipData,
-} = useExternalTooltip(edges, tickUnit, unit);
+} = useExternalTooltip(edges, tickUnit, displayUnit);
 const {legendItems, vueLegendPlugin} = useVueLegendPlugin();
 const {themeColorPlugin} = useThemeColorPlugin();
 
@@ -171,7 +209,7 @@ const chartOptions = computed(() => {
         stacked: true,
         title: {
           display: true,
-          text: unit.value
+          text: displayUnit.value
         },
         border: {
           color: 'transparent'
@@ -226,13 +264,21 @@ const chartOptions = computed(() => {
 
 const chartLabels = computed(() => edges.value.slice(0, -1));
 const chartData = computed(() => {
-  return {
+  const baseData = {
     labels: chartLabels.value,
     datasets: [
       ...computeDatasets('Consumption', totalConsumption, toRef(props, 'subConsumptionNames'), subConsumptions),
       ...computeDatasets('Production', totalProduction, toRef(props, 'subProductionNames'), subProductions, true),
     ]
   };
+  if (metricType.value === 'scaled') {
+    baseData.datasets.forEach(ds => {
+      const sourceName = ds[datasetSourceName];
+      const scale = props.scaleValues[sourceName] || 1;
+      ds.data = ds.data.map(val => val / scale);
+    });
+  }
+  return baseData;
 });
 
 // download CSV...
