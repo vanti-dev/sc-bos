@@ -189,7 +189,7 @@ export function useMeterReadingAt(name, t, interpolate = false) {
       usageAtT.value = interpolateUsage(before, after, t);
     } catch (e) {
       if (!cancelled()) {
-        console.warn('Failed to get meter reading at', t, e.message ?? e);
+        console.warn('Failed to get meter', name, 'reading at', t, e.message ?? e);
       }
     } finally {
       if (!cancelled()) {
