@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -25,6 +26,13 @@ import (
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
 )
 
+type TestResults struct {
+	FunctionResult   int32
+	FunctionTestTime *time.Time
+	DurationResult   int32
+	DurationTestTime *time.Time
+}
+
 // Light represents a single light device within the HelvarNet system.
 type Light struct {
 	gen.UnimplementedStatusApiServer
@@ -40,14 +48,19 @@ type Light struct {
 	status          *resource.Value // *gen.StatusLog
 	udmiBus         minibus.Bus[*gen.PullExportMessagesResponse]
 
+	// stores device test results, key is device name, value is TestResults
+	database      *bolthold.Store
 	testResultSet *resource.Value // *gen.TestResultSet
+	isEm          bool
 }
 
-func newLight(client *tcpClient, l *zap.Logger, conf *config.Device) *Light {
+func newLight(client *tcpClient, l *zap.Logger, conf *config.Device, db *bolthold.Store, em bool) *Light {
 	return &Light{
 		brightness:    resource.NewValue(resource.WithInitialValue(&traits.Brightness{}), resource.WithNoDuplicates()),
 		client:        client,
 		conf:          conf,
+		database:      db,
+		isEm:          em,
 		logger:        l,
 		status:        resource.NewValue(resource.WithInitialValue(&gen.StatusLog{}), resource.WithNoDuplicates()),
 		testResultSet: resource.NewValue(resource.WithInitialValue(&gen.TestResultSet{}), resource.WithNoDuplicates()),
@@ -281,11 +294,39 @@ func (l *Light) refreshData(ctx context.Context) {
 		l.logger.Error("failed to refresh brightness, will try again on next run...", zap.Error(err))
 	}
 
+	// if this light is an emergency light, get the test results
+	if l.isEm {
+		currentResults := l.testResultSet.Get().(*gen.TestResultSet)
+		newResults := &gen.TestResultSet{}
+		fRes, err := getTestResult(l.getFunctionTestResult, l.getFunctionTestCompletionTime)
+		if err == nil {
+			// update the stored test result set with the new result
+			newResults.FunctionTest = fRes
+		} else {
+			l.logger.Error("Failed to get function test result", zap.String("name", l.conf.Name), zap.Error(err))
+		}
+
+		dRes, err := getTestResult(l.getDurationTestResult, l.getDurationTestCompletionTime)
+		if err == nil {
+			newResults.DurationTest = dRes
+		} else {
+			l.logger.Error("Failed to get duration test result", zap.String("name", l.conf.Name), zap.Error(err))
+		}
+
+		_, _ = l.testResultSet.Set(newResults)
+		if !testResultSetEqual(currentResults, newResults) {
+			err = l.saveTestResults()
+			if err != nil {
+				l.logger.Error("Failed to save test results", zap.String("name", l.conf.Name), zap.Error(err))
+			}
+		}
+	}
+
 	l.sendUdmiMessage(ctx)
 }
 
-// runHealthCheck runs queries on a schedule to check the health of the device.
-func (l *Light) runHealthCheck(ctx context.Context, t time.Duration) error {
+// queryDevice runs queries on a schedule to check the statuses of the device.
+func (l *Light) queryDevice(ctx context.Context, t time.Duration) error {
 	ticker := time.NewTicker(t)
 	defer ticker.Stop()
 	l.refreshData(ctx)
@@ -537,37 +578,11 @@ func (l *Light) GetTestResultSet(_ context.Context, req *gen.GetTestResultSetReq
 
 	if req.ReadMask == nil || slices.Contains(req.ReadMask.Paths, "function_test") {
 		result.FunctionTest = l.testResultSet.Get().(*gen.TestResultSet).FunctionTest
-		if req.QueryDevice {
-			fRes, err := getTestResult(l.getFunctionTestResult, l.getFunctionTestCompletionTime)
-			if err != nil {
-				l.logger.Error("Failed to get function test result", zap.String("name", l.conf.Name), zap.Error(err))
-				return nil, err
-			}
-			result.FunctionTest = fRes
-			// update the stored test result set with the new result
-			_, _ = l.testResultSet.Set(result, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
-				Paths: []string{"function_test"},
-			}))
-		}
 	}
 	if req.ReadMask == nil || slices.Contains(req.ReadMask.Paths, "duration_test") {
 		result.DurationTest = l.testResultSet.Get().(*gen.TestResultSet).DurationTest
-		if req.QueryDevice {
-			dRes, err := getTestResult(l.getDurationTestResult, l.getDurationTestCompletionTime)
-			if err != nil {
-				l.logger.Error("Failed to get duration test result", zap.String("name", l.conf.Name), zap.Error(err))
-				return nil, err
-			}
-			result.DurationTest = dRes
-
-			r, err := l.testResultSet.Set(result, resource.WithUpdateMask(&fieldmaskpb.FieldMask{
-				Paths: []string{"duration_test"},
-			}))
-			if err == nil {
-				result = r.(*gen.TestResultSet)
-			}
-		}
 	}
+
 	return result, nil
 }
 
@@ -600,6 +615,9 @@ func getTestResult(getResult func() (*EmergencyState, error), getTime func() (*t
 		t, _ := getTime()
 		if t != nil {
 			result.EndTime = timestamppb.New(*t)
+		} else {
+			// treat this as an error, if there is no time the device as been reset and we cannot trust the result anyway
+			return nil, status.Error(codes.Internal, "failed to get test completion time")
 		}
 	}
 	return result, nil
@@ -653,4 +671,81 @@ func (l *Light) PullControlTopics(*gen.PullControlTopicsRequest, grpc.ServerStre
 
 func (l *Light) OnMessage(context.Context, *gen.OnMessageRequest) (*gen.OnMessageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "OnMessage is not implemented for Light")
+}
+
+func (l *Light) loadTestResults() error {
+
+	var testResult TestResults
+	if err := l.database.Get(l.conf.Name, &testResult); err != nil {
+		return fmt.Errorf("failed to load test results for key %s: %w", l.conf.Name, err)
+	}
+	result := &gen.TestResultSet{
+		FunctionTest: &gen.EmergencyTestResult{
+			Result: gen.EmergencyTestResult_Result(testResult.FunctionResult),
+		},
+		DurationTest: &gen.EmergencyTestResult{
+			Result: gen.EmergencyTestResult_Result(testResult.DurationResult),
+		},
+	}
+	if testResult.FunctionTestTime != nil {
+		result.FunctionTest.EndTime = timestamppb.New(*testResult.FunctionTestTime)
+	}
+	if testResult.DurationTestTime != nil {
+		result.DurationTest.EndTime = timestamppb.New(*testResult.DurationTestTime)
+	}
+	_, _ = l.testResultSet.Set(result)
+	return nil
+}
+
+func (l *Light) saveTestResults() error {
+
+	value := l.testResultSet.Get().(*gen.TestResultSet)
+	var testResult TestResults
+	if value.FunctionTest != nil {
+		testResult.FunctionResult = int32(value.FunctionTest.Result)
+		if value.FunctionTest.EndTime != nil {
+			t := value.FunctionTest.EndTime.AsTime()
+			testResult.FunctionTestTime = &t
+		}
+	}
+	if value.DurationTest != nil {
+		testResult.DurationResult = int32(value.DurationTest.Result)
+		if value.DurationTest.EndTime != nil {
+			t := value.DurationTest.EndTime.AsTime()
+			testResult.DurationTestTime = &t
+		}
+	}
+	if err := l.database.Upsert(l.conf.Name, &testResult); err != nil {
+		return err
+	}
+	return nil
+}
+
+func testResultSetEqual(a, b *gen.TestResultSet) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+
+	if (a.FunctionTest == nil) != (b.FunctionTest == nil) {
+		return false
+	}
+	if a.FunctionTest != nil {
+		if a.FunctionTest.Result != b.FunctionTest.Result ||
+			!a.FunctionTest.StartTime.AsTime().Equal(b.FunctionTest.StartTime.AsTime()) ||
+			!a.FunctionTest.EndTime.AsTime().Equal(b.FunctionTest.EndTime.AsTime()) {
+			return false
+		}
+	}
+
+	if (a.DurationTest == nil) != (b.DurationTest == nil) {
+		return false
+	}
+	if a.DurationTest != nil {
+		if a.DurationTest.Result != b.DurationTest.Result ||
+			!a.DurationTest.StartTime.AsTime().Equal(b.DurationTest.StartTime.AsTime()) ||
+			!a.DurationTest.EndTime.AsTime().Equal(b.DurationTest.EndTime.AsTime()) {
+			return false
+		}
+	}
+	return true
 }
