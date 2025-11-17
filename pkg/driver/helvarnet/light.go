@@ -56,14 +56,17 @@ type Light struct {
 
 func newLight(client *tcpClient, l *zap.Logger, conf *config.Device, db *bolthold.Store, em bool) *Light {
 	return &Light{
-		brightness:    resource.NewValue(resource.WithInitialValue(&traits.Brightness{}), resource.WithNoDuplicates()),
-		client:        client,
-		conf:          conf,
-		database:      db,
-		isEm:          em,
-		logger:        l,
-		status:        resource.NewValue(resource.WithInitialValue(&gen.StatusLog{}), resource.WithNoDuplicates()),
-		testResultSet: resource.NewValue(resource.WithInitialValue(&gen.TestResultSet{}), resource.WithNoDuplicates()),
+		brightness: resource.NewValue(resource.WithInitialValue(&traits.Brightness{}), resource.WithNoDuplicates()),
+		client:     client,
+		conf:       conf,
+		database:   db,
+		isEm:       em,
+		logger:     l,
+		status:     resource.NewValue(resource.WithInitialValue(&gen.StatusLog{}), resource.WithNoDuplicates()),
+		testResultSet: resource.NewValue(resource.WithInitialValue(&gen.TestResultSet{
+			DurationTest: &gen.EmergencyTestResult{},
+			FunctionTest: &gen.EmergencyTestResult{},
+		}), resource.WithNoDuplicates()),
 	}
 }
 
@@ -697,53 +700,55 @@ func (l *Light) loadTestResults() error {
 	return nil
 }
 
+// updateFromProto updates the TestResults struct from a TestResultSet proto message.
+func (tr *TestResults) updateFromProto(proto *gen.TestResultSet) {
+	if proto.FunctionTest != nil {
+		tr.FunctionResult = int32(proto.FunctionTest.Result)
+		if proto.FunctionTest.EndTime != nil {
+			t := proto.FunctionTest.EndTime.AsTime()
+			tr.FunctionTestTime = &t
+		}
+	}
+	if proto.DurationTest != nil {
+		tr.DurationResult = int32(proto.DurationTest.Result)
+		if proto.DurationTest.EndTime != nil {
+			t := proto.DurationTest.EndTime.AsTime()
+			tr.DurationTestTime = &t
+		}
+	}
+}
+
 func (l *Light) saveTestResults() error {
 
 	value := l.testResultSet.Get().(*gen.TestResultSet)
 	var testResult TestResults
-	if value.FunctionTest != nil {
-		testResult.FunctionResult = int32(value.FunctionTest.Result)
-		if value.FunctionTest.EndTime != nil {
-			t := value.FunctionTest.EndTime.AsTime()
-			testResult.FunctionTestTime = &t
-		}
-	}
-	if value.DurationTest != nil {
-		testResult.DurationResult = int32(value.DurationTest.Result)
-		if value.DurationTest.EndTime != nil {
-			t := value.DurationTest.EndTime.AsTime()
-			testResult.DurationTestTime = &t
-		}
-	}
+	testResult.updateFromProto(value)
 	if err := l.database.Upsert(l.conf.Name, &testResult); err != nil {
 		return err
 	}
 	return nil
 }
 
+// testResultSetEqual compares two TestResultSet objects for equality.
+// both the Duration and Function tests for each TestResultSet must be equal for the sets to be considered equal.
 func testResultSetEqual(a, b *gen.TestResultSet) bool {
 	if a == nil || b == nil {
 		return a == b
 	}
 
-	if (a.FunctionTest == nil) != (b.FunctionTest == nil) {
-		return false
-	}
-	if a.FunctionTest != nil {
-		if a.FunctionTest.Result != b.FunctionTest.Result ||
-			!a.FunctionTest.StartTime.AsTime().Equal(b.FunctionTest.StartTime.AsTime()) ||
-			!a.FunctionTest.EndTime.AsTime().Equal(b.FunctionTest.EndTime.AsTime()) {
-			return false
-		}
-	}
+	return areTestResultsEqual(a.DurationTest, b.DurationTest) &&
+		areTestResultsEqual(a.FunctionTest, b.FunctionTest)
+}
 
-	if (a.DurationTest == nil) != (b.DurationTest == nil) {
+// areTestResultsEqual compares two EmergencyTestResult objects for equality.
+func areTestResultsEqual(a, b *gen.EmergencyTestResult) bool {
+	if (a == nil) != (b == nil) {
 		return false
 	}
-	if a.DurationTest != nil {
-		if a.DurationTest.Result != b.DurationTest.Result ||
-			!a.DurationTest.StartTime.AsTime().Equal(b.DurationTest.StartTime.AsTime()) ||
-			!a.DurationTest.EndTime.AsTime().Equal(b.DurationTest.EndTime.AsTime()) {
+	if a != nil {
+		if a.Result != b.Result ||
+			!a.StartTime.AsTime().Equal(b.StartTime.AsTime()) ||
+			!a.EndTime.AsTime().Equal(b.EndTime.AsTime()) {
 			return false
 		}
 	}
