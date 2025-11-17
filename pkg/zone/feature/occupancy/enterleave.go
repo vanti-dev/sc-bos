@@ -58,7 +58,7 @@ func (e *enterLeave) GetOccupancy(ctx context.Context, request *traits.GetOccupa
 
 	if len(errs) > 0 {
 		if e.logger != nil {
-			e.logger.Warn("some enter leave occupancy sensors failed to get", zap.Errors("errors", multierr.Errors(multierr.Combine(errs...))))
+			e.logger.Warn("some enter leave occupancy sensors failed to get", zap.Errors("errors", errs))
 		}
 	}
 	if e.groupErrored() {
@@ -101,9 +101,6 @@ func (e *enterLeave) PullOccupancy(request *traits.PullOccupancyRequest, server 
 					for {
 						res, err := stream.Recv()
 						if err != nil {
-							if e.logger != nil {
-								e.logger.Error("failed to receive enter leave event", zap.String("name", name), zap.Error(err))
-							}
 							e.storeErr(name, err)
 
 							if e.groupErrored() {
@@ -218,12 +215,11 @@ func (e *enterLeave) groupErrored() bool {
 
 		return true
 	})
-
 	if failed {
 		return true
 	}
 
-	return float64(totalErrors/len(e.names)) > e.sla.percentageOfAcceptableFailures
+	return float64(100*totalErrors/len(e.names)) > e.sla.percentageOfAcceptableFailures
 }
 
 func (e *enterLeave) update(all []*traits.EnterLeaveEvent) (*traits.Occupancy, error) {

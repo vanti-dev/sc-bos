@@ -58,7 +58,7 @@ func (f *feature) applyConfig(ctx context.Context, cfg config.Root) error {
 			if cfg.EnterLeaveOccupancySensorSLA != nil {
 				names := make(map[string]struct{})
 
-				for _, name := range cfg.EnterLeaveOccupancySensors {
+				for _, name := range cfg.EnterLeaveOccupancySensorSLA.CantFail {
 					names[name] = struct{}{}
 				}
 
