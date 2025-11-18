@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
@@ -111,7 +112,7 @@ func (o *onOff) UpdateOnOff(ctx context.Context, request *traits.UpdateOnOffRequ
 	}
 
 	return pollUntil(ctx, o.config.DefaultRWConsistencyTimeoutDuration(), o.pollPeer, func(onOff *traits.OnOff) bool {
-		return onOff == toSet
+		return proto.Equal(onOff, toSet)
 	})
 }
 
