@@ -481,15 +481,30 @@ func testStableDeviceList(t *testing.T, ctx context.Context, conn *grpc.ClientCo
 	// but this way gives more info about what is unstable.
 	events := make(map[string]totals)
 	// this stream shouldn't receive anything
-	stream, err := client.PullDevices(ctx, &gen.PullDevicesRequest{UpdatesOnly: true})
-	if err != nil {
-		t.Fatalf("pull devices: %v", err)
+	openStream := func() grpc.ServerStreamingClient[gen.PullDevicesResponse] {
+		stream, err := client.PullDevices(ctx, &gen.PullDevicesRequest{UpdatesOnly: true})
+		if code := status.Code(err); code == codes.DeadlineExceeded {
+			return nil
+		}
+		if err != nil {
+			t.Fatalf("pull devices: %v", err)
+		}
+		return stream
 	}
+	stream := openStream()
 
 	for {
 		res, err := stream.Recv()
 		if code := status.Code(err); code == codes.DeadlineExceeded {
-			break // out timeout has elapsed
+			break // our timeout has elapsed
+		}
+		if errors.Is(err, io.EOF) {
+			t.Logf("pull devices stream closed by server (EOF), reopening")
+			stream = openStream()
+			if stream == nil {
+				break
+			}
+			continue
 		}
 		if err != nil {
 			t.Fatalf("recv pull devices: %v", err)
