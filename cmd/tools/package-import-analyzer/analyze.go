@@ -67,9 +67,11 @@ func runBasicSummary(result *ScanResult) {
 
 func analyzePackageTypes(result *ScanResult) []PackageTypeAnalysis {
 	// Map of type -> list of import locations (repo:file pairs)
-	typeImports := make(map[string]map[string]bool)    // type -> unique "repo:file" strings
-	typeDependents := make(map[string]map[string]bool) // type -> dependent repos
-	typePackages := make(map[string]map[string]bool)   // type -> packages being imported
+	typeImports := make(map[string]map[string]bool)      // type -> unique "repo:file" strings
+	typeDependents := make(map[string]map[string]bool)   // type -> dependent repos
+	typePackages := make(map[string]map[string]bool)     // type -> packages being imported
+	typeFiles := make(map[string][]string)               // type -> list of all files (for examples)
+	typePackageCounts := make(map[string]map[string]int) // type -> package -> import count
 
 	// Iterate through all package usage
 	for pkg, importInfos := range result.PackageUsage {
@@ -83,6 +85,8 @@ func analyzePackageTypes(result *ScanResult) []PackageTypeAnalysis {
 					typeImports[fileType] = make(map[string]bool)
 					typeDependents[fileType] = make(map[string]bool)
 					typePackages[fileType] = make(map[string]bool)
+					typeFiles[fileType] = make([]string, 0)
+					typePackageCounts[fileType] = make(map[string]int)
 				}
 
 				// Track the import location
@@ -94,6 +98,12 @@ func analyzePackageTypes(result *ScanResult) []PackageTypeAnalysis {
 
 				// Track the package being imported
 				typePackages[fileType][pkg] = true
+
+				// Count usage of this package in this type
+				typePackageCounts[fileType][pkg]++
+
+				// Collect file for examples (with repo prefix)
+				typeFiles[fileType] = append(typeFiles[fileType], importLocation)
 			}
 		}
 	}
@@ -101,18 +111,56 @@ func analyzePackageTypes(result *ScanResult) []PackageTypeAnalysis {
 	// Build the analysis results
 	var analysis []PackageTypeAnalysis
 	for fileType, imports := range typeImports {
-		// Get unique packages for this type
-		pkgList := make([]string, 0, len(typePackages[fileType]))
-		for pkg := range typePackages[fileType] {
-			pkgList = append(pkgList, pkg)
+		// Get packages sorted by usage count (most used first)
+		type pkgCount struct {
+			pkg   string
+			count int
 		}
-		sort.Strings(pkgList)
+
+		pkgCounts := make([]pkgCount, 0, len(typePackages[fileType]))
+		for pkg := range typePackages[fileType] {
+			pkgCounts = append(pkgCounts, pkgCount{
+				pkg:   pkg,
+				count: typePackageCounts[fileType][pkg],
+			})
+		}
+
+		// Sort by count descending, then by name for ties
+		sort.Slice(pkgCounts, func(i, j int) bool {
+			if pkgCounts[i].count != pkgCounts[j].count {
+				return pkgCounts[i].count > pkgCounts[j].count
+			}
+			return pkgCounts[i].pkg < pkgCounts[j].pkg
+		})
+
+		// Extract just the package names
+		pkgList := make([]string, len(pkgCounts))
+		for i, pc := range pkgCounts {
+			pkgList[i] = pc.pkg
+		}
+
+		// Get example files (up to 5 unique examples)
+		exampleFiles := make([]string, 0)
+		fileList := typeFiles[fileType]
+		// Remove duplicates and take up to 5
+		seen := make(map[string]bool)
+		for _, f := range fileList {
+			if !seen[f] && len(exampleFiles) < 5 {
+				exampleFiles = append(exampleFiles, f)
+				seen[f] = true
+			}
+			if len(exampleFiles) >= 5 {
+				break
+			}
+		}
 
 		analysis = append(analysis, PackageTypeAnalysis{
 			PackageType:    fileType,
 			Count:          len(imports), // Count of unique file locations
 			Packages:       pkgList,
+			PackageCounts:  typePackageCounts[fileType],
 			DependentRepos: len(typeDependents[fileType]),
+			ExampleFiles:   exampleFiles,
 		})
 	}
 

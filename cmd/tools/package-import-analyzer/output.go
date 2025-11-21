@@ -56,15 +56,26 @@ func outputPackageTypeAnalysis(analysis []PackageTypeAnalysis) error {
 			fmt.Fprintf(writer, "  Import Count: %d (%.1f%%)\n", a.Count, percentage)
 			fmt.Fprintf(writer, "  Dependent Repositories: %d\n", a.DependentRepos)
 			fmt.Fprintf(writer, "  Unique Packages Imported: %d\n", len(a.Packages))
+
+			// Show example files
+			if len(a.ExampleFiles) > 0 {
+				fmt.Fprintln(writer, "  Example files:")
+				for _, file := range a.ExampleFiles {
+					fmt.Fprintf(writer, "    - %s\n", file)
+				}
+			}
+
 			if len(a.Packages) <= 10 {
 				fmt.Fprintln(writer, "  Packages imported:")
 				for _, pkg := range a.Packages {
-					fmt.Fprintf(writer, "    - %s\n", pkg)
+					count := a.PackageCounts[pkg]
+					fmt.Fprintf(writer, "    - %s (%d imports)\n", pkg, count)
 				}
 			} else {
 				fmt.Fprintf(writer, "  Top 10 packages imported:\n")
 				for i := 0; i < 10; i++ {
-					fmt.Fprintf(writer, "    - %s\n", a.Packages[i])
+					count := a.PackageCounts[a.Packages[i]]
+					fmt.Fprintf(writer, "    - %s (%d imports)\n", a.Packages[i], count)
 				}
 				fmt.Fprintf(writer, "    ... and %d more\n", len(a.Packages)-10)
 			}

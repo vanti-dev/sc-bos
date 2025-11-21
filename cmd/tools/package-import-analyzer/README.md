@@ -130,6 +130,68 @@ package-import-analyzer analyze \
   -output-file repos.csv
 ```
 
+### Sample Output
+
+Here's an example of what the package-types analysis output looks like:
+
+```
+Package Type Analysis (by dependent repo location)
+==================================================
+
+Import Location Type: drivers
+  Import Count: 177 (43.4%)
+  Dependent Repositories: 14
+  Unique Packages Imported: 23
+  Example files:
+    - vanti-dev/bsp-ew:internal/driver/axiomxa/driver.go
+    - vanti-dev/inf-240bfr:internal/drivers/tc3bool/driver.go
+    - vanti-dev/arg-ocw:internal/driver/zencontrol/driver.go
+    - vanti-dev/bsp-ew:internal/driver/tc3dali/control_gear.go
+    - vanti-dev/nvn-40-lh:internal/driver/firstmile/driver.go
+  Top 10 packages imported:
+    - github.com/vanti-dev/sc-bos/pkg/driver (94 imports)
+    - github.com/vanti-dev/sc-bos/pkg/gen (89 imports)
+    - github.com/vanti-dev/sc-bos/pkg/node (68 imports)
+    - github.com/vanti-dev/sc-bos/pkg/task/service (49 imports)
+    - github.com/vanti-dev/sc-bos/pkg/minibus (30 imports)
+    - github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb (28 imports)
+    - github.com/vanti-dev/sc-bos/pkg/util/jsontypes (25 imports)
+    - github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb (14 imports)
+    - github.com/vanti-dev/sc-bos/pkg/task (10 imports)
+    - github.com/vanti-dev/sc-bos/pkg/auto/udmi (6 imports)
+    ... and 13 more
+
+Import Location Type: tools
+  Import Count: 124 (30.4%)
+  Dependent Repositories: 12
+  Unique Packages Imported: 39
+  Example files:
+    - vanti-dev/hbd-island:cmd/tools/gen-lighting-config/main.go
+    - vanti-dev/bsp-ew:cmd/tools/gen-bms-config/main.go
+    - vanti-dev/inf-5hp:cmd/tools/gen-config-smart/main.go
+    - vanti-dev/mepc-3cs:cmd/tools/gen-cctv-config/main.go
+    - vanti-dev/arg-ocw:cmd/tools/cctv-config-gen/main.go
+  Top 10 packages imported:
+    - github.com/vanti-dev/sc-bos/pkg/app/appconf (37 imports)
+    - github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config (37 imports)
+    - github.com/vanti-dev/sc-bos/pkg/driver (33 imports)
+    - github.com/vanti-dev/sc-bos/pkg/gen (32 imports)
+    - github.com/vanti-dev/sc-bos/pkg/auto (27 imports)
+    ...
+
+Import Location Type: automations
+  Import Count: 60 (14.7%)
+  Dependent Repositories: 7
+  Unique Packages Imported: 13
+  ...
+```
+
+This output shows:
+- **43.4% of imports** are in driver code across 14 repositories
+- **30.4% of imports** are in tools across 12 repositories
+- **pkg/driver** is the most-used package in driver code (94 imports)
+- **pkg/app/appconf** is heavily used in tools (37 imports)
+
 ## Import Location Classification
 
 For package-types analysis, the tool classifies imports based on the file path in the **dependent repository** where the import occurs:

@@ -60,10 +60,12 @@ type ScanResult struct {
 
 // PackageTypeAnalysis contains analysis results grouped by package type
 type PackageTypeAnalysis struct {
-	PackageType    string   `json:"package_type"`
-	Count          int      `json:"count"`
-	Packages       []string `json:"packages"`
-	DependentRepos int      `json:"dependent_repos"`
+	PackageType    string         `json:"package_type"`
+	Count          int            `json:"count"`
+	Packages       []string       `json:"packages"`
+	PackageCounts  map[string]int `json:"package_counts,omitempty"` // Import count for each package
+	DependentRepos int            `json:"dependent_repos"`
+	ExampleFiles   []string       `json:"example_files,omitempty"` // Sample files showing where imports occur
 }
 
 // RepoDependencyAnalysis contains analysis of repository dependencies
