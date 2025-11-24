@@ -206,6 +206,42 @@ func mergeAirQuality(all []*traits.AirQuality) (*traits.AirQuality, error) {
 		}); ok {
 			out.Score = &val
 		}
+		// PM1
+		if val, ok := merge.Mean(all, func(e *traits.AirQuality) (float32, bool) {
+			if e == nil || e.ParticulateMatter_1 == nil {
+				return 0, false
+			}
+			return *e.ParticulateMatter_1, true
+		}); ok {
+			out.ParticulateMatter_1 = &val
+		}
+		// PM10
+		if val, ok := merge.Mean(all, func(e *traits.AirQuality) (float32, bool) {
+			if e == nil || e.ParticulateMatter_10 == nil {
+				return 0, false
+			}
+			return *e.ParticulateMatter_10, true
+		}); ok {
+			out.ParticulateMatter_10 = &val
+		}
+		// PM25
+		if val, ok := merge.Mean(all, func(e *traits.AirQuality) (float32, bool) {
+			if e == nil || e.ParticulateMatter_25 == nil {
+				return 0, false
+			}
+			return *e.ParticulateMatter_25, true
+		}); ok {
+			out.ParticulateMatter_25 = &val
+		}
+		// AirChangePerHour
+		if val, ok := merge.Mean(all, func(e *traits.AirQuality) (float32, bool) {
+			if e == nil || e.AirChangePerHour == nil {
+				return 0, false
+			}
+			return *e.AirChangePerHour, true
+		}); ok {
+			out.AirChangePerHour = &val
+		}
 		return out, nil
 	}
 }
