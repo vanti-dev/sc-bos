@@ -106,7 +106,7 @@ func (s *postgresStore) Postgres() (r, w, admin *pgxpool.Pool, _ error) {
 
 	if time.Since(s.latestErrTime) < retryConnectDelay {
 		// prevent rapid reconnect attempts
-		return fail(fmt.Errorf("%w [cached]", s.err))
+		return nil, nil, nil, fmt.Errorf("%w [cached]", s.err)
 	}
 
 	// todo: support r, w, and admin pools
