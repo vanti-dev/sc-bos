@@ -41,6 +41,7 @@ func newUdmi(n string, c config.RawTrait, l *zap.Logger) (*Udmi, error) {
 	u := &Udmi{
 		logger:          l,
 		monitoredPoints: make(map[string]*config.ValueSource),
+		pointEvents:     make(udmi.PointsEvent),
 		scName:          n,
 		udmiConfig:      cfg,
 	}
