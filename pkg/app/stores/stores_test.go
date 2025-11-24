@@ -41,7 +41,6 @@ func TestPostgresStore_Postgres(t *testing.T) {
 
 		wg.Wait()
 
-		// assumes default delay of 100ms between attempts
 		time.Sleep(100 * time.Millisecond)
 		// next attempt should try to connect again
 		_, _, _, err = s.Postgres()
