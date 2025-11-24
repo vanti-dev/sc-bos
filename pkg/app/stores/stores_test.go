@@ -28,13 +28,16 @@ func TestPostgresStore_Postgres(t *testing.T) {
 		}
 
 		wg := sync.WaitGroup{}
-		wg.Go(func() {
-			_, _, _, err := s.Postgres()
 
-			if !strings.Contains(err.Error(), "cached") {
-				t.Error("unexpected error, expected: cached error, got: ", err)
-			}
-		})
+		for i := 0; i < 10; i++ {
+			wg.Go(func() {
+				_, _, _, err := s.Postgres()
+
+				if !strings.Contains(err.Error(), "cached") {
+					t.Error("unexpected error, expected: cached error, got: ", err)
+				}
+			})
+		}
 
 		wg.Wait()
 
