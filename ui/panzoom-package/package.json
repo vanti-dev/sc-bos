@@ -1,5 +1,5 @@
 {
-  "name": "@vanti-dev/sc-bos-panzoom-package",
+  "name": "@smart-core-os/sc-bos-panzoom-package",
   "version": "1.0.1-vanti.0",
   "main": "panzoom.js",
   "repository": "https://github.com/smart-core-os/sc-bos",

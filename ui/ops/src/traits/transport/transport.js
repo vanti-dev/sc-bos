@@ -2,15 +2,15 @@ import {closeResource, newActionTracker, newResourceValue} from '@/api/resource.
 import {describeTransport, listTransportHistory, pullTransport} from '@/api/sc/traits/transport.js';
 import {toQueryObject, watchResource} from '@/util/traits.js';
 import {isNullOrUndef} from '@/util/types.js';
-import {Transport} from '@vanti-dev/sc-bos-ui-gen/proto/transport_pb';
+import {Transport} from '@smart-core-os/sc-bos-ui-gen/proto/transport_pb';
 import {computed, onScopeDispose, reactive, ref, toRefs, toValue, watch} from 'vue';
 
 /**
- * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/transport_pb').DescribeTransportRequest} DescribeTransportRequest
- * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/transport_pb').PullTransportRequest} PullTransportRequest
- * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/transport_pb').PullTransportResponse} PullTransportResponse
- * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/transport_pb').Transport} Transport
- * @typedef {import('@vanti-dev/sc-bos-ui-gen/proto/transport_pb').TransportSupport} TransportSupport
+ * @typedef {import('@smart-core-os/sc-bos-ui-gen/proto/transport_pb').DescribeTransportRequest} DescribeTransportRequest
+ * @typedef {import('@smart-core-os/sc-bos-ui-gen/proto/transport_pb').PullTransportRequest} PullTransportRequest
+ * @typedef {import('@smart-core-os/sc-bos-ui-gen/proto/transport_pb').PullTransportResponse} PullTransportResponse
+ * @typedef {import('@smart-core-os/sc-bos-ui-gen/proto/transport_pb').Transport} Transport
+ * @typedef {import('@smart-core-os/sc-bos-ui-gen/proto/transport_pb').TransportSupport} TransportSupport
  * @typedef {import('vue').UnwrapNestedRefs} UnwrapNestedRefs
  * @typedef {import('vue').ToRefs} ToRefs
  * @typedef {import('vue').ComputedRef} ComputedRef

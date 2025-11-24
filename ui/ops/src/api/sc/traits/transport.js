@@ -2,8 +2,8 @@ import {fieldMaskFromObject, setProperties} from '@/api/convpb.js';
 import {clientOptions} from '@/api/grpcweb.js';
 import {pullResource, setValue, trackAction} from '@/api/resource.js';
 import {periodFromObject} from '@/api/sc/types/period.js';
-import {TransportApiPromiseClient,TransportHistoryPromiseClient, TransportInfoPromiseClient} from '@vanti-dev/sc-bos-ui-gen/proto/transport_grpc_web_pb.js';
-import {DescribeTransportRequest, ListTransportHistoryRequest, PullTransportRequest} from '@vanti-dev/sc-bos-ui-gen/proto/transport_pb';
+import {TransportApiPromiseClient,TransportHistoryPromiseClient, TransportInfoPromiseClient} from '@smart-core-os/sc-bos-ui-gen/proto/transport_grpc_web_pb.js';
+import {DescribeTransportRequest, ListTransportHistoryRequest, PullTransportRequest} from '@smart-core-os/sc-bos-ui-gen/proto/transport_pb';
 
 /**
  * @param {Partial<PullTransportRequest.AsObject>} request
