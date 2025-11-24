@@ -34,7 +34,7 @@ cd ui/ops
 yarn install && yarn run build
 cd ../..
 mv ui/ops/dist .build/ops-ui
-docker build -t ghcr.io/vanti-dev/sc-bos:vTest .
+docker build -t ghcr.io/smart-core-os/sc-bos:vTest .
 ```
 
 #### Gotchas:

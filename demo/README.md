@@ -36,8 +36,8 @@ commands like:
 
 ```shell
 GIT_VERSION=$(git describe --tags --always)
-podman manifest push --all demo-ugs-sc-bos:$GIT_VERSION docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-sc-bos:$GIT_VERSION
-podman manifest push --all demo-ugs-seed-db:$GIT_VERSION docker://ghcr.io/vanti-dev/sc-bos/demo-ugs-seed-db:$GIT_VERSION
+podman manifest push --all demo-ugs-sc-bos:$GIT_VERSION docker://ghcr.io/smart-core-os/sc-bos/demo-ugs-sc-bos:$GIT_VERSION
+podman manifest push --all demo-ugs-seed-db:$GIT_VERSION docker://ghcr.io/smart-core-os/sc-bos/demo-ugs-seed-db:$GIT_VERSION
 ```
 
 The build script should output the correct commands to run, so you can just copy and paste them.

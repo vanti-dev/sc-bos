@@ -80,7 +80,7 @@ ENTRYPOINT ["/app/sc-bos", "--appconf=/cfg/app.conf.json", "--sysconf=/cfg/syste
 # END COPIED SECTION
 
 # Image built using the Dockerfile in the root of the repository
-# FROM localhost/vanti-dev-sc-bos:demo-ugs-base
+# FROM localhost/smart-core-os-sc-bos:demo-ugs-base
 
 # The demo db is unauthenticated, so we don't need a password. Still need the file though.
 RUN mkdir -p /data/secrets
