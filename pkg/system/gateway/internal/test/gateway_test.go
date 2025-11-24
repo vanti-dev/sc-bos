@@ -47,31 +47,17 @@ func TestGateway_e2e(t *testing.T) {
 		t.Skip("long test")
 	}
 
-	ctx, stop := newCtx(t)
-	defer stop()
+	ctx := t.Context()
 
 	if !*skipBuild {
-		dir := t.TempDir()
-
-		// First, we need to build each of the different binaries that make up the nodes in the cohort.
-		// After this completes we'll have a gw, ac, and hub binary in the tests temp directory.
-		t.Logf("Building binaries in %s", dir)
-		buildAll(t, dir)
-
-		// Next we start each of the nodes we need for the test
-		startCtx, cancelStart := context.WithTimeout(ctx, 30*time.Second)
-		defer cancelStart()
-		t.Logf("Starting all nodes")
-		go runAllNodes(t, startCtx, dir)
-
-		// Wait for the nodes to start up, shouldn't take more than a few seconds on _decent_ hardware.
-		t.Logf("Waiting for nodes to start")
-		waitForNodes(t, startCtx)
+		runNodes(t, ctx)
 	}
 
 	// Next up we need to configure the cohort
 	t.Logf("Configuring cohort")
+	cohortStart := time.Now()
 	configureCohort(t, ctx)
+	t.Logf("Cohort configured in %s", time.Since(cohortStart))
 
 	// Finally we're ready to start checking the setup
 	for i, addr := range shared.GWGRPCAddrs {
@@ -85,6 +71,28 @@ func TestGateway_e2e(t *testing.T) {
 			testGW(t, testCtx, addr)
 		})
 	}
+}
+
+func runNodes(t *testing.T, ctx context.Context) {
+	t.Helper()
+	// We can't use `go run`, even though it has better cache semantics,
+	// because sending kill/interrupt to the `go run` process does not forward
+	// those signals to the bos process which causes them to hang the test process.
+	dir := t.TempDir()
+
+	t.Logf("Building binaries")
+	buildStart := time.Now()
+	buildAll(t, dir)
+
+	t.Logf("Running nodes")
+	runStart := time.Now()
+	go runAllNodes(t, ctx, dir)
+
+	// Wait for the nodes to start up, shouldn't take more than a few seconds on _decent_ hardware.
+	startCtx, cancelStart := context.WithTimeout(ctx, 30*time.Second)
+	defer cancelStart()
+	waitForNodes(t, startCtx)
+	t.Logf("All nodes running in %s (b=%s,w=%s)", time.Since(buildStart), runStart.Sub(buildStart), time.Since(runStart))
 }
 
 func buildAll(t *testing.T, dir string) {
@@ -116,13 +124,9 @@ func runAllNodes(t *testing.T, ctx context.Context, dir string) {
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error { return runNode(t, ctx, dir, "hub", shared.HubGRPCAddr, shared.HubHTTPSAddr) })
 	for i, addrs := range zip(shared.ACGRPCAddrs, shared.ACHTTPSAddrs) {
-		i := i
-		addrs := addrs
 		g.Go(func() error { return runNode(t, ctx, dir, fmt.Sprintf("ac%d", i+1), addrs[0], addrs[1]) })
 	}
 	for i, addrs := range zip(shared.GWGRPCAddrs, shared.GWHTTPSAddrs) {
-		i := i
-		addrs := addrs
 		g.Go(func() error { return runNode(t, ctx, dir, fmt.Sprintf("gw%d", i+1), addrs[0], addrs[1]) })
 	}
 	if err := g.Wait(); err != nil {
@@ -179,7 +183,7 @@ func waitForNode(t *testing.T, ctx context.Context, addr string) {
 	client := traits.NewMetadataApiClient(conn)
 	err = backoff.Retry(func() error {
 		_, err := client.GetMetadata(ctx, &traits.GetMetadataRequest{})
-		if err != nil {
+		if code := status.Code(err); err != nil && code != codes.Unavailable {
 			t.Logf("failed to poll node %q for liveness: %v", addr, err)
 		}
 		return err
@@ -251,7 +255,8 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 			serviceDevices = append(serviceDevices, fmt.Sprintf("%s/%s", node, s))
 		}
 	}
-	t.Logf("[%s] Waiting for gw to configure gateway system", addr)
+
+	// these tests are mostly about waiting for the gw to finish its setup
 	t.Run("node devices online", func(t *testing.T) {
 		for _, name := range nodeDevices {
 			waitForDevice(t, ctx, conn, name)
@@ -268,6 +273,7 @@ func testGW(t *testing.T, ctx context.Context, addr string) {
 		}
 	})
 
+	// tests that devices appear in gw DevicesApi responses
 	t.Run("devices api includes devices", func(t *testing.T) {
 		client := gen.NewDevicesApiClient(conn)
 		testDevicesApiHasNames(t, ctx, addr, onOffDevices, client, &gen.ListDevicesRequest{
@@ -308,7 +314,7 @@ func waitForDevice(t *testing.T, ctx context.Context, conn *grpc.ClientConn, nam
 	err := backoff.Retry(func() error {
 		_, err := client.GetMetadata(ctx, &traits.GetMetadataRequest{Name: name})
 		return err
-	}, backoff.WithContext(backoff.NewExponentialBackOff(), ctx))
+	}, backoff.WithContext(backoff.NewExponentialBackOff(backoff.WithMaxInterval(5*time.Second)), ctx))
 	if err != nil {
 		t.Fatalf("wait for device %s: %v", name, err)
 	}
@@ -475,15 +481,30 @@ func testStableDeviceList(t *testing.T, ctx context.Context, conn *grpc.ClientCo
 	// but this way gives more info about what is unstable.
 	events := make(map[string]totals)
 	// this stream shouldn't receive anything
-	stream, err := client.PullDevices(ctx, &gen.PullDevicesRequest{UpdatesOnly: true})
-	if err != nil {
-		t.Fatalf("pull devices: %v", err)
+	openStream := func() grpc.ServerStreamingClient[gen.PullDevicesResponse] {
+		stream, err := client.PullDevices(ctx, &gen.PullDevicesRequest{UpdatesOnly: true})
+		if code := status.Code(err); code == codes.DeadlineExceeded {
+			return nil
+		}
+		if err != nil {
+			t.Fatalf("pull devices: %v", err)
+		}
+		return stream
 	}
+	stream := openStream()
 
 	for {
 		res, err := stream.Recv()
 		if code := status.Code(err); code == codes.DeadlineExceeded {
-			break // out timeout has elapsed
+			break // our timeout has elapsed
+		}
+		if errors.Is(err, io.EOF) {
+			t.Logf("pull devices stream closed by server (EOF), reopening")
+			stream = openStream()
+			if stream == nil {
+				break
+			}
+			continue
 		}
 		if err != nil {
 			t.Fatalf("recv pull devices: %v", err)

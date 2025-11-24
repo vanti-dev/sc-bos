@@ -38,7 +38,7 @@ type Root struct {
 	// Defaults to every 10 seconds
 	RefreshOccupancy *jsontypes.Duration `json:"refreshOccupancy,omitempty,omitzero"`
 	// RefreshStatus is the duration between each command to query the device state
-	// Defaults to every hour
+	// Defaults to every 1 min
 	RefreshStatus *jsontypes.Duration `json:"refreshStatus,omitempty,omitzero"`
 	// RxBufferSize is the size of the receive buffer for the TCP connection, defaults to 1024 bytes
 	RxBufferSize *int `json:"rxBufferSize,omitempty,omitzero"`

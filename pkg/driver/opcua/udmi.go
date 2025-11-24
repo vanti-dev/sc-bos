@@ -3,10 +3,12 @@ package opcua
 import (
 	"context"
 	"encoding/json"
+	"sync"
 
 	"github.com/gopcua/opcua/ua"
 	"go.uber.org/zap"
 
+	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 	"github.com/vanti-dev/sc-bos/pkg/driver/opcua/config"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/minibus"
@@ -19,7 +21,8 @@ type Udmi struct {
 	logger *zap.Logger
 	// the points that have been configured to be monitored. node id -> value source
 	monitoredPoints map[string]*config.ValueSource
-	pointEvents     map[string]any
+	pointEvents     udmi.PointsEvent
+	pointsMu        sync.Mutex
 	scName          string
 	udmiBus         minibus.Bus[*gen.PullExportMessagesResponse]
 	udmiConfig      config.UdmiConfig
@@ -35,19 +38,19 @@ func newUdmi(n string, c config.RawTrait, l *zap.Logger) (*Udmi, error) {
 	if err != nil {
 		return nil, err
 	}
-	udmi := &Udmi{
+	u := &Udmi{
 		logger:          l,
 		monitoredPoints: make(map[string]*config.ValueSource),
-		pointEvents:     make(map[string]any),
+		pointEvents:     make(udmi.PointsEvent),
 		scName:          n,
 		udmiConfig:      cfg,
 	}
 	// the points in the config are defined as a map of name -> value source to match the pattern we use
 	// we get a callback with the node id, so convert to a map of node id -> value source for fast lookup
 	for _, p := range cfg.Points {
-		udmi.monitoredPoints[p.NodeId] = p
+		u.monitoredPoints[p.NodeId] = p
 	}
-	return udmi, nil
+	return u, nil
 }
 
 func (u *Udmi) sendUdmiMessage(ctx context.Context, node *ua.NodeID, value any) {
@@ -55,7 +58,10 @@ func (u *Udmi) sendUdmiMessage(ctx context.Context, node *ua.NodeID, value any) 
 	if p, ok := u.monitoredPoints[node.String()]; ok {
 
 		pointName := p.Name
-		u.pointEvents[pointName] = p.GetValueFromIntKey(value)
+		presetValue := p.GetValueFromIntKey(value)
+		u.pointsMu.Lock()
+		defer u.pointsMu.Unlock()
+		u.pointEvents[pointName] = udmi.PointValue{PresentValue: presetValue}
 
 		body, err := json.Marshal(u.pointEvents)
 		if err != nil {
@@ -92,4 +98,19 @@ func (u *Udmi) PullExportMessages(_ *gen.PullExportMessagesRequest, server gen.U
 		}
 	}
 	return nil
+}
+
+func (u *Udmi) GetExportMessage(context.Context, *gen.GetExportMessageRequest) (*gen.MqttMessage, error) {
+	u.pointsMu.Lock()
+	defer u.pointsMu.Unlock()
+
+	body, err := json.Marshal(u.pointEvents)
+	if err != nil {
+		u.logger.Error("failed to marshal points event", zap.Error(err))
+		return nil, err
+	}
+	return &gen.MqttMessage{
+		Topic:   u.udmiConfig.TopicPrefix + config.PointsEventTopicSuffix,
+		Payload: string(body),
+	}, nil
 }
