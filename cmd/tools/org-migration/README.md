@@ -13,12 +13,13 @@ The tool scans files in your project and applies specific replacements based on 
 
 ### What Gets Replaced
 
-| Replacement Type  | Pattern                               | Example                                             |
-|-------------------|---------------------------------------|-----------------------------------------------------|
-| **Go imports**    | `github.com/vanti-dev/sc-bos`         | `import "github.com/vanti-dev/sc-bos/pkg/node"`     |
-| **npm packages**  | `@vanti-dev/sc-bos`                   | `"@vanti-dev/sc-bos": "^1.0.0"`                     |
-| **Docker images** | `ghcr.io/vanti-dev/sc-bos`            | `image: ghcr.io/vanti-dev/sc-bos:latest`            |
-| **GitHub URLs**   | `https://github.com/vanti-dev/sc-bos` | `https://github.com/vanti-dev/sc-bos/blob/main/...` |
+| Replacement Type         | Pattern                               | Example                                             |
+|--------------------------|---------------------------------------|-----------------------------------------------------|
+| **Go imports**           | `github.com/vanti-dev/sc-bos`         | `import "github.com/vanti-dev/sc-bos/pkg/node"`     |
+| **npm packages**         | `@vanti-dev/sc-bos`                   | `"@vanti-dev/sc-bos": "^1.0.0"`                     |
+| **Docker images**        | `ghcr.io/vanti-dev/sc-bos`            | `image: ghcr.io/vanti-dev/sc-bos:latest`            |
+| **GitHub URLs**          | `https://github.com/vanti-dev/sc-bos` | `https://github.com/vanti-dev/sc-bos/blob/main/...` |
+| **IDEA run configs**     | `github.com/vanti-dev/sc-bos`         | Package paths in `.run/*.xml` files                 |
 
 ### Presets
 
@@ -33,7 +34,8 @@ documentation, config files, and code are all updated together when you migrate 
 | `docs`   | Updates GitHub URLs everywhere                           | You want to update documentation links only                     |
 | `all`    | Applies all replacements (default)                       | Your project uses multiple components from `sc-bos`             |
 
-**By default, all file types are scanned** (`.go`, `.js`, `.ts`, `.md`, `.yml`, `.json`, etc.). Use `--types` to limit
+**By default, all file types are scanned** (`.go`, `.mod`, `.js`, `.ts`, `.md`, `.yml`, `.yaml`, `.json`, `.xml`, etc.), 
+including **IntelliJ IDEA run configuration files** in `.run/` directories. Use `--types` to limit
 which files are processed.
 
 ## Installation
@@ -89,7 +91,8 @@ org-migration --types go,mod --preset go --path ~/my-project
 org-migration --dry-run --verbose --preset all --path .
 ```
 
-**Note:** If you're running from source instead of using `go install`, replace `org-migration` with `go run ./cmd/tools/org-migration` in the examples above.
+**Note:** If you're running from source instead of using `go install`, replace `org-migration` with
+`go run ./cmd/tools/org-migration` in the examples above.
 
 ## Command-Line Options
 
@@ -105,12 +108,13 @@ org-migration --dry-run --verbose --preset all --path .
 
 - **Always use `--dry-run` first** to preview changes
 - Preserves file permissions and line endings (CRLF vs LF)
-- Skips hidden directories (`.git`, `.github`)
+- Skips most hidden directories (`.git`, `.github`) but **processes `.run/` for IDEA run configurations**
 - Skips build artifacts (`node_modules`, `vendor`, `dist`)
 - Won't modify files in the `org-migration` tool directory itself
 - **Automatically skips generated code** (files with `// Code generated ... DO NOT EDIT.`)
   - If generated files contain references, you'll get a warning to regenerate them
   - Look for `//go:generate` directives or run `go generate ./...` after updating source files
+- **Automatically renames files** with `vanti-dev` in their names (e.g., IDEA run configuration files)
 
 ## Post-Migration Steps
 
@@ -138,6 +142,32 @@ org-migration --dry-run --verbose --preset all --path .
 1. Test your complete application
 2. Search for any remaining hardcoded references: `git grep vanti-dev`
 3. Commit changes: `git commit -am "chore: migrate to smart-core-os organization"`
+
+## IntelliJ IDEA Support
+
+The tool automatically updates **IntelliJ IDEA run configuration files**:
+
+- **Run configurations** in `.run/*.xml` - Package paths in Go Application run configs
+- **Filename renaming** - Files with `vanti-dev` in their names are automatically renamed
+
+### Examples of What Gets Updated
+
+**In `.run/*.xml` files:**
+
+```xml
+<!-- Before -->
+<package value="github.com/vanti-dev/sc-bos/cmd/bos"/>
+
+    <!-- After -->
+<package value="github.com/smart-core-os/sc-bos/cmd/bos"/>
+```
+
+**File renaming:**
+
+- `go build github.com_vanti-dev_sc-bos_cmd_tools_export-alerts.run.xml`
+- → `go build github.com_smart-core-os_sc-bos_cmd_tools_export-alerts.run.xml`
+
+No special flags are needed - IDEA run configuration files are updated automatically when using the `go` or `all` presets.
 
 ## Migration Strategy
 

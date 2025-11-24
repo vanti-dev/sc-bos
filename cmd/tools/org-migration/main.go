@@ -23,7 +23,7 @@ var (
 )
 
 // Default file extensions to scan when --types is not specified
-const defaultFileTypes = "go,mod,sum,sh,yml,yaml,json,md,js,ts,jsx,tsx,mjs,cjs,vue,html,Dockerfile"
+const defaultFileTypes = "go,mod,sum,sh,yml,yaml,json,md,js,ts,jsx,tsx,mjs,cjs,vue,html,xml,Dockerfile"
 
 // Preset categories define which replacements to apply
 var presetInfo = map[string]string{
@@ -230,6 +230,19 @@ func main() {
 	}
 
 	fmt.Println("\n✓ Successfully updated all files.")
+
+	// Rename files that have vanti-dev in their names
+	renamedFiles, err := renameFiles(files)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error renaming files: %v\n", err)
+		os.Exit(1)
+	}
+	if len(renamedFiles) > 0 {
+		fmt.Printf("\n✓ Renamed %d file(s) with vanti-dev in their names:\n", len(renamedFiles))
+		for oldName, newName := range renamedFiles {
+			fmt.Printf("  %s -> %s\n", oldName, newName)
+		}
+	}
 }
 
 func parseExtensions(typesStr string) map[string]bool {
@@ -328,6 +341,7 @@ func collectFiles(rootPath string, extensions map[string]bool) ([]string, error)
 	var files []string
 
 	// Directories to skip during traversal
+	// Note: .run is NOT skipped to allow updating IDEA run configurations
 	ignoredDirs := []string{"node_modules", "vendor", "dist", "org-migration"}
 
 	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
@@ -340,7 +354,11 @@ func collectFiles(rootPath string, extensions map[string]bool) ([]string, error)
 			name := d.Name()
 			// Don't skip the root directory even if it's "."
 			if path != rootPath {
-				// Skip hidden directories (starting with .)
+				// Allow .run directory (IDEA run configurations)
+				if name == ".run" {
+					return nil
+				}
+				// Skip other hidden directories (starting with .)
 				if strings.HasPrefix(name, ".") {
 					return filepath.SkipDir
 				}
@@ -464,4 +482,32 @@ func updateFile(filePath string, updates []FileUpdate) error {
 	output := strings.Join(lines, lineEnding)
 
 	return os.WriteFile(filePath, []byte(output), 0644)
+}
+
+func renameFiles(files []string) (map[string]string, error) {
+	renamedFiles := make(map[string]string)
+
+	for _, filePath := range files {
+		// Check if filename contains vanti-dev
+		fileName := filepath.Base(filePath)
+		if !strings.Contains(fileName, "vanti-dev") {
+			continue
+		}
+
+		// Create new filename by replacing vanti-dev with smart-core-os
+		newFileName := strings.ReplaceAll(fileName, "vanti-dev", "smart-core-os")
+		newFilePath := filepath.Join(filepath.Dir(filePath), newFileName)
+
+		// Rename the file
+		if err := os.Rename(filePath, newFilePath); err != nil {
+			return renamedFiles, fmt.Errorf("failed to rename %s to %s: %w", filePath, newFilePath, err)
+		}
+
+		renamedFiles[filePath] = newFilePath
+		if *verbose {
+			fmt.Printf("Renamed %s to %s\n", filePath, newFilePath)
+		}
+	}
+
+	return renamedFiles, nil
 }
