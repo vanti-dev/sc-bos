@@ -19,7 +19,7 @@ func NewModel(opts ...resource.Option) *Model {
 	defaultOptions := []resource.Option{resource.WithInitialValue(&gen.MeterReading{})}
 	value := resource.NewValue(append(defaultOptions, opts...)...)
 	// make sure start and end time are recorded
-	_, _ = value.Set(&gen.MeterReading{}, resource.InterceptBefore(func(old, new proto.Message) {
+	_, _ = value.Set(value.Get(), resource.InterceptBefore(func(old, new proto.Message) {
 		oldVal := old.(*gen.MeterReading)
 		newVal := new.(*gen.MeterReading)
 		now := value.Clock().Now()
