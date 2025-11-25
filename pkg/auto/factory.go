@@ -10,6 +10,7 @@ import (
 
 	"github.com/smart-core-os/sc-bos/pkg/app/stores"
 	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/healthpb"
 	"github.com/smart-core-os/sc-bos/pkg/node"
 	"github.com/smart-core-os/sc-bos/pkg/task/service"
 )
@@ -25,6 +26,7 @@ type Services struct {
 	ClientTLSConfig *tls.Config
 	Now             func() time.Time
 	Config          service.ConfigUpdater
+	Health          *healthpb.Checks
 }
 
 // Factory constructs new automation instances.
