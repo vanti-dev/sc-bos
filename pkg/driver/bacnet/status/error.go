@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vanti-dev/gobacnet/enum/errorcode"
-	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/smart-core-os/gobacnet/enum/errorcode"
+	bactypes "github.com/smart-core-os/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/gen"
 	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"

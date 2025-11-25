@@ -10,8 +10,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/vanti-dev/gobacnet"
-	bactypes "github.com/vanti-dev/gobacnet/types"
+	"github.com/smart-core-os/gobacnet"
+	bactypes "github.com/smart-core-os/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
 )
 

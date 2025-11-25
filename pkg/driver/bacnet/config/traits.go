@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/smart-core-os/gobacnet/property"
+	bactypes "github.com/smart-core-os/gobacnet/types"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/gobacnet/property"
-	bactypes "github.com/vanti-dev/gobacnet/types"
 
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 )

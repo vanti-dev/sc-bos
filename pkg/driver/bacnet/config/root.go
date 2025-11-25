@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	bactypes "github.com/smart-core-os/gobacnet/types"
 	"github.com/smart-core-os/sc-api/go/traits"
-	bactypes "github.com/vanti-dev/gobacnet/types"
 	"github.com/vanti-dev/sc-bos/pkg/block"
 	"github.com/vanti-dev/sc-bos/pkg/block/mdblock"
 

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vanti-dev/gobacnet"
+	"github.com/smart-core-os/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"

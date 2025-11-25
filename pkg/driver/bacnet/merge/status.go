@@ -7,8 +7,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/gobacnet"
-	"github.com/vanti-dev/gobacnet/property"
+	"github.com/smart-core-os/gobacnet"
+	"github.com/smart-core-os/gobacnet/property"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"

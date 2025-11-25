@@ -7,10 +7,10 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/gobacnet"
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/fanspeedpb"
-	"github.com/vanti-dev/gobacnet"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
 	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
@@ -99,7 +99,7 @@ func (t *fanSpeed) UpdateFanSpeed(ctx context.Context, request *traits.UpdateFan
 		}
 		newFanSpeed = presetSpeed
 	}
-	
+
 	err := comm.WriteProperty(ctx, t.client, t.known, *t.config.Speed, newFanSpeed, 0)
 	if err != nil {
 		return nil, err
