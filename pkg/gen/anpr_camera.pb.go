@@ -560,7 +560,7 @@ const file_anpr_camera_proto_rawDesc = "" +
 	"anpr_event\x18\x03 \x01(\v2\x18.smartcore.bos.AnprEventR\tanprEvent2\xd3\x01\n" +
 	"\rAnprCameraApi\x12_\n" +
 	"\x0eListAnprEvents\x12$.smartcore.bos.ListAnprEventsRequest\x1a%.smartcore.bos.ListAnprEventsResponse\"\x00\x12a\n" +
-	"\x0ePullAnprEvents\x12$.smartcore.bos.PullAnprEventsRequest\x1a%.smartcore.bos.PullAnprEventsResponse\"\x000\x01B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x0ePullAnprEvents\x12$.smartcore.bos.PullAnprEventsRequest\x1a%.smartcore.bos.PullAnprEventsResponse\"\x000\x01B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_anpr_camera_proto_rawDescOnce sync.Once

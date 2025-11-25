@@ -12,7 +12,7 @@ import (
 	. "google.golang.org/protobuf/reflect/protopath"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	pb "github.com/vanti-dev/sc-bos/internal/protobuf/protopath2/testmessage"
+	pb "github.com/smart-core-os/sc-bos/internal/protobuf/protopath2/testmessage"
 )
 
 func TestPathValues(t *testing.T) {

@@ -3,8 +3,8 @@ package config
 import (
 	"encoding/json"
 
-	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
-	"github.com/vanti-dev/sc-bos/pkg/zone"
+	"github.com/smart-core-os/sc-bos/pkg/util/jsontypes"
+	"github.com/smart-core-os/sc-bos/pkg/zone"
 )
 
 type Root struct {

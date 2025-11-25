@@ -9,17 +9,17 @@ import (
 
 	"github.com/smart-core-os/gobacnet"
 	"github.com/smart-core-os/sc-api/go/types"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/comm"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/known"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/status"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/meter"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/task"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task"
 )
 
 type meterConfig struct {

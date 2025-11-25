@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/vanti-dev/sc-bos/pkg/driver/hikcentral/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/hikcentral/config"
 )
 
 const resourcePrefix = "/artemis/api/resource/v1"

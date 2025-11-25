@@ -9,17 +9,17 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/smart-core-os/sc-bos/pkg/driver"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/udmipb"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/task/service"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/ptzpb"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
 
-	"github.com/vanti-dev/sc-bos/pkg/driver/hikcentral/api"
-	"github.com/vanti-dev/sc-bos/pkg/driver/hikcentral/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/hikcentral/api"
+	"github.com/smart-core-os/sc-bos/pkg/driver/hikcentral/config"
 )
 
 const DriverName = "hikcentral"

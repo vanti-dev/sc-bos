@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto/statusalerts/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/auto/statusalerts/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 func analyseStatusLogs(ctx context.Context, source config.Source, c <-chan *gen.StatusLog, name string, client gen.AlertAdminApiClient, logger *zap.Logger) error {

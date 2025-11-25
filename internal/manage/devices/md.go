@@ -3,7 +3,7 @@ package devices
 import (
 	"iter"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 // metadataCollector helps to combine multiple gen.Device into a gen.DevicesMetadata.

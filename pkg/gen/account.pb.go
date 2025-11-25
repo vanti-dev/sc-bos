@@ -2620,7 +2620,7 @@ const file_account_proto_rawDesc = "" +
 	"\vAccountInfo\x12O\n" +
 	"\rGetPermission\x12#.smartcore.bos.GetPermissionRequest\x1a\x19.smartcore.bos.Permission\x12`\n" +
 	"\x0fListPermissions\x12%.smartcore.bos.ListPermissionsRequest\x1a&.smartcore.bos.ListPermissionsResponse\x12X\n" +
-	"\x10GetAccountLimits\x12&.smartcore.bos.GetAccountLimitsRequest\x1a\x1c.smartcore.bos.AccountLimitsB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x10GetAccountLimits\x12&.smartcore.bos.GetAccountLimitsRequest\x1a\x1c.smartcore.bos.AccountLimitsB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_account_proto_rawDescOnce sync.Once

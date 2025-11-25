@@ -503,7 +503,7 @@ const file_pressure_proto_rawDesc = "" +
 	"\fPullPressure\x12\".smartcore.bos.PullPressureRequest\x1a#.smartcore.bos.PullPressureResponse\"\x000\x01\x12Q\n" +
 	"\x0eUpdatePressure\x12$.smartcore.bos.UpdatePressureRequest\x1a\x17.smartcore.bos.Pressure\"\x002l\n" +
 	"\fPressureInfo\x12\\\n" +
-	"\x10DescribePressure\x12&.smartcore.bos.DescribePressureRequest\x1a\x1e.smartcore.bos.PressureSupport\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x10DescribePressure\x12&.smartcore.bos.DescribePressureRequest\x1a\x1e.smartcore.bos.PressureSupport\"\x00B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_pressure_proto_rawDescOnce sync.Once

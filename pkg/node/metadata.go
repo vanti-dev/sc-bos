@@ -8,10 +8,10 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-bos/internal/node/nodeopts"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait/metadatapb"
-	"github.com/vanti-dev/sc-bos/internal/node/nodeopts"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 // mergeAllMetadata uses the metadatapb.Merge algorithm to merge multiple metadata objects into one.

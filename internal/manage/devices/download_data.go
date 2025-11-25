@@ -8,12 +8,12 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	timepb "github.com/smart-core-os/sc-api/go/types/time"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/accesspb"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/meter"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/soundsensorpb"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/soundsensorpb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
 )
 
 // getTraitInfo returns the data we support exporting via the DevicesApi download endpoint.

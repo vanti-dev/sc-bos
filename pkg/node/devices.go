@@ -3,9 +3,9 @@ package node
 import (
 	"context"
 
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/devicespb"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
 )
 
 func (n *Node) GetDevice(name string, opts ...resource.ReadOption) (*gen.Device, error) {

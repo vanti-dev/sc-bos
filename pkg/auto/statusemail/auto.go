@@ -9,13 +9,13 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-bos/pkg/auto"
+	"github.com/smart-core-os/sc-bos/pkg/auto/statusemail/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/task"
+	"github.com/smart-core-os/sc-bos/pkg/task/service"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/auto/statusemail/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-	"github.com/vanti-dev/sc-bos/pkg/task"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
 )
 
 const AutoName = "statusemail"

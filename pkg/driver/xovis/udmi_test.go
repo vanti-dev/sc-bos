@@ -9,8 +9,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func Test_PullExportMessages(t *testing.T) {

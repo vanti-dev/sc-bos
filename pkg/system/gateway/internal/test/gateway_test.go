@@ -27,10 +27,10 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
+	"github.com/smart-core-os/sc-bos/internal/util/grpc/reflectionapi"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/system/gateway/internal/test/shared"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/test/shared"
 )
 
 var skipBuild = flag.Bool("skip-build", false, "skip building and running binaries")

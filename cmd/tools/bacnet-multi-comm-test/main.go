@@ -25,9 +25,9 @@ import (
 	"github.com/smart-core-os/gobacnet"
 	"github.com/smart-core-os/gobacnet/property"
 	bactypes "github.com/smart-core-os/gobacnet/types"
-	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/app/appconf"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config"
 )
 
 var (

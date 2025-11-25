@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/vanti-dev/sc-bos/pkg/auth/token"
+	"github.com/smart-core-os/sc-bos/pkg/auth/token"
 )
 
 func BenchmarkPolicy(b *testing.B) {

@@ -8,15 +8,15 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
+	"github.com/smart-core-os/sc-bos/pkg/auto"
+	"github.com/smart-core-os/sc-bos/pkg/driver"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/system"
+	"github.com/smart-core-os/sc-bos/pkg/task/service"
+	"github.com/smart-core-os/sc-bos/pkg/task/serviceapi"
+	"github.com/smart-core-os/sc-bos/pkg/zone"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/system"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
-	"github.com/vanti-dev/sc-bos/pkg/task/serviceapi"
-	"github.com/vanti-dev/sc-bos/pkg/zone"
 )
 
 func (c *Controller) startDrivers(configs []driver.RawConfig) (*service.Map, error) {

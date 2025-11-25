@@ -6,11 +6,11 @@ import (
 	"fmt"
 
 	"github.com/smart-core-os/gobacnet"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/comm"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/known"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
 )
 
 func ptr[T any](v T, err error) (*T, error) {

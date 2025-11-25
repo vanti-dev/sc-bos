@@ -11,17 +11,17 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
+	"github.com/smart-core-os/sc-bos/pkg/auto/history/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	meterpb "github.com/smart-core-os/sc-bos/pkg/gentrait/meter"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/util/jsontypes"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
 	"github.com/smart-core-os/sc-golang/pkg/trait/electricpb"
 	"github.com/smart-core-os/sc-golang/pkg/trait/occupancysensorpb"
-	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	meterpb "github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 func Test_automation_applyConfig(t *testing.T) {

@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package testprotopath;
 
-option go_package = "github.com/vanti-dev/sc-bos/internal/protobuf/protopath2/testmessage";
+option go_package = "github.com/smart-core-os/sc-bos/internal/protobuf/protopath2/testmessage";
 
 message Test {
   message Nested {

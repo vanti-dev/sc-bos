@@ -2005,7 +2005,7 @@ const file_transport_proto_rawDesc = "" +
 	"\rTransportInfo\x12]\n" +
 	"\x11DescribeTransport\x12'.smartcore.bos.DescribeTransportRequest\x1a\x1f.smartcore.bos.TransportSupport2\x83\x01\n" +
 	"\x10TransportHistory\x12o\n" +
-	"\x14ListTransportHistory\x12*.smartcore.bos.ListTransportHistoryRequest\x1a+.smartcore.bos.ListTransportHistoryResponseB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x14ListTransportHistory\x12*.smartcore.bos.ListTransportHistoryRequest\x1a+.smartcore.bos.ListTransportHistoryResponseB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_transport_proto_rawDescOnce sync.Once

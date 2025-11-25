@@ -11,8 +11,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 const PointsetVersion = "1.0.0"

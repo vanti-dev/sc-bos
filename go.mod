@@ -1,4 +1,4 @@
-module github.com/vanti-dev/sc-bos
+module github.com/smart-core-os/sc-bos
 
 go 1.25
 

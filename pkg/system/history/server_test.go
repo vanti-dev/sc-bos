@@ -13,9 +13,9 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/history"
-	"github.com/vanti-dev/sc-bos/pkg/history/memstore"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/history"
+	"github.com/smart-core-os/sc-bos/pkg/history/memstore"
 )
 
 func Test_storeServer_ListHistoryRecords(t *testing.T) {

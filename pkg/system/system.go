@@ -8,13 +8,13 @@ import (
 	"github.com/timshannon/bolthold"
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/internal/account"
-	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
-	"github.com/vanti-dev/sc-bos/internal/util/pki"
-	"github.com/vanti-dev/sc-bos/pkg/app/stores"
-	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/smart-core-os/sc-bos/internal/account"
+	"github.com/smart-core-os/sc-bos/internal/util/grpc/reflectionapi"
+	"github.com/smart-core-os/sc-bos/internal/util/pki"
+	"github.com/smart-core-os/sc-bos/pkg/app/stores"
+	"github.com/smart-core-os/sc-bos/pkg/auth/token"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/task/service"
 )
 
 type Services struct {

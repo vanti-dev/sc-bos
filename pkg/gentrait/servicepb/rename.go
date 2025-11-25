@@ -3,7 +3,7 @@ package servicepb
 import (
 	"context"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 // RenameApi returns a gen.ServicesApiServer that changes the names associated with requests before calling client.

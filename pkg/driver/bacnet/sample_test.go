@@ -13,13 +13,13 @@ import (
 
 	"github.com/smart-core-os/gobacnet"
 	bactypes "github.com/smart-core-os/gobacnet/types"
-	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/status"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/app/appconf"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/adapt"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/known"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/status"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/node"
 )
 
 func TestYabeRoom(t *testing.T) {

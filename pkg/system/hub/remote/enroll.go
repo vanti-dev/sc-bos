@@ -15,8 +15,8 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pki"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/internal/util/pki"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 // Enroll sets up the PKI for a remote Smart Core node.

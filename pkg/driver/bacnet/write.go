@@ -11,13 +11,13 @@ import (
 
 	"go.uber.org/multierr"
 
+	"github.com/smart-core-os/sc-bos/pkg/app/appconf"
+	"github.com/smart-core-os/sc-bos/pkg/auto"
+	historyconfig "github.com/smart-core-os/sc-bos/pkg/auto/history/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/util/jsontypes"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/pkg/app/appconf"
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	historyconfig "github.com/vanti-dev/sc-bos/pkg/auto/history/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
-	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
 )
 
 // ConfigForFloor is basically just a wrapper around the root config with support for automations and traits

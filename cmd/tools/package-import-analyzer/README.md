@@ -27,7 +27,7 @@ package-import-analyzer scan \
 - `-org` (required) - GitHub organization name to scan
 - `-output` (required) - Output file path for scan results
 - `-token` - GitHub personal access token (or set `GITHUB_TOKEN` env var)
-- `-base-module` - Base module to look for imports (default: `github.com/vanti-dev/sc-bos`)
+- `-base-module` - Base module to look for imports (default: `github.com/smart-core-os/sc-bos`)
 - `-cache-dir` - Cache directory for API responses (default: `~/.package-import-analyzer-cache`)
 
 #### Scan Output
@@ -149,16 +149,16 @@ Import Location Type: drivers
     - vanti-dev/bsp-ew:internal/driver/tc3dali/control_gear.go
     - vanti-dev/nvn-40-lh:internal/driver/firstmile/driver.go
   Top 10 packages imported:
-    - github.com/vanti-dev/sc-bos/pkg/driver (94 imports)
-    - github.com/vanti-dev/sc-bos/pkg/gen (89 imports)
-    - github.com/vanti-dev/sc-bos/pkg/node (68 imports)
-    - github.com/vanti-dev/sc-bos/pkg/task/service (49 imports)
-    - github.com/vanti-dev/sc-bos/pkg/minibus (30 imports)
-    - github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb (28 imports)
-    - github.com/vanti-dev/sc-bos/pkg/util/jsontypes (25 imports)
-    - github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb (14 imports)
-    - github.com/vanti-dev/sc-bos/pkg/task (10 imports)
-    - github.com/vanti-dev/sc-bos/pkg/auto/udmi (6 imports)
+    - github.com/smart-core-os/sc-bos/pkg/driver (94 imports)
+    - github.com/smart-core-os/sc-bos/pkg/gen (89 imports)
+    - github.com/smart-core-os/sc-bos/pkg/node (68 imports)
+    - github.com/smart-core-os/sc-bos/pkg/task/service (49 imports)
+    - github.com/smart-core-os/sc-bos/pkg/minibus (30 imports)
+    - github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb (28 imports)
+    - github.com/smart-core-os/sc-bos/pkg/util/jsontypes (25 imports)
+    - github.com/smart-core-os/sc-bos/pkg/gentrait/udmipb (14 imports)
+    - github.com/smart-core-os/sc-bos/pkg/task (10 imports)
+    - github.com/smart-core-os/sc-bos/pkg/auto/udmi (6 imports)
     ... and 13 more
 
 Import Location Type: tools
@@ -172,11 +172,11 @@ Import Location Type: tools
     - vanti-dev/mepc-3cs:cmd/tools/gen-cctv-config/main.go
     - vanti-dev/arg-ocw:cmd/tools/cctv-config-gen/main.go
   Top 10 packages imported:
-    - github.com/vanti-dev/sc-bos/pkg/app/appconf (37 imports)
-    - github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config (37 imports)
-    - github.com/vanti-dev/sc-bos/pkg/driver (33 imports)
-    - github.com/vanti-dev/sc-bos/pkg/gen (32 imports)
-    - github.com/vanti-dev/sc-bos/pkg/auto (27 imports)
+    - github.com/smart-core-os/sc-bos/pkg/app/appconf (37 imports)
+    - github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config (37 imports)
+    - github.com/smart-core-os/sc-bos/pkg/driver (33 imports)
+    - github.com/smart-core-os/sc-bos/pkg/gen (32 imports)
+    - github.com/smart-core-os/sc-bos/pkg/auto (27 imports)
     ...
 
 Import Location Type: automations

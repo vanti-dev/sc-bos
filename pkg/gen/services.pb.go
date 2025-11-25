@@ -1487,7 +1487,7 @@ const file_services_proto_rawDesc = "" +
 	"\x10ConfigureService\x12&.smartcore.bos.ConfigureServiceRequest\x1a\x16.smartcore.bos.Service\x12H\n" +
 	"\vStopService\x12!.smartcore.bos.StopServiceRequest\x1a\x16.smartcore.bos.Service\x12^\n" +
 	"\x12GetServiceMetadata\x12(.smartcore.bos.GetServiceMetadataRequest\x1a\x1e.smartcore.bos.ServiceMetadata\x12n\n" +
-	"\x13PullServiceMetadata\x12).smartcore.bos.PullServiceMetadataRequest\x1a*.smartcore.bos.PullServiceMetadataResponse0\x01B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x13PullServiceMetadata\x12).smartcore.bos.PullServiceMetadataRequest\x1a*.smartcore.bos.PullServiceMetadataResponse0\x01B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_services_proto_rawDescOnce sync.Once

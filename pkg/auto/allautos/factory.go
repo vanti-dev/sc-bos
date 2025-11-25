@@ -1,21 +1,21 @@
 package allautos
 
 import (
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/auto/azureiot"
-	"github.com/vanti-dev/sc-bos/pkg/auto/bms"
-	"github.com/vanti-dev/sc-bos/pkg/auto/export"
-	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp"
-	"github.com/vanti-dev/sc-bos/pkg/auto/history"
-	"github.com/vanti-dev/sc-bos/pkg/auto/lights"
-	"github.com/vanti-dev/sc-bos/pkg/auto/meteremail"
-	"github.com/vanti-dev/sc-bos/pkg/auto/notificationsemail"
-	"github.com/vanti-dev/sc-bos/pkg/auto/occupancyemail"
-	"github.com/vanti-dev/sc-bos/pkg/auto/resetbrightness"
-	"github.com/vanti-dev/sc-bos/pkg/auto/resetenterleave"
-	"github.com/vanti-dev/sc-bos/pkg/auto/statusalerts"
-	"github.com/vanti-dev/sc-bos/pkg/auto/statusemail"
-	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
+	"github.com/smart-core-os/sc-bos/pkg/auto"
+	"github.com/smart-core-os/sc-bos/pkg/auto/azureiot"
+	"github.com/smart-core-os/sc-bos/pkg/auto/bms"
+	"github.com/smart-core-os/sc-bos/pkg/auto/export"
+	"github.com/smart-core-os/sc-bos/pkg/auto/exporthttp"
+	"github.com/smart-core-os/sc-bos/pkg/auto/history"
+	"github.com/smart-core-os/sc-bos/pkg/auto/lights"
+	"github.com/smart-core-os/sc-bos/pkg/auto/meteremail"
+	"github.com/smart-core-os/sc-bos/pkg/auto/notificationsemail"
+	"github.com/smart-core-os/sc-bos/pkg/auto/occupancyemail"
+	"github.com/smart-core-os/sc-bos/pkg/auto/resetbrightness"
+	"github.com/smart-core-os/sc-bos/pkg/auto/resetenterleave"
+	"github.com/smart-core-os/sc-bos/pkg/auto/statusalerts"
+	"github.com/smart-core-os/sc-bos/pkg/auto/statusemail"
+	"github.com/smart-core-os/sc-bos/pkg/auto/udmi"
 )
 
 // Factories returns a new map containing all known auto factories.

@@ -3,15 +3,13 @@
 package rpc
 
 import (
-	"context"
-	"fmt"
-
-	"google.golang.org/grpc"
-
-	"github.com/smart-core-os/sc-golang/pkg/router"
+	context "context"
+	fmt "fmt"
+	router "github.com/smart-core-os/sc-golang/pkg/router"
+	grpc "google.golang.org/grpc"
 )
 
-// BacnetDriverServiceRouter is a rpc.BacnetDriverServiceServer that allows routing named requests to specific rpc.BacnetDriverServiceClient
+// BacnetDriverServiceRouter is a BacnetDriverServiceServer that allows routing named requests to specific BacnetDriverServiceClient
 type BacnetDriverServiceRouter struct {
 	UnimplementedBacnetDriverServiceServer
 
@@ -39,10 +37,10 @@ func (r *BacnetDriverServiceRouter) Register(server grpc.ServiceRegistrar) {
 	RegisterBacnetDriverServiceServer(server, r)
 }
 
-// Add extends Router.Add to panic if client is not of type rpc.BacnetDriverServiceClient.
+// Add extends Router.Add to panic if client is not of type BacnetDriverServiceClient.
 func (r *BacnetDriverServiceRouter) Add(name string, client any) any {
 	if !r.HoldsType(client) {
-		panic(fmt.Sprintf("not correct type: client of type %T is not a rpc.BacnetDriverServiceClient", client))
+		panic(fmt.Sprintf("not correct type: client of type %T is not a BacnetDriverServiceClient", client))
 	}
 	return r.Router.Add(name, client)
 }

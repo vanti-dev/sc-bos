@@ -14,13 +14,13 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/testing/protocmp"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
-	meterpb "github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"github.com/vanti-dev/sc-bos/pkg/history/memstore"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/util/jsontypes"
-	"github.com/vanti-dev/sc-bos/pkg/zone/feature/meter/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/historypb"
+	meterpb "github.com/smart-core-os/sc-bos/pkg/gentrait/meter"
+	"github.com/smart-core-os/sc-bos/pkg/history/memstore"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/util/jsontypes"
+	"github.com/smart-core-os/sc-bos/pkg/zone/feature/meter/config"
 )
 
 func TestGroup_PullMeterReadings(t *testing.T) {

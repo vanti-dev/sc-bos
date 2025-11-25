@@ -8,7 +8,7 @@ import (
 
 	"github.com/olebedev/emitter"
 
-	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/api"
+	"github.com/smart-core-os/sc-bos/pkg/driver/airthings/api"
 )
 
 // Location holds information about devices in a particular location.

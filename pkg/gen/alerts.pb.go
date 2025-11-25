@@ -1697,7 +1697,7 @@ const file_alerts_proto_rawDesc = "" +
 	"\vCreateAlert\x12!.smartcore.bos.CreateAlertRequest\x1a\x14.smartcore.bos.Alert\x12F\n" +
 	"\vUpdateAlert\x12!.smartcore.bos.UpdateAlertRequest\x1a\x14.smartcore.bos.Alert\x12H\n" +
 	"\fResolveAlert\x12\".smartcore.bos.ResolveAlertRequest\x1a\x14.smartcore.bos.Alert\x12T\n" +
-	"\vDeleteAlert\x12!.smartcore.bos.DeleteAlertRequest\x1a\".smartcore.bos.DeleteAlertResponseB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\vDeleteAlert\x12!.smartcore.bos.DeleteAlertRequest\x1a\".smartcore.bos.DeleteAlertResponseB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_alerts_proto_rawDescOnce sync.Once

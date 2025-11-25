@@ -18,12 +18,11 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
-	"github.com/vanti-dev/sc-bos/internal/util/pki"
-	"github.com/vanti-dev/sc-bos/internal/util/rpcutil"
-	"github.com/vanti-dev/sc-bos/pkg/minibus"
-	"github.com/vanti-dev/sc-bos/pkg/system/hub/remote"
-
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/internal/util/pki"
+	"github.com/smart-core-os/sc-bos/internal/util/rpcutil"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/minibus"
+	"github.com/smart-core-os/sc-bos/pkg/system/hub/remote"
 )
 
 //go:embed schema.sql

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 func TestResourceType_MarshalJSON(t *testing.T) {

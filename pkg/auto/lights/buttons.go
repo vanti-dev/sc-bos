@@ -3,7 +3,7 @@ package lights
 import (
 	"time"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 // captureButtonActions consumes button clicks returning the intended actions.

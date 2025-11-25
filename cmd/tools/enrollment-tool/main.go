@@ -10,9 +10,9 @@ import (
 
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pki"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/system/hub/remote"
+	"github.com/smart-core-os/sc-bos/internal/util/pki"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/system/hub/remote"
 )
 
 var (

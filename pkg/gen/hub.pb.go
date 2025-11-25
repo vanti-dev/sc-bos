@@ -787,7 +787,7 @@ const file_hub_proto_rawDesc = "" +
 	"\rEnrollHubNode\x12#.smartcore.bos.EnrollHubNodeRequest\x1a\x16.smartcore.bos.HubNode\x12J\n" +
 	"\fRenewHubNode\x12\".smartcore.bos.RenewHubNodeRequest\x1a\x16.smartcore.bos.HubNode\x12T\n" +
 	"\vTestHubNode\x12!.smartcore.bos.TestHubNodeRequest\x1a\".smartcore.bos.TestHubNodeResponse\x12Z\n" +
-	"\rForgetHubNode\x12#.smartcore.bos.ForgetHubNodeRequest\x1a$.smartcore.bos.ForgetHubNodeResponseB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\rForgetHubNode\x12#.smartcore.bos.ForgetHubNodeRequest\x1a$.smartcore.bos.ForgetHubNodeResponseB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_hub_proto_rawDescOnce sync.Once

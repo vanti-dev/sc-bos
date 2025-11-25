@@ -14,10 +14,9 @@ import (
 	"github.com/smart-core-os/gobacnet/property"
 	bactypes "github.com/smart-core-os/gobacnet/types"
 	"github.com/smart-core-os/gobacnet/types/objecttype"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/ctxerr"
-
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/ctxerr"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/known"
 )
 
 func ReadProperty(ctx context.Context, client *gobacnet.Client, known known.Context, value config.ValueSource) (any, error) {

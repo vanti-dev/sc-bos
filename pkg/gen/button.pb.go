@@ -607,7 +607,7 @@ const file_button_proto_rawDesc = "" +
 	"\tButtonApi\x12R\n" +
 	"\x0eGetButtonState\x12$.smartcore.bos.GetButtonStateRequest\x1a\x1a.smartcore.bos.ButtonState\x12b\n" +
 	"\x0fPullButtonState\x12%.smartcore.bos.PullButtonStateRequest\x1a&.smartcore.bos.PullButtonStateResponse0\x01\x12X\n" +
-	"\x11UpdateButtonState\x12'.smartcore.bos.UpdateButtonStateRequest\x1a\x1a.smartcore.bos.ButtonStateB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x11UpdateButtonState\x12'.smartcore.bos.UpdateButtonStateRequest\x1a\x1a.smartcore.bos.ButtonStateB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_button_proto_rawDescOnce sync.Once

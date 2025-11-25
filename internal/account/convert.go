@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/vanti-dev/sc-bos/internal/account/queries"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/internal/account/queries"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 func parseID(id string) (int64, bool) {

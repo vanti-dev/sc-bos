@@ -10,9 +10,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-bos/pkg/driver/opcua/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/opcua/conv"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/driver/opcua/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/opcua/conv"
 )
 
 type Electric struct {

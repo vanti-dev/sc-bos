@@ -462,7 +462,7 @@ const file_meter_proto_rawDesc = "" +
 	"\x0fGetMeterReading\x12%.smartcore.bos.GetMeterReadingRequest\x1a\x1b.smartcore.bos.MeterReading\x12h\n" +
 	"\x11PullMeterReadings\x12'.smartcore.bos.PullMeterReadingsRequest\x1a(.smartcore.bos.PullMeterReadingsResponse0\x012s\n" +
 	"\tMeterInfo\x12f\n" +
-	"\x14DescribeMeterReading\x12*.smartcore.bos.DescribeMeterReadingRequest\x1a\".smartcore.bos.MeterReadingSupportB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x14DescribeMeterReading\x12*.smartcore.bos.DescribeMeterReadingRequest\x1a\".smartcore.bos.MeterReadingSupportB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_meter_proto_rawDescOnce sync.Once

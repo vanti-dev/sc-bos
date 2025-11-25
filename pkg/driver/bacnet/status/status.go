@@ -14,12 +14,12 @@ import (
 	"github.com/smart-core-os/gobacnet/enum/reliability"
 	"github.com/smart-core-os/gobacnet/property"
 	"github.com/smart-core-os/gobacnet/types/objecttype"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/adapt"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/comm"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/known"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
 )
 
 type Monitor struct {

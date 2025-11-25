@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/vanti-dev/sc-bos/pkg/minibus"
-	"github.com/vanti-dev/sc-bos/pkg/util/slices"
+	"github.com/smart-core-os/sc-bos/pkg/minibus"
+	"github.com/smart-core-os/sc-bos/pkg/util/slices"
 )
 
 // Set is a reactive set.

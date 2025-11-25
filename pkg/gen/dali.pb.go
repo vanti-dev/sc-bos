@@ -1414,7 +1414,7 @@ const file_dali_proto_rawDesc = "" +
 	"\tStartTest\x12+.smartcore.bos.driver.dali.StartTestRequest\x1a,.smartcore.bos.driver.dali.StartTestResponse\x12c\n" +
 	"\bStopTest\x12*.smartcore.bos.driver.dali.StopTestRequest\x1a+.smartcore.bos.driver.dali.StopTestResponse\x12g\n" +
 	"\rGetTestResult\x12/.smartcore.bos.driver.dali.GetTestResultRequest\x1a%.smartcore.bos.driver.dali.TestResult\x12m\n" +
-	"\x10DeleteTestResult\x122.smartcore.bos.driver.dali.DeleteTestResultRequest\x1a%.smartcore.bos.driver.dali.TestResultB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x10DeleteTestResult\x122.smartcore.bos.driver.dali.DeleteTestResultRequest\x1a%.smartcore.bos.driver.dali.TestResultB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_dali_proto_rawDescOnce sync.Once

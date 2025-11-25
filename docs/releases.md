@@ -29,7 +29,7 @@ why, but it's not a big deal as the Docker image is built by GitHub Actions anyw
 test the build locally, so the manual steps to build the Docker image are as follows:
 
 ```shell
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o .build/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o .build/sc-bos github.com/smart-core-os/sc-bos/cmd/bos
 cd ui/ops
 yarn install && yarn run build
 cd ../..

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package smartcore.bos.devices;
 
-option go_package = "github.com/vanti-dev/sc-bos/internal/manage/devices";
+option go_package = "github.com/smart-core-os/sc-bos/internal/manage/devices";
 
 import "devices.proto";
 

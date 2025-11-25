@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
+	"github.com/smart-core-os/sc-bos/pkg/driver"
 )
 
 func DefaultConfig() DriverConfig {

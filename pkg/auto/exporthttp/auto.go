@@ -13,11 +13,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/config"
-	exportHttp "github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/http"
-	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/job"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/smart-core-os/sc-bos/pkg/auto"
+	"github.com/smart-core-os/sc-bos/pkg/auto/exporthttp/config"
+	exportHttp "github.com/smart-core-os/sc-bos/pkg/auto/exporthttp/http"
+	"github.com/smart-core-os/sc-bos/pkg/auto/exporthttp/job"
+	"github.com/smart-core-os/sc-bos/pkg/task/service"
 )
 
 const AutoName = "exporthttp"

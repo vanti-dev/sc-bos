@@ -686,7 +686,7 @@ const file_emergency_light_proto_rawDesc = "" +
 	"\x11StartDurationTest\x12(.smartcore.bos.StartEmergencyTestRequest\x1a).smartcore.bos.StartEmergencyTestResponse\x12h\n" +
 	"\x11StopEmergencyTest\x12(.smartcore.bos.StopEmergencyTestsRequest\x1a).smartcore.bos.StopEmergencyTestsResponse\x12X\n" +
 	"\x10GetTestResultSet\x12&.smartcore.bos.GetTestResultSetRequest\x1a\x1c.smartcore.bos.TestResultSet\x12d\n" +
-	"\x12PullTestResultSets\x12$.smartcore.bos.PullTestResultRequest\x1a&.smartcore.bos.PullTestResultsResponse0\x01B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x12PullTestResultSets\x12$.smartcore.bos.PullTestResultRequest\x1a&.smartcore.bos.PullTestResultsResponse0\x01B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_emergency_light_proto_rawDescOnce sync.Once

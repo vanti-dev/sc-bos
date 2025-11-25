@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/vanti-dev/sc-bos/pkg/driver/opcua/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/opcua/config"
 )
 
 type Device struct {

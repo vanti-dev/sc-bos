@@ -13,11 +13,11 @@ import (
 	reflectionv1alphapb "google.golang.org/grpc/reflection/grpc_reflection_v1alpha"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/rx"
-	"github.com/vanti-dev/sc-bos/pkg/util/chans"
-	scslices "github.com/vanti-dev/sc-bos/pkg/util/slices"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/system/gateway/internal/rx"
+	"github.com/smart-core-os/sc-bos/pkg/util/chans"
+	scslices "github.com/smart-core-os/sc-bos/pkg/util/slices"
 )
 
 // announceCohort announces information about the cohort as if it were present on this system.

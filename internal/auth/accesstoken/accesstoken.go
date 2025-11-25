@@ -10,10 +10,10 @@ import (
 	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
 
-	"github.com/vanti-dev/sc-bos/internal/auth/permission"
-	jose_utils "github.com/vanti-dev/sc-bos/internal/util/jose"
-	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/internal/auth/permission"
+	jose_utils "github.com/smart-core-os/sc-bos/internal/util/jose"
+	"github.com/smart-core-os/sc-bos/pkg/auth/token"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 var ErrUnsupportedTokenVersion = errors.New("unsupported token version")

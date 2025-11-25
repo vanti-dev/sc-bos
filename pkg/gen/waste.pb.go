@@ -732,7 +732,7 @@ const file_waste_proto_rawDesc = "" +
 	"\x10ListWasteRecords\x12&.smartcore.bos.ListWasteRecordsRequest\x1a'.smartcore.bos.ListWasteRecordsResponse\x12e\n" +
 	"\x10PullWasteRecords\x12&.smartcore.bos.PullWasteRecordsRequest\x1a'.smartcore.bos.PullWasteRecordsResponse0\x012p\n" +
 	"\tWasteInfo\x12c\n" +
-	"\x13DescribeWasteRecord\x12).smartcore.bos.DescribeWasteRecordRequest\x1a!.smartcore.bos.WasteRecordSupportB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x13DescribeWasteRecord\x12).smartcore.bos.DescribeWasteRecordRequest\x1a!.smartcore.bos.WasteRecordSupportB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_waste_proto_rawDescOnce sync.Once

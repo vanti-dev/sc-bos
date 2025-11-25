@@ -7,9 +7,9 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/system/gateway/internal/rx"
-	"github.com/vanti-dev/sc-bos/pkg/util/slices"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/system/gateway/internal/rx"
+	"github.com/smart-core-os/sc-bos/pkg/util/slices"
 )
 
 // cohort describes the hub and enrolled Nodes.

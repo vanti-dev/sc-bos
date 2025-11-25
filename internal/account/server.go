@@ -11,11 +11,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/vanti-dev/sc-bos/internal/account/queries"
-	"github.com/vanti-dev/sc-bos/internal/auth/permission"
-	"github.com/vanti-dev/sc-bos/internal/sqlite"
-	"github.com/vanti-dev/sc-bos/internal/util/pass"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/internal/account/queries"
+	"github.com/smart-core-os/sc-bos/internal/auth/permission"
+	"github.com/smart-core-os/sc-bos/internal/sqlite"
+	"github.com/smart-core-os/sc-bos/internal/util/pass"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 var (

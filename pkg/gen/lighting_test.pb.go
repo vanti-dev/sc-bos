@@ -828,7 +828,7 @@ const file_lighting_test_proto_rawDesc = "" +
 	"\x0eGetLightHealth\x12$.smartcore.bos.GetLightHealthRequest\x1a\x1a.smartcore.bos.LightHealth\x12`\n" +
 	"\x0fListLightHealth\x12%.smartcore.bos.ListLightHealthRequest\x1a&.smartcore.bos.ListLightHealthResponse\x12`\n" +
 	"\x0fListLightEvents\x12%.smartcore.bos.ListLightEventsRequest\x1a&.smartcore.bos.ListLightEventsResponse\x12L\n" +
-	"\fGetReportCSV\x12\".smartcore.bos.GetReportCSVRequest\x1a\x18.smartcore.bos.ReportCSVB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\fGetReportCSV\x12\".smartcore.bos.GetReportCSVRequest\x1a\x18.smartcore.bos.ReportCSVB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_lighting_test_proto_rawDescOnce sync.Once

@@ -8,9 +8,9 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto/statusalerts/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/smart-core-os/sc-bos/pkg/auto/statusalerts/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/task"
 )
 
 func tasksForSource(source config.Source, dest string, statusClient gen.StatusApiClient, alertAdminClient gen.AlertAdminApiClient, logger *zap.Logger) []task.Task {

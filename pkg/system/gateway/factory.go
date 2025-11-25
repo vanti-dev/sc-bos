@@ -45,13 +45,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/system"
-	"github.com/vanti-dev/sc-bos/pkg/system/gateway/config"
-	"github.com/vanti-dev/sc-bos/pkg/task"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/smart-core-os/sc-bos/internal/util/grpc/reflectionapi"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/system"
+	"github.com/smart-core-os/sc-bos/pkg/system/gateway/config"
+	"github.com/smart-core-os/sc-bos/pkg/task"
+	"github.com/smart-core-os/sc-bos/pkg/task/service"
 )
 
 const (

@@ -7,15 +7,15 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
-	"github.com/vanti-dev/sc-bos/pkg/app/stores"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/system"
-	"github.com/vanti-dev/sc-bos/pkg/system/alerts/config"
-	"github.com/vanti-dev/sc-bos/pkg/system/alerts/hubalerts"
-	"github.com/vanti-dev/sc-bos/pkg/system/alerts/pgxalerts"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/smart-core-os/sc-bos/internal/util/pgxutil"
+	"github.com/smart-core-os/sc-bos/pkg/app/stores"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/system"
+	"github.com/smart-core-os/sc-bos/pkg/system/alerts/config"
+	"github.com/smart-core-os/sc-bos/pkg/system/alerts/hubalerts"
+	"github.com/smart-core-os/sc-bos/pkg/system/alerts/pgxalerts"
+	"github.com/smart-core-os/sc-bos/pkg/task/service"
 )
 
 var Factory factory

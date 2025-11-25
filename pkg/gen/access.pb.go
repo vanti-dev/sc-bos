@@ -1079,7 +1079,7 @@ const file_access_proto_rawDesc = "" +
 	"\x11UpdateAccessGrant\x12'.smartcore.bos.UpdateAccessGrantRequest\x1a\x1a.smartcore.bos.AccessGrant\"\x00\x12h\n" +
 	"\x11DeleteAccessGrant\x12'.smartcore.bos.DeleteAccessGrantRequest\x1a(.smartcore.bos.DeleteAccessGrantResponse\"\x00\x12U\n" +
 	"\x0eGetAccessGrant\x12%.smartcore.bos.GetAccessGrantsRequest\x1a\x1a.smartcore.bos.AccessGrant\"\x00\x12e\n" +
-	"\x10ListAccessGrants\x12&.smartcore.bos.ListAccessGrantsRequest\x1a'.smartcore.bos.ListAccessGrantsResponse\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x10ListAccessGrants\x12&.smartcore.bos.ListAccessGrantsRequest\x1a'.smartcore.bos.ListAccessGrantsResponse\"\x00B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_access_proto_rawDescOnce sync.Once

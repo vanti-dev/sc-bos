@@ -8,9 +8,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/testing/protocmp"
 
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func TestModelServer(t *testing.T) {

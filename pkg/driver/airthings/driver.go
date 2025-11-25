@@ -17,14 +17,14 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/vanti-dev/sc-bos/pkg/block"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
-	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/api"
-	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/local"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-	"github.com/vanti-dev/sc-bos/pkg/node"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/smart-core-os/sc-bos/pkg/block"
+	"github.com/smart-core-os/sc-bos/pkg/driver"
+	"github.com/smart-core-os/sc-bos/pkg/driver/airthings/api"
+	"github.com/smart-core-os/sc-bos/pkg/driver/airthings/local"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/task/service"
 )
 
 const DriverName = "airthings"

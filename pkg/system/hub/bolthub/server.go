@@ -15,10 +15,10 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
-	"github.com/vanti-dev/sc-bos/internal/util/pki"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/minibus"
-	"github.com/vanti-dev/sc-bos/pkg/system/hub/remote"
+	"github.com/smart-core-os/sc-bos/internal/util/pki"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/minibus"
+	"github.com/smart-core-os/sc-bos/pkg/system/hub/remote"
 )
 
 func NewServer(dbPath string, logger *zap.Logger) (*Server, error) {

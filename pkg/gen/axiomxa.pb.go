@@ -164,7 +164,7 @@ const file_axiomxa_proto_rawDesc = "" +
 	"expireTime\"\x1a\n" +
 	"\x18SaveQRCredentialResponse2\x9a\x01\n" +
 	"\x14AxiomXaDriverService\x12\x81\x01\n" +
-	"\x10SaveQRCredential\x125.smartcore.bos.driver.axiomxa.SaveQRCredentialRequest\x1a6.smartcore.bos.driver.axiomxa.SaveQRCredentialResponseB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x10SaveQRCredential\x125.smartcore.bos.driver.axiomxa.SaveQRCredentialRequest\x1a6.smartcore.bos.driver.axiomxa.SaveQRCredentialResponseB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_axiomxa_proto_rawDescOnce sync.Once

@@ -133,7 +133,7 @@ var (
 	scanCmd      = flag.NewFlagSet("scan", flag.ExitOnError)
 	scanOrg      = scanCmd.String("org", "", "GitHub organization name to scan")
 	scanToken    = scanCmd.String("token", "", "GitHub personal access token (or set GITHUB_TOKEN env var)")
-	scanModule   = scanCmd.String("base-module", "github.com/vanti-dev/sc-bos", "Base module to look for imports")
+	scanModule   = scanCmd.String("base-module", "github.com/smart-core-os/sc-bos", "Base module to look for imports")
 	scanOutput   = scanCmd.String("output", "", "Output file path for scan results (required)")
 	scanCacheDir = scanCmd.String("cache-dir", "", "Cache directory for API responses (default: ~/.package-import-analyzer-cache)")
 )

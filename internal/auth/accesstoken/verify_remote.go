@@ -3,8 +3,8 @@ package accesstoken
 import (
 	"context"
 
-	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/auth/token"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 // RemoteVerifier implements Verifier by calling TenantApiClient.VerifySecret.

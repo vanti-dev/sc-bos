@@ -8,7 +8,7 @@ import (
 )
 
 // extractRepoNameFromModule extracts the repository owner/name from a Go module path
-// For example: "github.com/vanti-dev/sc-bos" -> "vanti-dev/sc-bos"
+// For example: "github.com/smart-core-os/sc-bos" -> "smart-core-os/sc-bos"
 func extractRepoNameFromModule(modulePath string) string {
 	// Remove common prefixes and extract owner/repo
 	parts := strings.Split(modulePath, "/")

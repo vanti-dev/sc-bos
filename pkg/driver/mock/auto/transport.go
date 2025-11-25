@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
-	"github.com/vanti-dev/sc-bos/pkg/task/service"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/transport"
+	"github.com/smart-core-os/sc-bos/pkg/task/service"
 )
 
 func getLocation(f int) *gen.Transport_Location {

@@ -9,9 +9,9 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"github.com/vanti-dev/sc-bos/pkg/history/pgxstore"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/meter"
+	"github.com/smart-core-os/sc-bos/pkg/history/pgxstore"
 )
 
 func SeedMeter(ctx context.Context, db *pgxpool.Pool, name string, lookBack time.Duration) error {

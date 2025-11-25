@@ -405,7 +405,7 @@ const file_report_proto_rawDesc = "" +
 	"\x11expire_after_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x0fexpireAfterTime2\xc7\x01\n" +
 	"\tReportApi\x12T\n" +
 	"\vListReports\x12!.smartcore.bos.ListReportsRequest\x1a\".smartcore.bos.ListReportsResponse\x12d\n" +
-	"\x14GetDownloadReportUrl\x12*.smartcore.bos.GetDownloadReportUrlRequest\x1a .smartcore.bos.DownloadReportUrlB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x14GetDownloadReportUrl\x12*.smartcore.bos.GetDownloadReportUrlRequest\x1a .smartcore.bos.DownloadReportUrlB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_report_proto_rawDescOnce sync.Once

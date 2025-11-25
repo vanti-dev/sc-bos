@@ -9,9 +9,8 @@ import (
 	"time"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-
-	"github.com/vanti-dev/sc-bos/pkg/auto/lights/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/auto/lights/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 // deviceName is a smart core name for a device.

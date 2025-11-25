@@ -818,7 +818,7 @@ const file_security_event_proto_rawDesc = "" +
 	"\x04type\x18\x05 \x01(\x0e2\x1b.smartcore.types.ChangeTypeR\x04type2\xee\x01\n" +
 	"\x10SecurityEventApi\x12k\n" +
 	"\x12ListSecurityEvents\x12(.smartcore.bos.ListSecurityEventsRequest\x1a).smartcore.bos.ListSecurityEventsResponse\"\x00\x12m\n" +
-	"\x12PullSecurityEvents\x12(.smartcore.bos.PullSecurityEventsRequest\x1a).smartcore.bos.PullSecurityEventsResponse\"\x000\x01B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x12PullSecurityEvents\x12(.smartcore.bos.PullSecurityEventsRequest\x1a).smartcore.bos.PullSecurityEventsResponse\"\x000\x01B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_security_event_proto_rawDescOnce sync.Once

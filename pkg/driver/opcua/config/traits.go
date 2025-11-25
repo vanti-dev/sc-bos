@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-bos/pkg/driver/opcua/conv"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/pkg/driver/opcua/conv"
 )
 
 type Trait struct {

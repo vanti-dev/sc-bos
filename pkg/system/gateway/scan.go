@@ -17,9 +17,9 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/internal/util/grpc/reflectionapi"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/smart-core-os/sc-bos/internal/util/grpc/reflectionapi"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/task"
 )
 
 // scanRemoteHub calls scanRemoteNode for the hub and all enrolled nodes placing the results in a cohort.

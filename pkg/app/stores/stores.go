@@ -12,8 +12,8 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
-	"github.com/vanti-dev/sc-bos/pkg/history/sqlitestore"
+	"github.com/smart-core-os/sc-bos/internal/util/pgxutil"
+	"github.com/smart-core-os/sc-bos/pkg/history/sqlitestore"
 )
 
 var (

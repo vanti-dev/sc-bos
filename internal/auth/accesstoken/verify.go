@@ -12,10 +12,10 @@ import (
 
 	"go.uber.org/multierr"
 
-	"github.com/vanti-dev/sc-bos/internal/auth/permission"
-	"github.com/vanti-dev/sc-bos/internal/util/pass"
-	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/internal/auth/permission"
+	"github.com/smart-core-os/sc-bos/internal/util/pass"
+	"github.com/smart-core-os/sc-bos/pkg/auth/token"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 // Verifier verifies that an id is associated with a given secret.

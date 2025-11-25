@@ -733,7 +733,7 @@ const file_status_proto_rawDesc = "" +
 	"\x10GetCurrentStatus\x12&.smartcore.bos.GetCurrentStatusRequest\x1a\x18.smartcore.bos.StatusLog\x12h\n" +
 	"\x11PullCurrentStatus\x12'.smartcore.bos.PullCurrentStatusRequest\x1a(.smartcore.bos.PullCurrentStatusResponse0\x012\x8c\x01\n" +
 	"\rStatusHistory\x12{\n" +
-	"\x18ListCurrentStatusHistory\x12..smartcore.bos.ListCurrentStatusHistoryRequest\x1a/.smartcore.bos.ListCurrentStatusHistoryResponseB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x18ListCurrentStatusHistory\x12..smartcore.bos.ListCurrentStatusHistoryRequest\x1a/.smartcore.bos.ListCurrentStatusHistoryResponseB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_status_proto_rawDescOnce sync.Once

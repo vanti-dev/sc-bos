@@ -13,9 +13,9 @@ import (
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
 	timepb "github.com/smart-core-os/sc-api/go/types/time"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/util/chans"
-	"github.com/vanti-dev/sc-bos/pkg/util/pull"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/util/chans"
+	"github.com/smart-core-os/sc-bos/pkg/util/pull"
 )
 
 // MeanOATempPatches emits MeanOATemp patches based on an exponential running mean.

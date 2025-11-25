@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/vanti-dev/sc-bos/internal/manage/devices/testdata/testproto/querypb"
+	"github.com/smart-core-os/sc-bos/internal/manage/devices/testdata/testproto/querypb"
 )
 
 // testData returns a *Result with all fields populated.

@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	timepb "github.com/smart-core-os/sc-api/go/types/time"
-	"github.com/vanti-dev/sc-bos/pkg/history"
+	"github.com/smart-core-os/sc-bos/pkg/history"
 )
 
 //go:generate protomod protoc -- -I . -I ../../../proto --go_out=paths=source_relative:. historypb_page.proto

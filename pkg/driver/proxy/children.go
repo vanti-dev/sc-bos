@@ -7,7 +7,7 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-api/go/types"
-	"github.com/vanti-dev/sc-bos/pkg/util/chans"
+	"github.com/smart-core-os/sc-bos/pkg/util/chans"
 )
 
 // childrenFetcher implements pull.Fetcher to pull or poll children from a client

@@ -11,12 +11,12 @@ import (
 	"github.com/smart-core-os/gobacnet/property"
 	bactypes "github.com/smart-core-os/gobacnet/types"
 	"github.com/smart-core-os/gobacnet/types/objecttype"
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/auto/export/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/adapt"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
-	"github.com/vanti-dev/sc-bos/pkg/task"
+	"github.com/smart-core-os/sc-bos/pkg/auto"
+	"github.com/smart-core-os/sc-bos/pkg/auto/export/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/adapt"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/known"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/rpc"
+	"github.com/smart-core-os/sc-bos/pkg/task"
 )
 
 func TestBacnet_PublishAll(t *testing.T) {

@@ -15,13 +15,13 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-bos/pkg/auto"
+	"github.com/smart-core-os/sc-bos/pkg/auto/occupancyemail"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/historypb"
+	"github.com/smart-core-os/sc-bos/pkg/history/memstore"
+	"github.com/smart-core-os/sc-bos/pkg/node"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/auto/occupancyemail"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/historypb"
-	"github.com/vanti-dev/sc-bos/pkg/history/memstore"
-	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 func main() {

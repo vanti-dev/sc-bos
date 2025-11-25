@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/vanti-dev/sc-bos/internal/auth/permission"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/internal/auth/permission"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 type Claims struct {

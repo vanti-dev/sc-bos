@@ -502,7 +502,7 @@ const file_service_ticket_proto_rawDesc = "" +
 	"\fCreateTicket\x12\".smartcore.bos.CreateTicketRequest\x1a\x15.smartcore.bos.Ticket\"\x00\x12K\n" +
 	"\fUpdateTicket\x12\".smartcore.bos.UpdateTicketRequest\x1a\x15.smartcore.bos.Ticket\"\x002k\n" +
 	"\x11ServiceTicketInfo\x12V\n" +
-	"\x0eDescribeTicket\x12$.smartcore.bos.DescribeTicketRequest\x1a\x1c.smartcore.bos.TicketSupport\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x0eDescribeTicket\x12$.smartcore.bos.DescribeTicketRequest\x1a\x1c.smartcore.bos.TicketSupport\"\x00B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_service_ticket_proto_rawDescOnce sync.Once

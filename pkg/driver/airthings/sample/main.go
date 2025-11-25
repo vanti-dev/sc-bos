@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/oauth2/clientcredentials"
 
-	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/api"
+	"github.com/smart-core-os/sc-bos/pkg/driver/airthings/api"
 )
 
 func main() {

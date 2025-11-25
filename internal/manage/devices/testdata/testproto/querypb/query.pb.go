@@ -676,7 +676,7 @@ const file_querypb_query_proto_rawDesc = "" +
 	"\x17RESULT_ENUM_UNSPECIFIED\x10\x00\x12\x11\n" +
 	"\rRESULT_ENUM_A\x10\x01\x12\x11\n" +
 	"\rRESULT_ENUM_B\x10\x02\x12\x11\n" +
-	"\rRESULT_ENUM_C\x10\x03BPZNgithub.com/vanti-dev/sc-bos/internal/manage/devices/testdata/testproto/querypbb\x06proto3"
+	"\rRESULT_ENUM_C\x10\x03BTZRgithub.com/smart-core-os/sc-bos/internal/manage/devices/testdata/testproto/querypbb\x06proto3"
 
 var (
 	file_querypb_query_proto_rawDescOnce sync.Once

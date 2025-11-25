@@ -1804,7 +1804,7 @@ const file_tenants_proto_rawDesc = "" +
 	"\fDeleteSecret\x12*.smartcore.bos.tenants.DeleteSecretRequest\x1a+.smartcore.bos.tenants.DeleteSecretResponse\x12c\n" +
 	"\n" +
 	"PullSecret\x12(.smartcore.bos.tenants.PullSecretRequest\x1a).smartcore.bos.tenants.PullSecretResponse0\x01\x12a\n" +
-	"\x10RegenerateSecret\x12..smartcore.bos.tenants.RegenerateSecretRequest\x1a\x1d.smartcore.bos.tenants.SecretB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x10RegenerateSecret\x12..smartcore.bos.tenants.RegenerateSecretRequest\x1a\x1d.smartcore.bos.tenants.SecretB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_tenants_proto_rawDescOnce sync.Once

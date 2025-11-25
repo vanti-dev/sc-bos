@@ -16,8 +16,8 @@ import (
 	"golang.org/x/exp/maps"
 	"golang.org/x/time/rate"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto/statusemail/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/auto/statusemail/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 type change struct {

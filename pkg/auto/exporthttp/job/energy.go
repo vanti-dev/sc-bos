@@ -9,8 +9,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto/exporthttp/types"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/auto/exporthttp/types"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 // EnergyJob gets the energy consumed over the previous execution interval (typically 24 hours)

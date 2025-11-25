@@ -5,8 +5,8 @@ import (
 
 	"github.com/pborman/uuid"
 
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 type Model struct {

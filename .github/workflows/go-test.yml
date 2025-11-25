@@ -24,7 +24,7 @@ jobs:
   test-all:
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: github.com/smart-core-os/*,github.com/vanti-dev/*
+      GOPRIVATE: github.com/smart-core-os/*
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -34,7 +34,6 @@ jobs:
       - name: Private repo auth
         run: |
           git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/smart-core-os".insteadOf "https://github.com/smart-core-os"
-          git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/vanti-dev".insteadOf "https://github.com/vanti-dev"
 
       - name: Test (cachable)
         run: go test -skip '_e2e$' ./...

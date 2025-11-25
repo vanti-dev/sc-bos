@@ -8,8 +8,8 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/exp/rand"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/auto/udmi"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 type UdmiServer struct {

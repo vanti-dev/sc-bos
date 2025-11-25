@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 func Test_processIngressPermitted(t *testing.T) {

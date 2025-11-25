@@ -138,7 +138,7 @@ const file_mqtt_proto_rawDesc = "" +
 	"\x05topic\x18\x02 \x01(\tR\x05topic\x12\x18\n" +
 	"\apayload\x18\x03 \x01(\tR\apayload2h\n" +
 	"\vMqttService\x12Y\n" +
-	"\fPullMessages\x12\".smartcore.bos.PullMessagesRequest\x1a#.smartcore.bos.PullMessagesResponse0\x01B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\fPullMessages\x12\".smartcore.bos.PullMessagesRequest\x1a#.smartcore.bos.PullMessagesResponse0\x01B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_mqtt_proto_rawDescOnce sync.Once

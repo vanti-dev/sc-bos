@@ -4,17 +4,17 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/smart-core-os/gobacnet"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/known"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/accesspb"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/meter"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/securityevent"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/temperaturepb"
+	transportpb "github.com/smart-core-os/sc-bos/pkg/gentrait/transport"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/udmipb"
+	"github.com/smart-core-os/sc-bos/pkg/node"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/known"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/accesspb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/meter"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/securityevent"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/temperaturepb"
-	transportpb "github.com/vanti-dev/sc-bos/pkg/gentrait/transport"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/udmipb"
-	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 func IntoTrait(client *gobacnet.Client, devices known.Context, statuses *statuspb.Map, traitConfig config.RawTrait, logger *zap.Logger) (node.SelfAnnouncer, error) {

@@ -7,7 +7,7 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/internal/util/pgxutil"
+	"github.com/smart-core-os/sc-bos/internal/util/pgxutil"
 )
 
 func TestPostgresStore_Postgres(t *testing.T) {

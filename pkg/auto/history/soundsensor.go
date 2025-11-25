@@ -6,9 +6,9 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/smart-core-os/sc-bos/pkg/auto/history/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
-	"github.com/vanti-dev/sc-bos/pkg/auto/history/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func (a *automation) collectSoundSensorChanges(ctx context.Context, source config.Source, payloads chan<- []byte) {

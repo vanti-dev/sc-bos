@@ -201,7 +201,7 @@ const file_actor_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a7\n" +
 	"\tMoreEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_actor_proto_rawDescOnce sync.Once

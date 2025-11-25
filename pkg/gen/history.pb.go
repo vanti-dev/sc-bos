@@ -2030,7 +2030,7 @@ const file_history_proto_rawDesc = "" +
 	"\x12SoundSensorHistory\x12t\n" +
 	"\x15ListSoundLevelHistory\x12+.smartcore.bos.ListSoundLevelHistoryRequest\x1a,.smartcore.bos.ListSoundLevelHistoryResponse\"\x002\x8f\x01\n" +
 	"\x11EnterLeaveHistory\x12z\n" +
-	"\x1bListEnterLeaveSensorHistory\x12+.smartcore.bos.ListEnterLeaveHistoryRequest\x1a,.smartcore.bos.ListEnterLeaveHistoryResponse\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x1bListEnterLeaveSensorHistory\x12+.smartcore.bos.ListEnterLeaveHistoryRequest\x1a,.smartcore.bos.ListEnterLeaveHistoryResponse\"\x00B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_history_proto_rawDescOnce sync.Once

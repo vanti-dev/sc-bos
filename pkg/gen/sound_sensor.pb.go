@@ -421,7 +421,7 @@ const file_sound_sensor_proto_rawDesc = "" +
 	"\rGetSoundLevel\x12#.smartcore.bos.GetSoundLevelRequest\x1a\x19.smartcore.bos.SoundLevel\"\x00\x12a\n" +
 	"\x0ePullSoundLevel\x12$.smartcore.bos.PullSoundLevelRequest\x1a%.smartcore.bos.PullSoundLevelResponse\"\x000\x012u\n" +
 	"\x0fSoundSensorInfo\x12b\n" +
-	"\x12DescribeSoundLevel\x12(.smartcore.bos.DescribeSoundLevelRequest\x1a .smartcore.bos.SoundLevelSupport\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x12DescribeSoundLevel\x12(.smartcore.bos.DescribeSoundLevelRequest\x1a .smartcore.bos.SoundLevelSupport\"\x00B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_sound_sensor_proto_rawDescOnce sync.Once

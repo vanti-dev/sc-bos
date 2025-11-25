@@ -427,7 +427,7 @@ const file_enrollment_proto_rawDesc = "" +
 	"\x10CreateEnrollment\x12&.smartcore.bos.CreateEnrollmentRequest\x1a\x19.smartcore.bos.Enrollment\"\x00\x12W\n" +
 	"\x10UpdateEnrollment\x12&.smartcore.bos.UpdateEnrollmentRequest\x1a\x19.smartcore.bos.Enrollment\"\x00\x12W\n" +
 	"\x10DeleteEnrollment\x12&.smartcore.bos.DeleteEnrollmentRequest\x1a\x19.smartcore.bos.Enrollment\"\x00\x12_\n" +
-	"\x0eTestEnrollment\x12$.smartcore.bos.TestEnrollmentRequest\x1a%.smartcore.bos.TestEnrollmentResponse\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x0eTestEnrollment\x12$.smartcore.bos.TestEnrollmentRequest\x1a%.smartcore.bos.TestEnrollmentResponse\"\x00B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_enrollment_proto_rawDescOnce sync.Once

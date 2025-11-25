@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package smartcore.bos.devices;
 
-option go_package = "github.com/vanti-dev/sc-bos/internal/manage/devices/testdata/testproto/querypb";
+option go_package = "github.com/smart-core-os/sc-bos/internal/manage/devices/testdata/testproto/querypb";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";

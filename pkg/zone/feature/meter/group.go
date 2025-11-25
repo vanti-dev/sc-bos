@@ -14,14 +14,14 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/types"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/util/once"
+	"github.com/smart-core-os/sc-bos/pkg/util/pull"
+	"github.com/smart-core-os/sc-bos/pkg/zone/feature/merge"
+	"github.com/smart-core-os/sc-bos/pkg/zone/feature/meter/config"
+	"github.com/smart-core-os/sc-bos/pkg/zone/feature/run"
 	"github.com/smart-core-os/sc-golang/pkg/cmp"
 	"github.com/smart-core-os/sc-golang/pkg/masks"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/util/once"
-	"github.com/vanti-dev/sc-bos/pkg/util/pull"
-	"github.com/vanti-dev/sc-bos/pkg/zone/feature/merge"
-	"github.com/vanti-dev/sc-bos/pkg/zone/feature/meter/config"
-	"github.com/vanti-dev/sc-bos/pkg/zone/feature/run"
 )
 
 type Group struct {

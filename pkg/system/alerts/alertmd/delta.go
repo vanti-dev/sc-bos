@@ -3,8 +3,8 @@ package alertmd
 import (
 	"google.golang.org/protobuf/proto"
 
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func ApplyMdDelta(md *resource.Value, e *gen.PullAlertsResponse_Change) error {

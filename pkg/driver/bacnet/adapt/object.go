@@ -6,11 +6,10 @@ import (
 	"github.com/smart-core-os/gobacnet"
 	bactypes "github.com/smart-core-os/gobacnet/types"
 	"github.com/smart-core-os/gobacnet/types/objecttype"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/config"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/rpc"
-	"github.com/vanti-dev/sc-bos/pkg/node"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/rpc"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/node"
 )
 
 // Object adapts a bacnet object into one or more smart core named traits.

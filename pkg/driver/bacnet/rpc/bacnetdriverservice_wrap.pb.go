@@ -3,34 +3,40 @@
 package rpc
 
 import (
-	"github.com/smart-core-os/sc-golang/pkg/wrap"
+	wrap "github.com/smart-core-os/sc-golang/pkg/wrap"
+	grpc "google.golang.org/grpc"
 )
 
-// WrapBacnetDriverService	adapts a rpc.BacnetDriverServiceServer	and presents it as a rpc.BacnetDriverServiceClient
-func WrapBacnetDriverService(server BacnetDriverServiceServer) BacnetDriverServiceClient {
+// WrapBacnetDriverService	adapts a BacnetDriverServiceServer	and presents it as a BacnetDriverServiceClient
+func WrapBacnetDriverService(server BacnetDriverServiceServer) *BacnetDriverServiceWrapper {
 	conn := wrap.ServerToClient(BacnetDriverService_ServiceDesc, server)
 	client := NewBacnetDriverServiceClient(conn)
-	return &bacnetDriverServiceWrapper{
+	return &BacnetDriverServiceWrapper{
 		BacnetDriverServiceClient: client,
 		server:                    server,
+		conn:                      conn,
+		desc:                      BacnetDriverService_ServiceDesc,
 	}
 }
 
-type bacnetDriverServiceWrapper struct {
+type BacnetDriverServiceWrapper struct {
 	BacnetDriverServiceClient
 
 	server BacnetDriverServiceServer
+	conn   grpc.ClientConnInterface
+	desc   grpc.ServiceDesc
 }
 
-// compile time check that we implement the interface we need
-var _ BacnetDriverServiceClient = (*bacnetDriverServiceWrapper)(nil)
-
 // UnwrapServer returns the underlying server instance.
-func (w *bacnetDriverServiceWrapper) UnwrapServer() BacnetDriverServiceServer {
+func (w *BacnetDriverServiceWrapper) UnwrapServer() BacnetDriverServiceServer {
 	return w.server
 }
 
 // Unwrap implements wrap.Unwrapper and returns the underlying server instance as an unknown type.
-func (w *bacnetDriverServiceWrapper) Unwrap() any {
+func (w *BacnetDriverServiceWrapper) Unwrap() any {
 	return w.UnwrapServer()
+}
+
+func (w *BacnetDriverServiceWrapper) UnwrapService() (grpc.ClientConnInterface, grpc.ServiceDesc) {
+	return w.conn, w.desc
 }

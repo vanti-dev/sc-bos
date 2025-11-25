@@ -395,7 +395,7 @@ const file_temperature_proto_rawDesc = "" +
 	"\x0eTemperatureApi\x12T\n" +
 	"\x0eGetTemperature\x12$.smartcore.bos.GetTemperatureRequest\x1a\x1a.smartcore.bos.Temperature\"\x00\x12d\n" +
 	"\x0fPullTemperature\x12%.smartcore.bos.PullTemperatureRequest\x1a&.smartcore.bos.PullTemperatureResponse\"\x000\x01\x12Z\n" +
-	"\x11UpdateTemperature\x12'.smartcore.bos.UpdateTemperatureRequest\x1a\x1a.smartcore.bos.Temperature\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x11UpdateTemperature\x12'.smartcore.bos.UpdateTemperatureRequest\x1a\x1a.smartcore.bos.Temperature\"\x00B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_temperature_proto_rawDescOnce sync.Once

@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/util/client"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/util/client"
 )
 
 var clientConfig client.Config

@@ -8,9 +8,9 @@ import (
 
 	"github.com/smart-core-os/gobacnet/enum/errorcode"
 	bactypes "github.com/smart-core-os/gobacnet/types"
-	"github.com/vanti-dev/sc-bos/pkg/driver/bacnet/comm"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/driver/bacnet/comm"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
 )
 
 func UpdatePollErrorStatus(statuses *statuspb.Map, name, task string, requests []string, errs []error) {

@@ -9,14 +9,14 @@ import (
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	typespb "github.com/smart-core-os/sc-api/go/types"
+	"github.com/smart-core-os/sc-bos/pkg/driver/airthings/api"
+	"github.com/smart-core-os/sc-bos/pkg/driver/airthings/local"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/statuspb"
+	"github.com/smart-core-os/sc-bos/pkg/node"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airqualitysensorpb"
 	"github.com/smart-core-os/sc-golang/pkg/trait/airtemperaturepb"
 	"github.com/smart-core-os/sc-golang/pkg/trait/energystoragepb"
-	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/api"
-	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/local"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/statuspb"
-	"github.com/vanti-dev/sc-bos/pkg/node"
 )
 
 // announceDevice sets up and announces the traits supported by the device.

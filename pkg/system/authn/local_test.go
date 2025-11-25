@@ -11,12 +11,12 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/internal/account"
-	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
-	"github.com/vanti-dev/sc-bos/internal/auth/permission"
-	"github.com/vanti-dev/sc-bos/internal/util/pass"
-	"github.com/vanti-dev/sc-bos/pkg/auth/token"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/internal/account"
+	"github.com/smart-core-os/sc-bos/internal/auth/accesstoken"
+	"github.com/smart-core-os/sc-bos/internal/auth/permission"
+	"github.com/smart-core-os/sc-bos/internal/util/pass"
+	"github.com/smart-core-os/sc-bos/pkg/auth/token"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 func TestLocalUserVerifier_Verify(t *testing.T) {

@@ -11,10 +11,10 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	pb "github.com/vanti-dev/sc-bos/internal/protobuf/protopath2/testmessage"
+	pb "github.com/smart-core-os/sc-bos/internal/protobuf/protopath2/testmessage"
 )
 
-//go:generate protoc --go_out=. --go_opt=module=github.com/vanti-dev/sc-bos/internal/protobuf/protopath2 testmessage.proto
+//go:generate protoc --go_out=. --go_opt=module=github.com/smart-core-os/sc-bos/internal/protobuf/protopath2 testmessage.proto
 
 func matchErr(err error, want string) bool {
 	return (err == nil && want == "") ||

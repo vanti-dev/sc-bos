@@ -1645,7 +1645,7 @@ const file_devices_proto_rawDesc = "" +
 	"\vPullDevices\x12!.smartcore.bos.PullDevicesRequest\x1a\".smartcore.bos.PullDevicesResponse0\x01\x12^\n" +
 	"\x12GetDevicesMetadata\x12(.smartcore.bos.GetDevicesMetadataRequest\x1a\x1e.smartcore.bos.DevicesMetadata\x12n\n" +
 	"\x13PullDevicesMetadata\x12).smartcore.bos.PullDevicesMetadataRequest\x1a*.smartcore.bos.PullDevicesMetadataResponse0\x01\x12g\n" +
-	"\x15GetDownloadDevicesUrl\x12+.smartcore.bos.GetDownloadDevicesUrlRequest\x1a!.smartcore.bos.DownloadDevicesUrlB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x15GetDownloadDevicesUrl\x12+.smartcore.bos.GetDownloadDevicesUrlRequest\x1a!.smartcore.bos.DownloadDevicesUrlB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_devices_proto_rawDescOnce sync.Once

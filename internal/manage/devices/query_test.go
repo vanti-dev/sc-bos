@@ -17,8 +17,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-api/go/traits"
-	"github.com/vanti-dev/sc-bos/internal/manage/devices/testdata/testproto/querypb"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/internal/manage/devices/testdata/testproto/querypb"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 func Test_getMessageString(t *testing.T) {

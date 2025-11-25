@@ -3,7 +3,7 @@ package statuspb
 import (
 	"google.golang.org/protobuf/proto"
 
-	"github.com/vanti-dev/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 type ProblemMerger struct {

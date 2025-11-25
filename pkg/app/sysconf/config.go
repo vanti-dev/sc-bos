@@ -6,15 +6,15 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/app/http"
-	"github.com/vanti-dev/sc-bos/pkg/app/stores"
-	"github.com/vanti-dev/sc-bos/pkg/auth/policy"
-	"github.com/vanti-dev/sc-bos/pkg/auto"
-	"github.com/vanti-dev/sc-bos/pkg/block"
-	"github.com/vanti-dev/sc-bos/pkg/driver"
-	"github.com/vanti-dev/sc-bos/pkg/system"
-	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
-	"github.com/vanti-dev/sc-bos/pkg/zone"
+	"github.com/smart-core-os/sc-bos/pkg/app/http"
+	"github.com/smart-core-os/sc-bos/pkg/app/stores"
+	"github.com/smart-core-os/sc-bos/pkg/auth/policy"
+	"github.com/smart-core-os/sc-bos/pkg/auto"
+	"github.com/smart-core-os/sc-bos/pkg/block"
+	"github.com/smart-core-os/sc-bos/pkg/driver"
+	"github.com/smart-core-os/sc-bos/pkg/system"
+	"github.com/smart-core-os/sc-bos/pkg/util/netutil"
+	"github.com/smart-core-os/sc-bos/pkg/zone"
 )
 
 // Load loads into dst any user supplied config from json files and CLI arguments. CLI arguments take precedence.

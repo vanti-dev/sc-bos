@@ -10,14 +10,14 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/smart-core-os/sc-api/go/traits"
+	"github.com/smart-core-os/sc-bos/internal/node/nodeopts"
+	"github.com/smart-core-os/sc-bos/internal/router"
+	"github.com/smart-core-os/sc-bos/pkg/gentrait/devicespb"
+	"github.com/smart-core-os/sc-bos/pkg/node/alltraits"
+	"github.com/smart-core-os/sc-bos/pkg/node/internal/metadatadevices"
+	"github.com/smart-core-os/sc-bos/pkg/node/internal/parentdevices"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
 	"github.com/smart-core-os/sc-golang/pkg/trait"
-	"github.com/vanti-dev/sc-bos/internal/node/nodeopts"
-	"github.com/vanti-dev/sc-bos/internal/router"
-	"github.com/vanti-dev/sc-bos/pkg/gentrait/devicespb"
-	"github.com/vanti-dev/sc-bos/pkg/node/alltraits"
-	"github.com/vanti-dev/sc-bos/pkg/node/internal/metadatadevices"
-	"github.com/vanti-dev/sc-bos/pkg/node/internal/parentdevices"
 )
 
 // Node represents a smart core node.

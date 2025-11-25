@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 func TestSlice_Len_panicOnFail(t *testing.T) {

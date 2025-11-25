@@ -648,7 +648,7 @@ const file_fluid_flow_proto_rawDesc = "" +
 	"\rPullFluidFlow\x12#.smartcore.bos.PullFluidFlowRequest\x1a$.smartcore.bos.PullFluidFlowResponse\"\x000\x01\x12T\n" +
 	"\x0fUpdateFluidFlow\x12%.smartcore.bos.UpdateFluidFlowRequest\x1a\x18.smartcore.bos.FluidFlow\"\x002p\n" +
 	"\rFluidFlowInfo\x12_\n" +
-	"\x11DescribeFluidFlow\x12'.smartcore.bos.DescribeFluidFlowRequest\x1a\x1f.smartcore.bos.FluidFlowSupport\"\x00B%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x11DescribeFluidFlow\x12'.smartcore.bos.DescribeFluidFlowRequest\x1a\x1f.smartcore.bos.FluidFlowSupport\"\x00B)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_fluid_flow_proto_rawDescOnce sync.Once

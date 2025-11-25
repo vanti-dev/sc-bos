@@ -12,9 +12,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/api"
-	"github.com/vanti-dev/sc-bos/pkg/driver/airthings/local"
-	"github.com/vanti-dev/sc-bos/pkg/util/chans"
+	"github.com/smart-core-os/sc-bos/pkg/driver/airthings/api"
+	"github.com/smart-core-os/sc-bos/pkg/driver/airthings/local"
+	"github.com/smart-core-os/sc-bos/pkg/util/chans"
 )
 
 func (d *Driver) listLocations(ctx context.Context) (api.GetLocationsResponse, error) {

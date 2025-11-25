@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/vanti-dev/sc-bos/internal/auth/accesstoken"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/system/authn/config"
+	"github.com/smart-core-os/sc-bos/internal/auth/accesstoken"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/system/authn/config"
 )
 
 func (s *System) systemTenantVerifier(cfg config.Root) (accesstoken.Verifier, error) {

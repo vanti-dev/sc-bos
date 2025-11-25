@@ -12,7 +12,7 @@ import (
 
 	"github.com/smart-core-os/gobacnet"
 	bactypes "github.com/smart-core-os/gobacnet/types"
-	"github.com/vanti-dev/sc-bos/pkg/util/netutil"
+	"github.com/smart-core-os/sc-bos/pkg/util/netutil"
 )
 
 var (

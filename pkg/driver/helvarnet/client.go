@@ -10,9 +10,9 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/smart-core-os/sc-bos/pkg/driver/helvarnet/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-golang/pkg/resource"
-	"github.com/vanti-dev/sc-bos/pkg/driver/helvarnet/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
 )
 
 type tcpClient struct {

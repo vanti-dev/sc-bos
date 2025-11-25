@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vanti-dev/sc-bos/pkg/driver/proxy/config"
+	"github.com/smart-core-os/sc-bos/pkg/driver/proxy/config"
 )
 
 func newOAuth2Credentials(cfg config.OAuth2, client *http.Client) (*oauth2Credentials, error) {

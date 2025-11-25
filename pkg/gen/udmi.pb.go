@@ -445,7 +445,7 @@ const file_udmi_proto_rawDesc = "" +
 	"\x11PullControlTopics\x12'.smartcore.bos.PullControlTopicsRequest\x1a(.smartcore.bos.PullControlTopicsResponse0\x01\x12N\n" +
 	"\tOnMessage\x12\x1f.smartcore.bos.OnMessageRequest\x1a .smartcore.bos.OnMessageResponse\x12k\n" +
 	"\x12PullExportMessages\x12(.smartcore.bos.PullExportMessagesRequest\x1a).smartcore.bos.PullExportMessagesResponse0\x01\x12V\n" +
-	"\x10GetExportMessage\x12&.smartcore.bos.GetExportMessageRequest\x1a\x1a.smartcore.bos.MqttMessageB%Z#github.com/vanti-dev/sc-bos/pkg/genb\x06proto3"
+	"\x10GetExportMessage\x12&.smartcore.bos.GetExportMessageRequest\x1a\x1a.smartcore.bos.MqttMessageB)Z'github.com/smart-core-os/sc-bos/pkg/genb\x06proto3"
 
 var (
 	file_udmi_proto_rawDescOnce sync.Once

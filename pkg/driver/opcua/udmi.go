@@ -8,10 +8,10 @@ import (
 	"github.com/gopcua/opcua/ua"
 	"go.uber.org/zap"
 
-	"github.com/vanti-dev/sc-bos/pkg/auto/udmi"
-	"github.com/vanti-dev/sc-bos/pkg/driver/opcua/config"
-	"github.com/vanti-dev/sc-bos/pkg/gen"
-	"github.com/vanti-dev/sc-bos/pkg/minibus"
+	"github.com/smart-core-os/sc-bos/pkg/auto/udmi"
+	"github.com/smart-core-os/sc-bos/pkg/driver/opcua/config"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
+	"github.com/smart-core-os/sc-bos/pkg/minibus"
 )
 
 type Udmi struct {
