@@ -5,6 +5,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -42,8 +44,15 @@ func main() {
 	// Process files
 	updates := make(map[string][]FileUpdate)
 	var skippedGenerated []string
+	var skippedGoSum []string
 
 	for _, file := range files {
+		// Skip go.sum files - these should be regenerated with `go mod tidy`
+		if strings.HasSuffix(file, "go.sum") {
+			skippedGoSum = append(skippedGoSum, file)
+			continue
+		}
+
 		// Skip generated files
 		isGenerated, err := isGeneratedFile(file)
 		if err != nil {
@@ -68,14 +77,31 @@ func main() {
 	// Display results
 	displayResults(updates)
 
+	// Inform about skipped go.sum files
+	if len(skippedGoSum) > 0 {
+		fmt.Printf("\nSkipped %d go.sum file(s):\n", len(skippedGoSum))
+		for _, file := range skippedGoSum {
+			fmt.Printf("  - %s\n", file)
+		}
+		fmt.Println("\nRun the following command to regenerate go.sum files:")
+		fmt.Println("  $ go mod tidy")
+	}
+
 	// Check if any skipped generated files contain references
 	if len(skippedGenerated) > 0 {
 		generatedWithRefs := checkGeneratedFilesForReferences(skippedGenerated, presets, replacements)
 		if len(generatedWithRefs) > 0 {
-			fmt.Fprintf(os.Stderr, "\n⚠️  Warning: The following generated files contain references but were skipped:\n")
-			for _, file := range generatedWithRefs {
-				fmt.Fprintf(os.Stderr, "  - %s\n", file)
+			// If there are more than 5 files, just show unique directories
+			if len(generatedWithRefs) > 5 {
+				fmt.Fprintf(os.Stderr, "\nWarning: %d generated files in the following directories contain references but were skipped:\n", len(generatedWithRefs))
+				displayUniqueDirectories(generatedWithRefs, os.Stderr)
+			} else {
+				fmt.Fprintf(os.Stderr, "\nWarning: %d generated file(s) contain references but were skipped:\n", len(generatedWithRefs))
+				for _, file := range generatedWithRefs {
+					fmt.Fprintf(os.Stderr, "  - %s\n", file)
+				}
 			}
+
 			fmt.Fprintf(os.Stderr, "\nYou may need to regenerate these files after updating their source files.\n")
 			fmt.Fprintf(os.Stderr, "Look for //go:generate directives or run: go generate ./...\n")
 		}
@@ -136,4 +162,36 @@ func displayResults(updates map[string][]FileUpdate) {
 	}
 
 	fmt.Printf("\nTotal: %d change(s) in %d file(s)\n", totalUpdates, len(updates))
+}
+
+// displayUniqueDirectories extracts and displays unique directories containing the files
+func displayUniqueDirectories(files []string, output *os.File) {
+	// Group files by directory to count them
+	dirCounts := make(map[string]int)
+	for _, file := range files {
+		dir := filepath.Dir(file)
+		dirCounts[dir]++
+	}
+
+	// Sort directories for consistent output
+	var dirs []string
+	for dir := range dirCounts {
+		dirs = append(dirs, dir)
+	}
+	sort.Strings(dirs)
+
+	// Display directories with counts
+	for _, dir := range dirs {
+		count := dirCounts[dir]
+		fmt.Fprintf(output, "  - %s/ (%d file(s))\n", dir, count)
+	}
+
+	if *verbose {
+		fmt.Fprintf(output, "\nIndividual files:\n")
+		for _, file := range files {
+			fmt.Fprintf(output, "  - %s\n", file)
+		}
+	} else {
+		fmt.Fprintf(output, "  (run with --verbose to see individual files)\n")
+	}
 }
