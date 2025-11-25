@@ -79,6 +79,7 @@ func main() {
 
 	// Inform about skipped go.sum files
 	if len(skippedGoSum) > 0 {
+		sort.Strings(skippedGoSum)
 		fmt.Printf("\nSkipped %d go.sum file(s):\n", len(skippedGoSum))
 		for _, file := range skippedGoSum {
 			fmt.Printf("  - %s\n", file)
@@ -96,6 +97,7 @@ func main() {
 				fmt.Fprintf(os.Stderr, "\nWarning: %d generated files in the following directories contain references but were skipped:\n", len(generatedWithRefs))
 				displayUniqueDirectories(generatedWithRefs, os.Stderr)
 			} else {
+				sort.Strings(generatedWithRefs)
 				fmt.Fprintf(os.Stderr, "\nWarning: %d generated file(s) contain references but were skipped:\n", len(generatedWithRefs))
 				for _, file := range generatedWithRefs {
 					fmt.Fprintf(os.Stderr, "  - %s\n", file)
@@ -133,8 +135,14 @@ func main() {
 	}
 	if len(renamedFiles) > 0 {
 		fmt.Printf("\n✓ Renamed %d file(s) with vanti-dev in their names:\n", len(renamedFiles))
-		for oldName, newName := range renamedFiles {
-			fmt.Printf("  %s -> %s\n", oldName, newName)
+		// Sort old names for consistent output
+		var oldNames []string
+		for oldName := range renamedFiles {
+			oldNames = append(oldNames, oldName)
+		}
+		sort.Strings(oldNames)
+		for _, oldName := range oldNames {
+			fmt.Printf("  %s -> %s\n", oldName, renamedFiles[oldName])
 		}
 	}
 }
@@ -148,8 +156,16 @@ func displayResults(updates map[string][]FileUpdate) {
 
 	fmt.Printf("\nFound references in %d file(s):\n\n", len(updates))
 
+	// Sort files for consistent output
+	var files []string
+	for file := range updates {
+		files = append(files, file)
+	}
+	sort.Strings(files)
+
 	totalUpdates := 0
-	for file, fileUpdates := range updates {
+	for _, file := range files {
+		fileUpdates := updates[file]
 		totalUpdates += len(fileUpdates)
 		fmt.Printf("%s: (%d change(s))\n", file, len(fileUpdates))
 		if *verbose {
@@ -188,7 +204,11 @@ func displayUniqueDirectories(files []string, output *os.File) {
 
 	if *verbose {
 		fmt.Fprintf(output, "\nIndividual files:\n")
-		for _, file := range files {
+		// Sort files for consistent output
+		sortedFiles := make([]string, len(files))
+		copy(sortedFiles, files)
+		sort.Strings(sortedFiles)
+		for _, file := range sortedFiles {
 			fmt.Fprintf(output, "  - %s\n", file)
 		}
 	} else {

@@ -127,16 +127,18 @@ org-migration --dry-run --verbose --preset all --path .
   files**
 - Skips build artifacts (`node_modules`, `vendor`, `dist`)
 - Won't modify files in the `org-migration` tool directory itself
+- **Automatically skips go.sum files** - these will be regenerated when you run `go mod tidy`
 - **Automatically skips generated code** (files with `// Code generated ... DO NOT EDIT.`)
     - If generated files contain references, you'll get a warning to regenerate them
     - Look for `//go:generate` directives or run `go generate ./...` after updating source files
 - **Automatically renames files** with `vanti-dev` in their names (e.g., IDEA run configuration files)
+- **Deterministic output** - all file and directory lists are sorted alphabetically for consistent, reproducible results
 
 ## Post-Migration Steps
 
 ### After `--preset go`
 
-1. Run `go mod tidy` to update dependencies
+1. **Run `go mod tidy`** to update dependencies and regenerate go.sum (the tool will remind you to do this)
 2. **If .proto files were updated**: Regenerate Go code from Protocol Buffers (e.g., `./scripts/gen-proto.sh` or
    similar)
 3. **If you see warnings about generated files**: Run `go generate ./...` to regenerate code
