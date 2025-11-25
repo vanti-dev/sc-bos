@@ -4,24 +4,34 @@ A command-line tool to migrate code references from the `vanti-dev` organization
 
 ## Overview
 
-The `sc-bos` repository was transferred from `vanti-dev` to `smart-core-os` on GitHub. This tool helps update references
-in your codebase to match the new organization.
+Multiple repositories are being transferred from `vanti-dev` to `smart-core-os` on GitHub.
+This tool helps update references in your codebase to match the new organization.
+
+**Supported projects by default:**
+
+- `sc-bos` - Smart Core Building Operating System
+- `gobacnet` - Go BACnet library
+
+You can also migrate custom projects using the `--project` flag.
 
 ## How It Works
 
-The tool scans files in your project and applies specific replacements based on the preset you choose:
+The tool scans files in your project and applies specific replacements based on the preset you choose and the projects
+you specify:
 
 ### What Gets Replaced
 
-| Replacement Type         | Pattern                               | Example                                             |
-|--------------------------|---------------------------------------|-----------------------------------------------------|
-| **Go imports**           | `github.com/vanti-dev/sc-bos`         | `import "github.com/vanti-dev/sc-bos/pkg/node"`     |
-| **Protocol Buffers**     | `github.com/vanti-dev/sc-bos`         | `option go_package = "github.com/vanti-dev/..."`    |
-| **GitHub workflows**     | `github.com/vanti-dev/sc-bos`         | Go package paths in `.github/workflows/*.yml`       |
-| **npm packages**         | `@vanti-dev/sc-bos`                   | `"@vanti-dev/sc-bos": "^1.0.0"`                     |
-| **Docker images**        | `ghcr.io/vanti-dev/sc-bos`            | `image: ghcr.io/vanti-dev/sc-bos:latest`            |
-| **GitHub URLs**          | `https://github.com/vanti-dev/sc-bos` | `https://github.com/vanti-dev/sc-bos/blob/main/...` |
-| **IDEA run configs**     | `github.com/vanti-dev/sc-bos`         | Package paths in `.run/*.xml` files                 |
+The tool handles references for any project specified with `--project` (default: `sc-bos,gobacnet`):
+
+| Replacement Type     | Pattern                                  | Example                                          |
+|----------------------|------------------------------------------|--------------------------------------------------|
+| **Go imports**       | `github.com/vanti-dev/<project>`         | `import "github.com/vanti-dev/gobacnet"`         |
+| **Protocol Buffers** | `github.com/vanti-dev/<project>`         | `option go_package = "github.com/vanti-dev/..."` |
+| **GitHub workflows** | `github.com/vanti-dev/<project>`         | Go package paths in `.github/workflows/*.yml`    |
+| **npm packages**     | `@vanti-dev/sc-bos` (sc-bos only)        | `"@vanti-dev/sc-bos": "^1.0.0"`                  |
+| **Docker images**    | `ghcr.io/vanti-dev/<project>`            | `image: ghcr.io/vanti-dev/sc-bos:latest`         |
+| **GitHub URLs**      | `https://github.com/vanti-dev/<project>` | `https://github.com/vanti-dev/gobacnet/...`      |
+| **IDEA run configs** | `github.com/vanti-dev/<project>`         | Package paths in `.run/*.xml` files              |
 
 ### Presets
 
@@ -36,8 +46,10 @@ documentation, config files, and code are all updated together when you migrate 
 | `docs`   | Updates GitHub URLs everywhere                           | You want to update documentation links only                     |
 | `all`    | Applies all replacements (default)                       | Your project uses multiple components from `sc-bos`             |
 
-**By default, all file types are scanned** (`.go`, `.mod`, `.proto`, `.js`, `.ts`, `.md`, `.yml`, `.yaml`, `.json`, `.xml`, etc.), 
-including **IntelliJ IDEA run configuration files** in `.run/` directories and **GitHub workflow files** in `.github/workflows/`. Use `--types` to limit
+**By default, all file types are scanned** (`.go`, `.mod`, `.proto`, `.js`, `.ts`, `.md`, `.yml`, `.yaml`, `.json`,
+`.xml`, etc.),
+including **IntelliJ IDEA run configuration files** in `.run/` directories and **GitHub workflow files** in
+`.github/workflows/`. Use `--type` to limit
 which files are processed.
 
 ## Installation
@@ -73,23 +85,20 @@ org-migration --preset go --path /path/to/your/project
 ## Usage Examples
 
 ```bash
-# Migrate Go imports if your project imports sc-bos packages
-# (updates imports in .go files AND in READMEs, docs, etc.)
-org-migration --preset go --path ~/my-project
+# Basic usage - migrate both sc-bos and gobacnet with default settings
+org-migration --dry-run --preset go --path ~/my-project
 
-# Migrate npm packages if your project uses @vanti-dev/sc-bos
-org-migration --preset js --path ~/my-project
+# Migrate specific project only
+org-migration --preset go --project gobacnet --path ~/my-project
 
-# Migrate Docker images if your project uses sc-bos containers
-org-migration --preset docker --path ~/my-project
+# Multiple presets (comma-separated or repeated flags)
+org-migration --preset go,docker --path ~/my-project
+org-migration --preset go --preset docker --path ~/my-project
 
-# Update only GitHub URLs in documentation
-org-migration --preset docs --path ~/my-project
+# Scan specific file types only
+org-migration --type go,mod --preset go --path ~/my-project
 
-# Scan only specific file types
-org-migration --types go,mod --preset go --path ~/my-project
-
-# Verbose output to see exactly what changes
+# Verbose output to see all changes
 org-migration --dry-run --verbose --preset all --path .
 ```
 
@@ -103,19 +112,24 @@ org-migration --dry-run --verbose --preset all --path .
 --verbose       Show detailed output including line-by-line changes
 --path PATH     Directory to scan (default: current directory)
 --preset NAME   Which replacements to apply: all, go, js, docker, docs (default: all)
---types EXTS    Comma-separated file extensions to scan (default: all supported types)
+                Can be comma-separated (--preset go,docker) or repeated (--preset go --preset docker)
+--type EXTS     File extensions to scan (default: all supported types)
+                Can be comma-separated (--type go,mod) or repeated (--type go --type mod)
+--project LIST  Projects to migrate (default: sc-bos,gobacnet)
+                Can be comma-separated (--project sc-bos,gobacnet) or repeated (--project sc-bos --project gobacnet)
 ```
 
 ## Safety Features
 
 - **Always use `--dry-run` first** to preview changes
 - Preserves file permissions and line endings (CRLF vs LF)
-- Skips most hidden directories (`.git`) but **processes `.run/` for IDEA run configurations and `.github/` for workflow files**
+- Skips most hidden directories (`.git`) but **processes `.run/` for IDEA run configurations and `.github/` for workflow
+  files**
 - Skips build artifacts (`node_modules`, `vendor`, `dist`)
 - Won't modify files in the `org-migration` tool directory itself
 - **Automatically skips generated code** (files with `// Code generated ... DO NOT EDIT.`)
-  - If generated files contain references, you'll get a warning to regenerate them
-  - Look for `//go:generate` directives or run `go generate ./...` after updating source files
+    - If generated files contain references, you'll get a warning to regenerate them
+    - Look for `//go:generate` directives or run `go generate ./...` after updating source files
 - **Automatically renames files** with `vanti-dev` in their names (e.g., IDEA run configuration files)
 
 ## Post-Migration Steps
@@ -123,7 +137,8 @@ org-migration --dry-run --verbose --preset all --path .
 ### After `--preset go`
 
 1. Run `go mod tidy` to update dependencies
-2. **If .proto files were updated**: Regenerate Go code from Protocol Buffers (e.g., `./scripts/gen-proto.sh` or similar)
+2. **If .proto files were updated**: Regenerate Go code from Protocol Buffers (e.g., `./scripts/gen-proto.sh` or
+   similar)
 3. **If you see warnings about generated files**: Run `go generate ./...` to regenerate code
 4. Build and test your Go code
 5. Verify imports resolve correctly
@@ -170,7 +185,8 @@ The tool automatically updates **IntelliJ IDEA run configuration files**:
 - `go build github.com_vanti-dev_sc-bos_cmd_tools_export-alerts.run.xml`
 - → `go build github.com_smart-core-os_sc-bos_cmd_tools_export-alerts.run.xml`
 
-No special flags are needed - IDEA run configuration files are updated automatically when using the `go` or `all` presets.
+No special flags are needed - IDEA run configuration files are updated automatically when using the `go` or `all`
+presets.
 
 ## GitHub Workflows Support
 
@@ -183,6 +199,7 @@ The tool automatically updates **GitHub Actions workflow files** in `.github/wor
 ### Examples of What Gets Updated
 
 **Go build commands:**
+
 ```yaml
 # Before
 run: go build -o .build/linux-amd64/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
@@ -192,12 +209,14 @@ run: go build -o .build/linux-amd64/sc-bos github.com/smart-core-os/sc-bos/cmd/b
 ```
 
 **GOPRIVATE (not changed):**
+
 ```yaml
 # Stays the same - preserves access to both organizations
 GOPRIVATE: github.com/smart-core-os/*,github.com/vanti-dev/*
 ```
 
 **Git authentication setup (not changed):**
+
 ```yaml
 # Stays the same - preserves authentication to both organizations
 git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/vanti-dev".insteadOf "https://github.com/vanti-dev"
