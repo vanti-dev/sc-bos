@@ -16,6 +16,7 @@ The tool scans files in your project and applies specific replacements based on 
 | Replacement Type         | Pattern                               | Example                                             |
 |--------------------------|---------------------------------------|-----------------------------------------------------|
 | **Go imports**           | `github.com/vanti-dev/sc-bos`         | `import "github.com/vanti-dev/sc-bos/pkg/node"`     |
+| **Protocol Buffers**     | `github.com/vanti-dev/sc-bos`         | `option go_package = "github.com/vanti-dev/..."`    |
 | **npm packages**         | `@vanti-dev/sc-bos`                   | `"@vanti-dev/sc-bos": "^1.0.0"`                     |
 | **Docker images**        | `ghcr.io/vanti-dev/sc-bos`            | `image: ghcr.io/vanti-dev/sc-bos:latest`            |
 | **GitHub URLs**          | `https://github.com/vanti-dev/sc-bos` | `https://github.com/vanti-dev/sc-bos/blob/main/...` |
@@ -34,7 +35,7 @@ documentation, config files, and code are all updated together when you migrate 
 | `docs`   | Updates GitHub URLs everywhere                           | You want to update documentation links only                     |
 | `all`    | Applies all replacements (default)                       | Your project uses multiple components from `sc-bos`             |
 
-**By default, all file types are scanned** (`.go`, `.mod`, `.js`, `.ts`, `.md`, `.yml`, `.yaml`, `.json`, `.xml`, etc.), 
+**By default, all file types are scanned** (`.go`, `.mod`, `.proto`, `.js`, `.ts`, `.md`, `.yml`, `.yaml`, `.json`, `.xml`, etc.), 
 including **IntelliJ IDEA run configuration files** in `.run/` directories. Use `--types` to limit
 which files are processed.
 
@@ -121,9 +122,10 @@ org-migration --dry-run --verbose --preset all --path .
 ### After `--preset go`
 
 1. Run `go mod tidy` to update dependencies
-2. **If you see warnings about generated files**: Run `go generate ./...` to regenerate code
-3. Build and test your Go code
-4. Verify imports resolve correctly
+2. **If .proto files were updated**: Regenerate Go code from Protocol Buffers (e.g., `./scripts/gen-proto.sh` or similar)
+3. **If you see warnings about generated files**: Run `go generate ./...` to regenerate code
+4. Build and test your Go code
+5. Verify imports resolve correctly
 
 ### After `--preset js`
 

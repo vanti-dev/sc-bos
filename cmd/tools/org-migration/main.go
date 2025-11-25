@@ -23,7 +23,7 @@ var (
 )
 
 // Default file extensions to scan when --types is not specified
-const defaultFileTypes = "go,mod,sum,sh,yml,yaml,json,md,js,ts,jsx,tsx,mjs,cjs,vue,html,xml,Dockerfile"
+const defaultFileTypes = "go,mod,sum,proto,sh,yml,yaml,json,md,js,ts,jsx,tsx,mjs,cjs,vue,html,xml,Dockerfile"
 
 // Preset categories define which replacements to apply
 var presetInfo = map[string]string{
