@@ -99,8 +99,8 @@ func main() {
 
 	fmt.Println("\n✓ Successfully updated all files.")
 
-	// Rename files that have vanti-dev in their names
-	renamedFiles, err := renameFiles(files)
+	// Rename files that have vanti-dev in their names for the selected projects
+	renamedFiles, err := renameFiles(files, projects)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error renaming files: %v\n", err)
 		os.Exit(1)

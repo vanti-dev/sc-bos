@@ -66,14 +66,28 @@ func collectFiles(rootPath string, extensions map[string]bool) ([]string, error)
 	return files, err
 }
 
-// renameFiles renames files that have vanti-dev in their names
-func renameFiles(files []string) (map[string]string, error) {
+// renameFiles renames files that have vanti-dev in their names for the specified projects
+func renameFiles(files []string, projects []string) (map[string]string, error) {
 	renamedFiles := make(map[string]string)
 
 	for _, filePath := range files {
-		// Check if filename contains vanti-dev
 		fileName := filepath.Base(filePath)
+
+		// Check if filename contains vanti-dev and any of the selected projects
 		if !strings.Contains(fileName, "vanti-dev") {
+			continue
+		}
+
+		// Check if the filename contains any of the selected projects
+		hasProject := false
+		for _, project := range projects {
+			if strings.Contains(fileName, project) {
+				hasProject = true
+				break
+			}
+		}
+
+		if !hasProject {
 			continue
 		}
 
