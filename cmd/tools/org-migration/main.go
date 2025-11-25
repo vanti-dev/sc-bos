@@ -341,7 +341,7 @@ func collectFiles(rootPath string, extensions map[string]bool) ([]string, error)
 	var files []string
 
 	// Directories to skip during traversal
-	// Note: .run is NOT skipped to allow updating IDEA run configurations
+	// Note: .run and .github are NOT skipped to allow updating IDEA run configurations and GitHub workflows
 	ignoredDirs := []string{"node_modules", "vendor", "dist", "org-migration"}
 
 	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
@@ -354,8 +354,8 @@ func collectFiles(rootPath string, extensions map[string]bool) ([]string, error)
 			name := d.Name()
 			// Don't skip the root directory even if it's "."
 			if path != rootPath {
-				// Allow .run directory (IDEA run configurations)
-				if name == ".run" {
+				// Allow .run directory (IDEA run configurations) and .github directory (GitHub workflows)
+				if name == ".run" || name == ".github" {
 					return nil
 				}
 				// Skip other hidden directories (starting with .)

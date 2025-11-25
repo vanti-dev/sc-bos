@@ -17,6 +17,7 @@ The tool scans files in your project and applies specific replacements based on 
 |--------------------------|---------------------------------------|-----------------------------------------------------|
 | **Go imports**           | `github.com/vanti-dev/sc-bos`         | `import "github.com/vanti-dev/sc-bos/pkg/node"`     |
 | **Protocol Buffers**     | `github.com/vanti-dev/sc-bos`         | `option go_package = "github.com/vanti-dev/..."`    |
+| **GitHub workflows**     | `github.com/vanti-dev/sc-bos`         | Go package paths in `.github/workflows/*.yml`       |
 | **npm packages**         | `@vanti-dev/sc-bos`                   | `"@vanti-dev/sc-bos": "^1.0.0"`                     |
 | **Docker images**        | `ghcr.io/vanti-dev/sc-bos`            | `image: ghcr.io/vanti-dev/sc-bos:latest`            |
 | **GitHub URLs**          | `https://github.com/vanti-dev/sc-bos` | `https://github.com/vanti-dev/sc-bos/blob/main/...` |
@@ -36,7 +37,7 @@ documentation, config files, and code are all updated together when you migrate 
 | `all`    | Applies all replacements (default)                       | Your project uses multiple components from `sc-bos`             |
 
 **By default, all file types are scanned** (`.go`, `.mod`, `.proto`, `.js`, `.ts`, `.md`, `.yml`, `.yaml`, `.json`, `.xml`, etc.), 
-including **IntelliJ IDEA run configuration files** in `.run/` directories. Use `--types` to limit
+including **IntelliJ IDEA run configuration files** in `.run/` directories and **GitHub workflow files** in `.github/workflows/`. Use `--types` to limit
 which files are processed.
 
 ## Installation
@@ -109,7 +110,7 @@ org-migration --dry-run --verbose --preset all --path .
 
 - **Always use `--dry-run` first** to preview changes
 - Preserves file permissions and line endings (CRLF vs LF)
-- Skips most hidden directories (`.git`, `.github`) but **processes `.run/` for IDEA run configurations**
+- Skips most hidden directories (`.git`) but **processes `.run/` for IDEA run configurations and `.github/` for workflow files**
 - Skips build artifacts (`node_modules`, `vendor`, `dist`)
 - Won't modify files in the `org-migration` tool directory itself
 - **Automatically skips generated code** (files with `// Code generated ... DO NOT EDIT.`)
@@ -170,6 +171,39 @@ The tool automatically updates **IntelliJ IDEA run configuration files**:
 - → `go build github.com_smart-core-os_sc-bos_cmd_tools_export-alerts.run.xml`
 
 No special flags are needed - IDEA run configuration files are updated automatically when using the `go` or `all` presets.
+
+## GitHub Workflows Support
+
+The tool automatically updates **GitHub Actions workflow files** in `.github/workflows/`:
+
+- **Go build commands** - Updates package paths in `go build` commands
+- **GOPRIVATE environment variables** - Left unchanged to preserve access to both organizations
+- **Git configuration** - Left unchanged to preserve authentication for both organizations
+
+### Examples of What Gets Updated
+
+**Go build commands:**
+```yaml
+# Before
+run: go build -o .build/linux-amd64/sc-bos github.com/vanti-dev/sc-bos/cmd/bos
+
+# After
+run: go build -o .build/linux-amd64/sc-bos github.com/smart-core-os/sc-bos/cmd/bos
+```
+
+**GOPRIVATE (not changed):**
+```yaml
+# Stays the same - preserves access to both organizations
+GOPRIVATE: github.com/smart-core-os/*,github.com/vanti-dev/*
+```
+
+**Git authentication setup (not changed):**
+```yaml
+# Stays the same - preserves authentication to both organizations
+git config --global url."https://${{ secrets.GO_MOD_TOKEN }}:x-oauth-basic@github.com/vanti-dev".insteadOf "https://github.com/vanti-dev"
+```
+
+No special flags are needed - GitHub workflow files are updated automatically when using the `go` or `all` presets.
 
 ## Migration Strategy
 
