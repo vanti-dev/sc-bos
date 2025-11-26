@@ -89,12 +89,12 @@ func newMqttClient(cfg config.Mqtt) (mqtt.Client, error) {
 	opts.SetClientID(cfg.ClientId)
 	opts.SetOrderMatters(false)
 
-	cert, err := tls.LoadX509KeyPair(cfg.ClientCert, cfg.ClientKey)
+	cert, err := tls.LoadX509KeyPair(cfg.ClientCertPath, cfg.ClientKeyPath)
 	if err != nil {
 		return nil, err
 	}
 
-	caCert, err := os.ReadFile(cfg.CaCert)
+	caCert, err := os.ReadFile(cfg.CaCertPath)
 	if err != nil {
 		return nil, err
 	}

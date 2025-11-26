@@ -13,9 +13,9 @@ type Mqtt struct {
 	Host             string              `json:"host"`
 	Topic            string              `json:"topic"` // the topic to publish to
 	ClientId         string              `json:"clientId"`
-	ClientKey        string              `json:"clientKey"`
-	ClientCert       string              `json:"clientCert"`
-	CaCert           string              `json:"caCert"`
+	ClientKeyPath    string              `json:"clientKeyPath"`                       // file path to client private key
+	ClientCertPath   string              `json:"clientCertPath"`                      // file path to client certificate
+	CaCertPath       string              `json:"caCertPath"`                          // file path to CA certificate
 	PublishTimeout   *jsontypes.Duration `json:"publishTimeout,omitempty,omitzero"`   // timeout for publishing to MQTT, default to 5s
 	Qos              *int                `json:"qos,omitempty"`                       // MQTT qos, default to 1
 	SendInterval     *jsontypes.Schedule `json:"sendInterval,omitempty,omitzero"`     // time between sends, default to 15m
