@@ -99,7 +99,10 @@ func newMqttClient(cfg config.Mqtt) (mqtt.Client, error) {
 		return nil, err
 	}
 	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
+	ok := caCertPool.AppendCertsFromPEM(caCert)
+	if !ok {
+		return nil, fmt.Errorf("failed to append CA certificate")
+	}
 
 	opts.TLSConfig = &tls.Config{
 		Certificates: []tls.Certificate{cert},

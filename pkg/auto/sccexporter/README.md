@@ -125,9 +125,9 @@ The `Data` map contains entries where each key is a trait name and the value is 
 - **host** (string, required): MQTT broker address (e.g., "ssl://mqtt.example.com:8883")
 - **topic** (string, required): MQTT topic to publish messages to
 - **clientId** (string, required): Unique client identifier for MQTT connection
-- **clientCert** (string, required): Path to client certificate file for TLS
-- **clientKey** (string, required): Path to client key file for TLS
-- **caCert** (string, required): Path to CA certificate file for TLS
+- **clientCertPath** (string, required): Path to client certificate file for TLS
+- **clientKeyPath** (string, required): Path to client key file for TLS
+- **caCertPath** (string, required): Path to CA certificate file for TLS
 - **connectTimeout** (duration, optional): Timeout for connecting to MQTT broker, default: "5s"
 - **publishTimeout** (duration, optional): Timeout for publishing to MQTT, default: "5s"
 - **sendInterval** (schedule, optional): Cron schedule for data collection, default: "*/15 * * * *" (every 15 minutes)
