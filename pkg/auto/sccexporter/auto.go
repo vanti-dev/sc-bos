@@ -76,7 +76,7 @@ func (a *AutoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 		switch traitName {
 		case string(meterpb.TraitName):
 			// grab the trait info for all meters first and save it in the device so we can push it
-			// only supports the Meter info, think its the only one we really need for data...
+			// only supports the Meter info, think it's the only one we really need for data...
 			a.getMeterInfo(autoCtx, trait.Name(traitName), allDevices)
 		}
 	}

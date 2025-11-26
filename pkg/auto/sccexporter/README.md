@@ -1,6 +1,6 @@
 ## sccexporter automation 
 
-The sccexporter automation provides a quick way of exporting trait data from devices to SCC via MQTT.
+The sccexporter automation provides a quick way of exporting trait data from devices to Smart Core Cloud (SCC) via MQTT.
 For all the traits provided in the config, the automation will discover all the devices which implement those traits,
 grab the data at a given interval, and publish the data to SCC via MQTT.
 

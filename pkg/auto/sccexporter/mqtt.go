@@ -74,7 +74,7 @@ func (s *sccConnector) publishToScc(ctx context.Context) error {
 				s.mqttClient.Disconnect(500)
 				if token := s.mqttClient.Connect(); !token.WaitTimeout(5 * time.Second) {
 					// this might be transient, so just log and try again next time
-					s.logger.Error("failed to connect to mqtt broker", zap.Error(err))
+					s.logger.Error("failed to connect to mqtt broker", zap.Error(token.Error()))
 				}
 			}
 		}

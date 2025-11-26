@@ -16,8 +16,8 @@ type Mqtt struct {
 	ClientKey        string              `json:"clientKey"`
 	ClientCert       string              `json:"clientCert"`
 	CaCert           string              `json:"caCert"`
-	PublishTimeout   *jsontypes.Duration `json:"publishTimeout,omitempty,omitzero"`   // timeout for publishing to mqtt, default to 5s
-	Qos              *int                `json:"qos,omitempty"`                       // mqtt qos, default to 1
+	PublishTimeout   *jsontypes.Duration `json:"publishTimeout,omitempty,omitzero"`   // timeout for publishing to MQTT, default to 5s
+	Qos              *int                `json:"qos,omitempty"`                       // MQTT qos, default to 1
 	SendInterval     *jsontypes.Schedule `json:"sendInterval,omitempty,omitzero"`     // time between sends, default to 15m
 	MetadataInterval *int                `json:"metadataInterval,omitempty,omitzero"` // how often to include metadata (every N data sends), default to 100
 }
