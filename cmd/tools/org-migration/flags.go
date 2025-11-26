@@ -25,14 +25,27 @@ func (m *multiValue) Set(value string) error {
 	return nil
 }
 
+// ProjectSpec holds information about a project and its target branch
+type ProjectSpec struct {
+	Name   string
+	Branch string
+}
+
+// Default branches for known projects
+var defaultBranches = map[string]string{
+	"sc-bos":   "main",
+	"gobacnet": "write",
+}
+
 var (
 	// Flags
-	dryRun    = flag.Bool("dry-run", false, "Show what would be changed without making changes")
-	verbose   = flag.Bool("verbose", false, "Show detailed output")
-	path      = flag.String("path", ".", "Path to scan for files")
-	fileTypes multiValue
-	presets   multiValue
-	projects  multiValue
+	dryRun       = flag.Bool("dry-run", false, "Show what would be changed without making changes")
+	verbose      = flag.Bool("verbose", false, "Show detailed output")
+	path         = flag.String("path", ".", "Path to scan for files")
+	fileTypes    multiValue
+	presets      multiValue
+	projects     multiValue
+	projectSpecs []ProjectSpec // Parsed project specifications
 )
 
 // Preset categories define which replacements to apply
@@ -47,7 +60,8 @@ var presetInfo = map[string]string{
 func init() {
 	flag.Var(&fileTypes, "type", "File extensions to process (can be comma-separated or repeated)")
 	flag.Var(&presets, "preset", "Preset category: all, go, js, docker, docs (can be comma-separated or repeated)")
-	flag.Var(&projects, "project", "Projects to migrate (can be comma-separated or repeated, default: sc-bos,gobacnet)")
+	flag.Var(&projects, "project", "Projects to migrate (can be comma-separated or repeated, default: sc-bos,gobacnet)\n"+
+		"\tFormat: project or project@branch (e.g., sc-bos@main, myproject@develop)")
 }
 
 func setupFlags() {
@@ -94,7 +108,35 @@ func parseAndValidateFlags() error {
 		return fmt.Errorf("no projects specified")
 	}
 
+	// Parse project specifications
+	projectSpecs = parseProjectSpecs(projects)
+
 	return nil
+}
+
+// parseProjectSpecs parses project specifications which can be in format "project" or "project@branch"
+func parseProjectSpecs(projects []string) []ProjectSpec {
+	specs := make([]ProjectSpec, 0, len(projects))
+	for _, project := range projects {
+		parts := strings.SplitN(project, "@", 2)
+		spec := ProjectSpec{
+			Name: parts[0],
+		}
+		if len(parts) == 2 {
+			// User specified a branch
+			spec.Branch = parts[1]
+		} else {
+			// Use default branch for known projects, otherwise leave empty (go get will use @latest)
+			if branch, ok := defaultBranches[spec.Name]; ok {
+				spec.Branch = branch
+			} else {
+				// Leave empty - go get defaults to @latest
+				spec.Branch = ""
+			}
+		}
+		specs = append(specs, spec)
+	}
+	return specs
 }
 
 func parseExtensions(typesStr string) map[string]bool {
