@@ -50,7 +50,7 @@ func newSccConnector(logger *zap.Logger, mqttCfg config.Mqtt, client mqtt.Client
 func (s *sccConnector) publishToScc(ctx context.Context) error {
 
 	token := s.mqttClient.Connect()
-	if !token.WaitTimeout(5 * time.Second) {
+	if !token.WaitTimeout(s.mqttCfg.ConnectTimeout.Duration) {
 		return fmt.Errorf("timeout connecting to mqtt broker")
 	}
 	for {
@@ -72,7 +72,7 @@ func (s *sccConnector) publishToScc(ctx context.Context) error {
 			if !t.WaitTimeout(s.mqttCfg.PublishTimeout.Duration) {
 				s.logger.Warn("timeout publishing message for device", zap.Duration("timeout", s.mqttCfg.PublishTimeout.Duration))
 				s.mqttClient.Disconnect(500)
-				if token := s.mqttClient.Connect(); !token.WaitTimeout(5 * time.Second) {
+				if token := s.mqttClient.Connect(); !token.WaitTimeout(s.mqttCfg.ConnectTimeout.Duration) {
 					// this might be transient, so just log and try again next time
 					s.logger.Error("failed to connect to mqtt broker", zap.Error(token.Error()))
 				}
@@ -81,7 +81,7 @@ func (s *sccConnector) publishToScc(ctx context.Context) error {
 	}
 }
 
-// newMqttClient creates a new MQTT meterClient with TLS configuration
+// newMqttClient creates a new MQTT client with TLS configuration
 // assumes the config contains valid paths with valid certs.
 func newMqttClient(cfg config.Mqtt) (mqtt.Client, error) {
 	opts := mqtt.NewClientOptions()

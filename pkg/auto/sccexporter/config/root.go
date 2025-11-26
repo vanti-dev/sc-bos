@@ -16,6 +16,7 @@ type Mqtt struct {
 	ClientKeyPath    string              `json:"clientKeyPath"`                       // file path to client private key
 	ClientCertPath   string              `json:"clientCertPath"`                      // file path to client certificate
 	CaCertPath       string              `json:"caCertPath"`                          // file path to CA certificate
+	ConnectTimeout   *jsontypes.Duration `json:"connectTimeout,omitempty,omitzero"`   // timeout for connecting to MQTT broker, default to 5s
 	PublishTimeout   *jsontypes.Duration `json:"publishTimeout,omitempty,omitzero"`   // timeout for publishing to MQTT, default to 5s
 	Qos              *int                `json:"qos,omitempty"`                       // MQTT qos, default to 1
 	SendInterval     *jsontypes.Schedule `json:"sendInterval,omitempty,omitzero"`     // time between sends, default to 15m
@@ -43,6 +44,9 @@ func ParseConfig(data []byte) (Root, error) {
 
 	if root.Mqtt.SendInterval == nil {
 		root.Mqtt.SendInterval = jsontypes.MustParseSchedule("*/15 * * * *")
+	}
+	if root.Mqtt.ConnectTimeout == nil || root.Mqtt.ConnectTimeout.Duration == 0 {
+		root.Mqtt.ConnectTimeout = &jsontypes.Duration{Duration: 5 * time.Second}
 	}
 	if root.Mqtt.PublishTimeout == nil || root.Mqtt.PublishTimeout.Duration == 0 {
 		root.Mqtt.PublishTimeout = &jsontypes.Duration{Duration: 5 * time.Second}

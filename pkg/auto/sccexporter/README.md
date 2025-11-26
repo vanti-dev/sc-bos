@@ -1,6 +1,6 @@
 ## sccexporter automation 
 
-The sccexporter automation provides a quick way of exporting trait data from devices to Smart Core Cloud (SCC) via MQTT.
+The sccexporter automation provides a quick way of exporting trait data from devices to Smart Core Connect (SCC) via MQTT.
 For all the traits provided in the config, the automation will discover all the devices which implement those traits,
 grab the data at a given interval, and publish the data to SCC via MQTT.
 
@@ -101,12 +101,13 @@ The `Data` map contains entries where each key is a trait name and the value is 
     "host": "ssl://mqtt.example.com:8883",
     "topic": "scc/data",
     "clientId": "scc-exporter-1",
-    "clientCert": "/path/to/client.crt",
-    "clientKey": "/path/to/client.key",
-    "caCert": "/path/to/ca.crt",
+    "clientCertPath": "/path/to/client.crt",
+    "clientKeyPath": "/path/to/client.key",
+    "caCertPath": "/path/to/ca.crt",
+    "connectTimeout": "5s",
+    "publishTimeout": "5s",
     "sendInterval": "*/15 * * * *",
     "metadataInterval": 100,
-    "publishTimeout": "5s",
     "qos": 1
   }
 }
@@ -127,9 +128,10 @@ The `Data` map contains entries where each key is a trait name and the value is 
 - **clientCert** (string, required): Path to client certificate file for TLS
 - **clientKey** (string, required): Path to client key file for TLS
 - **caCert** (string, required): Path to CA certificate file for TLS
+- **connectTimeout** (duration, optional): Timeout for connecting to MQTT broker, default: "5s"
+- **publishTimeout** (duration, optional): Timeout for publishing to MQTT, default: "5s"
 - **sendInterval** (schedule, optional): Cron schedule for data collection, default: "*/15 * * * *" (every 15 minutes)
 - **metadataInterval** (int, optional): Include metadata every N data collection cycles, default: 100
-- **publishTimeout** (duration, optional): Timeout for publishing to MQTT, default: "5s"
 - **qos** (int, optional): MQTT Quality of Service level (0, 1, or 2), default: 1
 
 

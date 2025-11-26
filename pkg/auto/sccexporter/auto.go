@@ -1,6 +1,6 @@
-// Package sccexporter exports Device to scc from an on-premise smart core instance.
+// Package sccexporter exports Device to SCC from an on-premise smart core instance.
 // Given a list of traits, the exporter will discover all devices which implement that trait and export
-// the Device on a scheduled interval to an MQTT broker in the format expected by scc.
+// the Device on a scheduled interval to an MQTT broker in the format expected by SCC.
 package sccexporter
 
 import (
