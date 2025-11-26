@@ -166,27 +166,28 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 	}
 	for _, deviceInfo := range resp.Devices {
 		if _, ok := devices[deviceInfo.Name]; !ok {
-			devices[deviceInfo.Name] = newDevice(deviceInfo.Name, a.Logger, deviceInfo.Metadata)
+			deviceName := deviceInfo.Name
+			devices[deviceName] = newDevice(deviceName, a.Logger, deviceInfo.Metadata)
 			switch traitName {
 			case trait.AirTemperature:
-				devices[deviceInfo.Name].traits[trait.AirTemperature] = func(ctx context.Context) (string, error) {
-					return devices[deviceInfo.Name].getAirTemperatureData(ctx, a.airTemperatureClient)
+				devices[deviceName].traits[trait.AirTemperature] = func(ctx context.Context) (string, error) {
+					return devices[deviceName].getAirTemperatureData(ctx, a.airTemperatureClient)
 				}
 			case trait.AirQualitySensor:
-				devices[deviceInfo.Name].traits[trait.AirQualitySensor] = func(ctx context.Context) (string, error) {
-					return devices[deviceInfo.Name].getAirQualityData(ctx, a.airQualityClient)
+				devices[deviceName].traits[trait.AirQualitySensor] = func(ctx context.Context) (string, error) {
+					return devices[deviceName].getAirQualityData(ctx, a.airQualityClient)
 				}
 			case meterpb.TraitName:
-				devices[deviceInfo.Name].traits[meterpb.TraitName] = func(ctx context.Context) (string, error) {
-					return devices[deviceInfo.Name].getMeterData(ctx, a.meterClient)
+				devices[deviceName].traits[meterpb.TraitName] = func(ctx context.Context) (string, error) {
+					return devices[deviceName].getMeterData(ctx, a.meterClient)
 				}
 			case trait.OccupancySensor:
-				devices[deviceInfo.Name].traits[trait.OccupancySensor] = func(ctx context.Context) (string, error) {
-					return devices[deviceInfo.Name].getOccupancyData(ctx, a.occupancyClient)
+				devices[deviceName].traits[trait.OccupancySensor] = func(ctx context.Context) (string, error) {
+					return devices[deviceName].getOccupancyData(ctx, a.occupancyClient)
 				}
 			default:
 				a.Logger.Warn("trait is configured but not supported",
-					zap.String("trait", string(traitName)), zap.String("device", deviceInfo.Name))
+					zap.String("trait", string(traitName)), zap.String("device", deviceName))
 			}
 		}
 	}
