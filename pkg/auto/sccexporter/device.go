@@ -15,7 +15,8 @@ import (
 )
 
 // DataFetcher is a function that fetches device data for a specific trait
-type DataFetcher func(ctx context.Context) ([]byte, error)
+// Returns a map of resource names to their JSON data (e.g., "meterReading" -> data, "meterReadingInfo" -> info)
+type DataFetcher func(ctx context.Context) (map[string]json.RawMessage, error)
 
 type device struct {
 	name     string
@@ -36,7 +37,9 @@ func newDevice(name string, logger *zap.Logger, metaData *traits.Metadata) *devi
 	return d
 }
 
-func (d *device) getMeterData(ctx context.Context, meterClient gen.MeterApiClient) ([]byte, error) {
+func (d *device) getMeterData(ctx context.Context, meterClient gen.MeterApiClient) (map[string]json.RawMessage, error) {
+	result := make(map[string]json.RawMessage)
+
 	reading, err := meterClient.GetMeterReading(ctx, &gen.GetMeterReadingRequest{
 		Name: d.name,
 	})
@@ -52,38 +55,25 @@ func (d *device) getMeterData(ctx context.Context, meterClient gen.MeterApiClien
 		return nil, err
 	}
 
-	// If we don't have meter support info, just return the reading
+	result["meterReading"] = readingBytes
+
+	// Add meter reading info if available
 	info, ok := d.info[meterpb.TraitName].(*gen.MeterReadingSupport)
-	if !ok || info == nil {
-		return readingBytes, nil
+	if ok && info != nil {
+		infoBytes, err := protojson.Marshal(info)
+		if err != nil {
+			d.logger.Error("failed to marshal meter reading info", zap.String("meter", d.name), zap.Error(err))
+		} else {
+			result["meterReadingInfo"] = infoBytes
+		}
 	}
 
-	// Unmarshal to a map so we can add the unit fields
-	var readingMap map[string]any
-	if err := json.Unmarshal(readingBytes, &readingMap); err != nil {
-		d.logger.Error("failed to unmarshal meter reading", zap.String("meter", d.name), zap.Error(err))
-		return nil, err
-	}
-
-	// Add the unit fields from MeterReadingSupport
-	if info.UsageUnit != "" {
-		readingMap["usageUnit"] = info.UsageUnit
-	}
-	if info.ProducedUnit != "" {
-		readingMap["producedUnit"] = info.ProducedUnit
-	}
-
-	// Marshal back to JSON with the added fields
-	bytes, err := json.Marshal(readingMap)
-	if err != nil {
-		d.logger.Error("failed to marshal meter reading with units", zap.String("meter", d.name), zap.Error(err))
-		return nil, err
-	}
-
-	return bytes, nil
+	return result, nil
 }
 
-func (d *device) getAirQualityData(ctx context.Context, airQualityClient traits.AirQualitySensorApiClient) ([]byte, error) {
+func (d *device) getAirQualityData(ctx context.Context, airQualityClient traits.AirQualitySensorApiClient) (map[string]json.RawMessage, error) {
+	result := make(map[string]json.RawMessage)
+
 	airQuality, err := airQualityClient.GetAirQuality(ctx, &traits.GetAirQualityRequest{
 		Name: d.name,
 	})
@@ -98,10 +88,13 @@ func (d *device) getAirQualityData(ctx context.Context, airQualityClient traits.
 		return nil, err
 	}
 
-	return aq, nil
+	result["airQuality"] = aq
+	return result, nil
 }
 
-func (d *device) getOccupancyData(ctx context.Context, occupancyClient traits.OccupancySensorApiClient) ([]byte, error) {
+func (d *device) getOccupancyData(ctx context.Context, occupancyClient traits.OccupancySensorApiClient) (map[string]json.RawMessage, error) {
+	result := make(map[string]json.RawMessage)
+
 	occupancy, err := occupancyClient.GetOccupancy(ctx, &traits.GetOccupancyRequest{
 		Name: d.name,
 	})
@@ -116,10 +109,13 @@ func (d *device) getOccupancyData(ctx context.Context, occupancyClient traits.Oc
 		return nil, err
 	}
 
-	return o, nil
+	result["occupancy"] = o
+	return result, nil
 }
 
-func (d *device) getAirTemperatureData(ctx context.Context, client traits.AirTemperatureApiClient) ([]byte, error) {
+func (d *device) getAirTemperatureData(ctx context.Context, client traits.AirTemperatureApiClient) (map[string]json.RawMessage, error) {
+	result := make(map[string]json.RawMessage)
+
 	airTemperature, err := client.GetAirTemperature(ctx, &traits.GetAirTemperatureRequest{
 		Name: d.name,
 	})
@@ -134,5 +130,6 @@ func (d *device) getAirTemperatureData(ctx context.Context, client traits.AirTem
 		return nil, err
 	}
 
-	return at, nil
+	result["airTemperature"] = at
+	return result, nil
 }

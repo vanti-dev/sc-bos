@@ -14,9 +14,23 @@ The automation currently supports the following traits:
 
 ### Data Collection
 
-- **Trait Data**: Collected and published at the configured interval for all devices
-- **Trait Info**: For Meter traits, additional info (usageUnit, producedUnit) is fetched once during startup and included in each data payload
-- **Device Metadata**: Collected on startup and included in the data payload at a configurable interval (default: every 100 data collection cycles)
+- **Trait Data**: Collected and published at the configured interval for all devices as separate resources (e.g., `meterReading`, `airQuality`)
+- **Trait Info**: For traits that have info/support data (e.g., Meter), the info is collected once during startup and published as a separate resource (e.g., `meterReadingInfo`) alongside the data in each payload
+- **Device Metadata**: Collected on startup and included as a separate trait (`smartcore.trait.Metadata`) at a configurable interval (default: every 100 data collection cycles)
+
+### Payload Structure
+
+Data is organized in a **nested structure**:
+```
+trait → resource → data
+```
+
+For example:
+- `smartcore.bos.Meter` → `meterReading` → meter reading data
+- `smartcore.bos.Meter` → `meterReadingInfo` → unit information
+- `smartcore.traits.AirQualitySensor` → `airQuality` → air quality measurements
+
+This structure separates data from metadata and allows for future extensibility.
 
 ## Message Structure
 
@@ -40,37 +54,52 @@ type message struct {
 
 ```go
 type Device struct {
-    Name string                       `json:"name"`
-    Data map[string]json.RawMessage   `json:"data,omitempty"`
+    Name string                                      `json:"name"`
+    Data map[string]map[string]json.RawMessage       `json:"data,omitempty"`
 }
 ```
 
 - **Name** (`string`): The unique Smart Core name of the device
-- **Data** (`map[string]json.RawMessage`): Map where keys are trait names and values are JSON-encoded trait data or metadata
-  - Keys are trait names (e.g., "smartcore.bos.Meter", "smartcore.traits.AirQualitySensor")
-  - Values are `json.RawMessage` (byte arrays) containing JSON-encoded trait data
+- **Data** (`map[string]map[string]json.RawMessage`): Nested map structure for trait data
+  - **First level keys** are trait names (e.g., "smartcore.bos.Meter", "smartcore.traits.AirQualitySensor")
+  - **Second level keys** are resource names within each trait (e.g., "meterReading", "meterReadingInfo", "airQuality")
+  - **Values** are `json.RawMessage` (byte arrays) containing JSON-encoded resource data
   - Protobuf messages are serialized using `protojson.Marshal`, which produces JSON with camelCase field names
   - Multiple traits can be included in a single message
-  - Metadata is included every 100 intervals using the "metadata" key
+  - Each trait can contain multiple resources (data and info objects)
 
 ### Data Messages
 
-The `Data` map contains entries where each key is a trait name and the value is a `json.RawMessage` (byte array) containing JSON-encoded trait data.
+The `Data` map uses a **nested structure** where:
+- **Level 1**: Trait name (e.g., "smartcore.bos.Meter")
+- **Level 2**: Resource name within that trait (e.g., "meterReading", "meterReadingInfo")
+- **Level 3**: JSON-encoded resource data
+
+This structure provides:
+- **Separation of concerns**: Data and info objects are kept separate
+- **Extensibility**: Easy to add new resources to a trait without breaking existing consumers
+- **Clarity**: The structure explicitly shows trait → resource → data
+
+#### Resource Naming Conventions
+
+- **Data resources**: Named after the resource type (e.g., `meterReading`, `airQuality`, `occupancy`, `airTemperature`)
+- **Info/Support resources**: Append "Info" to the data resource name (e.g., `meterReadingInfo`)
+- **Metadata**: Uses the resource name `metadata` under the special `smartcore.trait.Metadata` trait
 
 #### Encoding Details
 
-- **Protobuf Messages**: Most trait data is encoded using `protojson.Marshal`, which produces JSON with:
+- **Protobuf Messages**: All trait data and info is encoded using `protojson.Marshal`, which produces JSON with:
   - camelCase field names (e.g., `carbonDioxideLevel` instead of `carbon_dioxide_level`)
   - RFC 3339 timestamps (e.g., `2025-11-27T10:30:00Z`)
   - Numeric enums as string names (e.g., `"OCCUPIED"` instead of `1`)
 
-- **Meter Data**: Uses a hybrid approach:
-  1. The `MeterReading` protobuf message is serialized with `protojson.Marshal`
-  2. Additional fields (`usageUnit`, `producedUnit`) from `MeterReadingSupport` are merged into the JSON
-  3. Final result is re-encoded as standard JSON to combine both sources
+- **Meter Data**: Now uses separate resources:
+  1. `meterReading`: Contains the `MeterReading` protobuf message (usage, produced, timestamps)
+  2. `meterReadingInfo`: Contains the `MeterReadingSupport` protobuf message (units)
+  - Both are serialized independently using `protojson.Marshal`
 
 - **Multiple Traits**: A single message can contain data for multiple traits that the device implements
-- **Metadata**: Device metadata is included using the special "metadata" key at a configurable interval (default: every 100 data collection cycles)
+- **Metadata**: Device metadata is included at a configurable interval (default: every 100 data collection cycles) under the `smartcore.trait.Metadata` trait with resource name `metadata`
 
 ### Example: Message with Multiple Traits
 
@@ -81,18 +110,24 @@ The `Data` map contains entries where each key is a trait name and the value is 
     "name": "van/uk/brum/ugs/sensors/multi-sensor-01",
     "data": {
       "smartcore.traits.AirQualitySensor": {
-        "carbonDioxideLevel": 450.5,
-        "score": 75.5
+        "airQuality": {
+          "carbonDioxideLevel": 450.5,
+          "score": 75.5
+        }
       },
       "smartcore.traits.AirTemperature": {
-        "ambientTemperature": {
-          "valueCelsius": 22.5
+        "airTemperature": {
+          "ambientTemperature": {
+            "valueCelsius": 22.5
+          }
         }
       },
       "smartcore.traits.OccupancySensor": {
-        "state": "OCCUPIED",
-        "peopleCount": 5,
-        "stateChangeTime": "2025-11-27T10:25:00Z"
+        "occupancy": {
+          "state": "OCCUPIED",
+          "peopleCount": 5,
+          "stateChangeTime": "2025-11-27T10:25:00Z"
+        }
       }
     }
   },
@@ -100,7 +135,7 @@ The `Data` map contains entries where each key is a trait name and the value is 
 }
 ```
 
-### Example: Meter Message with Units
+### Example: Meter Message with Separate Data and Info
 
 ```json
 {
@@ -109,12 +144,57 @@ The `Data` map contains entries where each key is a trait name and the value is 
     "name": "van/uk/brum/ugs/meters/elec-main",
     "data": {
       "smartcore.bos.Meter": {
-        "usage": 123.45,
-        "produced": 67.89,
-        "startTime": "2025-11-27T09:30:00Z",
-        "endTime": "2025-11-27T10:30:00Z",
-        "usageUnit": "kWh",
-        "producedUnit": "kWh"
+        "meterReading": {
+          "usage": 123.45,
+          "produced": 67.89,
+          "startTime": "2025-11-27T09:30:00Z",
+          "endTime": "2025-11-27T10:30:00Z"
+        },
+        "meterReadingInfo": {
+          "usageUnit": "kWh",
+          "producedUnit": "kWh"
+        }
+      }
+    }
+  },
+  "timestamp": "2025-11-27T10:30:00Z"
+}
+```
+
+Note how `meterReading` and `meterReadingInfo` are now separate resources within the `smartcore.bos.Meter` trait, making it clear which fields are data vs. metadata about the data.
+
+### Example: Message with Metadata
+
+```json
+{
+  "agent": "van/uk/brum/ugs/building/scc-exporter",
+  "device": {
+    "name": "van/uk/brum/ugs/meters/elec-main",
+    "data": {
+      "smartcore.bos.Meter": {
+        "meterReading": {
+          "usage": 123.45,
+          "produced": 67.89,
+          "startTime": "2025-11-27T09:30:00Z",
+          "endTime": "2025-11-27T10:30:00Z"
+        },
+        "meterReadingInfo": {
+          "usageUnit": "kWh",
+          "producedUnit": "kWh"
+        }
+      },
+      "smartcore.trait.Metadata": {
+        "metadata": {
+          "name": "van/uk/brum/ugs/meters/elec-main",
+          "appearance": {
+            "title": "Main Electrical Meter",
+            "description": "Building main power meter"
+          },
+          "location": {
+            "floor": "B1",
+            "zone": "electrical-room"
+          }
+        }
       }
     }
   },
@@ -124,20 +204,21 @@ The `Data` map contains entries where each key is a trait name and the value is 
 
 ### Notes
 
-- The `Data` field is a map where keys are trait names (or "metadata" for device metadata)
-- Values in the `Data` map are `json.RawMessage` (byte arrays) containing JSON-encoded data
-- **Protobuf Encoding**: Trait data from protobuf messages uses `protojson.Marshal`, which produces:
+- **Nested Structure**: The `Data` field uses a two-level map:
+  - Level 1: Trait names (e.g., "smartcore.bos.Meter", "smartcore.traits.AirQualitySensor")
+  - Level 2: Resource names within each trait (e.g., "meterReading", "meterReadingInfo", "airQuality")
+- **Resource Separation**: Data and info/metadata are kept as separate resources for clarity and extensibility
+- **Protobuf Encoding**: All resources use `protojson.Marshal`, which produces:
   - camelCase field names (e.g., `carbonDioxideLevel`, `ambientTemperature`)
   - String representations for enums (e.g., `"OCCUPIED"`)
   - RFC 3339 formatted timestamps (e.g., `"2025-11-27T10:30:00Z"`)
-- **Meter Data Special Handling**: 
-  - Meter readings combine data from two protobuf messages (`MeterReading` and `MeterReadingSupport`)
-  - The `usageUnit` and `producedUnit` fields from `MeterReadingSupport` are merged into the reading JSON
-  - This allows meter data to include both the readings and their units in a single JSON object
-- **Multiple traits from the same device are combined into a single message** - all trait data appears in the same `Data` map
-- Trait names like "smartcore.bos.Meter" or "smartcore.traits.AirQualitySensor" are used as keys
-- **Metadata is included in the same message as trait data** at a configurable interval (default: every 100 data collection cycles) using the "metadata" key
-- This reduces MQTT traffic by consolidating all device information into fewer messages
+- **Meter Data Structure**: 
+  - `meterReading`: Contains the actual meter reading data (usage, produced, timestamps)
+  - `meterReadingInfo`: Contains metadata about the readings (units)
+  - This separation makes it clear which fields are measurements vs. metadata
+- **Multiple Traits**: All traits from the same device are combined into a single message, appearing as separate entries in the `data` map
+- **Metadata Trait**: Device metadata is included at a configurable interval (default: every 100 cycles) under the `smartcore.trait.Metadata` trait with resource name `metadata`
+- **Extensibility**: The nested structure allows easy addition of new resources to existing traits without breaking consumers (e.g., could add `meterHistory` or `meterConfig` resources to the Meter trait in the future)
 
 ## Configuration
 

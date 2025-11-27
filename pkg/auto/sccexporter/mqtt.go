@@ -18,8 +18,9 @@ import (
 
 type Device struct {
 	Name string `json:"name"`
-	// Data is a map of device data, the key is the trait name and the value is JSON data. Could be data or metadata depending on the message type
-	Data map[trait.Name]json.RawMessage `json:"data,omitempty"`
+	// Data is a map where the key is the trait name and the value is a nested object
+	// containing resource names mapped to their data/info
+	Data map[trait.Name]map[string]json.RawMessage `json:"data,omitempty"`
 }
 
 type message struct {

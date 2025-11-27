@@ -76,9 +76,10 @@ func TestMetadata(t *testing.T) {
 	require.Equal(t, "foo", msg.Device.Name)
 	require.NotEmpty(t, msg.Device.Data)
 	require.Contains(t, msg.Device.Data, trait.Metadata)
+	require.Contains(t, msg.Device.Data[trait.Metadata], "metadata")
 
 	var receivedMetadata traits.Metadata
-	err = json.Unmarshal(msg.Device.Data[trait.Name(trait.Metadata)], &receivedMetadata)
+	err = protojson.Unmarshal(msg.Device.Data[trait.Metadata]["metadata"], &receivedMetadata)
 	require.NoError(t, err)
 
 	require.Equal(t, "foo", receivedMetadata.Name)
@@ -103,8 +104,10 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			"value2": "test-value"
 		}`
 
-		dev.traits[trait.Name("test-trait")] = func(ctx context.Context) ([]byte, error) {
-			return []byte(testDataJSON), nil
+		dev.traits[trait.Name("test-trait")] = func(ctx context.Context) (map[string]json.RawMessage, error) {
+			return map[string]json.RawMessage{
+				"testResource": json.RawMessage(testDataJSON),
+			}, nil
 		}
 
 		messagesCh := make(chan message, 1)
@@ -124,9 +127,10 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 		require.Equal(t, "test-device", msg.Device.Name)
 		require.NotEmpty(t, msg.Device.Data)
 		require.Contains(t, msg.Device.Data, trait.Name("test-trait"))
+		require.Contains(t, msg.Device.Data[trait.Name("test-trait")], "testResource")
 
 		var data map[string]any
-		err = json.Unmarshal(msg.Device.Data[trait.Name("test-trait")], &data)
+		err = json.Unmarshal(msg.Device.Data[trait.Name("test-trait")]["testResource"], &data)
 		require.NoError(t, err)
 		require.Equal(t, 42.5, data["value1"])
 		require.Equal(t, "test-value", data["value2"])
@@ -139,24 +143,30 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			"measurement": 100.0,
 			"status": "active"
 		}`
-		dev.traits[trait.Name("trait1")] = func(ctx context.Context) ([]byte, error) {
-			return []byte(trait1JSON), nil
+		dev.traits[trait.Name("trait1")] = func(ctx context.Context) (map[string]json.RawMessage, error) {
+			return map[string]json.RawMessage{
+				"resource1": json.RawMessage(trait1JSON),
+			}, nil
 		}
 
 		trait2JSON := `{
 			"temperature": 22.5,
 			"humidity": 45.0
 		}`
-		dev.traits[trait.Name("trait2")] = func(ctx context.Context) ([]byte, error) {
-			return []byte(trait2JSON), nil
+		dev.traits[trait.Name("trait2")] = func(ctx context.Context) (map[string]json.RawMessage, error) {
+			return map[string]json.RawMessage{
+				"resource2": json.RawMessage(trait2JSON),
+			}, nil
 		}
 
 		trait3JSON := `{
 			"value": 42,
 			"unit": "kWh"
 		}`
-		dev.traits[trait.Name("trait3")] = func(ctx context.Context) ([]byte, error) {
-			return []byte(trait3JSON), nil
+		dev.traits[trait.Name("trait3")] = func(ctx context.Context) (map[string]json.RawMessage, error) {
+			return map[string]json.RawMessage{
+				"resource3": json.RawMessage(trait3JSON),
+			}, nil
 		}
 
 		messagesCh := make(chan message, 1)
@@ -178,19 +188,19 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 		require.Contains(t, msg.Device.Data, trait.Name("trait3"))
 
 		var data1 map[string]any
-		err = json.Unmarshal(msg.Device.Data[trait.Name("trait1")], &data1)
+		err = json.Unmarshal(msg.Device.Data[trait.Name("trait1")]["resource1"], &data1)
 		require.NoError(t, err)
 		require.Equal(t, float64(100.0), data1["measurement"])
 		require.Equal(t, "active", data1["status"])
 
 		var data2 map[string]any
-		err = json.Unmarshal(msg.Device.Data[trait.Name("trait2")], &data2)
+		err = json.Unmarshal(msg.Device.Data[trait.Name("trait2")]["resource2"], &data2)
 		require.NoError(t, err)
 		require.Equal(t, float64(22.5), data2["temperature"])
 		require.Equal(t, float64(45.0), data2["humidity"])
 
 		var data3 map[string]any
-		err = json.Unmarshal(msg.Device.Data[trait.Name("trait3")], &data3)
+		err = json.Unmarshal(msg.Device.Data[trait.Name("trait3")]["resource3"], &data3)
 		require.NoError(t, err)
 		require.Equal(t, float64(42), data3["value"])
 		require.Equal(t, "kWh", data3["unit"])
@@ -198,7 +208,7 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 
 	t.Run("trait fetcher returns error", func(t *testing.T) {
 		dev := newDevice("error-device", logger, nil)
-		dev.traits[trait.Name("failing-trait")] = func(ctx context.Context) ([]byte, error) {
+		dev.traits[trait.Name("failing-trait")] = func(ctx context.Context) (map[string]json.RawMessage, error) {
 			return nil, context.DeadlineExceeded
 		}
 
@@ -206,8 +216,10 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			"value": 123
 		}`
 
-		dev.traits[trait.Name("working-trait")] = func(ctx context.Context) ([]byte, error) {
-			return []byte(workingDataJSON), nil
+		dev.traits[trait.Name("working-trait")] = func(ctx context.Context) (map[string]json.RawMessage, error) {
+			return map[string]json.RawMessage{
+				"workingResource": json.RawMessage(workingDataJSON),
+			}, nil
 		}
 
 		messagesCh := make(chan message, 1)
@@ -227,17 +239,17 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 		require.Contains(t, msg.Device.Data, trait.Name("working-trait"))
 
 		var data map[string]any
-		err = json.Unmarshal(msg.Device.Data[trait.Name("working-trait")], &data)
+		err = json.Unmarshal(msg.Device.Data[trait.Name("working-trait")]["workingResource"], &data)
 		require.NoError(t, err)
 		require.Equal(t, float64(123), data["value"])
 	})
 
 	t.Run("all traits fail - no message sent", func(t *testing.T) {
 		dev := newDevice("all-fail-device", logger, nil)
-		dev.traits[trait.Name("trait1")] = func(ctx context.Context) ([]byte, error) {
+		dev.traits[trait.Name("trait1")] = func(ctx context.Context) (map[string]json.RawMessage, error) {
 			return nil, context.DeadlineExceeded
 		}
-		dev.traits[trait.Name("trait2")] = func(ctx context.Context) ([]byte, error) {
+		dev.traits[trait.Name("trait2")] = func(ctx context.Context) (map[string]json.RawMessage, error) {
 			return nil, context.Canceled
 		}
 
@@ -272,10 +284,12 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 
 	t.Run("timeout on slow device", func(t *testing.T) {
 		dev := newDevice("slow-device", logger, nil)
-		dev.traits[trait.Name("slow-trait")] = func(ctx context.Context) ([]byte, error) {
+		dev.traits[trait.Name("slow-trait")] = func(ctx context.Context) (map[string]json.RawMessage, error) {
 			select {
 			case <-time.After(2 * time.Second):
-				return []byte(`{"value": "should-not-see-this"}`), nil
+				return map[string]json.RawMessage{
+					"slowResource": json.RawMessage(`{"value": "should-not-see-this"}`),
+				}, nil
 			case <-ctx.Done():
 				return nil, ctx.Err()
 			}
@@ -343,8 +357,11 @@ func TestGetMeterDeviceAndData(t *testing.T) {
 	traitData, err := res[meterpb.TraitName](context.Background())
 	require.NoError(t, err)
 
+	// Verify the structure contains meterReading resource
+	require.Contains(t, traitData, "meterReading")
+
 	reading := gen.MeterReading{}
-	err = protojson.Unmarshal(traitData, &reading)
+	err = protojson.Unmarshal(traitData["meterReading"], &reading)
 	require.NoError(t, err)
 
 	require.Equal(t, meterReading.Usage, reading.Usage)
@@ -418,14 +435,23 @@ func TestGetMeterDeviceAndDataWithInfo(t *testing.T) {
 	traitData, err := res[meterpb.TraitName](context.Background())
 	require.NoError(t, err)
 
-	var readingMap map[string]any
-	err = json.Unmarshal(traitData, &readingMap)
-	require.NoError(t, err)
+	// Verify the structure contains both meterReading and meterReadingInfo
+	require.Contains(t, traitData, "meterReading")
+	require.Contains(t, traitData, "meterReadingInfo")
 
-	require.Equal(t, meterReading.Usage, float32(readingMap["usage"].(float64)))
-	require.Equal(t, meterReading.Produced, float32(readingMap["produced"].(float64)))
-	require.Equal(t, "kWh", readingMap["usageUnit"])
-	require.Equal(t, "kWh", readingMap["producedUnit"])
+	// Verify meter reading data
+	var reading gen.MeterReading
+	err = protojson.Unmarshal(traitData["meterReading"], &reading)
+	require.NoError(t, err)
+	require.Equal(t, meterReading.Usage, reading.Usage)
+	require.Equal(t, meterReading.Produced, reading.Produced)
+
+	// Verify meter reading info
+	var info gen.MeterReadingSupport
+	err = protojson.Unmarshal(traitData["meterReadingInfo"], &info)
+	require.NoError(t, err)
+	require.Equal(t, "kWh", info.UsageUnit)
+	require.Equal(t, "kWh", info.ProducedUnit)
 }
 
 func TestGetAirQualityDeviceAndData(t *testing.T) {
@@ -476,8 +502,11 @@ func TestGetAirQualityDeviceAndData(t *testing.T) {
 	traitData, err := res[trait.AirQualitySensor](context.Background())
 	require.NoError(t, err)
 
+	// Verify the structure contains airQuality resource
+	require.Contains(t, traitData, "airQuality")
+
 	receivedAirQuality := traits.AirQuality{}
-	err = protojson.Unmarshal(traitData, &receivedAirQuality)
+	err = protojson.Unmarshal(traitData["airQuality"], &receivedAirQuality)
 	require.NoError(t, err)
 
 	require.Equal(t, *airQuality.CarbonDioxideLevel, *receivedAirQuality.CarbonDioxideLevel)
@@ -530,8 +559,11 @@ func TestGetAirTemperatureDeviceAndData(t *testing.T) {
 	traitData, err := res[trait.AirTemperature](context.Background())
 	require.NoError(t, err)
 
+	// Verify the structure contains airTemperature resource
+	require.Contains(t, traitData, "airTemperature")
+
 	receivedAirTemperature := traits.AirTemperature{}
-	err = protojson.Unmarshal(traitData, &receivedAirTemperature)
+	err = protojson.Unmarshal(traitData["airTemperature"], &receivedAirTemperature)
 	require.NoError(t, err)
 
 	require.Equal(t, airTemperature.AmbientTemperature.ValueCelsius, receivedAirTemperature.AmbientTemperature.ValueCelsius)
@@ -585,8 +617,11 @@ func TestGetOccupancyDeviceAndData(t *testing.T) {
 	traitData, err := res[trait.OccupancySensor](context.Background())
 	require.NoError(t, err)
 
+	// Verify the structure contains occupancy resource
+	require.Contains(t, traitData, "occupancy")
+
 	receivedOccupancy := traits.Occupancy{}
-	err = protojson.Unmarshal(traitData, &receivedOccupancy)
+	err = protojson.Unmarshal(traitData["occupancy"], &receivedOccupancy)
 	require.NoError(t, err)
 
 	require.Equal(t, occupancy.State, receivedOccupancy.State)

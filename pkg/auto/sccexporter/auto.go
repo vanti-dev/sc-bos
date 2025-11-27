@@ -11,6 +11,7 @@ import (
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/smart-core-os/sc-api/go/traits"
 	"github.com/smart-core-os/sc-bos/pkg/auto"
@@ -93,6 +94,7 @@ func (a *AutoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 			iterationCount++
 
 			if publishMetadata {
+				clear(allDevices)
 				if err := a.refreshDevices(autoCtx, cfg.Traits, allDevices); err != nil {
 					a.Logger.Error("error refreshing device list", zap.Error(err))
 					continue
@@ -175,19 +177,19 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 			devices[deviceName] = newDevice(deviceName, a.Logger, deviceInfo.Metadata)
 			switch traitName {
 			case trait.AirTemperature:
-				devices[deviceName].traits[trait.AirTemperature] = func(ctx context.Context) ([]byte, error) {
+				devices[deviceName].traits[trait.AirTemperature] = func(ctx context.Context) (map[string]json.RawMessage, error) {
 					return devices[deviceName].getAirTemperatureData(ctx, a.airTemperatureClient)
 				}
 			case trait.AirQualitySensor:
-				devices[deviceName].traits[trait.AirQualitySensor] = func(ctx context.Context) ([]byte, error) {
+				devices[deviceName].traits[trait.AirQualitySensor] = func(ctx context.Context) (map[string]json.RawMessage, error) {
 					return devices[deviceName].getAirQualityData(ctx, a.airQualityClient)
 				}
 			case meterpb.TraitName:
-				devices[deviceName].traits[meterpb.TraitName] = func(ctx context.Context) ([]byte, error) {
+				devices[deviceName].traits[meterpb.TraitName] = func(ctx context.Context) (map[string]json.RawMessage, error) {
 					return devices[deviceName].getMeterData(ctx, a.meterClient)
 				}
 			case trait.OccupancySensor:
-				devices[deviceName].traits[trait.OccupancySensor] = func(ctx context.Context) ([]byte, error) {
+				devices[deviceName].traits[trait.OccupancySensor] = func(ctx context.Context) (map[string]json.RawMessage, error) {
 					return devices[deviceName].getOccupancyData(ctx, a.occupancyClient)
 				}
 			default:
@@ -211,7 +213,7 @@ func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, a
 		Agent: agent,
 		Device: Device{
 			Name: dev.name,
-			Data: make(map[trait.Name]json.RawMessage),
+			Data: make(map[trait.Name]map[string]json.RawMessage),
 		},
 		Timestamp: time.Now(),
 	}
@@ -219,7 +221,7 @@ func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, a
 	// fetch the data for each trait the device has and stick it in the same message
 	// so we just have one message per device per interval
 	for traitName, fetcher := range dev.traits {
-		data, err := fetcher(ctx)
+		traitData, err := fetcher(ctx)
 		if err != nil {
 			// Check if it's a timeout error for better logging
 			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
@@ -235,18 +237,23 @@ func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, a
 			}
 			continue
 		}
-		toSend.Device.Data[traitName] = data
+
+		// traitData is already a map[string]json.RawMessage from the fetcher
+		toSend.Device.Data[traitName] = traitData
 	}
 
 	// Include metadata if requested
 	if includeMetadata && dev.metaData != nil {
-		metadata, err := json.Marshal(dev.metaData)
+		metadata, err := protojson.Marshal(dev.metaData)
 		if err != nil {
 			a.Logger.Error("failed to marshal device metadata",
 				zap.String("device", dev.name),
 				zap.Error(err))
 		} else {
-			toSend.Device.Data[trait.Metadata] = metadata
+			// Metadata trait with a single "metadata" resource
+			toSend.Device.Data[trait.Metadata] = map[string]json.RawMessage{
+				"metadata": metadata,
+			}
 		}
 	}
 
