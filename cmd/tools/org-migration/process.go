@@ -111,41 +111,66 @@ func updateFile(filePath string, updates []FileUpdate) error {
 	return os.WriteFile(filePath, []byte(output), 0644)
 }
 
-// isGeneratedFile checks if a file is auto-generated
-func isGeneratedFile(filePath string) (bool, error) {
+// isGeneratedFileWithReferences checks if a file is auto-generated and contains references
+// This function reads the file only once to check both conditions efficiently
+func isGeneratedFileWithReferences(filePath string, presets []string, replacements []Replacement) (isGenerated bool, hasReferences bool, err error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	// Only check first 10 lines
 	lineCount := 0
-	for scanner.Scan() && lineCount < 10 {
+
+	for scanner.Scan() {
 		lineCount++
 		line := scanner.Text()
-		// Standard Go generated code marker
-		if strings.Contains(line, "Code generated") && strings.Contains(line, "DO NOT EDIT") {
-			return true, nil
+
+		// Check for generated file marker in first 10 lines
+		if lineCount <= 10 && !isGenerated {
+			if strings.Contains(line, "Code generated") && strings.Contains(line, "DO NOT EDIT") {
+				isGenerated = true
+			}
+		}
+
+		// Check for references (only if we've determined it's generated)
+		if isGenerated && !hasReferences {
+			for _, repl := range replacements {
+				if !appliesToPreset(repl, presets) {
+					continue
+				}
+				if repl.pattern.MatchString(line) {
+					hasReferences = true
+					break
+				}
+			}
+		}
+
+		// Early exit if we found both
+		if isGenerated && hasReferences {
+			return true, true, nil
 		}
 	}
-	return false, scanner.Err()
+
+	if err := scanner.Err(); err != nil {
+		return isGenerated, hasReferences, err
+	}
+
+	return isGenerated, hasReferences, nil
 }
 
-// checkGeneratedFilesForReferences checks if any generated files contain references
-func checkGeneratedFilesForReferences(files []string, presets []string, replacements []Replacement) []string {
-	var filesWithRefs []string
-	for _, file := range files {
-		hasRef, err := fileHasReferences(file, presets, replacements)
-		if err != nil {
-			continue
-		}
-		if hasRef {
-			filesWithRefs = append(filesWithRefs, file)
-		}
+// isGoSumFileWithReferences checks if a go.sum file contains references
+// Returns (isGoSum, hasReferences, error)
+func isGoSumFileWithReferences(filePath string, presets []string, replacements []Replacement) (isGoSum bool, hasReferences bool, err error) {
+	// Check if it's a go.sum file by name
+	if !strings.HasSuffix(filePath, "go.sum") {
+		return false, false, nil
 	}
-	return filesWithRefs
+
+	// It's a go.sum file, now check for references
+	hasReferences, err = fileHasReferences(filePath, presets, replacements)
+	return true, hasReferences, err
 }
 
 // fileHasReferences checks if a file contains any matching patterns
