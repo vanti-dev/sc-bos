@@ -17,12 +17,6 @@ import (
 // DataFetcher is a function that fetches device data for a specific trait
 type DataFetcher func(ctx context.Context) ([]byte, error)
 
-// MeterReadingWithUnits extends gen.MeterReading with gen.MeterReadingSupport information.
-type MeterReadingWithUnits struct {
-	*gen.MeterReading
-	*gen.MeterReadingSupport
-}
-
 type device struct {
 	name     string
 	logger   *zap.Logger
