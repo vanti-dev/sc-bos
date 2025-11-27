@@ -51,12 +51,3 @@ func (m *ModelServer) PullExportMessages(request *gen.PullExportMessagesRequest,
 	}
 	return nil
 }
-
-func (m *ModelServer) PullControlTopics(request *gen.PullControlTopicsRequest, server grpc.ServerStreamingServer[gen.PullControlTopicsResponse]) error {
-	<-server.Context().Done()
-	return server.Context().Err()
-}
-
-func (m *ModelServer) OnMessage(_ context.Context, _ *gen.OnMessageRequest) (*gen.OnMessageResponse, error) {
-	return &gen.OnMessageResponse{}, nil
-}
