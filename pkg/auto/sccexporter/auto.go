@@ -63,24 +63,6 @@ func (a *AutoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	a.initialiseClients(a.Node)
 
 	grp, autoCtx := errgroup.WithContext(ctx)
-	allDevices := make(map[string]*device)
-
-	// discover all the devices which implement the configured traits and set up the allDevices map
-	for _, traitName := range cfg.Traits {
-		err := a.getAllTraitImplementors(autoCtx, trait.Name(traitName), allDevices)
-		if err != nil {
-			a.Logger.Error("failed to get devices for trait", zap.String("trait", traitName), zap.Error(err))
-			return err
-		}
-
-		switch traitName {
-		case string(meterpb.TraitName):
-			// grab the trait info for all meters first and save it in the device so we can push it
-			// only supports the Meter info, think it's the only one we really need for data...
-			a.getMeterInfo(autoCtx, trait.Name(traitName), allDevices)
-		}
-	}
-
 	mqttClient, err := newMqttClient(cfg.Mqtt)
 	if err != nil {
 		a.Logger.Error("failed to create mqtt client", zap.Error(err))
@@ -93,6 +75,7 @@ func (a *AutoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 		return s.publishToScc(autoCtx)
 	})
 
+	allDevices := make(map[string]*device)
 	t := time.Now()
 	iterationCount := 0
 	grp.Go(func() error {
@@ -102,24 +85,27 @@ func (a *AutoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 			case <-autoCtx.Done():
 				return nil
 			case <-time.After(time.Until(next)):
-				t = next
+				t = time.Now()
 			}
 
 			// send the metadata on first run and then every now and again.
-			// it is never actually refreshed during the automation. Don't think any site actually modifies it at runtime.
 			publishMetadata := (iterationCount % *cfg.Mqtt.MetadataInterval) == 0
 			iterationCount++
 
-			// limit concurrent device data fetches to 100, an arbitrary number but seems sensible
-			sem := make(chan struct{}, 100)
-			var wg errgroup.Group
+			if publishMetadata {
+				if err := a.refreshDevices(autoCtx, cfg.Traits, allDevices); err != nil {
+					a.Logger.Error("error refreshing device list", zap.Error(err))
+					continue
+				}
+			}
 
+			// limit concurrent device data fetches to 100, an arbitrary number but seems sensible
+			var wg errgroup.Group
+			wg.SetLimit(100)
 			for _, dev := range allDevices {
 				dev := dev
 
-				sem <- struct{}{}
 				wg.Go(func() error {
-					defer func() { <-sem }()
 					a.fetchAndPublishDeviceData(autoCtx, dev, cfg.Mqtt.Agent, s.messagesCh, publishMetadata, cfg.FetchTimeout.Duration)
 					return nil
 				})
@@ -138,13 +124,32 @@ func (a *AutoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 		err := grp.Wait()
 		mqttClient.Disconnect(500)
 		close(s.messagesCh)
-		if err != nil && err != context.Canceled {
+		if err != nil && !errors.Is(err, context.Canceled) {
 			a.Logger.Error("sccexporter automation stopped with error", zap.Error(err))
 		}
 	}()
 
 	return nil
 
+}
+
+func (a *AutoImpl) refreshDevices(ctx context.Context, traits []string, allDevices map[string]*device) error {
+	// discover all the devices which implement the configured traits and set up the allDevices map
+	for _, traitName := range traits {
+		err := a.getAllTraitImplementors(ctx, trait.Name(traitName), allDevices)
+		if err != nil {
+			a.Logger.Error("failed to get devices for trait", zap.String("trait", traitName), zap.Error(err))
+			return err
+		}
+
+		switch traitName {
+		case string(meterpb.TraitName):
+			// grab the trait info for all meters first and save it in the device so we can push it
+			// only supports the Meter info, think it's the only one we really need for data...
+			a.getMeterInfo(ctx, trait.Name(traitName), allDevices)
+		}
+	}
+	return nil
 }
 
 // getAllTraitImplementors populates the devices map with devices that have the given trait
@@ -247,7 +252,11 @@ func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, a
 
 	// Send the message if we have any data
 	if len(toSend.Device.Data) > 0 {
-		messagesCh <- toSend
+		select {
+		case <-ctx.Done():
+			return
+		case messagesCh <- toSend:
+		}
 	}
 }
 

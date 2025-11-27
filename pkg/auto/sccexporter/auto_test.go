@@ -59,30 +59,23 @@ func TestMetadata(t *testing.T) {
 
 	sccexporter.initialiseClients(root)
 
-	// Create a test device
 	dev := newDevice("foo", logger, metadata)
 
-	// Create a channel to receive messages
 	messagesCh := make(chan message, 1)
 
-	// Test fetchAndPublishDeviceData with metadata
 	agent := "test-agent"
 
 	sccexporter.fetchAndPublishDeviceData(context.Background(), dev, agent, messagesCh, true, 30*time.Second)
 
-	// Verify the message was sent
 	require.Len(t, messagesCh, 1)
 
-	// Read the message from the channel
 	msg := <-messagesCh
 
-	// Verify message structure
 	require.Equal(t, agent, msg.Agent)
 	require.Equal(t, "foo", msg.Device.Name)
 	require.NotEmpty(t, msg.Device.Data)
 	require.Contains(t, msg.Device.Data, trait.Metadata)
 
-	// Verify the metadata JSON can be unmarshalled and contains expected data
 	var receivedMetadata traits.Metadata
 	err = json.Unmarshal([]byte(msg.Device.Data[trait.Name(trait.Metadata)]), &receivedMetadata)
 	require.NoError(t, err)
@@ -102,10 +95,8 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 	agent := "test-agent"
 
 	t.Run("single trait with data", func(t *testing.T) {
-		// Create a device with a mock trait fetcher
 		dev := newDevice("test-device", logger, nil)
 
-		// Use JSON string for test data
 		testDataJSON := `{
 			"value1": 42.5,
 			"value2": "test-value"
@@ -115,30 +106,24 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			return testDataJSON, nil
 		}
 
-		// Create message channel
 		messagesCh := make(chan message, 1)
 
-		// Create AutoImpl instance
 		a := &AutoImpl{
 			Services: auto.Services{
 				Logger: logger,
 			},
 		}
 
-		// Call the function
 		a.fetchAndPublishDeviceData(ctx, dev, agent, messagesCh, false, 30*time.Second)
 
-		// Verify message was sent
 		require.Len(t, messagesCh, 1)
 		msg := <-messagesCh
 
-		// Verify message structure
 		require.Equal(t, agent, msg.Agent)
 		require.Equal(t, "test-device", msg.Device.Name)
 		require.NotEmpty(t, msg.Device.Data)
 		require.Contains(t, msg.Device.Data, trait.Name("test-trait"))
 
-		// Verify trait data by unmarshaling JSON
 		var data map[string]any
 		err = json.Unmarshal([]byte(msg.Device.Data[trait.Name("test-trait")]), &data)
 		require.NoError(t, err)
@@ -147,10 +132,8 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 	})
 
 	t.Run("multiple traits with data", func(t *testing.T) {
-		// Create a device with multiple mock trait fetchers
 		dev := newDevice("multi-trait-device", logger, nil)
 
-		// Add first trait
 		trait1JSON := `{
 			"measurement": 100.0,
 			"status": "active"
@@ -159,7 +142,6 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			return trait1JSON, nil
 		}
 
-		// Add second trait
 		trait2JSON := `{
 			"temperature": 22.5,
 			"humidity": 45.0
@@ -168,7 +150,6 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			return trait2JSON, nil
 		}
 
-		// Add third trait
 		trait3JSON := `{
 			"value": 42,
 			"unit": "kWh"
@@ -177,44 +158,36 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			return trait3JSON, nil
 		}
 
-		// Create message channel
 		messagesCh := make(chan message, 1)
 
-		// Create AutoImpl instance
 		a := &AutoImpl{
 			Services: auto.Services{
 				Logger: logger,
 			},
 		}
 
-		// Call the function
 		a.fetchAndPublishDeviceData(ctx, dev, agent, messagesCh, false, 30*time.Second)
 
-		// Verify message was sent
 		require.Len(t, messagesCh, 1)
 		msg := <-messagesCh
 
-		// Verify all three traits are present in the data map
 		require.Len(t, msg.Device.Data, 3)
 		require.Contains(t, msg.Device.Data, trait.Name("trait1"))
 		require.Contains(t, msg.Device.Data, trait.Name("trait2"))
 		require.Contains(t, msg.Device.Data, trait.Name("trait3"))
 
-		// Verify trait1 data
 		var data1 map[string]any
 		err = json.Unmarshal([]byte(msg.Device.Data[trait.Name("trait1")]), &data1)
 		require.NoError(t, err)
 		require.Equal(t, float64(100.0), data1["measurement"])
 		require.Equal(t, "active", data1["status"])
 
-		// Verify trait2 data
 		var data2 map[string]any
 		err = json.Unmarshal([]byte(msg.Device.Data[trait.Name("trait2")]), &data2)
 		require.NoError(t, err)
 		require.Equal(t, float64(22.5), data2["temperature"])
 		require.Equal(t, float64(45.0), data2["humidity"])
 
-		// Verify trait3 data
 		var data3 map[string]any
 		err = json.Unmarshal([]byte(msg.Device.Data[trait.Name("trait3")]), &data3)
 		require.NoError(t, err)
@@ -223,13 +196,11 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 	})
 
 	t.Run("trait fetcher returns error", func(t *testing.T) {
-		// Create a device with a failing trait fetcher
 		dev := newDevice("error-device", logger, nil)
 		dev.traits[trait.Name("failing-trait")] = func(ctx context.Context) (string, error) {
 			return "", context.DeadlineExceeded
 		}
 
-		// Use JSON string for working trait
 		workingDataJSON := `{
 			"value": 123
 		}`
@@ -238,36 +209,29 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			return workingDataJSON, nil
 		}
 
-		// Create message channel
 		messagesCh := make(chan message, 1)
 
-		// Create AutoImpl instance
 		a := &AutoImpl{
 			Services: auto.Services{
 				Logger: logger,
 			},
 		}
 
-		// Call the function
 		a.fetchAndPublishDeviceData(ctx, dev, agent, messagesCh, false, 30*time.Second)
 
-		// Verify message was sent (only with working trait data)
 		require.Len(t, messagesCh, 1)
 		msg := <-messagesCh
 
-		// Verify data is present from the working trait
 		require.NotEmpty(t, msg.Device.Data)
 		require.Contains(t, msg.Device.Data, trait.Name("working-trait"))
 
-		// Verify the data by unmarshaling JSON
 		var data map[string]any
 		err = json.Unmarshal([]byte(msg.Device.Data[trait.Name("working-trait")]), &data)
 		require.NoError(t, err)
-		require.Equal(t, float64(123), data["value"]) // JSON numbers are float64
+		require.Equal(t, float64(123), data["value"])
 	})
 
 	t.Run("all traits fail - no message sent", func(t *testing.T) {
-		// Create a device where all traits fail
 		dev := newDevice("all-fail-device", logger, nil)
 		dev.traits[trait.Name("trait1")] = func(ctx context.Context) (string, error) {
 			return "", context.DeadlineExceeded
@@ -276,49 +240,38 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			return "", context.Canceled
 		}
 
-		// Create message channel
 		messagesCh := make(chan message, 1)
 
-		// Create AutoImpl instance
 		a := &AutoImpl{
 			Services: auto.Services{
 				Logger: logger,
 			},
 		}
 
-		// Call the function
 		a.fetchAndPublishDeviceData(ctx, dev, agent, messagesCh, false, 30*time.Second)
 
-		// Verify no message was sent
 		require.Len(t, messagesCh, 0)
 	})
 
 	t.Run("device with no traits", func(t *testing.T) {
-		// Create a device with no traits
 		dev := newDevice("empty-device", logger, nil)
 
-		// Create message channel
 		messagesCh := make(chan message, 1)
 
-		// Create AutoImpl instance
 		a := &AutoImpl{
 			Services: auto.Services{
 				Logger: logger,
 			},
 		}
 
-		// Call the function
 		a.fetchAndPublishDeviceData(ctx, dev, agent, messagesCh, false, 30*time.Second)
 
-		// Verify no message was sent
 		require.Len(t, messagesCh, 0)
 	})
 
 	t.Run("timeout on slow device", func(t *testing.T) {
-		// Create a device with a slow trait fetcher
 		dev := newDevice("slow-device", logger, nil)
 		dev.traits[trait.Name("slow-trait")] = func(ctx context.Context) (string, error) {
-			// Simulate a slow device that takes longer than timeout
 			select {
 			case <-time.After(2 * time.Second):
 				return `{"value": "should-not-see-this"}`, nil
@@ -327,20 +280,16 @@ func TestFetchAndPublishDeviceData(t *testing.T) {
 			}
 		}
 
-		// Create message channel
 		messagesCh := make(chan message, 1)
 
-		// Create AutoImpl instance
 		a := &AutoImpl{
 			Services: auto.Services{
 				Logger: logger,
 			},
 		}
 
-		// Call the function with short timeout (100ms)
 		a.fetchAndPublishDeviceData(ctx, dev, agent, messagesCh, false, 100*time.Millisecond)
 
-		// Verify no message was sent due to timeout
 		require.Len(t, messagesCh, 0)
 	})
 }
@@ -455,29 +404,23 @@ func TestGetMeterDeviceAndDataWithInfo(t *testing.T) {
 	require.True(t, exists)
 	require.Equal(t, "foo", dev.name)
 
-	// Call getMeterInfo to populate usageUnit and producedUnit
 	sccexporter.getMeterInfo(context.Background(), meterpb.TraitName, allDevices)
 
-	// Verify that usageUnit and producedUnit are populated
 	require.Equal(t, "kWh", dev.info["usageUnit"])
 	require.Equal(t, "kWh", dev.info["producedUnit"])
 
-	// Now fetch the meter data and verify it includes the units
 	res := allDevices["foo"].traits
 	require.Len(t, res, 1)
 	traitData, err := res[meterpb.TraitName](context.Background())
 	require.NoError(t, err)
 
-	// Unmarshal to map to check for added fields
 	var readingMap map[string]any
 	err = json.Unmarshal([]byte(traitData), &readingMap)
 	require.NoError(t, err)
 
-	// Verify the meter data includes the reading values
 	require.Equal(t, meterReading.Usage, float32(readingMap["usage"].(float64)))
 	require.Equal(t, meterReading.Produced, float32(readingMap["produced"].(float64)))
 
-	// Verify the units were added
 	require.Equal(t, "kWh", readingMap["usageUnit"])
 	require.Equal(t, "kWh", readingMap["producedUnit"])
 }

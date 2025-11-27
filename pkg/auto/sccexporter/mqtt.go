@@ -29,20 +29,79 @@ type message struct {
 }
 
 type sccConnector struct {
-	logger     *zap.Logger
-	messagesCh chan message
-	mqttCfg    config.Mqtt
-	mqttClient mqtt.Client
+	logger         *zap.Logger
+	messagesCh     chan message
+	mqttCfg        config.Mqtt
+	mqttClient     mqtt.Client
+	reconnecting   bool
+	lastReconnect  time.Time
+	reconnectDelay time.Duration
 }
 
 func newSccConnector(logger *zap.Logger, mqttCfg config.Mqtt, client mqtt.Client) *sccConnector {
 	s := &sccConnector{
-		logger:     logger,
-		messagesCh: make(chan message, 100),
-		mqttCfg:    mqttCfg,
-		mqttClient: client,
+		logger:         logger,
+		messagesCh:     make(chan message, 100),
+		mqttCfg:        mqttCfg,
+		mqttClient:     client,
+		reconnecting:   false,
+		reconnectDelay: time.Second,
 	}
 	return s
+}
+
+// reconnect attempts to reconnect to the MQTT broker with exponential backoff.
+// Returns true if reconnection succeeded, false otherwise.
+// do not call this more than once per sccConnector instance
+func (s *sccConnector) reconnect(ctx context.Context) bool {
+	if s.reconnecting {
+		return false
+	}
+
+	now := time.Now()
+	if now.Sub(s.lastReconnect) < s.reconnectDelay {
+		s.logger.Debug("skipping reconnect attempt, too soon since last attempt",
+			zap.Duration("delay", s.reconnectDelay),
+			zap.Duration("elapsed", now.Sub(s.lastReconnect)))
+		return false
+	}
+
+	s.reconnecting = true
+	s.lastReconnect = now
+	defer func() {
+		s.reconnecting = false
+	}()
+
+	s.logger.Info("attempting to reconnect to MQTT broker",
+		zap.Duration("backoff", s.reconnectDelay))
+
+	s.mqttClient.Disconnect(500)
+
+	select {
+	case <-ctx.Done():
+		return false
+	case <-time.After(100 * time.Millisecond):
+	}
+
+	token := s.mqttClient.Connect()
+	if !token.WaitTimeout(s.mqttCfg.ConnectTimeout.Duration) {
+		s.logger.Error("timeout reconnecting to mqtt broker",
+			zap.Duration("backoff", s.reconnectDelay))
+		s.reconnectDelay = min(s.reconnectDelay*2, 60*time.Second)
+		return false
+	}
+
+	if err := token.Error(); err != nil {
+		s.logger.Error("failed to reconnect to mqtt broker",
+			zap.Error(err),
+			zap.Duration("backoff", s.reconnectDelay))
+		s.reconnectDelay = min(s.reconnectDelay*2, 60*time.Second)
+		return false
+	}
+
+	s.logger.Info("successfully reconnected to MQTT broker")
+	s.reconnectDelay = time.Second
+	return true
 }
 
 // publishToScc listens on the messages channel and publishes messages to the SCC MQTT broker
@@ -51,32 +110,40 @@ func (s *sccConnector) publishToScc(ctx context.Context) error {
 
 	token := s.mqttClient.Connect()
 	if !token.WaitTimeout(s.mqttCfg.ConnectTimeout.Duration) {
-		return fmt.Errorf("timeout connecting to mqtt broker")
+		s.logger.Warn("failed to connect to MQTT client on startup, will retry on next message")
 	}
+
 	for {
 		select {
 		case <-ctx.Done():
-			// Context cancelled, stop publishing
 			return nil
 		case m, ok := <-s.messagesCh:
 			if !ok {
-				// Channel closed, stop publishing
 				return nil
 			}
+
+			if !s.mqttClient.IsConnected() {
+				if !s.reconnect(ctx) {
+					s.logger.Warn("skipping message, mqtt client not connected",
+						zap.String("device", m.Device.Name))
+					continue
+				}
+			}
+
 			bytes, err := json.Marshal(m)
 			if err != nil {
 				s.logger.Error("failed to marshal scc payload", zap.Error(err))
 				continue
 			}
+
 			t := s.mqttClient.Publish(s.mqttCfg.Topic, byte(*s.mqttCfg.Qos), false, bytes)
 			if !t.WaitTimeout(s.mqttCfg.PublishTimeout.Duration) {
-				s.logger.Warn("timeout publishing message for device", zap.Duration("timeout", s.mqttCfg.PublishTimeout.Duration))
-				s.mqttClient.Disconnect(500)
-				if token := s.mqttClient.Connect(); !token.WaitTimeout(s.mqttCfg.ConnectTimeout.Duration) {
-					// this might be transient, so just log and try again next time
-					s.logger.Error("failed to connect to mqtt broker", zap.Error(token.Error()))
-				}
+				s.logger.Warn("timeout publishing message for device",
+					zap.String("device", m.Device.Name),
+					zap.Duration("timeout", s.mqttCfg.PublishTimeout.Duration))
+				continue
 			}
+			s.reconnectDelay = time.Second
 		}
 	}
 }

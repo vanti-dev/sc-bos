@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/smart-core-os/sc-bos/pkg/auto"
@@ -51,9 +52,11 @@ func ParseConfig(data []byte) (Root, error) {
 	if root.Mqtt.PublishTimeout == nil || root.Mqtt.PublishTimeout.Duration == 0 {
 		root.Mqtt.PublishTimeout = &jsontypes.Duration{Duration: 5 * time.Second}
 	}
-	if root.Mqtt.Qos == nil || (*root.Mqtt.Qos < 0 || *root.Mqtt.Qos > 2) {
+	if root.Mqtt.Qos == nil {
 		q := 1
 		root.Mqtt.Qos = &q
+	} else if *root.Mqtt.Qos < 0 || *root.Mqtt.Qos > 2 {
+		return Root{}, fmt.Errorf("config parse failed, mqtt.qos must be 0, 1, or 2")
 	}
 	if root.Mqtt.MetadataInterval == nil {
 		interval := 100
