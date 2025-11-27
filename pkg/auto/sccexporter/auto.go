@@ -175,19 +175,19 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 			devices[deviceName] = newDevice(deviceName, a.Logger, deviceInfo.Metadata)
 			switch traitName {
 			case trait.AirTemperature:
-				devices[deviceName].traits[trait.AirTemperature] = func(ctx context.Context) (string, error) {
+				devices[deviceName].traits[trait.AirTemperature] = func(ctx context.Context) ([]byte, error) {
 					return devices[deviceName].getAirTemperatureData(ctx, a.airTemperatureClient)
 				}
 			case trait.AirQualitySensor:
-				devices[deviceName].traits[trait.AirQualitySensor] = func(ctx context.Context) (string, error) {
+				devices[deviceName].traits[trait.AirQualitySensor] = func(ctx context.Context) ([]byte, error) {
 					return devices[deviceName].getAirQualityData(ctx, a.airQualityClient)
 				}
 			case meterpb.TraitName:
-				devices[deviceName].traits[meterpb.TraitName] = func(ctx context.Context) (string, error) {
+				devices[deviceName].traits[meterpb.TraitName] = func(ctx context.Context) ([]byte, error) {
 					return devices[deviceName].getMeterData(ctx, a.meterClient)
 				}
 			case trait.OccupancySensor:
-				devices[deviceName].traits[trait.OccupancySensor] = func(ctx context.Context) (string, error) {
+				devices[deviceName].traits[trait.OccupancySensor] = func(ctx context.Context) ([]byte, error) {
 					return devices[deviceName].getOccupancyData(ctx, a.occupancyClient)
 				}
 			default:
@@ -211,7 +211,7 @@ func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, a
 		Agent: agent,
 		Device: Device{
 			Name: dev.name,
-			Data: make(map[trait.Name]string),
+			Data: make(map[trait.Name]json.RawMessage),
 		},
 		Timestamp: time.Now(),
 	}
@@ -246,7 +246,7 @@ func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, a
 				zap.String("device", dev.name),
 				zap.Error(err))
 		} else {
-			toSend.Device.Data[trait.Metadata] = string(metadata)
+			toSend.Device.Data[trait.Metadata] = metadata
 		}
 	}
 
@@ -260,7 +260,7 @@ func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, a
 	}
 }
 
-// getMeterInfo populates the device info map with Meter usageUnit and producedUnit.
+// getMeterInfo populates the device info map with Meter support information.
 func (a *AutoImpl) getMeterInfo(ctx context.Context, traitName trait.Name, devices map[string]*device) {
 	for deviceName, dev := range devices {
 
@@ -278,11 +278,7 @@ func (a *AutoImpl) getMeterInfo(ctx context.Context, traitName trait.Name, devic
 			continue
 		}
 
-		if support.UsageUnit != "" {
-			dev.info["usageUnit"] = support.UsageUnit
-		}
-		if support.ProducedUnit != "" {
-			dev.info["producedUnit"] = support.ProducedUnit
-		}
+		// Store the entire support proto message so it can be used in getMeterData
+		dev.info[meterpb.TraitName] = support
 	}
 }
