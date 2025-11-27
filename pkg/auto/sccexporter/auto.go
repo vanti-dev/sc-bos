@@ -202,7 +202,7 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 // fetchAndPublishDeviceData fetches data for all traits of a device and sends it to the messages channel.
 // If includeMetadata is true, device metadata is also added to the Data map.
 // The fetchTimeout parameter limits how long we wait for each device's data to prevent slow devices from blocking.
-func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, agent string, messagesCh chan message, includeMetadata bool, fetchTimeout time.Duration) {
+func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, agent string, messagesCh chan<- message, includeMetadata bool, fetchTimeout time.Duration) {
 	// Add per-device timeout to prevent slow/hanging devices from blocking the entire collection cycle
 	ctx, cancel := context.WithTimeout(ctx, fetchTimeout)
 	defer cancel()
