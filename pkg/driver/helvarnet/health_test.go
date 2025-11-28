@@ -5,9 +5,11 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/testing/protocmp"
 
 	"github.com/smart-core-os/sc-bos/internal/manage/devices"
 	"github.com/smart-core-os/sc-bos/pkg/gen"
@@ -43,492 +45,325 @@ func setup(devs *devicespb.Collection) *healthpb.Registry {
 	)
 }
 
-func TestDeviceNoError(t *testing.T) {
+// testHarness sets up test infrastructure and returns necessary components
+type testHarness struct {
+	devs         *devicespb.Collection
+	client       gen.DevicesApiClient
+	fc           *healthpb.FaultCheck
+	raisedFaults map[int64]bool
+	ctx          context.Context
+}
 
+func setupTestHarness(t *testing.T) *testHarness {
 	devs := devicespb.NewCollection()
 	server := devices.NewServer(devicesServerModel{Collection: devs})
 	deviceName := "helvarnet-device-1"
 	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
+	healthChecks := reg.ForOwner("example")
 
 	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
 
 	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
+	fc, err := healthChecks.NewFaultCheck(deviceName, check)
 	require.NoError(t, err)
-	defer fc.Dispose()
+	t.Cleanup(fc.Dispose)
 
-	status := int64(0)
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, 0, len(checks[0].GetFaults().CurrentFaults))
+	return &testHarness{
+		devs:         devs,
+		client:       gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server)),
+		fc:           fc,
+		raisedFaults: make(map[int64]bool),
+		ctx:          context.Background(),
 	}
 }
 
-func TestDeviceDeviceOffline(t *testing.T) {
+func (h *testHarness) updateStatus(status int64) {
+	updateDeviceFaults(h.ctx, status, h.fc, h.raisedFaults)
+}
 
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
-
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
-
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
+func (h *testHarness) getHealthChecks(t *testing.T) []*gen.HealthCheck {
+	deviceList, err := h.client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
 	require.NoError(t, err)
-	defer fc.Dispose()
+	require.Len(t, deviceList.Devices, 1)
+	return deviceList.Devices[0].GetHealthChecks()
+}
 
-	status := int64(DeviceOfflineCode)
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
+func (h *testHarness) assertFaults(t *testing.T, expectedCount int, normality gen.HealthCheck_Normality) {
+	checks := h.getHealthChecks(t)
+	require.Len(t, checks, 1)
+	require.Equal(t, normality, checks[0].Normality)
+	require.Len(t, checks[0].GetFaults().CurrentFaults, expectedCount)
+}
 
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
+func TestHelvarnetFaults(t *testing.T) {
+	tests := []struct {
+		name          string
+		status        int64
+		expectedCount int
+		expectedCodes []string
+	}{
+		{
+			name:          "no errors",
+			status:        0,
+			expectedCount: 0,
+			expectedCodes: nil,
+		},
+		{
+			name:          "single fault",
+			status:        0x00000001,
+			expectedCount: 1,
+			expectedCodes: []string{strconv.Itoa(0x00000001)},
+		},
+		{
+			name:          "double fault",
+			status:        0x00000011,
+			expectedCount: 2,
+			expectedCodes: []string{strconv.Itoa(0x00000001), strconv.Itoa(0x00000010)},
+		},
+	}
 
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, 1, len(checks[0].GetFaults().CurrentFaults))
-		require.Equal(t, strconv.Itoa(DeviceOfflineCode), checks[0].GetFaults().CurrentFaults[0].Code.Code)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := setupTestHarness(t)
+			h.updateStatus(tt.status)
+
+			checks := h.getHealthChecks(t)
+			require.Len(t, checks, 1)
+
+			faults := checks[0].GetFaults().GetCurrentFaults()
+			if diff := cmp.Diff(tt.expectedCount, len(faults)); diff != "" {
+				t.Errorf("unexpected fault count (-want +got):\n%s", diff)
+			}
+
+			for i, expectedCode := range tt.expectedCodes {
+				if diff := cmp.Diff(expectedCode, faults[i].Code.Code); diff != "" {
+					t.Errorf("fault[%d].Code.Code mismatch (-want +got):\n%s", i, diff)
+				}
+			}
+		})
 	}
 }
 
-func TestDeviceBadResponse(t *testing.T) {
+func TestFaultLifecycle(t *testing.T) {
+	tests := []struct {
+		name  string
+		steps []struct {
+			status        int64
+			faultCount    int
+			normality     gen.HealthCheck_Normality
+			expectedCode  string // only for single fault cases
+			trackedFaults map[int64]bool
+		}
+	}{
+		{
+			name: "add multiple faults then clear all",
+			steps: []struct {
+				status        int64
+				faultCount    int
+				normality     gen.HealthCheck_Normality
+				expectedCode  string
+				trackedFaults map[int64]bool
+			}{
+				{
+					status:        0x00000001 | 0x00000002 | 0x00000004, // Disabled | LampFailure | Missing
+					faultCount:    3,
+					normality:     gen.HealthCheck_ABNORMAL,
+					trackedFaults: map[int64]bool{0x00000001: true, 0x00000002: true, 0x00000004: true},
+				},
+				{
+					status:        0,
+					faultCount:    0,
+					normality:     gen.HealthCheck_NORMAL,
+					trackedFaults: map[int64]bool{0x00000001: false, 0x00000002: false, 0x00000004: false},
+				},
+			},
+		},
+		{
+			name: "add multiple faults then partial clear",
+			steps: []struct {
+				status        int64
+				faultCount    int
+				normality     gen.HealthCheck_Normality
+				expectedCode  string
+				trackedFaults map[int64]bool
+			}{
+				{
+					status:        0x00000001 | 0x00000002 | 0x00000004,
+					faultCount:    3,
+					normality:     gen.HealthCheck_ABNORMAL,
+					trackedFaults: map[int64]bool{},
+				},
+				{
+					status:        0x00000001, // Keep only Disabled
+					faultCount:    1,
+					normality:     gen.HealthCheck_ABNORMAL,
+					expectedCode:  strconv.Itoa(0x00000001),
+					trackedFaults: map[int64]bool{0x00000001: true, 0x00000002: false, 0x00000004: false},
+				},
+				{
+					status:        0,
+					faultCount:    0,
+					normality:     gen.HealthCheck_NORMAL,
+					trackedFaults: map[int64]bool{0x00000001: false},
+				},
+			},
+		},
+	}
 
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := setupTestHarness(t)
 
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
+			for i, step := range tt.steps {
+				h.updateStatus(step.status)
 
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
-	require.NoError(t, err)
-	defer fc.Dispose()
+				checks := h.getHealthChecks(t)
+				require.Len(t, checks, 1)
 
-	status := int64(BadResponseCode)
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
+				if diff := cmp.Diff(step.normality, checks[0].Normality, protocmp.Transform()); diff != "" {
+					t.Errorf("step %d: normality mismatch (-want +got):\n%s", i, diff)
+				}
 
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
+				faults := checks[0].GetFaults().GetCurrentFaults()
+				if diff := cmp.Diff(step.faultCount, len(faults)); diff != "" {
+					t.Errorf("step %d: fault count mismatch (-want +got):\n%s", i, diff)
+				}
 
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, 1, len(checks[0].GetFaults().CurrentFaults))
-		require.Equal(t, strconv.Itoa(BadResponseCode), checks[0].GetFaults().CurrentFaults[0].Code.Code)
+				if step.expectedCode != "" && len(faults) > 0 {
+					if diff := cmp.Diff(step.expectedCode, faults[0].Code.Code); diff != "" {
+						t.Errorf("step %d: fault code mismatch (-want +got):\n%s", i, diff)
+					}
+				}
+
+				for faultCode, tracked := range step.trackedFaults {
+					if diff := cmp.Diff(tracked, h.raisedFaults[faultCode]); diff != "" {
+						t.Errorf("step %d: fault tracking for 0x%x mismatch (-want +got):\n%s", i, faultCode, diff)
+					}
+				}
+			}
+		})
 	}
 }
 
-func TestSingleHelvarnetFault(t *testing.T) {
+func TestFaultUpdate(t *testing.T) {
+	h := setupTestHarness(t)
 
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
+	// Step 1: Add initial fault
+	h.updateStatus(0x00000001) // Disabled
 
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
+	checks := h.getHealthChecks(t)
+	require.Len(t, checks, 1)
+	faults := checks[0].GetFaults().GetCurrentFaults()
+	if diff := cmp.Diff(1, len(faults)); diff != "" {
+		t.Errorf("initial fault count mismatch (-want +got):\n%s", diff)
+	}
 
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
-	require.NoError(t, err)
-	defer fc.Dispose()
+	// Step 2: Update with same fault code (should update, not duplicate)
+	h.updateStatus(0x00000001) // Disabled again
 
-	status := int64(0x00000001)
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
+	checks = h.getHealthChecks(t)
+	require.Len(t, checks, 1)
+	faults = checks[0].GetFaults().GetCurrentFaults()
+	if diff := cmp.Diff(1, len(faults)); diff != "" {
+		t.Errorf("fault count after re-raising same fault (-want +got):\n%s", diff)
+	}
+	if diff := cmp.Diff(strconv.Itoa(0x00000001), faults[0].Code.Code); diff != "" {
+		t.Errorf("fault code mismatch (-want +got):\n%s", diff)
+	}
 
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
+	// Step 3: Add a different fault (should now have 2 faults)
+	h.updateStatus(0x00000001 | 0x00000002) // Disabled + LampFailure
 
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, 1, len(checks[0].GetFaults().CurrentFaults))
-		require.Equal(t, strconv.Itoa(0x00000001), checks[0].GetFaults().CurrentFaults[0].Code.Code)
+	checks = h.getHealthChecks(t)
+	require.Len(t, checks, 1)
+	faults = checks[0].GetFaults().GetCurrentFaults()
+	if diff := cmp.Diff(2, len(faults)); diff != "" {
+		t.Errorf("fault count after adding second fault (-want +got):\n%s", diff)
 	}
 }
 
-func TestDoubleHelvarnetFault(t *testing.T) {
-
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
-
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
-
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
-	require.NoError(t, err)
-	defer fc.Dispose()
-
-	status := int64(0x00000011)
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, 2, len(checks[0].GetFaults().CurrentFaults))
-		require.Equal(t, strconv.Itoa(0x00000001), checks[0].GetFaults().CurrentFaults[0].Code.Code)
-		require.Equal(t, strconv.Itoa(0x00000010), checks[0].GetFaults().CurrentFaults[1].Code.Code)
-	}
-}
-
-func TestAddFaultThenClear(t *testing.T) {
-
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
-
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
-
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
-	require.NoError(t, err)
-	defer fc.Dispose()
-
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-
-	// Step 1: Add a fault
-	status := int64(0x00000001) // Disabled
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_ABNORMAL, checks[0].Normality)
-		require.Equal(t, 1, len(checks[0].GetFaults().CurrentFaults))
-		require.Equal(t, strconv.Itoa(0x00000001), checks[0].GetFaults().CurrentFaults[0].Code.Code)
+func TestSpecialErrorCodes(t *testing.T) {
+	tests := []struct {
+		name                string
+		status              int64
+		expectedSummary     string
+		expectedDetails     string
+		expectedReliability gen.HealthCheck_Reliability_State
+		expectedCode        string
+	}{
+		{
+			name:                "device offline",
+			status:              DeviceOfflineCode,
+			expectedSummary:     "Device Offline",
+			expectedDetails:     "No communication received from device since the last Smart Core restart",
+			expectedReliability: gen.HealthCheck_Reliability_NO_RESPONSE,
+			expectedCode:        strconv.Itoa(DeviceOfflineCode),
+		},
+		{
+			name:                "bad response",
+			status:              BadResponseCode,
+			expectedSummary:     "Bad Response",
+			expectedDetails:     "The device has sent an invalid response to a command",
+			expectedReliability: gen.HealthCheck_Reliability_BAD_RESPONSE,
+			expectedCode:        strconv.Itoa(BadResponseCode),
+		},
+		{
+			name:                "unknown negative status",
+			status:              -99,
+			expectedSummary:     "Internal Driver Error",
+			expectedDetails:     "The device has an unrecognised internal status code",
+			expectedReliability: gen.HealthCheck_Reliability_UNRELIABLE,
+			expectedCode:        strconv.Itoa(UnrecognisedErrorCode),
+		},
 	}
 
-	// Verify fault is tracked
-	require.True(t, raisedFaults[0x00000001])
-
-	// Step 2: Clear the fault
-	status = int64(0)
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err = client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_NORMAL, checks[0].Normality)
-		require.Equal(t, 0, len(checks[0].GetFaults().CurrentFaults))
-	}
-
-	// Verify fault tracking is cleared
-	require.False(t, raisedFaults[0x00000001])
-}
-
-func TestAddMultipleFaultsThenClear(t *testing.T) {
-
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
-
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
-
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
-	require.NoError(t, err)
-	defer fc.Dispose()
-
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-
-	// Step 1: Add multiple faults
-	status := int64(0x00000001 | 0x00000002 | 0x00000004) // Disabled | LampFailure | Missing
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_ABNORMAL, checks[0].Normality)
-		require.Equal(t, 3, len(checks[0].GetFaults().CurrentFaults))
-	}
-
-	// Verify all faults are tracked
-	require.True(t, raisedFaults[0x00000001])
-	require.True(t, raisedFaults[0x00000002])
-	require.True(t, raisedFaults[0x00000004])
-
-	// Step 2: Clear all faults
-	status = int64(0)
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err = client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_NORMAL, checks[0].Normality)
-		require.Equal(t, 0, len(checks[0].GetFaults().CurrentFaults))
-	}
-
-	// Verify all fault tracking is cleared
-	require.False(t, raisedFaults[0x00000001])
-	require.False(t, raisedFaults[0x00000002])
-	require.False(t, raisedFaults[0x00000004])
-}
-
-func TestAddFaultThenPartialClear(t *testing.T) {
-
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
-
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
-
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
-	require.NoError(t, err)
-	defer fc.Dispose()
-
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-
-	// Step 1: Add multiple faults
-	status := int64(0x00000001 | 0x00000002 | 0x00000004) // Disabled | LampFailure | Missing
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_ABNORMAL, checks[0].Normality)
-		require.Equal(t, 3, len(checks[0].GetFaults().CurrentFaults))
-	}
-
-	// Step 2: Clear some faults but keep one
-	status = int64(0x00000001) // Keep only Disabled
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err = client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_ABNORMAL, checks[0].Normality)
-		require.Equal(t, 1, len(checks[0].GetFaults().CurrentFaults))
-		require.Equal(t, strconv.Itoa(0x00000001), checks[0].GetFaults().CurrentFaults[0].Code.Code)
-	}
-
-	// Verify fault tracking is updated correctly
-	require.True(t, raisedFaults[0x00000001])
-	require.False(t, raisedFaults[0x00000002])
-	require.False(t, raisedFaults[0x00000004])
-
-	// Step 3: Now clear the remaining fault
-	status = int64(0)
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err = client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_NORMAL, checks[0].Normality)
-		require.Equal(t, 0, len(checks[0].GetFaults().CurrentFaults))
-	}
-
-	// Verify all fault tracking is cleared
-	require.False(t, raisedFaults[0x00000001])
-}
-
-func TestDeviceOfflineThenClear(t *testing.T) {
-
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
-
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
-
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
-	require.NoError(t, err)
-	defer fc.Dispose()
-
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-
-	// Step 1: Set device offline
-	status := int64(DeviceOfflineCode)
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_ABNORMAL, checks[0].Normality)
-		require.Equal(t, 1, len(checks[0].GetFaults().CurrentFaults))
-		require.Equal(t, "Device Offline", checks[0].GetFaults().CurrentFaults[0].SummaryText)
-		require.Equal(t, gen.HealthCheck_Reliability_NO_RESPONSE, checks[0].Reliability.State)
-	}
-
-	// Step 2: Device comes back online (status 0 = no faults)
-	status = int64(0)
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err = client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_NORMAL, checks[0].Normality)
-		require.Equal(t, 0, len(checks[0].GetFaults().CurrentFaults))
-	}
-}
-
-func TestBadResponseThenClear(t *testing.T) {
-
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
-
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
-
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
-	require.NoError(t, err)
-	defer fc.Dispose()
-
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-
-	// Step 1: Set bad response
-	status := int64(BadResponseCode)
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_ABNORMAL, checks[0].Normality)
-		require.Equal(t, 1, len(checks[0].GetFaults().CurrentFaults))
-		require.Equal(t, "Bad Response", checks[0].GetFaults().CurrentFaults[0].SummaryText)
-		require.Equal(t, gen.HealthCheck_Reliability_BAD_RESPONSE, checks[0].Reliability.State)
-	}
-
-	// Step 2: Device recovers (status 0 = no faults)
-	status = int64(0)
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err = client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_NORMAL, checks[0].Normality)
-		require.Equal(t, 0, len(checks[0].GetFaults().CurrentFaults))
-	}
-}
-
-func TestUnknownNegativeStatus(t *testing.T) {
-
-	devs := devicespb.NewCollection()
-	server := devices.NewServer(devicesServerModel{Collection: devs})
-	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
-	exampleChecks := reg.ForOwner("example")
-
-	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
-
-	check := getDeviceHealthCheck()
-	fc, err := exampleChecks.NewFaultCheck(deviceName, check)
-	require.NoError(t, err)
-	defer fc.Dispose()
-
-	raisedFaults := make(map[int64]bool)
-	ctx := context.Background()
-	client := gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server))
-
-	// Test with an unknown negative status code (not DeviceOfflineCode or BadResponseCode)
-	status := int64(-99)
-	updateDeviceFaults(ctx, status, fc, raisedFaults)
-
-	deviceList, err := client.ListDevices(context.TODO(), &gen.ListDevicesRequest{})
-	require.NoError(t, err)
-
-	for _, d := range deviceList.Devices {
-		checks := d.GetHealthChecks()
-		require.Equal(t, 1, len(checks))
-		require.Equal(t, gen.HealthCheck_ABNORMAL, checks[0].Normality)
-
-		// Should have created an "Internal Driver Error" fault
-		faults := checks[0].GetFaults().CurrentFaults
-		require.Equal(t, 1, len(faults))
-		require.Equal(t, "Internal Driver Error", faults[0].SummaryText)
-		require.Equal(t, "The device has an unrecognised internal status code", faults[0].DetailsText)
-		require.Equal(t, strconv.Itoa(UnrecognisedErrorCode), faults[0].Code.Code)
-		require.Equal(t, SystemName, faults[0].Code.System)
-
-		// Should have set reliability to UNRELIABLE
-		require.Equal(t, gen.HealthCheck_Reliability_UNRELIABLE, checks[0].Reliability.State)
-		require.NotNil(t, checks[0].Reliability.UnreliableTime)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := setupTestHarness(t)
+
+			// Set the error status
+			h.updateStatus(tt.status)
+
+			checks := h.getHealthChecks(t)
+			require.Len(t, checks, 1)
+
+			// Check reliability state
+			if diff := cmp.Diff(tt.expectedReliability, checks[0].Reliability.State, protocmp.Transform()); diff != "" {
+				t.Errorf("reliability state mismatch (-want +got):\n%s", diff)
+			}
+
+			// Check LastError contains the expected information
+			lastError := checks[0].Reliability.LastError
+			require.NotNil(t, lastError, "expected LastError to be set")
+
+			if diff := cmp.Diff(tt.expectedSummary, lastError.SummaryText); diff != "" {
+				t.Errorf("LastError summary mismatch (-want +got):\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tt.expectedDetails, lastError.DetailsText); diff != "" {
+				t.Errorf("LastError details mismatch (-want +got):\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tt.expectedCode, lastError.Code.Code); diff != "" {
+				t.Errorf("LastError code mismatch (-want +got):\n%s", diff)
+			}
+
+			if diff := cmp.Diff(SystemName, lastError.Code.System); diff != "" {
+				t.Errorf("LastError system mismatch (-want +got):\n%s", diff)
+			}
+
+			// Clear the error
+			h.updateStatus(0)
+
+			checks = h.getHealthChecks(t)
+			require.Len(t, checks, 1)
+
+			// After clearing, there should be no faults
+			faults := checks[0].GetFaults().GetCurrentFaults()
+			if diff := cmp.Diff(0, len(faults)); diff != "" {
+				t.Errorf("fault count after clear mismatch (-want +got):\n%s", diff)
+			}
+		})
 	}
 }
 
