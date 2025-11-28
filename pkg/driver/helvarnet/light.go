@@ -44,7 +44,7 @@ type Light struct {
 	client          *tcpClient
 	conf            *config.Device
 	logger          *zap.Logger
-	helvarnetStatus int64 // The status flags field from the device, unique to Helvarnet protocol. See DeviceStatuses
+	helvarnetStatus int64 // The status flags field from the device, unique to Helvarnet protocol. See deviceStatuses
 	udmiBus         minibus.Bus[*gen.PullExportMessagesResponse]
 
 	// stores device test results, key is device name, value is TestResults
@@ -222,7 +222,7 @@ func (l *Light) udmiPointsetFromData() (*gen.MqttMessage, error) {
 		points["Preset"] = udmi.PointValue{PresentValue: brightness.Preset.Title}
 	}
 
-	statuses := GetStatusListFromFlag(l.helvarnetStatus)
+	statuses := getStatusListFromFlag(l.helvarnetStatus)
 
 	statusStrings := make([]string, len(statuses))
 	for i, s := range statuses {

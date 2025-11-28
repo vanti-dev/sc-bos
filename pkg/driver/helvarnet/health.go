@@ -4,8 +4,6 @@ import (
 	"context"
 	"strconv"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/smart-core-os/sc-bos/pkg/gen"
 	"github.com/smart-core-os/sc-bos/pkg/gentrait/healthpb"
 )
@@ -23,9 +21,9 @@ type State struct {
 	FlagValue   int64  `json:"flagValue,omitempty"`
 }
 
-// DeviceStatuses lists all possible device states and their associated metadata.
+// deviceStatuses lists all possible device states and their associated metadata.
 // These states, descriptions and codes are copied from the HelvarNet documentation.
-var DeviceStatuses = []State{
+var deviceStatuses = []State{
 	{"Disabled", "Device or subdevice has been disabled, usually an IR subdevice or a DMX channel", 0x00000001},
 	{"LampFailure", "Unspecified lamp problem", 0x00000002},
 	{"Missing", "The device previously existed but is not currently present", 0x00000004},
@@ -51,16 +49,16 @@ var DeviceStatuses = []State{
 	{"DeviceMismatch", "The actual load type does not match the expected type", 0x80000000},
 }
 
-// GetStatusListFromFlag takes a bitwise flag integer and returns a list of State structs
+// getStatusListFromFlag takes a bitwise flag integer and returns a list of State structs
 // corresponding to the set bits in the flag.
-func GetStatusListFromFlag(flag int64) []State {
+func getStatusListFromFlag(flag int64) []State {
 
 	if flag == 0 {
 		return []State{}
 	}
 
 	var statusList []State
-	for _, ds := range DeviceStatuses {
+	for _, ds := range deviceStatuses {
 		if flag&ds.FlagValue != 0 {
 			statusList = append(statusList, ds)
 		}
@@ -69,52 +67,48 @@ func GetStatusListFromFlag(flag int64) []State {
 	return statusList
 }
 
+func statusToHealthCode(status int64) *gen.HealthCheck_Error_Code {
+	return &gen.HealthCheck_Error_Code{
+		Code:   strconv.Itoa(int(status)),
+		System: SystemName,
+	}
+}
+
 func updateDeviceFaults(ctx context.Context, status int64, fc *healthpb.FaultCheck, raisedFaults map[int64]bool) {
 
 	// Handle negative status codes for special conditions, mainly comms issues
 	if status < 0 {
-		rel := &gen.HealthCheck_Reliability{
-			UnreliableTime: timestamppb.Now(),
-		}
+		rel := &gen.HealthCheck_Reliability{}
 		switch status {
 		case DeviceOfflineCode:
 			rel.State = gen.HealthCheck_Reliability_NO_RESPONSE
-			fc.SetFault(&gen.HealthCheck_Error{
+			rel.LastError = &gen.HealthCheck_Error{
 				SummaryText: "Device Offline",
 				DetailsText: "No communication received from device since the last Smart Core restart",
-				Code: &gen.HealthCheck_Error_Code{
-					Code:   strconv.Itoa(DeviceOfflineCode),
-					System: SystemName,
-				},
-			})
+				Code:        statusToHealthCode(DeviceOfflineCode),
+			}
 		case BadResponseCode:
 			rel.State = gen.HealthCheck_Reliability_BAD_RESPONSE
-			fc.SetFault(&gen.HealthCheck_Error{
+			rel.LastError = &gen.HealthCheck_Error{
 				SummaryText: "Bad Response",
 				DetailsText: "The device has sent an invalid response to a command",
-				Code: &gen.HealthCheck_Error_Code{
-					Code:   strconv.Itoa(BadResponseCode),
-					System: SystemName,
-				},
-			})
+				Code:        statusToHealthCode(BadResponseCode),
+			}
 		default:
 			// this should really never happen, but if it does, then it is a problem with the driver
 			// and it should be flagged
 			rel.State = gen.HealthCheck_Reliability_UNRELIABLE
-			fc.SetFault(&gen.HealthCheck_Error{
+			rel.LastError = &gen.HealthCheck_Error{
 				SummaryText: "Internal Driver Error",
 				DetailsText: "The device has an unrecognised internal status code",
-				Code: &gen.HealthCheck_Error_Code{
-					Code:   strconv.Itoa(UnrecognisedErrorCode),
-					System: SystemName,
-				},
-			})
+				Code:        statusToHealthCode(UnrecognisedErrorCode),
+			}
 		}
 		fc.UpdateReliability(ctx, rel)
 
 	} else {
 
-		statuses := GetStatusListFromFlag(status)
+		statuses := getStatusListFromFlag(status)
 
 		if len(statuses) == 0 {
 			fc.ClearFaults()
@@ -133,10 +127,7 @@ func setDeviceFaults(statuses []State, fc *healthpb.FaultCheck, raisedFaults map
 		fc.AddOrUpdateFault(&gen.HealthCheck_Error{
 			SummaryText: s.State,
 			DetailsText: s.Description,
-			Code: &gen.HealthCheck_Error_Code{
-				Code:   strconv.Itoa(int(s.FlagValue)),
-				System: SystemName,
-			},
+			Code:        statusToHealthCode(s.FlagValue),
 		})
 		raisedFaults[s.FlagValue] = true
 	}
@@ -153,10 +144,7 @@ func setDeviceFaults(statuses []State, fc *healthpb.FaultCheck, raisedFaults map
 			}
 			if !found {
 				fc.RemoveFault(&gen.HealthCheck_Error{
-					Code: &gen.HealthCheck_Error_Code{
-						Code:   strconv.Itoa(int(code)),
-						System: SystemName,
-					},
+					Code: statusToHealthCode(code),
 				})
 				raisedFaults[code] = false
 			}
