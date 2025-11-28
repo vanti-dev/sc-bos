@@ -71,7 +71,7 @@ func (d *device) getMeterData(ctx context.Context, meterClient gen.MeterApiClien
 	return result, nil
 }
 
-func (d *device) getAirQualityData(ctx context.Context, airQualityClient traits.AirQualitySensorApiClient) (map[string]json.RawMessage, error) {
+func (d *device) getAirQualitySensorData(ctx context.Context, airQualityClient traits.AirQualitySensorApiClient) (map[string]json.RawMessage, error) {
 	result := make(map[string]json.RawMessage)
 
 	airQuality, err := airQualityClient.GetAirQuality(ctx, &traits.GetAirQualityRequest{
@@ -92,7 +92,7 @@ func (d *device) getAirQualityData(ctx context.Context, airQualityClient traits.
 	return result, nil
 }
 
-func (d *device) getOccupancyData(ctx context.Context, occupancyClient traits.OccupancySensorApiClient) (map[string]json.RawMessage, error) {
+func (d *device) getOccupancySensorData(ctx context.Context, occupancyClient traits.OccupancySensorApiClient) (map[string]json.RawMessage, error) {
 	result := make(map[string]json.RawMessage)
 
 	occupancy, err := occupancyClient.GetOccupancy(ctx, &traits.GetOccupancyRequest{

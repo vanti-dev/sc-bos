@@ -53,17 +53,21 @@ type message struct {
 ### Device Structure
 
 ```go
+type TraitData map[string]json.RawMessage
+
 type Device struct {
-    Name string                                      `json:"name"`
-    Data map[string]map[string]json.RawMessage       `json:"data,omitempty"`
+    Name string                   `json:"name"`
+    Data map[trait.Name]TraitData `json:"data,omitempty"`
 }
 ```
 
 - **Name** (`string`): The unique Smart Core name of the device
-- **Data** (`map[string]map[string]json.RawMessage`): Nested map structure for trait data
-  - **First level keys** are trait names (e.g., "smartcore.bos.Meter", "smartcore.traits.AirQualitySensor")
-  - **Second level keys** are resource names within each trait (e.g., "meterReading", "meterReadingInfo", "airQuality")
-  - **Values** are `json.RawMessage` (byte arrays) containing JSON-encoded resource data
+- **Data** (`map[trait.Name]TraitData`): Nested map structure for trait data
+  - **First level keys** are trait names of type `trait.Name` (e.g., "smartcore.bos.Meter", "smartcore.traits.AirQualitySensor")
+  - **First level values** are `TraitData` maps containing resource data for that trait
+  - **TraitData** (`map[string]json.RawMessage`): Maps resource names to their JSON-encoded data
+    - **Keys** are resource names within the trait (e.g., "meterReading", "meterReadingInfo", "airQuality")
+    - **Values** are `json.RawMessage` (byte arrays) containing JSON-encoded resource data
   - Protobuf messages are serialized using `protojson.Marshal`, which produces JSON with camelCase field names
   - Multiple traits can be included in a single message
   - Each trait can contain multiple resources (data and info objects)

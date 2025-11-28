@@ -182,7 +182,7 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 				}
 			case trait.AirQualitySensor:
 				devices[deviceName].traits[trait.AirQualitySensor] = func(ctx context.Context) (map[string]json.RawMessage, error) {
-					return devices[deviceName].getAirQualityData(ctx, a.airQualityClient)
+					return devices[deviceName].getAirQualitySensorData(ctx, a.airQualityClient)
 				}
 			case meterpb.TraitName:
 				devices[deviceName].traits[meterpb.TraitName] = func(ctx context.Context) (map[string]json.RawMessage, error) {
@@ -190,7 +190,7 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 				}
 			case trait.OccupancySensor:
 				devices[deviceName].traits[trait.OccupancySensor] = func(ctx context.Context) (map[string]json.RawMessage, error) {
-					return devices[deviceName].getOccupancyData(ctx, a.occupancyClient)
+					return devices[deviceName].getOccupancySensorData(ctx, a.occupancyClient)
 				}
 			default:
 				a.Logger.Warn("trait is configured but not supported",
@@ -213,7 +213,7 @@ func (a *AutoImpl) fetchAndPublishDeviceData(ctx context.Context, dev *device, a
 		Agent: agent,
 		Device: Device{
 			Name: dev.name,
-			Data: make(map[trait.Name]map[string]json.RawMessage),
+			Data: make(map[trait.Name]TraitData),
 		},
 		Timestamp: time.Now(),
 	}

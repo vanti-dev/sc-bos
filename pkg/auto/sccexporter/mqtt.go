@@ -16,11 +16,13 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/trait"
 )
 
+type TraitData map[string]json.RawMessage
+
 type Device struct {
 	Name string `json:"name"`
 	// Data is a map where the key is the trait name and the value is a nested object
 	// containing resource names mapped to their data/info
-	Data map[trait.Name]map[string]json.RawMessage `json:"data,omitempty"`
+	Data map[trait.Name]TraitData `json:"data,omitempty"`
 }
 
 type message struct {
