@@ -294,7 +294,6 @@ func (l *Light) refreshData(ctx context.Context) {
 // queryDevice runs queries on a schedule to check the statuses of the device.
 func (l *Light) queryDevice(ctx context.Context, t time.Duration, fc *healthpb.FaultCheck) error {
 
-	raisedFaults := make(map[int64]bool)
 	ticker := time.NewTicker(t)
 	defer ticker.Stop()
 	l.refreshData(ctx)
@@ -310,7 +309,7 @@ func (l *Light) queryDevice(ctx context.Context, t time.Duration, fc *healthpb.F
 				l.logger.Error("failed to refresh device status, will try again on next run...", zap.Error(err))
 			}
 			l.helvarnetStatus = s
-			updateDeviceFaults(ctx, l.helvarnetStatus, fc, raisedFaults)
+			updateDeviceFaults(ctx, l.helvarnetStatus, fc)
 		}
 	}
 }

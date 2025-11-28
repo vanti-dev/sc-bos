@@ -45,13 +45,11 @@ func setup(devs *devicespb.Collection) *healthpb.Registry {
 	)
 }
 
-// testHarness sets up test infrastructure and returns necessary components
 type testHarness struct {
-	devs         *devicespb.Collection
-	client       gen.DevicesApiClient
-	fc           *healthpb.FaultCheck
-	raisedFaults map[int64]bool
-	ctx          context.Context
+	devs   *devicespb.Collection
+	client gen.DevicesApiClient
+	fc     *healthpb.FaultCheck
+	ctx    context.Context
 }
 
 func setupTestHarness(t *testing.T) *testHarness {
@@ -69,16 +67,15 @@ func setupTestHarness(t *testing.T) *testHarness {
 	t.Cleanup(fc.Dispose)
 
 	return &testHarness{
-		devs:         devs,
-		client:       gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server)),
-		fc:           fc,
-		raisedFaults: make(map[int64]bool),
-		ctx:          context.Background(),
+		devs:   devs,
+		client: gen.NewDevicesApiClient(wrap.ServerToClient(gen.DevicesApi_ServiceDesc, server)),
+		fc:     fc,
+		ctx:    context.Background(),
 	}
 }
 
 func (h *testHarness) updateStatus(status int64) {
-	updateDeviceFaults(h.ctx, status, h.fc, h.raisedFaults)
+	updateDeviceFaults(h.ctx, status, h.fc)
 }
 
 func (h *testHarness) getHealthChecks(t *testing.T) []*gen.HealthCheck {
@@ -148,63 +145,55 @@ func TestFaultLifecycle(t *testing.T) {
 	tests := []struct {
 		name  string
 		steps []struct {
-			status        int64
-			faultCount    int
-			normality     gen.HealthCheck_Normality
-			expectedCode  string // only for single fault cases
-			trackedFaults map[int64]bool
+			status       int64
+			faultCount   int
+			normality    gen.HealthCheck_Normality
+			expectedCode string // only for single fault cases
 		}
 	}{
 		{
 			name: "add multiple faults then clear all",
 			steps: []struct {
-				status        int64
-				faultCount    int
-				normality     gen.HealthCheck_Normality
-				expectedCode  string
-				trackedFaults map[int64]bool
+				status       int64
+				faultCount   int
+				normality    gen.HealthCheck_Normality
+				expectedCode string
 			}{
 				{
-					status:        0x00000001 | 0x00000002 | 0x00000004, // Disabled | LampFailure | Missing
-					faultCount:    3,
-					normality:     gen.HealthCheck_ABNORMAL,
-					trackedFaults: map[int64]bool{0x00000001: true, 0x00000002: true, 0x00000004: true},
+					status:     0x00000001 | 0x00000002 | 0x00000004, // Disabled | LampFailure | Missing
+					faultCount: 3,
+					normality:  gen.HealthCheck_ABNORMAL,
 				},
 				{
-					status:        0,
-					faultCount:    0,
-					normality:     gen.HealthCheck_NORMAL,
-					trackedFaults: map[int64]bool{0x00000001: false, 0x00000002: false, 0x00000004: false},
+					status:     0,
+					faultCount: 0,
+					normality:  gen.HealthCheck_NORMAL,
 				},
 			},
 		},
 		{
 			name: "add multiple faults then partial clear",
 			steps: []struct {
-				status        int64
-				faultCount    int
-				normality     gen.HealthCheck_Normality
-				expectedCode  string
-				trackedFaults map[int64]bool
+				status       int64
+				faultCount   int
+				normality    gen.HealthCheck_Normality
+				expectedCode string
 			}{
 				{
-					status:        0x00000001 | 0x00000002 | 0x00000004,
-					faultCount:    3,
-					normality:     gen.HealthCheck_ABNORMAL,
-					trackedFaults: map[int64]bool{},
+					status:     0x00000001 | 0x00000002 | 0x00000004,
+					faultCount: 3,
+					normality:  gen.HealthCheck_ABNORMAL,
 				},
 				{
-					status:        0x00000001, // Keep only Disabled
-					faultCount:    1,
-					normality:     gen.HealthCheck_ABNORMAL,
-					expectedCode:  strconv.Itoa(0x00000001),
-					trackedFaults: map[int64]bool{0x00000001: true, 0x00000002: false, 0x00000004: false},
+					status:       0x00000001, // Keep only Disabled
+					faultCount:   1,
+					normality:    gen.HealthCheck_ABNORMAL,
+					expectedCode: strconv.Itoa(0x00000001),
 				},
 				{
-					status:        0,
-					faultCount:    0,
-					normality:     gen.HealthCheck_NORMAL,
-					trackedFaults: map[int64]bool{0x00000001: false},
+					status:     0,
+					faultCount: 0,
+					normality:  gen.HealthCheck_NORMAL,
 				},
 			},
 		},
@@ -232,12 +221,6 @@ func TestFaultLifecycle(t *testing.T) {
 				if step.expectedCode != "" && len(faults) > 0 {
 					if diff := cmp.Diff(step.expectedCode, faults[0].Code.Code); diff != "" {
 						t.Errorf("step %d: fault code mismatch (-want +got):\n%s", i, diff)
-					}
-				}
-
-				for faultCode, tracked := range step.trackedFaults {
-					if diff := cmp.Diff(tracked, h.raisedFaults[faultCode]); diff != "" {
-						t.Errorf("step %d: fault tracking for 0x%x mismatch (-want +got):\n%s", i, faultCode, diff)
 					}
 				}
 			}
@@ -364,6 +347,46 @@ func TestSpecialErrorCodes(t *testing.T) {
 				t.Errorf("fault count after clear mismatch (-want +got):\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestDriverRebootClearsFaults(t *testing.T) {
+	h := setupTestHarness(t)
+
+	h.updateStatus(0x00000001 | 0x00000002 | 0x00000004)
+
+	checks := h.getHealthChecks(t)
+	require.Len(t, checks, 1)
+	faults := checks[0].GetFaults().GetCurrentFaults()
+	if diff := cmp.Diff(3, len(faults)); diff != "" {
+		t.Errorf("initial fault count mismatch (-want +got):\n%s", diff)
+	}
+
+	h.updateStatus(0)
+
+	checks = h.getHealthChecks(t)
+	require.Len(t, checks, 1)
+	faults = checks[0].GetFaults().GetCurrentFaults()
+	if diff := cmp.Diff(0, len(faults)); diff != "" {
+		t.Errorf("fault count after reboot and clear mismatch (-want +got):\n%s", diff)
+	}
+
+	h.updateStatus(0x00000001 | 0x00000002)
+	checks = h.getHealthChecks(t)
+	require.Len(t, checks, 1)
+	faults = checks[0].GetFaults().GetCurrentFaults()
+	require.Len(t, faults, 2)
+
+	h.updateStatus(0x00000001)
+
+	checks = h.getHealthChecks(t)
+	require.Len(t, checks, 1)
+	faults = checks[0].GetFaults().GetCurrentFaults()
+	if diff := cmp.Diff(1, len(faults)); diff != "" {
+		t.Errorf("fault count after reboot with partial faults mismatch (-want +got):\n%s", diff)
+	}
+	if diff := cmp.Diff(strconv.Itoa(0x00000001), faults[0].Code.Code); diff != "" {
+		t.Errorf("remaining fault code mismatch (-want +got):\n%s", diff)
 	}
 }
 

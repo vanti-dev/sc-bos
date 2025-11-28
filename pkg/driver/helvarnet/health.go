@@ -74,7 +74,7 @@ func statusToHealthCode(status int64) *gen.HealthCheck_Error_Code {
 	}
 }
 
-func updateDeviceFaults(ctx context.Context, status int64, fc *healthpb.FaultCheck, raisedFaults map[int64]bool) {
+func updateDeviceFaults(ctx context.Context, status int64, fc *healthpb.FaultCheck) {
 
 	// Handle negative status codes for special conditions, mainly comms issues
 	if status < 0 {
@@ -112,42 +112,35 @@ func updateDeviceFaults(ctx context.Context, status int64, fc *healthpb.FaultChe
 
 		if len(statuses) == 0 {
 			fc.ClearFaults()
-
-			for code := range raisedFaults {
-				raisedFaults[code] = false
-			}
 		} else {
-			setDeviceFaults(statuses, fc, raisedFaults)
+			setDeviceFaults(statuses, fc)
 		}
 	}
 }
 
-func setDeviceFaults(statuses []State, fc *healthpb.FaultCheck, raisedFaults map[int64]bool) {
+func setDeviceFaults(statuses []State, fc *healthpb.FaultCheck) {
+	// Add or update all current faults from the device
 	for _, s := range statuses {
 		fc.AddOrUpdateFault(&gen.HealthCheck_Error{
 			SummaryText: s.State,
 			DetailsText: s.Description,
 			Code:        statusToHealthCode(s.FlagValue),
 		})
-		raisedFaults[s.FlagValue] = true
 	}
 
-	for code, raised := range raisedFaults {
-		if raised {
-			// if we have raised the fault in smart core but it is no longer being reported by the device, it needs to be removed in sc
-			found := false
-			for _, s := range statuses {
-				if s.FlagValue == code {
-					found = true
-					break
-				}
+	// Remove any faults in smart core that are no longer present
+	for _, ds := range deviceStatuses {
+		found := false
+		for _, s := range statuses {
+			if s.FlagValue == ds.FlagValue {
+				found = true
+				break
 			}
-			if !found {
-				fc.RemoveFault(&gen.HealthCheck_Error{
-					Code: statusToHealthCode(code),
-				})
-				raisedFaults[code] = false
-			}
+		}
+		if !found {
+			fc.RemoveFault(&gen.HealthCheck_Error{
+				Code: statusToHealthCode(ds.FlagValue),
+			})
 		}
 	}
 }
