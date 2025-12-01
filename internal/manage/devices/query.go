@@ -24,7 +24,7 @@ func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 		return true
 	}
 	for _, condition := range query.Conditions {
-		if !conditionMatches(condition, device) {
+		if !conditionMatchesMessage(condition, device) {
 			return false
 		}
 	}
@@ -33,15 +33,43 @@ func deviceMatchesQuery(query *gen.Device_Query, device *gen.Device) bool {
 	return true
 }
 
-// conditionMatches returns true if the condition matches values in device.
+// conditionMatchesMessage returns true if the condition matches values in msg.
 // If the condition has a path, only values matching the path are considered,
-// otherwise all leafs in device are considered.
-func conditionMatches(cond *gen.Device_Query_Condition, msg proto.Message) bool {
+// otherwise all leafs in msg are considered.
+func conditionMatchesMessage(cond *gen.Device_Query_Condition, msg proto.Message) bool {
 	cmp := conditionToCmpFunc(cond)
-	values, err := rangeValues(cond.Field, msg)
+	values, err := rangeMessage(cond.Field, msg)
 	if err != nil {
 		return false
 	}
+	return conditionMatchesValues(values, cmp)
+}
+
+// valueMatchesQuery returns true if all the conditions in query match fields of v.
+func valueMatchesQuery(query *gen.Device_Query, v value) bool {
+	for _, condition := range query.Conditions {
+		if !conditionMatchesValue(condition, v) {
+			return false
+		}
+	}
+	return true
+}
+
+// conditionMatchesValue returns true if the condition matches values in v.
+// If the condition has a path, only values matching the path are considered,
+// otherwise all leafs in v are considered, including v itself.
+func conditionMatchesValue(cond *gen.Device_Query_Condition, v value) bool {
+	cmp := conditionToCmpFunc(cond)
+	values, err := rangeValue(cond.Field, v)
+	if err != nil {
+		return false
+	}
+	return conditionMatchesValues(values, cmp)
+}
+
+// conditionMatchesValues returns true if values match according to cmp.
+// cond.RepeatedMatch determines whether any or all values must match.
+func conditionMatchesValues(values iter.Seq[value], cmp func(value) bool) bool {
 	for v := range values {
 		if cmp(v) {
 			return true
@@ -175,19 +203,7 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(value) bool {
 
 	case *gen.Device_Query_Condition_Matches:
 		return func(v value) bool {
-			if v.fd.Message() == nil {
-				return false
-			}
-			msg := v.v.Message()
-			if !msg.IsValid() {
-				return false
-			}
-			for _, condition := range c.Matches.GetConditions() {
-				if !conditionMatches(condition, msg.Interface()) {
-					return false
-				}
-			}
-			return true // implies any present 'matches' field without conditions will match
+			return valueMatchesQuery(c.Matches, v)
 		}
 	}
 
@@ -200,7 +216,7 @@ func conditionToCmpFunc(cond *gen.Device_Query_Condition) func(value) bool {
 // See valueString for details of string conversion.
 func getMessageString(path string, msg proto.Message) iter.Seq[string] {
 	return func(yield func(string) bool) {
-		values, err := rangeValues(path, msg)
+		values, err := rangeMessage(path, msg)
 		if err != nil {
 			return
 		}
@@ -223,7 +239,15 @@ type value struct {
 	v  protoreflect.Value
 }
 
-// rangeValuesOptions defines options for the rangeValues function.
+func (v value) String() string {
+	s, ok := v.toString()
+	if !ok {
+		return "<invalid>"
+	}
+	return fmt.Sprintf("%s %s %s", v.fd.Cardinality(), v.fd.Kind(), s)
+}
+
+// rangeValuesOptions defines options for the rangeMessage function.
 // Useful for testing where stable order is important, search matching doesn't need to be stable.
 type rangeValuesOptions struct {
 	// If true, the iterator will yield values in the same order as a stable protorange.Range.
@@ -232,18 +256,62 @@ type rangeValuesOptions struct {
 
 var emptyValues = func(yield func(value) bool) {}
 
-func (opts rangeValuesOptions) Range(path string, msg proto.Message) (iter.Seq[value], error) {
+func (opts rangeValuesOptions) RangeMessage(path string, msg proto.Message) (iter.Seq[value], error) {
 	if msg == nil {
 		return emptyValues, nil
 	}
+	var segments []pathSegment
+	if path != "" {
+		var err error
+		segments, err = parsePath(path)
+		if err != nil {
+			return nil, fmt.Errorf("path: %w", err)
+		}
+	}
+	return opts.rangeMessage(segments, msg.ProtoReflect()), nil
+}
 
-	if path == "" {
+// rangeMessage returns an iterator over values of msg matching path.
+// If path is empty, it returns all leaf values in msg,
+// see isLeaf for details on what a leaf value is.
+// An error is returned if the path is invalid.
+func rangeMessage(path string, msg proto.Message) (iter.Seq[value], error) {
+	return rangeValuesOptions{}.RangeMessage(path, msg)
+}
+
+func (opts rangeValuesOptions) RangeValue(path string, v value) (iter.Seq[value], error) {
+	var segments []pathSegment
+	if path != "" {
+		var err error
+		segments, err = parsePath(path)
+		if err != nil {
+			return nil, fmt.Errorf("path: %w", err)
+		}
+	}
+	return opts.rangeValue(segments, v), nil
+}
+
+// rangeValue returns an iterator over values of v matching path.
+// Lists and Maps are traversed as if via scanList and scanMap.
+// If path is empty, it returns all leaf values in v,
+// see isLeaf for details on what a leaf value is.
+// An error is returned if the path is invalid.
+func rangeValue(path string, v value) (iter.Seq[value], error) {
+	return rangeValuesOptions{}.RangeValue(path, v)
+}
+
+// rangeMessage returns all values identified by path in msg.
+// If path is empty, all leaf values in msg are returned,
+// see isLeaf for details on what a leaf value is.
+// Otherwise, only the values matching the path are returned.
+func (opts rangeValuesOptions) rangeMessage(path []pathSegment, msg protoreflect.Message) iter.Seq[value] {
+	if len(path) == 0 {
 		rangeOpts := protorange.Options{
 			Stable: opts.Stable,
 		}
 		return func(yield func(value) bool) {
-			// we never return an error from the Range, so we can ignore the error return value
-			_ = rangeOpts.Range(msg.ProtoReflect(), func(values protopath.Values) error {
+			// we never return an error from the RangeMessage, so we can ignore the error return value
+			_ = rangeOpts.Range(msg, func(values protopath.Values) error {
 				fd, isLeaf := getLeafDescriptor(values)
 				if !isLeaf {
 					return nil
@@ -253,22 +321,48 @@ func (opts rangeValuesOptions) Range(path string, msg proto.Message) (iter.Seq[v
 				}
 				return nil
 			}, nil)
-		}, nil
+		}
 	}
-
-	segments, err := parsePath(path)
-	if err != nil {
-		return nil, fmt.Errorf("path: %w", err)
-	}
-	return opts.scanMessage(segments, msg.ProtoReflect()), nil
+	return opts.scanMessage(path, msg)
 }
 
-// rangeValues returns an iterator over values of msg matching path.
-// If path is empty, it returns all leaf values in msg,
-// see isLeaf for details on what a leaf value is.
-// An error is returned if the path is invalid.
-func rangeValues(path string, msg proto.Message) (iter.Seq[value], error) {
-	return rangeValuesOptions{}.Range(path, msg)
+// rangeValue returns all values identified by path in v.
+// Lists and Maps are traversed as if via scanList and scanMap.
+// If v.fd is a list, v.v may refer to the protoreflect.List or one of the list items.
+func (opts rangeValuesOptions) rangeValue(path []pathSegment, v value) iter.Seq[value] {
+	switch {
+	case v.fd.IsMap():
+		return opts.scanMap(path, v.fd, v.v.Map())
+	case v.fd.IsList():
+		// a []string (for example) could have a list fd but a string v, so be careful of this
+		switch vt := v.v.Interface().(type) {
+		case protoreflect.List:
+			return opts.scanList(path, v.fd, vt)
+		case protoreflect.Message:
+			return opts.rangeMessage(path, vt)
+		default:
+			// a scalar value
+			if len(path) > 0 {
+				// can't path into a scalar
+				return emptyValues
+			}
+			return func(yield func(value) bool) {
+				yield(v)
+			}
+		}
+	default:
+		if v.fd.Message() == nil {
+			// a scalar value
+			if len(path) > 0 {
+				// can't path into a scalar
+				return emptyValues
+			}
+			return func(yield func(value) bool) {
+				yield(v)
+			}
+		}
+		return opts.rangeMessage(path, v.v.Message())
+	}
 }
 
 // scanMessage returns all values identified by path in msg.
@@ -334,6 +428,7 @@ func (opts rangeValuesOptions) scanMap(path []pathSegment, fd protoreflect.Field
 					}
 					return true
 				})
+				return
 			}
 
 			// need stable order, capture and sort the entries
@@ -525,40 +620,39 @@ func isLeaf(fd protoreflect.FieldDescriptor) bool {
 // Unlike l.v.String() this converts enum values to their enum name where available,
 // otherwise converts them to a string representation of the enum number.
 // Bytes are converted to string.
-func (l value) toString() (string, bool) {
-	fd, v := l.fd, l.v
-	if fd == nil {
+func (v value) toString() (string, bool) {
+	if v.fd == nil {
 		return "", false
 	}
-	switch fd.Kind() {
+	switch v.fd.Kind() {
 	case protoreflect.BoolKind:
-		return strconv.FormatBool(v.Bool()), true
+		return strconv.FormatBool(v.v.Bool()), true
 	case protoreflect.FloatKind:
-		return strconv.FormatFloat(v.Float(), 'f', -1, 32), true
+		return strconv.FormatFloat(v.v.Float(), 'f', -1, 32), true
 	case protoreflect.DoubleKind:
-		return strconv.FormatFloat(v.Float(), 'f', -1, 64), true
+		return strconv.FormatFloat(v.v.Float(), 'f', -1, 64), true
 	case protoreflect.Int32Kind, protoreflect.Int64Kind,
 		protoreflect.Sint32Kind, protoreflect.Sint64Kind,
 		protoreflect.Sfixed32Kind, protoreflect.Sfixed64Kind:
-		return strconv.FormatInt(v.Int(), 10), true
+		return strconv.FormatInt(v.v.Int(), 10), true
 	case protoreflect.Uint32Kind, protoreflect.Uint64Kind,
 		protoreflect.Fixed32Kind, protoreflect.Fixed64Kind:
-		return strconv.FormatUint(v.Uint(), 10), true
+		return strconv.FormatUint(v.v.Uint(), 10), true
 	case protoreflect.StringKind:
-		return v.String(), true
+		return v.v.String(), true
 	case protoreflect.EnumKind:
-		enum := v.Enum()
-		enumDesc := fd.Enum().Values().ByNumber(enum)
+		enum := v.v.Enum()
+		enumDesc := v.fd.Enum().Values().ByNumber(enum)
 		if enumDesc == nil {
 			// unknown enum
 			return strconv.FormatInt(int64(enum), 10), true
 		}
 		return string(enumDesc.Name()), true
 	case protoreflect.BytesKind:
-		return string(v.Bytes()), true
+		return string(v.v.Bytes()), true
 	default:
 		// for value messages, we rely on the json representation to turn them into strings.
-		if msg := v.Message(); msg != nil {
+		if msg := v.v.Message(); msg != nil {
 			bs, err := protojson.Marshal(msg.Interface())
 			if err != nil {
 				// if we can't marshal the message, we can't convert it to a string
@@ -573,14 +667,14 @@ func (l value) toString() (string, bool) {
 }
 
 // toTimestamp converts the value into a *timestamppb.Timestamp if it is a valid timestamp.
-func (l value) toTimestamp() (*timestamppb.Timestamp, bool) {
-	if l.fd == nil {
+func (v value) toTimestamp() (*timestamppb.Timestamp, bool) {
+	if v.fd == nil {
 		return nil, false
 	}
-	if l.fd.Message() == nil || l.fd.Message().FullName() != "google.protobuf.Timestamp" {
+	if v.fd.Message() == nil || v.fd.Message().FullName() != "google.protobuf.Timestamp" {
 		return nil, false
 	}
-	tm := l.v.Message()
+	tm := v.v.Message()
 	if !tm.IsValid() {
 		return nil, false
 	}

@@ -129,7 +129,7 @@ func Test_leaf_toString(t *testing.T) {
 	}
 }
 
-func Test_rangeValues(t *testing.T) {
+func TestRangeValuesOptions_RangeMessage(t *testing.T) {
 	// m is the data structure we test against
 	m := testData()
 
@@ -297,10 +297,10 @@ func Test_rangeValues(t *testing.T) {
 			name = "all paths"
 		}
 		t.Run(name, func(t *testing.T) {
-			got, err := rangeValuesOptions{Stable: true}.Range(tt.path, m)
+			got, err := rangeValuesOptions{Stable: true}.RangeMessage(tt.path, m)
 			if err != nil {
 				if !tt.wantErr {
-					t.Errorf("rangeValues() error = %v, wantErr %v. Got %v", err, tt.wantErr, slices.Collect(got))
+					t.Errorf("rangeMessage() error = %v, wantErr %v. Got %v", err, tt.wantErr, slices.Collect(got))
 				}
 				return
 			}
@@ -318,10 +318,10 @@ func Test_rangeValues(t *testing.T) {
 				gotValues = append(gotValues, l.v)
 			}
 			if diff := cmp.Diff(wantFds, gotFds, transformReflectFieldDescriptor, protocmp.Transform()); diff != "" {
-				t.Errorf("rangeValues() field descriptors (-want,+got):\n%s", diff)
+				t.Errorf("rangeMessage() field descriptors (-want,+got):\n%s", diff)
 			}
 			if diff := cmp.Diff(wantValues, gotValues, transformReflectValue, protocmp.Transform()); diff != "" {
-				t.Errorf("rangeValues() values (-want,+got):\n%s", diff)
+				t.Errorf("rangeMessage() values (-want,+got):\n%s", diff)
 			}
 		})
 	}
@@ -608,11 +608,17 @@ func Test_conditionToCmpFunc(t *testing.T) {
 	})
 
 	t.Run("matches", func(t *testing.T) {
-		newVal := func(msg *querypb.Result) value {
+		// Returns a value representing field prop of msg.
+		newField := func(prop string, msg *querypb.Result) value {
+			fd := resultFd(prop)
 			return value{
-				fd: resultFd("r_result"),
-				v:  protoreflect.ValueOfMessage(msg.ProtoReflect()),
+				fd: fd,
+				v:  msg.ProtoReflect().Get(fd),
 			}
+		}
+		// Returns a value representing the r_result field containing msg as the sole element.
+		newVal := func(msg *querypb.Result) value {
+			return newField("r_result", &querypb.Result{RResult: []*querypb.Result{msg}})
 		}
 
 		tests := []struct {
@@ -635,17 +641,25 @@ func Test_conditionToCmpFunc(t *testing.T) {
 					newVal(&querypb.Result{StringVal: "apple"}),
 					newVal(&querypb.Result{RString: []string{"apple"}}),
 					newVal(&querypb.Result{Result: &querypb.Result{StringVal: "apple"}}),
+					newField("string_val", &querypb.Result{StringVal: "apple"}),
+					newField("r_string", &querypb.Result{RString: []string{"apple"}}),
+					newField("result", &querypb.Result{Result: &querypb.Result{StringVal: "apple"}}),
 				},
 				negative: []value{
 					newVal(&querypb.Result{}),
 					newVal(&querypb.Result{StringVal: "banana"}),
 					newVal(&querypb.Result{StringVal: ""}),
+					newField("string_val", &querypb.Result{StringVal: "banana"}),
+					newField("r_string", &querypb.Result{RString: []string{"banana"}}),
+					newField("result", &querypb.Result{Result: &querypb.Result{StringVal: "banana"}}),
 				},
 			},
 			{
-				name:     "match field",
-				conds:    []*gen.Device_Query_Condition{{Field: "string_val", Value: &gen.Device_Query_Condition_StringContains{StringContains: "apple"}}},
-				positive: []value{newVal(&querypb.Result{StringVal: "apple"})},
+				name:  "match field",
+				conds: []*gen.Device_Query_Condition{{Field: "string_val", Value: &gen.Device_Query_Condition_StringContains{StringContains: "apple"}}},
+				positive: []value{
+					newVal(&querypb.Result{StringVal: "apple"}),
+				},
 				negative: []value{
 					newVal(&querypb.Result{}),
 					newVal(&querypb.Result{StringVal: "banana"}),
@@ -662,8 +676,12 @@ func Test_conditionToCmpFunc(t *testing.T) {
 				},
 				positive: []value{
 					newVal(&querypb.Result{StringVal: "apple pie"}),
+					newVal(&querypb.Result{StringVal: "apple", RString: []string{"pie"}}),
 					newVal(&querypb.Result{RString: []string{"apple", "pie"}}),
 					newVal(&querypb.Result{StringVal: "apple", Result: &querypb.Result{StringVal: "pie"}}),
+					newField("string_val", &querypb.Result{StringVal: "apple pie"}),
+					newField("r_string", &querypb.Result{RString: []string{"apple", "pie"}}),
+					newField("m_string_string", &querypb.Result{MStringString: map[string]string{"kind": "apple pie"}}),
 				},
 				negative: []value{
 					newVal(&querypb.Result{}),
@@ -719,14 +737,14 @@ func Test_conditionToCmpFunc(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				cmpFunc := conditionToCmpFunc(&gen.Device_Query_Condition{Value: &gen.Device_Query_Condition_Matches{Matches: &gen.Device_Query{Conditions: tt.conds}}})
-				for _, v := range tt.positive {
+				for i, v := range tt.positive {
 					if !cmpFunc(v) {
-						t.Errorf("expected %v to match conditions %v", v, tt.conds)
+						t.Errorf("[%d] expected %+v to match conditions %+v", i, v, tt.conds)
 					}
 				}
-				for _, v := range tt.negative {
+				for i, v := range tt.negative {
 					if cmpFunc(v) {
-						t.Errorf("expected %v to not match conditions %v", v, tt.conds)
+						t.Errorf("[%d] expected %+v to not match conditions %+v", i, v, tt.conds)
 					}
 				}
 			})
