@@ -135,11 +135,14 @@ func (x *Test) GetUint64Keymap() map[uint64]*Test {
 }
 
 type Test_Nested struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Intfield      int32                  `protobuf:"varint,1,opt,name=intfield,proto3" json:"intfield,omitempty"`
-	Stringfield   string                 `protobuf:"bytes,2,opt,name=stringfield,proto3" json:"stringfield,omitempty"`
-	Bytesfield    []byte                 `protobuf:"bytes,3,opt,name=bytesfield,proto3" json:"bytesfield,omitempty"`
-	Nested        *Test                  `protobuf:"bytes,4,opt,name=nested,proto3" json:"nested,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Intfield    int32                  `protobuf:"varint,1,opt,name=intfield,proto3" json:"intfield,omitempty"`
+	Stringfield string                 `protobuf:"bytes,2,opt,name=stringfield,proto3" json:"stringfield,omitempty"`
+	Bytesfield  []byte                 `protobuf:"bytes,3,opt,name=bytesfield,proto3" json:"bytesfield,omitempty"`
+	Nested      *Test                  `protobuf:"bytes,4,opt,name=nested,proto3" json:"nested,omitempty"`
+	// parser should resolve json variant names automatically
+	JsonNatural   string `protobuf:"bytes,5,opt,name=json_natural,json=jsonNatural,proto3" json:"json_natural,omitempty"`
+	JsonManual    string `protobuf:"bytes,6,opt,name=json_manual,json=manualJsonName,proto3" json:"json_manual,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -202,11 +205,26 @@ func (x *Test_Nested) GetNested() *Test {
 	return nil
 }
 
+func (x *Test_Nested) GetJsonNatural() string {
+	if x != nil {
+		return x.JsonNatural
+	}
+	return ""
+}
+
+func (x *Test_Nested) GetJsonManual() string {
+	if x != nil {
+		return x.JsonManual
+	}
+	return ""
+}
+
 var File_testmessage_proto protoreflect.FileDescriptor
 
 const file_testmessage_proto_rawDesc = "" +
 	"\n" +
-	"\x11testmessage.proto\x12\rtestprotopath\"\xd4\t\n" +
+	"\x11testmessage.proto\x12\rtestprotopath\"\x9c\n" +
+	"\n" +
 	"\x04Test\x122\n" +
 	"\x06nested\x18\x01 \x01(\v2\x1a.testprotopath.Test.NestedR\x06nested\x12-\n" +
 	"\arepeats\x18\x02 \x03(\v2\x13.testprotopath.TestR\arepeats\x12\"\n" +
@@ -218,14 +236,16 @@ const file_testmessage_proto_rawDesc = "" +
 	"\vint32keymap\x18\x06 \x03(\v2$.testprotopath.Test.Int32keymapEntryR\vint32keymap\x12F\n" +
 	"\vint64keymap\x18\a \x03(\v2$.testprotopath.Test.Int64keymapEntryR\vint64keymap\x12I\n" +
 	"\fuint32keymap\x18\b \x03(\v2%.testprotopath.Test.Uint32keymapEntryR\fuint32keymap\x12I\n" +
-	"\fuint64keymap\x18\t \x03(\v2%.testprotopath.Test.Uint64keymapEntryR\fuint64keymap\x1a\x93\x01\n" +
+	"\fuint64keymap\x18\t \x03(\v2%.testprotopath.Test.Uint64keymapEntryR\fuint64keymap\x1a\xdb\x01\n" +
 	"\x06Nested\x12\x1a\n" +
 	"\bintfield\x18\x01 \x01(\x05R\bintfield\x12 \n" +
 	"\vstringfield\x18\x02 \x01(\tR\vstringfield\x12\x1e\n" +
 	"\n" +
 	"bytesfield\x18\x03 \x01(\fR\n" +
 	"bytesfield\x12+\n" +
-	"\x06nested\x18\x04 \x01(\v2\x13.testprotopath.TestR\x06nested\x1aX\n" +
+	"\x06nested\x18\x04 \x01(\v2\x13.testprotopath.TestR\x06nested\x12!\n" +
+	"\fjson_natural\x18\x05 \x01(\tR\vjsonNatural\x12#\n" +
+	"\vjson_manual\x18\x06 \x01(\tR\x0emanualJsonName\x1aX\n" +
 	"\x0eStrkeymapEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x120\n" +
 	"\x05value\x18\x02 \x01(\v2\x1a.testprotopath.Test.NestedR\x05value:\x028\x01\x1aR\n" +

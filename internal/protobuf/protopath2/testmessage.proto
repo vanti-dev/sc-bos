@@ -13,6 +13,9 @@ message Test {
     string stringfield = 2;
     bytes bytesfield = 3;
     Test nested = 4;
+    // The following two fields are not in the original code.
+    string json_natural = 5;
+    string json_manual = 6 [json_name = "manualJsonName"];
   }
   Nested nested = 1;
   repeated Test repeats = 2;

@@ -179,6 +179,19 @@ func TestParsePath(t *testing.T) {
 			path: `int32keymap[-6].uint64keymap[040000000000].repeats[0].nested.nested.strkeymap["k"].intfield`,
 			want: `(testprotopath.Test).int32keymap[-6].uint64keymap[4294967296].repeats[0].nested.nested.strkeymap["k"].intfield`,
 		},
+		// The following two test cases are not in the original code.
+		{
+			name: "natural json field",
+			md:   md,
+			path: `nested.jsonNatural`,
+			want: `(testprotopath.Test).nested.json_natural`,
+		},
+		{
+			name: "json_name field",
+			md:   md,
+			path: `nested.manualJsonName`,
+			want: `(testprotopath.Test).nested.json_manual`,
+		},
 		{name: "unexpected string index",
 			md:      md,
 			path:    `int32repeats["key"]`,

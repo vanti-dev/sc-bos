@@ -148,6 +148,10 @@ func (p *parser) accessIdent(pos int, id string) error {
 		return fmt.Errorf("%sexpected message descriptor to access with field %q, got %T", p.showState(pos), id, p.desc)
 	}
 	fd := md.Fields().ByTextName(id)
+	// The following if statement is not in the original code.
+	if fd == nil {
+		fd = md.Fields().ByJSONName(id)
+	}
 	if fd == nil {
 		return fmt.Errorf("%sfield %q not in message descriptor that has fields %v", p.showState(pos), id, md.Fields())
 	}
@@ -380,6 +384,7 @@ func (p *parser) step(tok *token) error {
 // A field access step is path '.' identifier
 // A map index step is path '[' natural ']'
 // A root step is '(' msg.Descriptor().String() ')'
+// Identifiers can be either the field's proto name or JSON name.
 //
 // If the path does not start with '(' then the root step is implicitly for the given message.
 // The parser is "type aware" to distinguish lists and maps keyed by numbers.
