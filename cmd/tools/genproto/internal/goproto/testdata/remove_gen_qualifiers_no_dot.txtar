@@ -1,0 +1,21 @@
+-- input.go --
+package test
+
+func generate() {}
+func genFoo() {}
+
+func test() {
+	generate()
+	genFoo()
+}
+-- want.go --
+package test
+
+func generate() {}
+func genFoo()   {}
+
+func test() {
+	generate()
+	genFoo()
+}
+
