@@ -2,8 +2,9 @@ import * as jspb from 'google-protobuf'
 
 import * as google_protobuf_field_mask_pb from 'google-protobuf/google/protobuf/field_mask_pb'; // proto import: "google/protobuf/field_mask.proto"
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb'; // proto import: "google/protobuf/timestamp.proto"
-import * as types_info_pb from '@smart-core-os/sc-api-grpc-web/types/info_pb'; // proto import: "types/info.proto"
 import * as types_change_pb from '@smart-core-os/sc-api-grpc-web/types/change_pb'; // proto import: "types/change.proto"
+import * as types_info_pb from '@smart-core-os/sc-api-grpc-web/types/info_pb'; // proto import: "types/info.proto"
+import * as types_time_period_pb from '@smart-core-os/sc-api-grpc-web/types/time/period_pb'; // proto import: "types/time/period.proto"
 
 
 export class WasteRecord extends jspb.Message {
@@ -144,6 +145,14 @@ export class ListWasteRecordsRequest extends jspb.Message {
   getPageToken(): string;
   setPageToken(value: string): ListWasteRecordsRequest;
 
+  getPeriod(): types_time_period_pb.Period | undefined;
+  setPeriod(value?: types_time_period_pb.Period): ListWasteRecordsRequest;
+  hasPeriod(): boolean;
+  clearPeriod(): ListWasteRecordsRequest;
+
+  getOrderBy(): string;
+  setOrderBy(value: string): ListWasteRecordsRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListWasteRecordsRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListWasteRecordsRequest): ListWasteRecordsRequest.AsObject;
@@ -158,6 +167,8 @@ export namespace ListWasteRecordsRequest {
     readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
     pageSize: number,
     pageToken: string,
+    period?: types_time_period_pb.Period.AsObject,
+    orderBy: string,
   }
 }
 

@@ -25,10 +25,12 @@ var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/fie
 goog.object.extend(proto, google_protobuf_field_mask_pb);
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 goog.object.extend(proto, google_protobuf_timestamp_pb);
-var types_info_pb = require('@smart-core-os/sc-api-grpc-web/types/info_pb.js');
-goog.object.extend(proto, types_info_pb);
 var types_change_pb = require('@smart-core-os/sc-api-grpc-web/types/change_pb.js');
 goog.object.extend(proto, types_change_pb);
+var types_info_pb = require('@smart-core-os/sc-api-grpc-web/types/info_pb.js');
+goog.object.extend(proto, types_info_pb);
+var types_time_period_pb = require('@smart-core-os/sc-api-grpc-web/types/time/period_pb.js');
+goog.object.extend(proto, types_time_period_pb);
 goog.exportSymbol('proto.smartcore.bos.DescribeWasteRecordRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.ListWasteRecordsRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.ListWasteRecordsResponse', null, global);
@@ -1002,7 +1004,9 @@ proto.smartcore.bos.ListWasteRecordsRequest.toObject = function(includeInstance,
 name: jspb.Message.getFieldWithDefault(msg, 1, ""),
 readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toObject(includeInstance, f),
 pageSize: jspb.Message.getFieldWithDefault(msg, 3, 0),
-pageToken: jspb.Message.getFieldWithDefault(msg, 4, "")
+pageToken: jspb.Message.getFieldWithDefault(msg, 4, ""),
+period: (f = msg.getPeriod()) && types_time_period_pb.Period.toObject(includeInstance, f),
+orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
   if (includeInstance) {
@@ -1055,6 +1059,15 @@ proto.smartcore.bos.ListWasteRecordsRequest.deserializeBinaryFromReader = functi
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setPageToken(value);
+      break;
+    case 5:
+      var value = new types_time_period_pb.Period;
+      reader.readMessage(value,types_time_period_pb.Period.deserializeBinaryFromReader);
+      msg.setPeriod(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrderBy(value);
       break;
     default:
       reader.skipField();
@@ -1111,6 +1124,21 @@ proto.smartcore.bos.ListWasteRecordsRequest.serializeBinaryToWriter = function(m
   if (f.length > 0) {
     writer.writeString(
       4,
+      f
+    );
+  }
+  f = message.getPeriod();
+  if (f != null) {
+    writer.writeMessage(
+      5,
+      f,
+      types_time_period_pb.Period.serializeBinaryToWriter
+    );
+  }
+  f = message.getOrderBy();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
       f
     );
   }
@@ -1205,6 +1233,61 @@ proto.smartcore.bos.ListWasteRecordsRequest.prototype.getPageToken = function() 
  */
 proto.smartcore.bos.ListWasteRecordsRequest.prototype.setPageToken = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional smartcore.types.time.Period period = 5;
+ * @return {?proto.smartcore.types.time.Period}
+ */
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.getPeriod = function() {
+  return /** @type{?proto.smartcore.types.time.Period} */ (
+    jspb.Message.getWrapperField(this, types_time_period_pb.Period, 5));
+};
+
+
+/**
+ * @param {?proto.smartcore.types.time.Period|undefined} value
+ * @return {!proto.smartcore.bos.ListWasteRecordsRequest} returns this
+*/
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.setPeriod = function(value) {
+  return jspb.Message.setWrapperField(this, 5, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.smartcore.bos.ListWasteRecordsRequest} returns this
+ */
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.clearPeriod = function() {
+  return this.setPeriod(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.hasPeriod = function() {
+  return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional string order_by = 6;
+ * @return {string}
+ */
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.getOrderBy = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.smartcore.bos.ListWasteRecordsRequest} returns this
+ */
+proto.smartcore.bos.ListWasteRecordsRequest.prototype.setOrderBy = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 

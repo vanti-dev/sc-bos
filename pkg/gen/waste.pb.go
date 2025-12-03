@@ -8,6 +8,7 @@ package gen
 
 import (
 	types "github.com/smart-core-os/sc-api/go/types"
+	time "github.com/smart-core-os/sc-api/go/types/time"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
@@ -303,7 +304,15 @@ type ListWasteRecordsRequest struct {
 	PageSize int32 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	// A page token, received from a previous `ListWasteRecordsResponse` call.
 	// Provide this to retrieve the subsequent page.
-	PageToken     string `protobuf:"bytes,4,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	PageToken string `protobuf:"bytes,4,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	// Optional. If set, only WasteRecords with a `record_create_time` within the
+	// specified period will be returned.
+	Period *time.Period `protobuf:"bytes,5,opt,name=period,proto3" json:"period,omitempty"`
+	// Specify the order of the returned records.
+	// The default is `record_create_time asc` - aka oldest record first.
+	// The format is `field_name [asc|desc]`, with asc being the default.
+	// Only `record_create_time` is supported.
+	OrderBy       string `protobuf:"bytes,6,opt,name=order_by,json=orderBy,proto3" json:"order_by,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -362,6 +371,20 @@ func (x *ListWasteRecordsRequest) GetPageSize() int32 {
 func (x *ListWasteRecordsRequest) GetPageToken() string {
 	if x != nil {
 		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListWasteRecordsRequest) GetPeriod() *time.Period {
+	if x != nil {
+		return x.Period
+	}
+	return nil
+}
+
+func (x *ListWasteRecordsRequest) GetOrderBy() string {
+	if x != nil {
+		return x.OrderBy
 	}
 	return ""
 }
@@ -667,7 +690,7 @@ var File_waste_proto protoreflect.FileDescriptor
 
 const file_waste_proto_rawDesc = "" +
 	"\n" +
-	"\vwaste.proto\x12\rsmartcore.bos\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x10types/info.proto\x1a\x12types/change.proto\"\xec\x04\n" +
+	"\vwaste.proto\x12\rsmartcore.bos\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12types/change.proto\x1a\x10types/info.proto\x1a\x17types/time/period.proto\"\xec\x04\n" +
 	"\vWasteRecord\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12H\n" +
 	"\x12record_create_time\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x10recordCreateTime\x12\x16\n" +
@@ -701,13 +724,15 @@ const file_waste_proto_rawDesc = "" +
 	"\fwasteRecords\x18\x01 \x03(\v2\x1a.smartcore.bos.WasteRecordR\fwasteRecords\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1d\n" +
 	"\n" +
-	"total_size\x18\x03 \x01(\x05R\ttotalSize\"\xa2\x01\n" +
+	"total_size\x18\x03 \x01(\x05R\ttotalSize\"\xf3\x01\n" +
 	"\x17ListWasteRecordsRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
 	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\x12\x1b\n" +
 	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tR\tpageToken\"\x89\x01\n" +
+	"page_token\x18\x04 \x01(\tR\tpageToken\x124\n" +
+	"\x06period\x18\x05 \x01(\v2\x1c.smartcore.types.time.PeriodR\x06period\x12\x19\n" +
+	"\border_by\x18\x06 \x01(\tR\aorderBy\"\x89\x01\n" +
 	"\x17PullWasteRecordsRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x127\n" +
 	"\tread_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\breadMask\x12!\n" +
@@ -760,8 +785,9 @@ var file_waste_proto_goTypes = []any{
 	(*PullWasteRecordsResponse_Change)(nil), // 8: smartcore.bos.PullWasteRecordsResponse.Change
 	(*timestamppb.Timestamp)(nil),           // 9: google.protobuf.Timestamp
 	(*fieldmaskpb.FieldMask)(nil),           // 10: google.protobuf.FieldMask
-	(*types.ResourceSupport)(nil),           // 11: smartcore.types.ResourceSupport
-	(types.ChangeType)(0),                   // 12: smartcore.types.ChangeType
+	(*time.Period)(nil),                     // 11: smartcore.types.time.Period
+	(*types.ResourceSupport)(nil),           // 12: smartcore.types.ResourceSupport
+	(types.ChangeType)(0),                   // 13: smartcore.types.ChangeType
 }
 var file_waste_proto_depIdxs = []int32{
 	9,  // 0: smartcore.bos.WasteRecord.record_create_time:type_name -> google.protobuf.Timestamp
@@ -769,24 +795,25 @@ var file_waste_proto_depIdxs = []int32{
 	9,  // 2: smartcore.bos.WasteRecord.waste_create_time:type_name -> google.protobuf.Timestamp
 	1,  // 3: smartcore.bos.ListWasteRecordsResponse.wasteRecords:type_name -> smartcore.bos.WasteRecord
 	10, // 4: smartcore.bos.ListWasteRecordsRequest.read_mask:type_name -> google.protobuf.FieldMask
-	10, // 5: smartcore.bos.PullWasteRecordsRequest.read_mask:type_name -> google.protobuf.FieldMask
-	8,  // 6: smartcore.bos.PullWasteRecordsResponse.changes:type_name -> smartcore.bos.PullWasteRecordsResponse.Change
-	11, // 7: smartcore.bos.WasteRecordSupport.resource_support:type_name -> smartcore.types.ResourceSupport
-	9,  // 8: smartcore.bos.PullWasteRecordsResponse.Change.change_time:type_name -> google.protobuf.Timestamp
-	1,  // 9: smartcore.bos.PullWasteRecordsResponse.Change.new_value:type_name -> smartcore.bos.WasteRecord
-	1,  // 10: smartcore.bos.PullWasteRecordsResponse.Change.old_value:type_name -> smartcore.bos.WasteRecord
-	12, // 11: smartcore.bos.PullWasteRecordsResponse.Change.type:type_name -> smartcore.types.ChangeType
-	3,  // 12: smartcore.bos.WasteApi.ListWasteRecords:input_type -> smartcore.bos.ListWasteRecordsRequest
-	4,  // 13: smartcore.bos.WasteApi.PullWasteRecords:input_type -> smartcore.bos.PullWasteRecordsRequest
-	6,  // 14: smartcore.bos.WasteInfo.DescribeWasteRecord:input_type -> smartcore.bos.DescribeWasteRecordRequest
-	2,  // 15: smartcore.bos.WasteApi.ListWasteRecords:output_type -> smartcore.bos.ListWasteRecordsResponse
-	5,  // 16: smartcore.bos.WasteApi.PullWasteRecords:output_type -> smartcore.bos.PullWasteRecordsResponse
-	7,  // 17: smartcore.bos.WasteInfo.DescribeWasteRecord:output_type -> smartcore.bos.WasteRecordSupport
-	15, // [15:18] is the sub-list for method output_type
-	12, // [12:15] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	11, // 5: smartcore.bos.ListWasteRecordsRequest.period:type_name -> smartcore.types.time.Period
+	10, // 6: smartcore.bos.PullWasteRecordsRequest.read_mask:type_name -> google.protobuf.FieldMask
+	8,  // 7: smartcore.bos.PullWasteRecordsResponse.changes:type_name -> smartcore.bos.PullWasteRecordsResponse.Change
+	12, // 8: smartcore.bos.WasteRecordSupport.resource_support:type_name -> smartcore.types.ResourceSupport
+	9,  // 9: smartcore.bos.PullWasteRecordsResponse.Change.change_time:type_name -> google.protobuf.Timestamp
+	1,  // 10: smartcore.bos.PullWasteRecordsResponse.Change.new_value:type_name -> smartcore.bos.WasteRecord
+	1,  // 11: smartcore.bos.PullWasteRecordsResponse.Change.old_value:type_name -> smartcore.bos.WasteRecord
+	13, // 12: smartcore.bos.PullWasteRecordsResponse.Change.type:type_name -> smartcore.types.ChangeType
+	3,  // 13: smartcore.bos.WasteApi.ListWasteRecords:input_type -> smartcore.bos.ListWasteRecordsRequest
+	4,  // 14: smartcore.bos.WasteApi.PullWasteRecords:input_type -> smartcore.bos.PullWasteRecordsRequest
+	6,  // 15: smartcore.bos.WasteInfo.DescribeWasteRecord:input_type -> smartcore.bos.DescribeWasteRecordRequest
+	2,  // 16: smartcore.bos.WasteApi.ListWasteRecords:output_type -> smartcore.bos.ListWasteRecordsResponse
+	5,  // 17: smartcore.bos.WasteApi.PullWasteRecords:output_type -> smartcore.bos.PullWasteRecordsResponse
+	7,  // 18: smartcore.bos.WasteInfo.DescribeWasteRecord:output_type -> smartcore.bos.WasteRecordSupport
+	16, // [16:19] is the sub-list for method output_type
+	13, // [13:16] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_waste_proto_init() }
