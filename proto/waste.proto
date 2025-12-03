@@ -6,8 +6,9 @@ option go_package = "github.com/smart-core-os/sc-bos/pkg/gen";
 
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
-import "types/info.proto";
 import "types/change.proto";
+import "types/info.proto";
+import "types/time/period.proto";
 
 // WasteApi exposes details about units of waste that have been produced by the building
 service WasteApi {
@@ -79,6 +80,14 @@ message ListWasteRecordsRequest {
   // A page token, received from a previous `ListWasteRecordsResponse` call.
   // Provide this to retrieve the subsequent page.
   string page_token = 4;
+  // Optional. If set, only WasteRecords with a `record_create_time` within the
+  // specified period will be returned.
+  smartcore.types.time.Period period = 5;
+  // Specify the order of the returned records.
+  // The default is `record_create_time asc` - aka oldest record first.
+  // The format is `field_name [asc|desc]`, with asc being the default.
+  // Only `record_create_time` is supported.
+  string order_by = 6;
 }
 
 message PullWasteRecordsRequest {
