@@ -1,6 +1,8 @@
 package alltraits
 
 import (
+	"slices"
+
 	"google.golang.org/grpc"
 
 	"github.com/smart-core-os/sc-api/go/traits"
@@ -73,6 +75,15 @@ var serviceRegistry = map[trait.Name][]grpc.ServiceDesc{
 	transport.TraitName:        {gen.TransportApi_ServiceDesc, gen.TransportInfo_ServiceDesc},
 	udmipb.TraitName:           {gen.UdmiService_ServiceDesc},
 	wastepb.TraitName:          {gen.WasteApi_ServiceDesc, gen.WasteInfo_ServiceDesc},
+}
+
+func Names() []trait.Name {
+	names := make([]trait.Name, 0, len(serviceRegistry))
+	for name := range serviceRegistry {
+		names = append(names, name)
+	}
+	slices.Sort(names)
+	return names
 }
 
 // ServiceDesc returns the gRPC service descriptors for all services associated with the given trait.

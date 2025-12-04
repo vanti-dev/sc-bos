@@ -10,6 +10,11 @@ import (
 
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
+	"github.com/open-policy-agent/opa/storage"
+	"github.com/open-policy-agent/opa/storage/inmem"
+
+	"github.com/smart-core-os/sc-bos/pkg/node/alltraits"
+	"github.com/smart-core-os/sc-golang/pkg/trait"
 )
 
 type static struct {
@@ -21,6 +26,7 @@ func (p *static) EvalPolicy(ctx context.Context, query string, input Attributes)
 		rego.Compiler(p.compiler),
 		rego.Input(input),
 		rego.Query(query),
+		rego.Store(defaultStore),
 	).Eval(ctx)
 }
 
@@ -71,6 +77,7 @@ func (p *cachedStatic) loadPartialCached(ctx context.Context, query string) (reg
 			r := rego.New(
 				rego.Compiler(p.compiler),
 				rego.Query(query),
+				rego.Store(defaultStore),
 			)
 			entry.partialResult, entry.err = r.PartialResult(bgctx)
 		}()
@@ -112,13 +119,18 @@ func compileFS(sources fs.FS) (*ast.Compiler, error) {
 		return nil, err
 	}
 
-	return ast.CompileModules(files)
+	c, err := ast.CompileModules(files)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
 }
 
 var (
 	//go:embed default
 	defaultPolicyFS embed.FS
 	defaultCompiler *ast.Compiler
+	defaultStore    storage.Store
 )
 
 func init() {
@@ -127,6 +139,11 @@ func init() {
 		panic(err)
 	}
 	defaultCompiler = compiler
+	defaultStore = inmem.NewFromObject(map[string]any{
+		"system": systemData{
+			KnownTraits: alltraits.Names(),
+		},
+	})
 }
 
 func Default(cached bool) Policy {
@@ -144,4 +161,8 @@ func FromFS(f fs.FS) (Policy, error) {
 	}
 
 	return newCachedStatic(compiler), nil
+}
+
+type systemData struct {
+	KnownTraits []trait.Name `json:"known_traits"`
 }
