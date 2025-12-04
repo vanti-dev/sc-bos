@@ -141,7 +141,7 @@ function deviceQueryFromObject(obj) {
 function deviceQueryConditionFromObject(obj) {
   if (!obj) return undefined;
   const dst = new Device.Query.Condition();
-  setProperties(dst, obj, 'field',
+  setProperties(dst, obj, 'field', 'matcher',
       'stringEqual', 'stringEqualFold',
       'stringContains', 'stringContainsFold',
       'nameDescendant', 'nameDescendantInc'

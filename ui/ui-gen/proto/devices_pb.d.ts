@@ -146,6 +146,9 @@ export namespace Device {
       hasMatches(): boolean;
       clearMatches(): Condition;
 
+      getMatcher(): Device.Query.Condition.Matcher;
+      setMatcher(value: Device.Query.Condition.Matcher): Condition;
+
       getValueCase(): Condition.ValueCase;
 
       serializeBinary(): Uint8Array;
@@ -176,7 +179,14 @@ export namespace Device {
         nameDescendantIncIn?: Device.Query.StringList.AsObject;
         present?: google_protobuf_empty_pb.Empty.AsObject;
         matches?: Device.Query.AsObject;
+        matcher: Device.Query.Condition.Matcher;
       };
+
+      export enum Matcher {
+        MATCHER_UNSPECIFIED = 0,
+        ANY = 1,
+        ALL = 2,
+      }
 
       export enum ValueCase {
         VALUE_NOT_SET = 0,

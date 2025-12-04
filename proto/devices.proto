@@ -39,6 +39,7 @@ message Device {
     // Condition describes a check against a set of values in the device.
     // The set of values the condition applies to is identified by the field path.
     // The check is described by one of the value oneof options.
+    // The condition result combines each value check result using the algorithm specified by the matcher field.
     message Condition {
       // Field identifies a set of values in the device based on a dot separated path of field names.
       // For example "metadata.membership.group" would select the group field inside the membership message of the devices metadata.
@@ -111,9 +112,20 @@ message Device {
         // The condition matches when the value matches all conditions in the given query.
         // Fields in the sub-query are relative to the value this condition is matching against.
         Query matches = 50;
-
-        // there's room here for additional rhs values for the condition, but we don't need any
       }
+
+      // Matcher describes how each value in the set of values contributes to the overall condition result.
+      enum Matcher {
+        // When unspecified, the matching behaviour is equivalent to using ANY.
+        MATCHER_UNSPECIFIED = 0;
+        // The condition matches if any value in the set matches the condition.
+        // This is the default behaviour when unspecified.
+        ANY = 1;
+        // The condition matches only when all values in the set match the condition.
+        ALL = 2;
+      }
+      // Matcher controls how values are matched against this condition.
+      Matcher matcher = 100;
     }
     // A list of strings, because oneof can't be repeated.
     message StringList {

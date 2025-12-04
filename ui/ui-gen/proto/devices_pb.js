@@ -32,6 +32,7 @@ goog.object.extend(proto, health_pb);
 goog.exportSymbol('proto.smartcore.bos.Device', null, global);
 goog.exportSymbol('proto.smartcore.bos.Device.Query', null, global);
 goog.exportSymbol('proto.smartcore.bos.Device.Query.Condition', null, global);
+goog.exportSymbol('proto.smartcore.bos.Device.Query.Condition.Matcher', null, global);
 goog.exportSymbol('proto.smartcore.bos.Device.Query.Condition.ValueCase', null, global);
 goog.exportSymbol('proto.smartcore.bos.Device.Query.StringList', null, global);
 goog.exportSymbol('proto.smartcore.bos.DevicesMetadata', null, global);
@@ -830,7 +831,8 @@ nameDescendantInc: (f = jspb.Message.getField(msg, 31)) == null ? undefined : f,
 nameDescendantIn: (f = msg.getNameDescendantIn()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f),
 nameDescendantIncIn: (f = msg.getNameDescendantIncIn()) && proto.smartcore.bos.Device.Query.StringList.toObject(includeInstance, f),
 present: (f = msg.getPresent()) && google_protobuf_empty_pb.Empty.toObject(includeInstance, f),
-matches: (f = msg.getMatches()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f)
+matches: (f = msg.getMatches()) && proto.smartcore.bos.Device.Query.toObject(includeInstance, f),
+matcher: jspb.Message.getFieldWithDefault(msg, 100, 0)
   };
 
   if (includeInstance) {
@@ -949,6 +951,10 @@ proto.smartcore.bos.Device.Query.Condition.deserializeBinaryFromReader = functio
       var value = new proto.smartcore.bos.Device.Query;
       reader.readMessage(value,proto.smartcore.bos.Device.Query.deserializeBinaryFromReader);
       msg.setMatches(value);
+      break;
+    case 100:
+      var value = /** @type {!proto.smartcore.bos.Device.Query.Condition.Matcher} */ (reader.readEnum());
+      msg.setMatcher(value);
       break;
     default:
       reader.skipField();
@@ -1116,8 +1122,24 @@ proto.smartcore.bos.Device.Query.Condition.serializeBinaryToWriter = function(me
       proto.smartcore.bos.Device.Query.serializeBinaryToWriter
     );
   }
+  f = message.getMatcher();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      100,
+      f
+    );
+  }
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.smartcore.bos.Device.Query.Condition.Matcher = {
+  MATCHER_UNSPECIFIED: 0,
+  ANY: 1,
+  ALL: 2
+};
 
 /**
  * optional string field = 1;
@@ -1757,6 +1779,24 @@ proto.smartcore.bos.Device.Query.Condition.prototype.clearMatches = function() {
  */
 proto.smartcore.bos.Device.Query.Condition.prototype.hasMatches = function() {
   return jspb.Message.getField(this, 50) != null;
+};
+
+
+/**
+ * optional Matcher matcher = 100;
+ * @return {!proto.smartcore.bos.Device.Query.Condition.Matcher}
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.getMatcher = function() {
+  return /** @type {!proto.smartcore.bos.Device.Query.Condition.Matcher} */ (jspb.Message.getFieldWithDefault(this, 100, 0));
+};
+
+
+/**
+ * @param {!proto.smartcore.bos.Device.Query.Condition.Matcher} value
+ * @return {!proto.smartcore.bos.Device.Query.Condition} returns this
+ */
+proto.smartcore.bos.Device.Query.Condition.prototype.setMatcher = function(value) {
+  return jspb.Message.setProto3EnumField(this, 100, value);
 };
 
 

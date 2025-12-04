@@ -751,3 +751,106 @@ func Test_conditionToCmpFunc(t *testing.T) {
 		}
 	})
 }
+
+func Example_healthyDevices() {
+	// all checks for this device are normal
+	device01 := &gen.Device{
+		Name: "Device01",
+		Metadata: &traits.Metadata{Location: &traits.Metadata_Location{
+			Floor: "Ground Floor",
+		}},
+		HealthChecks: []*gen.HealthCheck{
+			{Id: "Online", Normality: gen.HealthCheck_NORMAL},
+			{Id: "Temperature", Normality: gen.HealthCheck_NORMAL},
+		},
+	}
+	// some checks for this device are normal, some are abnormal
+	device02 := &gen.Device{
+		Name: "Device02",
+		Metadata: &traits.Metadata{Location: &traits.Metadata_Location{
+			Floor: "Floor 1",
+		}},
+		HealthChecks: []*gen.HealthCheck{
+			{Id: "Online", Normality: gen.HealthCheck_NORMAL},
+			{Id: "Temperature", Normality: gen.HealthCheck_HIGH},
+		},
+	}
+	// all checks for this device are abnormal
+	device03 := &gen.Device{
+		Name: "Device03",
+		Metadata: &traits.Metadata{Location: &traits.Metadata_Location{
+			Floor: "Floor 2",
+		}},
+		HealthChecks: []*gen.HealthCheck{
+			{Id: "Online", Normality: gen.HealthCheck_ABNORMAL},
+			{Id: "Temperature", Normality: gen.HealthCheck_LOW},
+		},
+	}
+
+	// a device is only normal if ALL health checks are normal
+	normalDevicesQuery := &gen.Device_Query{
+		Conditions: []*gen.Device_Query_Condition{
+			{
+				Field:   "health_checks.normality",
+				Matcher: gen.Device_Query_Condition_ALL,
+				Value:   &gen.Device_Query_Condition_StringEqual{StringEqual: "NORMAL"},
+			},
+		},
+	}
+	fmt.Println("Healthy devices:")
+	for _, device := range []*gen.Device{device01, device02, device03} {
+		fmt.Printf("  %s matches: %v\n", device.Name, deviceMatchesQuery(normalDevicesQuery, device))
+	}
+
+	// a device is abnormal if ANY health check is abnormal
+	abnormalDevicesQuery := &gen.Device_Query{
+		Conditions: []*gen.Device_Query_Condition{
+			{
+				Field:   "health_checks.normality",
+				Matcher: gen.Device_Query_Condition_ANY,
+				Value: &gen.Device_Query_Condition_StringIn{StringIn: &gen.Device_Query_StringList{Strings: []string{
+					"ABNORMAL", "HIGH", "LOW",
+				}}},
+			},
+		},
+	}
+	fmt.Println("Unhealthy devices:")
+	for _, device := range []*gen.Device{device01, device02, device03} {
+		fmt.Printf("  %s matches: %v\n", device.Name, deviceMatchesQuery(abnormalDevicesQuery, device))
+	}
+
+	// you can combine multiple conditions as needed
+	abnormalFloor1DevicesQuery := &gen.Device_Query{
+		Conditions: []*gen.Device_Query_Condition{
+			{
+				Field: "metadata.location.floor",
+				Value: &gen.Device_Query_Condition_StringEqual{StringEqual: "Floor 1"},
+			},
+			{
+				Field: "health_checks.normality",
+				// Matcher defaults to ANY
+				Value: &gen.Device_Query_Condition_StringIn{StringIn: &gen.Device_Query_StringList{Strings: []string{
+					"ABNORMAL", "HIGH", "LOW",
+				}}},
+			},
+		},
+	}
+	fmt.Println("Abnormal devices on Floor 1:")
+	for _, device := range []*gen.Device{device01, device02, device03} {
+		fmt.Printf("  %s matches: %v\n", device.Name, deviceMatchesQuery(abnormalFloor1DevicesQuery, device))
+	}
+
+	// Output:
+	// Healthy devices:
+	//   Device01 matches: true
+	//   Device02 matches: false
+	//   Device03 matches: false
+	// Unhealthy devices:
+	//   Device01 matches: false
+	//   Device02 matches: true
+	//   Device03 matches: true
+	// Abnormal devices on Floor 1:
+	//   Device01 matches: false
+	//   Device02 matches: true
+	//   Device03 matches: false
+}

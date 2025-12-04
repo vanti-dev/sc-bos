@@ -42,7 +42,7 @@ func conditionMatchesMessage(cond *gen.Device_Query_Condition, msg proto.Message
 	if err != nil {
 		return false
 	}
-	return conditionMatchesValues(values, cmp)
+	return conditionMatchesValues(cond, values, cmp)
 }
 
 // valueMatchesQuery returns true if all the conditions in query match fields of v.
@@ -64,18 +64,32 @@ func conditionMatchesValue(cond *gen.Device_Query_Condition, v value) bool {
 	if err != nil {
 		return false
 	}
-	return conditionMatchesValues(values, cmp)
+	return conditionMatchesValues(cond, values, cmp)
 }
 
 // conditionMatchesValues returns true if values match according to cmp.
 // cond.RepeatedMatch determines whether any or all values must match.
-func conditionMatchesValues(values iter.Seq[value], cmp func(value) bool) bool {
-	for v := range values {
-		if cmp(v) {
-			return true
+func conditionMatchesValues(cond *gen.Device_Query_Condition, values iter.Seq[value], cmp func(value) bool) bool {
+	switch cond.Matcher {
+	case gen.Device_Query_Condition_MATCHER_UNSPECIFIED, gen.Device_Query_Condition_ANY:
+		for v := range values {
+			if cmp(v) {
+				return true
+			}
 		}
+		return false
+	case gen.Device_Query_Condition_ALL:
+		found := false
+		for v := range values {
+			found = true
+			if !cmp(v) {
+				return false
+			}
+		}
+		return found
+	default:
+		return false // unknown repeated match type
 	}
-	return false
 }
 
 // conditionToCmpFunc converts a Device_Query_Condition into a function that checks if value values match the condition.
