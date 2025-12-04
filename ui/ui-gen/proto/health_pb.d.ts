@@ -73,20 +73,20 @@ export class HealthCheck extends jspb.Message {
 
 export namespace HealthCheck {
   export type AsObject = {
-    id: string,
-    displayName: string,
-    description: string,
-    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    occupantImpact: HealthCheck.OccupantImpact,
-    equipmentImpact: HealthCheck.EquipmentImpact,
-    complianceImpactsList: Array<HealthCheck.ComplianceImpact.AsObject>,
-    reliability?: HealthCheck.Reliability.AsObject,
-    normality: HealthCheck.Normality,
-    normalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    abnormalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    bounds?: HealthCheck.Bounds.AsObject,
-    faults?: HealthCheck.Faults.AsObject,
-  }
+    id: string;
+    displayName: string;
+    description: string;
+    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    occupantImpact: HealthCheck.OccupantImpact;
+    equipmentImpact: HealthCheck.EquipmentImpact;
+    complianceImpactsList: Array<HealthCheck.ComplianceImpact.AsObject>;
+    reliability?: HealthCheck.Reliability.AsObject;
+    normality: HealthCheck.Normality;
+    normalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    abnormalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    bounds?: HealthCheck.Bounds.AsObject;
+    faults?: HealthCheck.Faults.AsObject;
+  };
 
   export class ComplianceImpact extends jspb.Message {
     getStandard(): HealthCheck.ComplianceImpact.Standard | undefined;
@@ -107,9 +107,9 @@ export namespace HealthCheck {
 
   export namespace ComplianceImpact {
     export type AsObject = {
-      standard?: HealthCheck.ComplianceImpact.Standard.AsObject,
-      contribution: HealthCheck.ComplianceImpact.Contribution,
-    }
+      standard?: HealthCheck.ComplianceImpact.Standard.AsObject;
+      contribution: HealthCheck.ComplianceImpact.Contribution;
+    };
 
     export class Standard extends jspb.Message {
       getDisplayName(): string;
@@ -137,16 +137,16 @@ export namespace HealthCheck {
 
     export namespace Standard {
       export type AsObject = {
-        displayName: string,
-        title: string,
-        description: string,
-        organization: string,
-        reference: string,
-      }
+        displayName: string;
+        title: string;
+        description: string;
+        organization: string;
+        reference: string;
+      };
     }
 
 
-    export enum Contribution { 
+    export enum Contribution {
       CONTRIBUTION_UNSPECIFIED = 0,
       NOTE = 1,
       RATING = 2,
@@ -178,10 +178,10 @@ export namespace HealthCheck {
 
   export namespace Error {
     export type AsObject = {
-      summaryText: string,
-      detailsText: string,
-      code?: HealthCheck.Error.Code.AsObject,
-    }
+      summaryText: string;
+      detailsText: string;
+      code?: HealthCheck.Error.Code.AsObject;
+    };
 
     export class Code extends jspb.Message {
       getCode(): string;
@@ -200,9 +200,9 @@ export namespace HealthCheck {
 
     export namespace Code {
       export type AsObject = {
-        code: string,
-        system: string,
-      }
+        code: string;
+        system: string;
+      };
     }
 
   }
@@ -247,13 +247,13 @@ export namespace HealthCheck {
 
   export namespace Reliability {
     export type AsObject = {
-      state: HealthCheck.Reliability.State,
-      reliableTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      unreliableTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      lastError?: HealthCheck.Error.AsObject,
-      cause?: HealthCheck.Reliability.Cause.AsObject,
-      effects?: HealthCheck.Reliability.Effects.AsObject,
-    }
+      state: HealthCheck.Reliability.State;
+      reliableTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      unreliableTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      lastError?: HealthCheck.Error.AsObject;
+      cause?: HealthCheck.Reliability.Cause.AsObject;
+      effects?: HealthCheck.Reliability.Effects.AsObject;
+    };
 
     export class Cause extends jspb.Message {
       getName(): string;
@@ -277,10 +277,10 @@ export namespace HealthCheck {
 
     export namespace Cause {
       export type AsObject = {
-        name: string,
-        error?: HealthCheck.Error.AsObject,
-        displayName: string,
-      }
+        name: string;
+        error?: HealthCheck.Error.AsObject;
+        displayName: string;
+      };
     }
 
 
@@ -298,12 +298,12 @@ export namespace HealthCheck {
 
     export namespace Effects {
       export type AsObject = {
-        count: number,
-      }
+        count: number;
+      };
     }
 
 
-    export enum State { 
+    export enum State {
       STATE_UNSPECIFIED = 0,
       RELIABLE = 1,
       UNRELIABLE = 2,
@@ -320,18 +320,28 @@ export namespace HealthCheck {
   export class Value extends jspb.Message {
     getBoolValue(): boolean;
     setBoolValue(value: boolean): Value;
+    hasBoolValue(): boolean;
+    clearBoolValue(): Value;
 
     getStringValue(): string;
     setStringValue(value: string): Value;
+    hasStringValue(): boolean;
+    clearStringValue(): Value;
 
     getIntValue(): number;
     setIntValue(value: number): Value;
+    hasIntValue(): boolean;
+    clearIntValue(): Value;
 
     getUintValue(): number;
     setUintValue(value: number): Value;
+    hasUintValue(): boolean;
+    clearUintValue(): Value;
 
     getFloatValue(): number;
     setFloatValue(value: number): Value;
+    hasFloatValue(): boolean;
+    clearFloatValue(): Value;
 
     getTimestampValue(): google_protobuf_timestamp_pb.Timestamp | undefined;
     setTimestampValue(value?: google_protobuf_timestamp_pb.Timestamp): Value;
@@ -355,16 +365,16 @@ export namespace HealthCheck {
 
   export namespace Value {
     export type AsObject = {
-      boolValue: boolean,
-      stringValue: string,
-      intValue: number,
-      uintValue: number,
-      floatValue: number,
-      timestampValue?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      durationValue?: google_protobuf_duration_pb.Duration.AsObject,
-    }
+      boolValue?: boolean;
+      stringValue?: string;
+      intValue?: number;
+      uintValue?: number;
+      floatValue?: number;
+      timestampValue?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      durationValue?: google_protobuf_duration_pb.Duration.AsObject;
+    };
 
-    export enum ValueCase { 
+    export enum ValueCase {
       VALUE_NOT_SET = 0,
       BOOL_VALUE = 1,
       STRING_VALUE = 2,
@@ -403,10 +413,10 @@ export namespace HealthCheck {
 
   export namespace ValueRange {
     export type AsObject = {
-      low?: HealthCheck.Value.AsObject,
-      high?: HealthCheck.Value.AsObject,
-      deadband?: HealthCheck.Value.AsObject,
-    }
+      low?: HealthCheck.Value.AsObject;
+      high?: HealthCheck.Value.AsObject;
+      deadband?: HealthCheck.Value.AsObject;
+    };
   }
 
 
@@ -426,8 +436,8 @@ export namespace HealthCheck {
 
   export namespace Values {
     export type AsObject = {
-      valuesList: Array<HealthCheck.Value.AsObject>,
-    }
+      valuesList: Array<HealthCheck.Value.AsObject>;
+    };
   }
 
 
@@ -477,16 +487,16 @@ export namespace HealthCheck {
 
   export namespace Bounds {
     export type AsObject = {
-      currentValue?: HealthCheck.Value.AsObject,
-      normalValue?: HealthCheck.Value.AsObject,
-      abnormalValue?: HealthCheck.Value.AsObject,
-      normalRange?: HealthCheck.ValueRange.AsObject,
-      normalValues?: HealthCheck.Values.AsObject,
-      abnormalValues?: HealthCheck.Values.AsObject,
-      displayUnit: string,
-    }
+      currentValue?: HealthCheck.Value.AsObject;
+      normalValue?: HealthCheck.Value.AsObject;
+      abnormalValue?: HealthCheck.Value.AsObject;
+      normalRange?: HealthCheck.ValueRange.AsObject;
+      normalValues?: HealthCheck.Values.AsObject;
+      abnormalValues?: HealthCheck.Values.AsObject;
+      displayUnit: string;
+    };
 
-    export enum ExpectedCase { 
+    export enum ExpectedCase {
       EXPECTED_NOT_SET = 0,
       NORMAL_VALUE = 2,
       ABNORMAL_VALUE = 3,
@@ -513,12 +523,12 @@ export namespace HealthCheck {
 
   export namespace Faults {
     export type AsObject = {
-      currentFaultsList: Array<HealthCheck.Error.AsObject>,
-    }
+      currentFaultsList: Array<HealthCheck.Error.AsObject>;
+    };
   }
 
 
-  export enum OccupantImpact { 
+  export enum OccupantImpact {
     OCCUPANT_IMPACT_UNSPECIFIED = 0,
     NO_OCCUPANT_IMPACT = 1,
     COMFORT = 2,
@@ -526,7 +536,7 @@ export namespace HealthCheck {
     LIFE = 4,
   }
 
-  export enum EquipmentImpact { 
+  export enum EquipmentImpact {
     EQUIPMENT_IMPACT_UNSPECIFIED = 0,
     NO_EQUIPMENT_IMPACT = 1,
     WARRANTY = 2,
@@ -534,7 +544,7 @@ export namespace HealthCheck {
     FUNCTION = 4,
   }
 
-  export enum Normality { 
+  export enum Normality {
     NORMALITY_UNSPECIFIED = 0,
     NORMAL = 1,
     ABNORMAL = 2,
@@ -542,7 +552,7 @@ export namespace HealthCheck {
     HIGH = 4,
   }
 
-  export enum CheckCase { 
+  export enum CheckCase {
     CHECK_NOT_SET = 0,
     BOUNDS = 30,
     FAULTS = 31,
@@ -573,12 +583,12 @@ export class HealthCheckRecord extends jspb.Message {
 
 export namespace HealthCheckRecord {
   export type AsObject = {
-    healthCheck?: HealthCheck.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    recordType: HealthCheckRecord.RecordType,
-  }
+    healthCheck?: HealthCheck.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    recordType: HealthCheckRecord.RecordType;
+  };
 
-  export enum RecordType { 
+  export enum RecordType {
     RECORD_TYPE_UNSPECIFIED = 0,
     ADDED = 1,
     UPDATED = 2,
@@ -611,11 +621,11 @@ export class ListHealthChecksRequest extends jspb.Message {
 
 export namespace ListHealthChecksRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListHealthChecksResponse extends jspb.Message {
@@ -640,10 +650,10 @@ export class ListHealthChecksResponse extends jspb.Message {
 
 export namespace ListHealthChecksResponse {
   export type AsObject = {
-    healthChecksList: Array<HealthCheck.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    healthChecksList: Array<HealthCheck.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class PullHealthChecksRequest extends jspb.Message {
@@ -668,10 +678,10 @@ export class PullHealthChecksRequest extends jspb.Message {
 
 export namespace PullHealthChecksRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullHealthChecksResponse extends jspb.Message {
@@ -690,8 +700,8 @@ export class PullHealthChecksResponse extends jspb.Message {
 
 export namespace PullHealthChecksResponse {
   export type AsObject = {
-    changesList: Array<PullHealthChecksResponse.Change.AsObject>,
-  }
+    changesList: Array<PullHealthChecksResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -725,12 +735,12 @@ export namespace PullHealthChecksResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      type: types_change_pb.ChangeType,
-      newValue?: HealthCheck.AsObject,
-      oldValue?: HealthCheck.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      name: string;
+      type: types_change_pb.ChangeType;
+      newValue?: HealthCheck.AsObject;
+      oldValue?: HealthCheck.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }
@@ -757,10 +767,10 @@ export class GetHealthCheckRequest extends jspb.Message {
 
 export namespace GetHealthCheckRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    id: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullHealthCheckRequest extends jspb.Message {
@@ -788,11 +798,11 @@ export class PullHealthCheckRequest extends jspb.Message {
 
 export namespace PullHealthCheckRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    id: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullHealthCheckResponse extends jspb.Message {
@@ -811,8 +821,8 @@ export class PullHealthCheckResponse extends jspb.Message {
 
 export namespace PullHealthCheckResponse {
   export type AsObject = {
-    changesList: Array<PullHealthCheckResponse.Change.AsObject>,
-  }
+    changesList: Array<PullHealthCheckResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -838,10 +848,10 @@ export namespace PullHealthCheckResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      healthCheck?: HealthCheck.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      name: string;
+      healthCheck?: HealthCheck.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }
@@ -882,14 +892,14 @@ export class ListHealthCheckHistoryRequest extends jspb.Message {
 
 export namespace ListHealthCheckHistoryRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    id: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class ListHealthCheckHistoryResponse extends jspb.Message {
@@ -914,9 +924,9 @@ export class ListHealthCheckHistoryResponse extends jspb.Message {
 
 export namespace ListHealthCheckHistoryResponse {
   export type AsObject = {
-    healthCheckRecordsList: Array<HealthCheckRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    healthCheckRecordsList: Array<HealthCheckRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 

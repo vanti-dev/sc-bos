@@ -55,18 +55,18 @@ export class Actor extends jspb.Message {
 
 export namespace Actor {
   export type AsObject = {
-    name: string,
-    title: string,
-    displayName: string,
-    picture?: types_image_pb.Image.AsObject,
-    url: string,
-    email: string,
-    lastGrantTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    lastGrantZone: string,
-    vehicleRegistration: string,
-    company: string,
-    idsMap: Array<[string, string]>,
-    moreMap: Array<[string, string]>,
-  }
+    name: string;
+    title: string;
+    displayName: string;
+    picture?: types_image_pb.Image.AsObject;
+    url: string;
+    email: string;
+    lastGrantTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    lastGrantZone: string;
+    vehicleRegistration: string;
+    company: string;
+    idsMap: Array<[string, string]>;
+    moreMap: Array<[string, string]>;
+  };
 }
 

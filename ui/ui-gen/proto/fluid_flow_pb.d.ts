@@ -39,36 +39,36 @@ export class FluidFlow extends jspb.Message {
 
 export namespace FluidFlow {
   export type AsObject = {
-    targetFlowRate?: number,
-    targetDriveFrequency?: number,
-    flowRate?: number,
-    driveFrequency?: number,
-    direction: FluidFlow.Direction,
-  }
+    targetFlowRate?: number;
+    targetDriveFrequency?: number;
+    flowRate?: number;
+    driveFrequency?: number;
+    direction: FluidFlow.Direction;
+  };
 
-  export enum Direction { 
+  export enum Direction {
     DIRECTION_UNSPECIFIED = 0,
     FLOW = 1,
     RETURN = 2,
     BLOCKING = 3,
   }
 
-  export enum TargetFlowRateCase { 
+  export enum TargetFlowRateCase {
     _TARGET_FLOW_RATE_NOT_SET = 0,
     TARGET_FLOW_RATE = 1,
   }
 
-  export enum TargetDriveFrequencyCase { 
+  export enum TargetDriveFrequencyCase {
     _TARGET_DRIVE_FREQUENCY_NOT_SET = 0,
     TARGET_DRIVE_FREQUENCY = 2,
   }
 
-  export enum FlowRateCase { 
+  export enum FlowRateCase {
     _FLOW_RATE_NOT_SET = 0,
     FLOW_RATE = 3,
   }
 
-  export enum DriveFrequencyCase { 
+  export enum DriveFrequencyCase {
     _DRIVE_FREQUENCY_NOT_SET = 0,
     DRIVE_FREQUENCY = 4,
   }
@@ -93,9 +93,9 @@ export class GetFluidFlowRequest extends jspb.Message {
 
 export namespace GetFluidFlowRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullFluidFlowRequest extends jspb.Message {
@@ -120,10 +120,10 @@ export class PullFluidFlowRequest extends jspb.Message {
 
 export namespace PullFluidFlowRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullFluidFlowResponse extends jspb.Message {
@@ -142,8 +142,8 @@ export class PullFluidFlowResponse extends jspb.Message {
 
 export namespace PullFluidFlowResponse {
   export type AsObject = {
-    changesList: Array<PullFluidFlowResponse.Change.AsObject>,
-  }
+    changesList: Array<PullFluidFlowResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -169,10 +169,10 @@ export namespace PullFluidFlowResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      flow?: FluidFlow.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      flow?: FluidFlow.AsObject;
+    };
   }
 
 }
@@ -201,10 +201,10 @@ export class UpdateFluidFlowRequest extends jspb.Message {
 
 export namespace UpdateFluidFlowRequest {
   export type AsObject = {
-    name: string,
-    flow?: FluidFlow.AsObject,
-    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    flow?: FluidFlow.AsObject;
+    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class UpdateFluidFlowResponse extends jspb.Message {
@@ -223,8 +223,8 @@ export class UpdateFluidFlowResponse extends jspb.Message {
 
 export namespace UpdateFluidFlowResponse {
   export type AsObject = {
-    flow?: FluidFlow.AsObject,
-  }
+    flow?: FluidFlow.AsObject;
+  };
 }
 
 export class DescribeFluidFlowRequest extends jspb.Message {
@@ -241,8 +241,8 @@ export class DescribeFluidFlowRequest extends jspb.Message {
 
 export namespace DescribeFluidFlowRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class FluidFlowSupport extends jspb.Message {
@@ -267,9 +267,9 @@ export class FluidFlowSupport extends jspb.Message {
 
 export namespace FluidFlowSupport {
   export type AsObject = {
-    resourceSupport?: types_info_pb.ResourceSupport.AsObject,
-    flowRateUnit: string,
-    driveFrequencyUnit: string,
-  }
+    resourceSupport?: types_info_pb.ResourceSupport.AsObject;
+    flowRateUnit: string;
+    driveFrequencyUnit: string;
+  };
 }
 

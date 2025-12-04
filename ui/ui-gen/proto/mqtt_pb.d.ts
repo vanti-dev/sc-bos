@@ -16,8 +16,8 @@ export class PullMessagesRequest extends jspb.Message {
 
 export namespace PullMessagesRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class PullMessagesResponse extends jspb.Message {
@@ -40,9 +40,9 @@ export class PullMessagesResponse extends jspb.Message {
 
 export namespace PullMessagesResponse {
   export type AsObject = {
-    name: string,
-    topic: string,
-    payload: string,
-  }
+    name: string;
+    topic: string;
+    payload: string;
+  };
 }
 

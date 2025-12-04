@@ -38,12 +38,12 @@ export class LightHealth extends jspb.Message {
 
 export namespace LightHealth {
   export type AsObject = {
-    name: string,
-    updateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    faultsList: Array<LightFault>,
-    lastFunctionTest?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    lastDurationTest?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    name: string;
+    updateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    faultsList: Array<LightFault>;
+    lastFunctionTest?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    lastDurationTest?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class LightingEvent extends jspb.Message {
@@ -85,13 +85,13 @@ export class LightingEvent extends jspb.Message {
 
 export namespace LightingEvent {
   export type AsObject = {
-    name: string,
-    id: string,
-    timestamp?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    durationTestPass?: LightingEvent.DurationTestPass.AsObject,
-    functionTestPass?: LightingEvent.FunctionTestPass.AsObject,
-    statusReport?: LightingEvent.StatusReport.AsObject,
-  }
+    name: string;
+    id: string;
+    timestamp?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    durationTestPass?: LightingEvent.DurationTestPass.AsObject;
+    functionTestPass?: LightingEvent.FunctionTestPass.AsObject;
+    statusReport?: LightingEvent.StatusReport.AsObject;
+  };
 
   export class DurationTestPass extends jspb.Message {
     getAchievedDuration(): google_protobuf_duration_pb.Duration | undefined;
@@ -109,8 +109,8 @@ export namespace LightingEvent {
 
   export namespace DurationTestPass {
     export type AsObject = {
-      achievedDuration?: google_protobuf_duration_pb.Duration.AsObject,
-    }
+      achievedDuration?: google_protobuf_duration_pb.Duration.AsObject;
+    };
   }
 
 
@@ -125,7 +125,7 @@ export namespace LightingEvent {
 
   export namespace FunctionTestPass {
     export type AsObject = {
-    }
+    };
   }
 
 
@@ -145,12 +145,12 @@ export namespace LightingEvent {
 
   export namespace StatusReport {
     export type AsObject = {
-      faultsList: Array<LightFault>,
-    }
+      faultsList: Array<LightFault>;
+    };
   }
 
 
-  export enum EventCase { 
+  export enum EventCase {
     EVENT_NOT_SET = 0,
     DURATION_TEST_PASS = 4,
     FUNCTION_TEST_PASS = 5,
@@ -172,8 +172,8 @@ export class GetLightHealthRequest extends jspb.Message {
 
 export namespace GetLightHealthRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class ListLightHealthRequest extends jspb.Message {
@@ -193,9 +193,9 @@ export class ListLightHealthRequest extends jspb.Message {
 
 export namespace ListLightHealthRequest {
   export type AsObject = {
-    pageSize: number,
-    pageToken: string,
-  }
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListLightHealthResponse extends jspb.Message {
@@ -217,9 +217,9 @@ export class ListLightHealthResponse extends jspb.Message {
 
 export namespace ListLightHealthResponse {
   export type AsObject = {
-    emergencyLightsList: Array<LightHealth.AsObject>,
-    nextPageToken: string,
-  }
+    emergencyLightsList: Array<LightHealth.AsObject>;
+    nextPageToken: string;
+  };
 }
 
 export class ListLightEventsRequest extends jspb.Message {
@@ -239,9 +239,9 @@ export class ListLightEventsRequest extends jspb.Message {
 
 export namespace ListLightEventsRequest {
   export type AsObject = {
-    pageSize: number,
-    pageToken: string,
-  }
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListLightEventsResponse extends jspb.Message {
@@ -266,10 +266,10 @@ export class ListLightEventsResponse extends jspb.Message {
 
 export namespace ListLightEventsResponse {
   export type AsObject = {
-    eventsList: Array<LightingEvent.AsObject>,
-    nextPageToken: string,
-    futurePageToken: string,
-  }
+    eventsList: Array<LightingEvent.AsObject>;
+    nextPageToken: string;
+    futurePageToken: string;
+  };
 }
 
 export class GetReportCSVRequest extends jspb.Message {
@@ -286,8 +286,8 @@ export class GetReportCSVRequest extends jspb.Message {
 
 export namespace GetReportCSVRequest {
   export type AsObject = {
-    includeHeader: boolean,
-  }
+    includeHeader: boolean;
+  };
 }
 
 export class ReportCSV extends jspb.Message {
@@ -306,11 +306,11 @@ export class ReportCSV extends jspb.Message {
 
 export namespace ReportCSV {
   export type AsObject = {
-    csv: Uint8Array | string,
-  }
+    csv: Uint8Array | string;
+  };
 }
 
-export enum LightFault { 
+export enum LightFault {
   FAULT_UNSPECIFIED = 0,
   DURATION_TEST_FAILED = 1,
   FUNCTION_TEST_FAILED = 2,

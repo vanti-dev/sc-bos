@@ -45,15 +45,15 @@ export class AnprEvent extends jspb.Message {
 
 export namespace AnprEvent {
   export type AsObject = {
-    eventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    registrationPlate: string,
-    country: string,
-    area: string,
-    confidence?: number,
-    plateType: string,
-    year: string,
-    vehicleInfo?: AnprEvent.VehicleInfo.AsObject,
-  }
+    eventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    registrationPlate: string;
+    country: string;
+    area: string;
+    confidence?: number;
+    plateType: string;
+    year: string;
+    vehicleInfo?: AnprEvent.VehicleInfo.AsObject;
+  };
 
   export class VehicleInfo extends jspb.Message {
     getVehicleType(): string;
@@ -78,15 +78,15 @@ export namespace AnprEvent {
 
   export namespace VehicleInfo {
     export type AsObject = {
-      vehicleType: string,
-      colour: string,
-      make: string,
-      model: string,
-    }
+      vehicleType: string;
+      colour: string;
+      make: string;
+      model: string;
+    };
   }
 
 
-  export enum ConfidenceCase { 
+  export enum ConfidenceCase {
     _CONFIDENCE_NOT_SET = 0,
     CONFIDENCE = 5,
   }
@@ -117,11 +117,11 @@ export class ListAnprEventsRequest extends jspb.Message {
 
 export namespace ListAnprEventsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListAnprEventsResponse extends jspb.Message {
@@ -146,10 +146,10 @@ export class ListAnprEventsResponse extends jspb.Message {
 
 export namespace ListAnprEventsResponse {
   export type AsObject = {
-    anprEventsList: Array<AnprEvent.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    anprEventsList: Array<AnprEvent.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class PullAnprEventsRequest extends jspb.Message {
@@ -174,10 +174,10 @@ export class PullAnprEventsRequest extends jspb.Message {
 
 export namespace PullAnprEventsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullAnprEventsResponse extends jspb.Message {
@@ -196,8 +196,8 @@ export class PullAnprEventsResponse extends jspb.Message {
 
 export namespace PullAnprEventsResponse {
   export type AsObject = {
-    changesList: Array<PullAnprEventsResponse.Change.AsObject>,
-  }
+    changesList: Array<PullAnprEventsResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -223,10 +223,10 @@ export namespace PullAnprEventsResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      anprEvent?: AnprEvent.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      anprEvent?: AnprEvent.AsObject;
+    };
   }
 
 }

@@ -29,11 +29,11 @@ export class ListReportsRequest extends jspb.Message {
 
 export namespace ListReportsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListReportsResponse extends jspb.Message {
@@ -58,10 +58,10 @@ export class ListReportsResponse extends jspb.Message {
 
 export namespace ListReportsResponse {
   export type AsObject = {
-    reportsList: Array<Report.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    reportsList: Array<Report.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class Report extends jspb.Message {
@@ -92,12 +92,12 @@ export class Report extends jspb.Message {
 
 export namespace Report {
   export type AsObject = {
-    id: string,
-    title: string,
-    description: string,
-    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    mediaType: string,
-  }
+    id: string;
+    title: string;
+    description: string;
+    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    mediaType: string;
+  };
 }
 
 export class GetDownloadReportUrlRequest extends jspb.Message {
@@ -117,9 +117,9 @@ export class GetDownloadReportUrlRequest extends jspb.Message {
 
 export namespace GetDownloadReportUrlRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-  }
+    name: string;
+    id: string;
+  };
 }
 
 export class DownloadReportUrl extends jspb.Message {
@@ -147,10 +147,10 @@ export class DownloadReportUrl extends jspb.Message {
 
 export namespace DownloadReportUrl {
   export type AsObject = {
-    url: string,
-    filename: string,
-    mediaType: string,
-    expireAfterTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    url: string;
+    filename: string;
+    mediaType: string;
+    expireAfterTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 

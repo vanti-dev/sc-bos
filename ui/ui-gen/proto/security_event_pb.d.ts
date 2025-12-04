@@ -47,15 +47,15 @@ export class SecurityEvent extends jspb.Message {
 
 export namespace SecurityEvent {
   export type AsObject = {
-    securityEventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    description: string,
-    id: string,
-    source?: SecurityEvent.Source.AsObject,
-    actor?: actor_pb.Actor.AsObject,
-    state: SecurityEvent.State,
-    priority: number,
-    eventType: SecurityEvent.EventType,
-  }
+    securityEventTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    description: string;
+    id: string;
+    source?: SecurityEvent.Source.AsObject;
+    actor?: actor_pb.Actor.AsObject;
+    state: SecurityEvent.State;
+    priority: number;
+    eventType: SecurityEvent.EventType;
+  };
 
   export class Source extends jspb.Message {
     getId(): string;
@@ -83,23 +83,23 @@ export namespace SecurityEvent {
 
   export namespace Source {
     export type AsObject = {
-      id: string,
-      name: string,
-      subsystem: string,
-      floor: string,
-      zone: string,
-    }
+      id: string;
+      name: string;
+      subsystem: string;
+      floor: string;
+      zone: string;
+    };
   }
 
 
-  export enum State { 
+  export enum State {
     STATE_UNKNOWN = 0,
     UNACKNOWLEDGED = 1,
     ACKNOWLEDGED = 2,
     RESOLVED = 3,
   }
 
-  export enum EventType { 
+  export enum EventType {
     EVENT_TYPE_UNKNOWN = 0,
     TAMPER = 1,
     TAMPER_CLEAR = 2,
@@ -153,11 +153,11 @@ export class ListSecurityEventsRequest extends jspb.Message {
 
 export namespace ListSecurityEventsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListSecurityEventsResponse extends jspb.Message {
@@ -182,10 +182,10 @@ export class ListSecurityEventsResponse extends jspb.Message {
 
 export namespace ListSecurityEventsResponse {
   export type AsObject = {
-    securityEventsList: Array<SecurityEvent.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    securityEventsList: Array<SecurityEvent.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class PullSecurityEventsRequest extends jspb.Message {
@@ -210,10 +210,10 @@ export class PullSecurityEventsRequest extends jspb.Message {
 
 export namespace PullSecurityEventsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullSecurityEventsResponse extends jspb.Message {
@@ -232,8 +232,8 @@ export class PullSecurityEventsResponse extends jspb.Message {
 
 export namespace PullSecurityEventsResponse {
   export type AsObject = {
-    changesList: Array<PullSecurityEventsResponse.Change.AsObject>,
-  }
+    changesList: Array<PullSecurityEventsResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -267,12 +267,12 @@ export namespace PullSecurityEventsResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      newValue?: SecurityEvent.AsObject,
-      oldValue?: SecurityEvent.AsObject,
-      type: types_change_pb.ChangeType,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      newValue?: SecurityEvent.AsObject;
+      oldValue?: SecurityEvent.AsObject;
+      type: types_change_pb.ChangeType;
+    };
   }
 
 }

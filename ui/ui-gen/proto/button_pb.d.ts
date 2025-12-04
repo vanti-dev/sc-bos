@@ -28,10 +28,10 @@ export class ButtonState extends jspb.Message {
 
 export namespace ButtonState {
   export type AsObject = {
-    state: ButtonState.Press,
-    stateChangeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    mostRecentGesture?: ButtonState.Gesture.AsObject,
-  }
+    state: ButtonState.Press;
+    stateChangeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    mostRecentGesture?: ButtonState.Gesture.AsObject;
+  };
 
   export class Gesture extends jspb.Message {
     getId(): string;
@@ -63,14 +63,14 @@ export namespace ButtonState {
 
   export namespace Gesture {
     export type AsObject = {
-      id: string,
-      kind: ButtonState.Gesture.Kind,
-      count: number,
-      startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      id: string;
+      kind: ButtonState.Gesture.Kind;
+      count: number;
+      startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
 
-    export enum Kind { 
+    export enum Kind {
       KIND_UNSPECIFIED = 0,
       CLICK = 1,
       HOLD = 2,
@@ -78,7 +78,7 @@ export namespace ButtonState {
   }
 
 
-  export enum Press { 
+  export enum Press {
     PRESS_UNSPECIFIED = 0,
     UNPRESSED = 1,
     PRESSED = 2,
@@ -104,9 +104,9 @@ export class GetButtonStateRequest extends jspb.Message {
 
 export namespace GetButtonStateRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullButtonStateRequest extends jspb.Message {
@@ -131,10 +131,10 @@ export class PullButtonStateRequest extends jspb.Message {
 
 export namespace PullButtonStateRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullButtonStateResponse extends jspb.Message {
@@ -153,8 +153,8 @@ export class PullButtonStateResponse extends jspb.Message {
 
 export namespace PullButtonStateResponse {
   export type AsObject = {
-    changesList: Array<PullButtonStateResponse.Change.AsObject>,
-  }
+    changesList: Array<PullButtonStateResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -180,10 +180,10 @@ export namespace PullButtonStateResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      buttonState?: ButtonState.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      buttonState?: ButtonState.AsObject;
+    };
   }
 
 }
@@ -212,9 +212,9 @@ export class UpdateButtonStateRequest extends jspb.Message {
 
 export namespace UpdateButtonStateRequest {
   export type AsObject = {
-    name: string,
-    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    buttonState?: ButtonState.AsObject,
-  }
+    name: string;
+    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    buttonState?: ButtonState.AsObject;
+  };
 }
 

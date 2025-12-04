@@ -61,20 +61,20 @@ export class WasteRecord extends jspb.Message {
 
 export namespace WasteRecord {
   export type AsObject = {
-    id: string,
-    recordCreateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    weight: number,
-    system: string,
-    type: WasteRecord.Type,
-    area: string,
-    wasteCreateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    stream: string,
-    co2Saved?: number,
-    landSaved?: number,
-    treesSaved?: number,
-  }
+    id: string;
+    recordCreateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    weight: number;
+    system: string;
+    type: WasteRecord.Type;
+    area: string;
+    wasteCreateTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    stream: string;
+    co2Saved?: number;
+    landSaved?: number;
+    treesSaved?: number;
+  };
 
-  export enum Type { 
+  export enum Type {
     TYPE_UNSPECIFIED = 0,
     GENERAL_WASTE = 1,
     MIXED_RECYCLING = 2,
@@ -86,17 +86,17 @@ export namespace WasteRecord {
     PLASTIC = 8,
   }
 
-  export enum Co2SavedCase { 
+  export enum Co2SavedCase {
     _CO2_SAVED_NOT_SET = 0,
     CO2_SAVED = 9,
   }
 
-  export enum LandSavedCase { 
+  export enum LandSavedCase {
     _LAND_SAVED_NOT_SET = 0,
     LAND_SAVED = 10,
   }
 
-  export enum TreesSavedCase { 
+  export enum TreesSavedCase {
     _TREES_SAVED_NOT_SET = 0,
     TREES_SAVED = 11,
   }
@@ -124,10 +124,10 @@ export class ListWasteRecordsResponse extends jspb.Message {
 
 export namespace ListWasteRecordsResponse {
   export type AsObject = {
-    wasterecordsList: Array<WasteRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    wasterecordsList: Array<WasteRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class ListWasteRecordsRequest extends jspb.Message {
@@ -163,13 +163,13 @@ export class ListWasteRecordsRequest extends jspb.Message {
 
 export namespace ListWasteRecordsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    period?: types_time_period_pb.Period.AsObject,
-    orderBy: string,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    period?: types_time_period_pb.Period.AsObject;
+    orderBy: string;
+  };
 }
 
 export class PullWasteRecordsRequest extends jspb.Message {
@@ -194,10 +194,10 @@ export class PullWasteRecordsRequest extends jspb.Message {
 
 export namespace PullWasteRecordsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullWasteRecordsResponse extends jspb.Message {
@@ -216,8 +216,8 @@ export class PullWasteRecordsResponse extends jspb.Message {
 
 export namespace PullWasteRecordsResponse {
   export type AsObject = {
-    changesList: Array<PullWasteRecordsResponse.Change.AsObject>,
-  }
+    changesList: Array<PullWasteRecordsResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -251,12 +251,12 @@ export namespace PullWasteRecordsResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      newValue?: WasteRecord.AsObject,
-      oldValue?: WasteRecord.AsObject,
-      type: types_change_pb.ChangeType,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      newValue?: WasteRecord.AsObject;
+      oldValue?: WasteRecord.AsObject;
+      type: types_change_pb.ChangeType;
+    };
   }
 
 }
@@ -275,8 +275,8 @@ export class DescribeWasteRecordRequest extends jspb.Message {
 
 export namespace DescribeWasteRecordRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class WasteRecordSupport extends jspb.Message {
@@ -304,10 +304,10 @@ export class WasteRecordSupport extends jspb.Message {
 
 export namespace WasteRecordSupport {
   export type AsObject = {
-    resourceSupport?: types_info_pb.ResourceSupport.AsObject,
-    unit: string,
-    co2SavedUnit: string,
-    landSavedUnit: string,
-  }
+    resourceSupport?: types_info_pb.ResourceSupport.AsObject;
+    unit: string;
+    co2SavedUnit: string;
+    landSavedUnit: string;
+  };
 }
 

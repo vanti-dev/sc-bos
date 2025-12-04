@@ -6,9 +6,9 @@
     "gen": "node gen.mjs"
   },
   "dependencies": {
-    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.57",
+    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.59",
     "google-protobuf": "^3.21.2",
-    "grpc-web": "^1.4.2"
+    "grpc-web": "^2.0.2"
   },
   "devDependencies": {
     "replace-in-file": "^8.3.0"

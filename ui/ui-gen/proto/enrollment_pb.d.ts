@@ -35,13 +35,13 @@ export class Enrollment extends jspb.Message {
 
 export namespace Enrollment {
   export type AsObject = {
-    targetName: string,
-    targetAddress: string,
-    managerName: string,
-    managerAddress: string,
-    certificate: Uint8Array | string,
-    rootCas: Uint8Array | string,
-  }
+    targetName: string;
+    targetAddress: string;
+    managerName: string;
+    managerAddress: string;
+    certificate: Uint8Array | string;
+    rootCas: Uint8Array | string;
+  };
 }
 
 export class GetEnrollmentRequest extends jspb.Message {
@@ -55,7 +55,7 @@ export class GetEnrollmentRequest extends jspb.Message {
 
 export namespace GetEnrollmentRequest {
   export type AsObject = {
-  }
+  };
 }
 
 export class CreateEnrollmentRequest extends jspb.Message {
@@ -74,8 +74,8 @@ export class CreateEnrollmentRequest extends jspb.Message {
 
 export namespace CreateEnrollmentRequest {
   export type AsObject = {
-    enrollment?: Enrollment.AsObject,
-  }
+    enrollment?: Enrollment.AsObject;
+  };
 }
 
 export class UpdateEnrollmentRequest extends jspb.Message {
@@ -94,8 +94,8 @@ export class UpdateEnrollmentRequest extends jspb.Message {
 
 export namespace UpdateEnrollmentRequest {
   export type AsObject = {
-    enrollment?: Enrollment.AsObject,
-  }
+    enrollment?: Enrollment.AsObject;
+  };
 }
 
 export class DeleteEnrollmentRequest extends jspb.Message {
@@ -109,7 +109,7 @@ export class DeleteEnrollmentRequest extends jspb.Message {
 
 export namespace DeleteEnrollmentRequest {
   export type AsObject = {
-  }
+  };
 }
 
 export class TestEnrollmentRequest extends jspb.Message {
@@ -123,7 +123,7 @@ export class TestEnrollmentRequest extends jspb.Message {
 
 export namespace TestEnrollmentRequest {
   export type AsObject = {
-  }
+  };
 }
 
 export class TestEnrollmentResponse extends jspb.Message {
@@ -143,8 +143,8 @@ export class TestEnrollmentResponse extends jspb.Message {
 
 export namespace TestEnrollmentResponse {
   export type AsObject = {
-    error: string,
-    code: number,
-  }
+    error: string;
+    code: number;
+  };
 }
 

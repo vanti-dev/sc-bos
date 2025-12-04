@@ -32,13 +32,13 @@ export class AccessAttempt extends jspb.Message {
 
 export namespace AccessAttempt {
   export type AsObject = {
-    grant: AccessAttempt.Grant,
-    reason: string,
-    actor?: actor_pb.Actor.AsObject,
-    accessAttemptTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    grant: AccessAttempt.Grant;
+    reason: string;
+    actor?: actor_pb.Actor.AsObject;
+    accessAttemptTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 
-  export enum Grant { 
+  export enum Grant {
     GRANT_UNKNOWN = 0,
     GRANTED = 1,
     DENIED = 2,
@@ -69,9 +69,9 @@ export class GetLastAccessAttemptRequest extends jspb.Message {
 
 export namespace GetLastAccessAttemptRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullAccessAttemptsRequest extends jspb.Message {
@@ -96,10 +96,10 @@ export class PullAccessAttemptsRequest extends jspb.Message {
 
 export namespace PullAccessAttemptsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullAccessAttemptsResponse extends jspb.Message {
@@ -118,8 +118,8 @@ export class PullAccessAttemptsResponse extends jspb.Message {
 
 export namespace PullAccessAttemptsResponse {
   export type AsObject = {
-    changesList: Array<PullAccessAttemptsResponse.Change.AsObject>,
-  }
+    changesList: Array<PullAccessAttemptsResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -145,10 +145,10 @@ export namespace PullAccessAttemptsResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      accessAttempt?: AccessAttempt.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      accessAttempt?: AccessAttempt.AsObject;
+    };
   }
 
 }
@@ -199,11 +199,15 @@ export class AccessGrant extends jspb.Message {
 
   getQrCodeUrl(): string;
   setQrCodeUrl(value: string): AccessGrant;
+  hasQrCodeUrl(): boolean;
+  clearQrCodeUrl(): AccessGrant;
 
   getQrCodeImage(): Uint8Array | string;
   getQrCodeImage_asU8(): Uint8Array;
   getQrCodeImage_asB64(): string;
   setQrCodeImage(value: Uint8Array | string): AccessGrant;
+  hasQrCodeImage(): boolean;
+  clearQrCodeImage(): AccessGrant;
 
   getSkipCheckIn(): boolean;
   setSkipCheckIn(value: boolean): AccessGrant;
@@ -222,47 +226,47 @@ export class AccessGrant extends jspb.Message {
 
 export namespace AccessGrant {
   export type AsObject = {
-    id: string,
-    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    purpose?: string,
-    grantee?: actor_pb.Actor.AsObject,
-    granter?: actor_pb.Actor.AsObject,
-    createdTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    updatedTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    entryCode?: string,
-    qrCodeUrl: string,
-    qrCodeImage: Uint8Array | string,
-    skipCheckIn?: boolean,
-  }
+    id: string;
+    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    purpose?: string;
+    grantee?: actor_pb.Actor.AsObject;
+    granter?: actor_pb.Actor.AsObject;
+    createdTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    updatedTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    entryCode?: string;
+    qrCodeUrl?: string;
+    qrCodeImage?: Uint8Array | string;
+    skipCheckIn?: boolean;
+  };
 
-  export enum QrCodeCase { 
+  export enum QrCodeCase {
     QR_CODE_NOT_SET = 0,
     QR_CODE_URL = 10,
     QR_CODE_IMAGE = 11,
   }
 
-  export enum PurposeCase { 
+  export enum PurposeCase {
     _PURPOSE_NOT_SET = 0,
     PURPOSE = 4,
   }
 
-  export enum CreatedTimeCase { 
+  export enum CreatedTimeCase {
     _CREATED_TIME_NOT_SET = 0,
     CREATED_TIME = 7,
   }
 
-  export enum UpdatedTimeCase { 
+  export enum UpdatedTimeCase {
     _UPDATED_TIME_NOT_SET = 0,
     UPDATED_TIME = 8,
   }
 
-  export enum EntryCodeCase { 
+  export enum EntryCodeCase {
     _ENTRY_CODE_NOT_SET = 0,
     ENTRY_CODE = 9,
   }
 
-  export enum SkipCheckInCase { 
+  export enum SkipCheckInCase {
     _SKIP_CHECK_IN_NOT_SET = 0,
     SKIP_CHECK_IN = 12,
   }
@@ -287,9 +291,9 @@ export class CreateAccessGrantRequest extends jspb.Message {
 
 export namespace CreateAccessGrantRequest {
   export type AsObject = {
-    name: string,
-    accessGrant?: AccessGrant.AsObject,
-  }
+    name: string;
+    accessGrant?: AccessGrant.AsObject;
+  };
 }
 
 export class UpdateAccessGrantRequest extends jspb.Message {
@@ -311,9 +315,9 @@ export class UpdateAccessGrantRequest extends jspb.Message {
 
 export namespace UpdateAccessGrantRequest {
   export type AsObject = {
-    name: string,
-    accessGrant?: AccessGrant.AsObject,
-  }
+    name: string;
+    accessGrant?: AccessGrant.AsObject;
+  };
 }
 
 export class DeleteAccessGrantRequest extends jspb.Message {
@@ -333,9 +337,9 @@ export class DeleteAccessGrantRequest extends jspb.Message {
 
 export namespace DeleteAccessGrantRequest {
   export type AsObject = {
-    name: string,
-    accessGrantId: string,
-  }
+    name: string;
+    accessGrantId: string;
+  };
 }
 
 export class DeleteAccessGrantResponse extends jspb.Message {
@@ -349,7 +353,7 @@ export class DeleteAccessGrantResponse extends jspb.Message {
 
 export namespace DeleteAccessGrantResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class GetAccessGrantsRequest extends jspb.Message {
@@ -374,10 +378,10 @@ export class GetAccessGrantsRequest extends jspb.Message {
 
 export namespace GetAccessGrantsRequest {
   export type AsObject = {
-    name: string,
-    accessGrantId: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    accessGrantId: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class ListAccessGrantsRequest extends jspb.Message {
@@ -405,11 +409,11 @@ export class ListAccessGrantsRequest extends jspb.Message {
 
 export namespace ListAccessGrantsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListAccessGrantsResponse extends jspb.Message {
@@ -434,9 +438,9 @@ export class ListAccessGrantsResponse extends jspb.Message {
 
 export namespace ListAccessGrantsResponse {
   export type AsObject = {
-    accessGrantsList: Array<AccessGrant.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    accessGrantsList: Array<AccessGrant.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 

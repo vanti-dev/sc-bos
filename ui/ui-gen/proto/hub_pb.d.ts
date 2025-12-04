@@ -25,10 +25,10 @@ export class HubNode extends jspb.Message {
 
 export namespace HubNode {
   export type AsObject = {
-    address: string,
-    name: string,
-    description: string,
-  }
+    address: string;
+    name: string;
+    description: string;
+  };
 }
 
 export class HubNodeInspection extends jspb.Message {
@@ -52,9 +52,9 @@ export class HubNodeInspection extends jspb.Message {
 
 export namespace HubNodeInspection {
   export type AsObject = {
-    metadata?: traits_metadata_pb.Metadata.AsObject,
-    publicCertsList: Array<string>,
-  }
+    metadata?: traits_metadata_pb.Metadata.AsObject;
+    publicCertsList: Array<string>;
+  };
 }
 
 export class GetHubNodeRequest extends jspb.Message {
@@ -71,8 +71,8 @@ export class GetHubNodeRequest extends jspb.Message {
 
 export namespace GetHubNodeRequest {
   export type AsObject = {
-    address: string,
-  }
+    address: string;
+  };
 }
 
 export class EnrollHubNodeRequest extends jspb.Message {
@@ -96,9 +96,9 @@ export class EnrollHubNodeRequest extends jspb.Message {
 
 export namespace EnrollHubNodeRequest {
   export type AsObject = {
-    node?: HubNode.AsObject,
-    publicCertsList: Array<string>,
-  }
+    node?: HubNode.AsObject;
+    publicCertsList: Array<string>;
+  };
 }
 
 export class RenewHubNodeRequest extends jspb.Message {
@@ -115,8 +115,8 @@ export class RenewHubNodeRequest extends jspb.Message {
 
 export namespace RenewHubNodeRequest {
   export type AsObject = {
-    address: string,
-  }
+    address: string;
+  };
 }
 
 export class ListHubNodesRequest extends jspb.Message {
@@ -130,7 +130,7 @@ export class ListHubNodesRequest extends jspb.Message {
 
 export namespace ListHubNodesRequest {
   export type AsObject = {
-  }
+  };
 }
 
 export class ListHubNodesResponse extends jspb.Message {
@@ -149,8 +149,8 @@ export class ListHubNodesResponse extends jspb.Message {
 
 export namespace ListHubNodesResponse {
   export type AsObject = {
-    nodesList: Array<HubNode.AsObject>,
-  }
+    nodesList: Array<HubNode.AsObject>;
+  };
 }
 
 export class PullHubNodesRequest extends jspb.Message {
@@ -167,8 +167,8 @@ export class PullHubNodesRequest extends jspb.Message {
 
 export namespace PullHubNodesRequest {
   export type AsObject = {
-    updatesOnly: boolean,
-  }
+    updatesOnly: boolean;
+  };
 }
 
 export class PullHubNodesResponse extends jspb.Message {
@@ -187,8 +187,8 @@ export class PullHubNodesResponse extends jspb.Message {
 
 export namespace PullHubNodesResponse {
   export type AsObject = {
-    changesList: Array<PullHubNodesResponse.Change.AsObject>,
-  }
+    changesList: Array<PullHubNodesResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getType(): types_change_pb.ChangeType;
@@ -219,11 +219,11 @@ export namespace PullHubNodesResponse {
 
   export namespace Change {
     export type AsObject = {
-      type: types_change_pb.ChangeType,
-      newValue?: HubNode.AsObject,
-      oldValue?: HubNode.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      type: types_change_pb.ChangeType;
+      newValue?: HubNode.AsObject;
+      oldValue?: HubNode.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }
@@ -244,8 +244,8 @@ export class InspectHubNodeRequest extends jspb.Message {
 
 export namespace InspectHubNodeRequest {
   export type AsObject = {
-    node?: HubNode.AsObject,
-  }
+    node?: HubNode.AsObject;
+  };
 }
 
 export class TestHubNodeRequest extends jspb.Message {
@@ -262,8 +262,8 @@ export class TestHubNodeRequest extends jspb.Message {
 
 export namespace TestHubNodeRequest {
   export type AsObject = {
-    address: string,
-  }
+    address: string;
+  };
 }
 
 export class TestHubNodeResponse extends jspb.Message {
@@ -277,7 +277,7 @@ export class TestHubNodeResponse extends jspb.Message {
 
 export namespace TestHubNodeResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class ForgetHubNodeRequest extends jspb.Message {
@@ -297,9 +297,9 @@ export class ForgetHubNodeRequest extends jspb.Message {
 
 export namespace ForgetHubNodeRequest {
   export type AsObject = {
-    address: string,
-    allowMissing: boolean,
-  }
+    address: string;
+    allowMissing: boolean;
+  };
 }
 
 export class ForgetHubNodeResponse extends jspb.Message {
@@ -313,6 +313,6 @@ export class ForgetHubNodeResponse extends jspb.Message {
 
 export namespace ForgetHubNodeResponse {
   export type AsObject = {
-  }
+  };
 }
 

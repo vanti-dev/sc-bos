@@ -32,11 +32,11 @@ export class StatusLog extends jspb.Message {
 
 export namespace StatusLog {
   export type AsObject = {
-    level: StatusLog.Level,
-    description: string,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    problemsList: Array<StatusLog.Problem.AsObject>,
-  }
+    level: StatusLog.Level;
+    description: string;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    problemsList: Array<StatusLog.Problem.AsObject>;
+  };
 
   export class Problem extends jspb.Message {
     getLevel(): StatusLog.Level;
@@ -63,15 +63,15 @@ export namespace StatusLog {
 
   export namespace Problem {
     export type AsObject = {
-      level: StatusLog.Level,
-      description: string,
-      recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      name: string,
-    }
+      level: StatusLog.Level;
+      description: string;
+      recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      name: string;
+    };
   }
 
 
-  export enum Level { 
+  export enum Level {
     LEVEL_UNDEFINED = 0,
     NOMINAL = 1,
     NOTICE = 2,
@@ -100,9 +100,9 @@ export class GetCurrentStatusRequest extends jspb.Message {
 
 export namespace GetCurrentStatusRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullCurrentStatusRequest extends jspb.Message {
@@ -127,10 +127,10 @@ export class PullCurrentStatusRequest extends jspb.Message {
 
 export namespace PullCurrentStatusRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullCurrentStatusResponse extends jspb.Message {
@@ -149,8 +149,8 @@ export class PullCurrentStatusResponse extends jspb.Message {
 
 export namespace PullCurrentStatusResponse {
   export type AsObject = {
-    changesList: Array<PullCurrentStatusResponse.Change.AsObject>,
-  }
+    changesList: Array<PullCurrentStatusResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -176,10 +176,10 @@ export namespace PullCurrentStatusResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      currentStatus?: StatusLog.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      currentStatus?: StatusLog.AsObject;
+    };
   }
 
 }
@@ -205,9 +205,9 @@ export class StatusLogRecord extends jspb.Message {
 
 export namespace StatusLogRecord {
   export type AsObject = {
-    currentStatus?: StatusLog.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    currentStatus?: StatusLog.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ListCurrentStatusHistoryRequest extends jspb.Message {
@@ -243,13 +243,13 @@ export class ListCurrentStatusHistoryRequest extends jspb.Message {
 
 export namespace ListCurrentStatusHistoryRequest {
   export type AsObject = {
-    name: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class ListCurrentStatusHistoryResponse extends jspb.Message {
@@ -274,9 +274,9 @@ export class ListCurrentStatusHistoryResponse extends jspb.Message {
 
 export namespace ListCurrentStatusHistoryResponse {
   export type AsObject = {
-    currentStatusRecordsList: Array<StatusLogRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    currentStatusRecordsList: Array<StatusLogRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
