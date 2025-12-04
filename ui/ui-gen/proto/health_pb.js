@@ -13,13 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global =
-    (typeof globalThis !== 'undefined' && globalThis) ||
-    (typeof window !== 'undefined' && window) ||
-    (typeof global !== 'undefined' && global) ||
-    (typeof self !== 'undefined' && self) ||
-    (function () { return this; }).call(null) ||
-    Function('return this')();
+var global = globalThis;
 
 var google_protobuf_duration_pb = require('google-protobuf/google/protobuf/duration_pb.js');
 goog.object.extend(proto, google_protobuf_duration_pb);
@@ -681,7 +675,7 @@ faults: (f = msg.getFaults()) && proto.smartcore.bos.HealthCheck.Faults.toObject
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck}
  */
 proto.smartcore.bos.HealthCheck.deserializeBinary = function(bytes) {
@@ -706,15 +700,15 @@ proto.smartcore.bos.HealthCheck.deserializeBinaryFromReader = function(msg, read
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setId(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setDisplayName(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setDescription(value);
       break;
     case 4:
@@ -973,7 +967,7 @@ contribution: jspb.Message.getFieldWithDefault(msg, 2, 0)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.ComplianceImpact}
  */
 proto.smartcore.bos.HealthCheck.ComplianceImpact.deserializeBinary = function(bytes) {
@@ -1113,7 +1107,7 @@ reference: jspb.Message.getFieldWithDefault(msg, 5, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.ComplianceImpact.Standard}
  */
 proto.smartcore.bos.HealthCheck.ComplianceImpact.Standard.deserializeBinary = function(bytes) {
@@ -1138,23 +1132,23 @@ proto.smartcore.bos.HealthCheck.ComplianceImpact.Standard.deserializeBinaryFromR
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setDisplayName(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setTitle(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setDescription(value);
       break;
     case 4:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setOrganization(value);
       break;
     case 5:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setReference(value);
       break;
     default:
@@ -1416,7 +1410,7 @@ code: (f = msg.getCode()) && proto.smartcore.bos.HealthCheck.Error.Code.toObject
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.Error}
  */
 proto.smartcore.bos.HealthCheck.Error.deserializeBinary = function(bytes) {
@@ -1441,11 +1435,11 @@ proto.smartcore.bos.HealthCheck.Error.deserializeBinaryFromReader = function(msg
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setSummaryText(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setDetailsText(value);
       break;
     case 3:
@@ -1553,7 +1547,7 @@ system: jspb.Message.getFieldWithDefault(msg, 2, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.Error.Code}
  */
 proto.smartcore.bos.HealthCheck.Error.Code.deserializeBinary = function(bytes) {
@@ -1578,11 +1572,11 @@ proto.smartcore.bos.HealthCheck.Error.Code.deserializeBinaryFromReader = functio
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setCode(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setSystem(value);
       break;
     default:
@@ -1790,7 +1784,7 @@ effects: (f = msg.getEffects()) && proto.smartcore.bos.HealthCheck.Reliability.E
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.Reliability}
  */
 proto.smartcore.bos.HealthCheck.Reliability.deserializeBinary = function(bytes) {
@@ -1984,7 +1978,7 @@ displayName: jspb.Message.getFieldWithDefault(msg, 3, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.Reliability.Cause}
  */
 proto.smartcore.bos.HealthCheck.Reliability.Cause.deserializeBinary = function(bytes) {
@@ -2009,7 +2003,7 @@ proto.smartcore.bos.HealthCheck.Reliability.Cause.deserializeBinaryFromReader = 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -2018,7 +2012,7 @@ proto.smartcore.bos.HealthCheck.Reliability.Cause.deserializeBinaryFromReader = 
       msg.setError(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setDisplayName(value);
       break;
     default:
@@ -2193,7 +2187,7 @@ count: jspb.Message.getFieldWithDefault(msg, 1, 0)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.Reliability.Effects}
  */
 proto.smartcore.bos.HealthCheck.Reliability.Effects.deserializeBinary = function(bytes) {
@@ -2563,7 +2557,7 @@ durationValue: (f = msg.getDurationValue()) && google_protobuf_duration_pb.Durat
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.Value}
  */
 proto.smartcore.bos.HealthCheck.Value.deserializeBinary = function(bytes) {
@@ -2592,7 +2586,7 @@ proto.smartcore.bos.HealthCheck.Value.deserializeBinaryFromReader = function(msg
       msg.setBoolValue(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setStringValue(value);
       break;
     case 3:
@@ -3001,7 +2995,7 @@ deadband: (f = msg.getDeadband()) && proto.smartcore.bos.HealthCheck.Value.toObj
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.ValueRange}
  */
 proto.smartcore.bos.HealthCheck.ValueRange.deserializeBinary = function(bytes) {
@@ -3260,7 +3254,7 @@ valuesList: jspb.Message.toObjectList(msg.getValuesList(),
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.Values}
  */
 proto.smartcore.bos.HealthCheck.Values.deserializeBinary = function(bytes) {
@@ -3447,7 +3441,7 @@ displayUnit: jspb.Message.getFieldWithDefault(msg, 8, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.Bounds}
  */
 proto.smartcore.bos.HealthCheck.Bounds.deserializeBinary = function(bytes) {
@@ -3502,7 +3496,7 @@ proto.smartcore.bos.HealthCheck.Bounds.deserializeBinaryFromReader = function(ms
       msg.setAbnormalValues(value);
       break;
     case 8:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setDisplayUnit(value);
       break;
     default:
@@ -3885,7 +3879,7 @@ currentFaultsList: jspb.Message.toObjectList(msg.getCurrentFaultsList(),
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheck.Faults}
  */
 proto.smartcore.bos.HealthCheck.Faults.deserializeBinary = function(bytes) {
@@ -4407,7 +4401,7 @@ recordType: jspb.Message.getFieldWithDefault(msg, 3, 0)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.HealthCheckRecord}
  */
 proto.smartcore.bos.HealthCheckRecord.deserializeBinary = function(bytes) {
@@ -4650,7 +4644,7 @@ pageToken: jspb.Message.getFieldWithDefault(msg, 4, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.ListHealthChecksRequest}
  */
 proto.smartcore.bos.ListHealthChecksRequest.deserializeBinary = function(bytes) {
@@ -4675,7 +4669,7 @@ proto.smartcore.bos.ListHealthChecksRequest.deserializeBinaryFromReader = functi
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -4688,7 +4682,7 @@ proto.smartcore.bos.ListHealthChecksRequest.deserializeBinaryFromReader = functi
       msg.setPageSize(value);
       break;
     case 4:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setPageToken(value);
       break;
     default:
@@ -4898,7 +4892,7 @@ totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.ListHealthChecksResponse}
  */
 proto.smartcore.bos.ListHealthChecksResponse.deserializeBinary = function(bytes) {
@@ -4928,7 +4922,7 @@ proto.smartcore.bos.ListHealthChecksResponse.deserializeBinaryFromReader = funct
       msg.addHealthChecks(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setNextPageToken(value);
       break;
     case 3:
@@ -5110,7 +5104,7 @@ updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullHealthChecksRequest}
  */
 proto.smartcore.bos.PullHealthChecksRequest.deserializeBinary = function(bytes) {
@@ -5135,7 +5129,7 @@ proto.smartcore.bos.PullHealthChecksRequest.deserializeBinaryFromReader = functi
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -5327,7 +5321,7 @@ changesList: jspb.Message.toObjectList(msg.getChangesList(),
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullHealthChecksResponse}
  */
 proto.smartcore.bos.PullHealthChecksResponse.deserializeBinary = function(bytes) {
@@ -5445,7 +5439,7 @@ changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullHealthChecksResponse.Change}
  */
 proto.smartcore.bos.PullHealthChecksResponse.Change.deserializeBinary = function(bytes) {
@@ -5470,7 +5464,7 @@ proto.smartcore.bos.PullHealthChecksResponse.Change.deserializeBinaryFromReader 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -5794,7 +5788,7 @@ readMask: (f = msg.getReadMask()) && google_protobuf_field_mask_pb.FieldMask.toO
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.GetHealthCheckRequest}
  */
 proto.smartcore.bos.GetHealthCheckRequest.deserializeBinary = function(bytes) {
@@ -5819,11 +5813,11 @@ proto.smartcore.bos.GetHealthCheckRequest.deserializeBinaryFromReader = function
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setId(value);
       break;
     case 3:
@@ -6006,7 +6000,7 @@ updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullHealthCheckRequest}
  */
 proto.smartcore.bos.PullHealthCheckRequest.deserializeBinary = function(bytes) {
@@ -6031,11 +6025,11 @@ proto.smartcore.bos.PullHealthCheckRequest.deserializeBinaryFromReader = functio
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setId(value);
       break;
     case 3:
@@ -6252,7 +6246,7 @@ changesList: jspb.Message.toObjectList(msg.getChangesList(),
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullHealthCheckResponse}
  */
 proto.smartcore.bos.PullHealthCheckResponse.deserializeBinary = function(bytes) {
@@ -6368,7 +6362,7 @@ changeTime: (f = msg.getChangeTime()) && google_protobuf_timestamp_pb.Timestamp.
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullHealthCheckResponse.Change}
  */
 proto.smartcore.bos.PullHealthCheckResponse.Change.deserializeBinary = function(bytes) {
@@ -6393,7 +6387,7 @@ proto.smartcore.bos.PullHealthCheckResponse.Change.deserializeBinaryFromReader =
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 3:
@@ -6642,7 +6636,7 @@ orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.ListHealthCheckHistoryRequest}
  */
 proto.smartcore.bos.ListHealthCheckHistoryRequest.deserializeBinary = function(bytes) {
@@ -6667,11 +6661,11 @@ proto.smartcore.bos.ListHealthCheckHistoryRequest.deserializeBinaryFromReader = 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 7:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setId(value);
       break;
     case 2:
@@ -6689,11 +6683,11 @@ proto.smartcore.bos.ListHealthCheckHistoryRequest.deserializeBinaryFromReader = 
       msg.setPageSize(value);
       break;
     case 5:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setPageToken(value);
       break;
     case 6:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setOrderBy(value);
       break;
     default:
@@ -6998,7 +6992,7 @@ totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.ListHealthCheckHistoryResponse}
  */
 proto.smartcore.bos.ListHealthCheckHistoryResponse.deserializeBinary = function(bytes) {
@@ -7028,7 +7022,7 @@ proto.smartcore.bos.ListHealthCheckHistoryResponse.deserializeBinaryFromReader =
       msg.addHealthCheckRecords(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setNextPageToken(value);
       break;
     case 3:

@@ -13,13 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global =
-    (typeof globalThis !== 'undefined' && globalThis) ||
-    (typeof window !== 'undefined' && window) ||
-    (typeof global !== 'undefined' && global) ||
-    (typeof self !== 'undefined' && self) ||
-    (function () { return this; }).call(null) ||
-    Function('return this')();
+var global = globalThis;
 
 var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/field_mask_pb.js');
 goog.object.extend(proto, google_protobuf_field_mask_pb);
@@ -183,7 +177,7 @@ pageToken: jspb.Message.getFieldWithDefault(msg, 4, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.ListReportsRequest}
  */
 proto.smartcore.bos.ListReportsRequest.deserializeBinary = function(bytes) {
@@ -208,7 +202,7 @@ proto.smartcore.bos.ListReportsRequest.deserializeBinaryFromReader = function(ms
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -221,7 +215,7 @@ proto.smartcore.bos.ListReportsRequest.deserializeBinaryFromReader = function(ms
       msg.setPageSize(value);
       break;
     case 4:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setPageToken(value);
       break;
     default:
@@ -431,7 +425,7 @@ totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.ListReportsResponse}
  */
 proto.smartcore.bos.ListReportsResponse.deserializeBinary = function(bytes) {
@@ -461,7 +455,7 @@ proto.smartcore.bos.ListReportsResponse.deserializeBinaryFromReader = function(m
       msg.addReports(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setNextPageToken(value);
       break;
     case 3:
@@ -645,7 +639,7 @@ mediaType: jspb.Message.getFieldWithDefault(msg, 5, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.Report}
  */
 proto.smartcore.bos.Report.deserializeBinary = function(bytes) {
@@ -670,15 +664,15 @@ proto.smartcore.bos.Report.deserializeBinaryFromReader = function(msg, reader) {
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setId(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setTitle(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setDescription(value);
       break;
     case 4:
@@ -687,7 +681,7 @@ proto.smartcore.bos.Report.deserializeBinaryFromReader = function(msg, reader) {
       msg.setCreateTime(value);
       break;
     case 5:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setMediaType(value);
       break;
     default:
@@ -913,7 +907,7 @@ id: jspb.Message.getFieldWithDefault(msg, 2, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.GetDownloadReportUrlRequest}
  */
 proto.smartcore.bos.GetDownloadReportUrlRequest.deserializeBinary = function(bytes) {
@@ -938,11 +932,11 @@ proto.smartcore.bos.GetDownloadReportUrlRequest.deserializeBinaryFromReader = fu
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setId(value);
       break;
     default:
@@ -1075,7 +1069,7 @@ expireAfterTime: (f = msg.getExpireAfterTime()) && google_protobuf_timestamp_pb.
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.DownloadReportUrl}
  */
 proto.smartcore.bos.DownloadReportUrl.deserializeBinary = function(bytes) {
@@ -1100,15 +1094,15 @@ proto.smartcore.bos.DownloadReportUrl.deserializeBinaryFromReader = function(msg
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setUrl(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setFilename(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setMediaType(value);
       break;
     case 4:

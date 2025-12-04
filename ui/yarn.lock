@@ -748,12 +748,12 @@
   resolved "https://registry.npmjs.org/@sindresorhus/merge-streams/-/merge-streams-2.3.0.tgz#719df7fb41766bc143369eaa0dd56d8dc87c9958"
   integrity sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg==
 
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.59":
-  version "1.0.0-beta.59"
-  resolved "https://npm.pkg.github.com/download/@smart-core-os/sc-api-grpc-web/1.0.0-beta.59/0698a9f28210d61ef0ee4a206c40a0d7d51cc383#0698a9f28210d61ef0ee4a206c40a0d7d51cc383"
-  integrity sha512-6ExWX0+x8uB4MrhB95Op79RoBadhMrjH8/9c7/y0GV8P76z+3pekriyPUhWurDS0uMPqQtOw2LIGsu7RjVO69Q==
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.60":
+  version "1.0.0-beta.60"
+  resolved "https://npm.pkg.github.com/download/@smart-core-os/sc-api-grpc-web/1.0.0-beta.60/b7f0284ce571ae85fadb11abce62d63316af405d#b7f0284ce571ae85fadb11abce62d63316af405d"
+  integrity sha512-5Oeo/3CsU6R+x9uE6WtSqULR1hieSsLzVbJEnkfvs+Zfpxl/CVi9LofEsQB59DGdObs2P5dVhmNeizOl0nlbQQ==
   dependencies:
-    google-protobuf "^3.21.2"
+    google-protobuf "^4.0.1"
     grpc-web "^2.0.2"
 
 "@sphinxxxx/color-conversion@^2.2.2":
@@ -1756,10 +1756,10 @@ globby@^14.1.0:
     slash "^5.1.0"
     unicorn-magic "^0.3.0"
 
-google-protobuf@^3.21.0, google-protobuf@^3.21.2:
-  version "3.21.4"
-  resolved "https://registry.npmjs.org/google-protobuf/-/google-protobuf-3.21.4.tgz#2f933e8b6e5e9f8edde66b7be0024b68f77da6c9"
-  integrity sha512-MnG7N936zcKTco4Jd2PX2U96Kf9PxygAPKBug+74LHzmHXmceN16MmRcdgZv+DGef/S9YvQAfRsNCn4cjf9yyQ==
+google-protobuf@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-4.0.1.tgz#9e5935307ead0e32714e33f33a3caac9bd9b49b4"
+  integrity sha512-0I4mx3UtAwpcc8l9Ds5gHcwV2FyPdwvxxBcor8LusE4b6PjoFxEngZRBepjvuQ4B0eZ2iu/Vezh8oRsnpJ9UGA==
 
 grpc-web@^2.0.2:
   version "2.0.2"

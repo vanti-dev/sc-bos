@@ -1,13 +1,13 @@
 {
   "name": "@smart-core-os/sc-bos-ui-gen",
-  "version": "1.0.0-beta.21",
+  "version": "1.0.0-beta.22",
   "type": "commonjs",
   "scripts": {
     "gen": "node gen.mjs"
   },
   "dependencies": {
-    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.59",
-    "google-protobuf": "^3.21.2",
+    "@smart-core-os/sc-api-grpc-web": "^1.0.0-beta.60",
+    "google-protobuf": "^4.0.1",
     "grpc-web": "^2.0.2"
   },
   "devDependencies": {

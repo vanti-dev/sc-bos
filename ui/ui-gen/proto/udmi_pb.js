@@ -13,13 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global =
-    (typeof globalThis !== 'undefined' && globalThis) ||
-    (typeof window !== 'undefined' && window) ||
-    (typeof global !== 'undefined' && global) ||
-    (typeof self !== 'undefined' && self) ||
-    (function () { return this; }).call(null) ||
-    Function('return this')();
+var global = globalThis;
 
 goog.exportSymbol('proto.smartcore.bos.GetExportMessageRequest', null, global);
 goog.exportSymbol('proto.smartcore.bos.MqttMessage', null, global);
@@ -242,7 +236,7 @@ name: jspb.Message.getFieldWithDefault(msg, 1, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullControlTopicsRequest}
  */
 proto.smartcore.bos.PullControlTopicsRequest.deserializeBinary = function(bytes) {
@@ -267,7 +261,7 @@ proto.smartcore.bos.PullControlTopicsRequest.deserializeBinaryFromReader = funct
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     default:
@@ -380,7 +374,7 @@ topicsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullControlTopicsResponse}
  */
 proto.smartcore.bos.PullControlTopicsResponse.deserializeBinary = function(bytes) {
@@ -405,11 +399,11 @@ proto.smartcore.bos.PullControlTopicsResponse.deserializeBinaryFromReader = func
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.addTopics(value);
       break;
     default:
@@ -559,7 +553,7 @@ message: (f = msg.getMessage()) && proto.smartcore.bos.MqttMessage.toObject(incl
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.OnMessageRequest}
  */
 proto.smartcore.bos.OnMessageRequest.deserializeBinary = function(bytes) {
@@ -584,7 +578,7 @@ proto.smartcore.bos.OnMessageRequest.deserializeBinaryFromReader = function(msg,
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -739,7 +733,7 @@ name: jspb.Message.getFieldWithDefault(msg, 1, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.OnMessageResponse}
  */
 proto.smartcore.bos.OnMessageResponse.deserializeBinary = function(bytes) {
@@ -764,7 +758,7 @@ proto.smartcore.bos.OnMessageResponse.deserializeBinaryFromReader = function(msg
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     default:
@@ -870,7 +864,7 @@ includeLast: jspb.Message.getBooleanFieldWithDefault(msg, 2, false)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullExportMessagesRequest}
  */
 proto.smartcore.bos.PullExportMessagesRequest.deserializeBinary = function(bytes) {
@@ -895,7 +889,7 @@ proto.smartcore.bos.PullExportMessagesRequest.deserializeBinaryFromReader = func
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -1030,7 +1024,7 @@ message: (f = msg.getMessage()) && proto.smartcore.bos.MqttMessage.toObject(incl
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullExportMessagesResponse}
  */
 proto.smartcore.bos.PullExportMessagesResponse.deserializeBinary = function(bytes) {
@@ -1055,7 +1049,7 @@ proto.smartcore.bos.PullExportMessagesResponse.deserializeBinaryFromReader = fun
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -1210,7 +1204,7 @@ name: jspb.Message.getFieldWithDefault(msg, 1, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.GetExportMessageRequest}
  */
 proto.smartcore.bos.GetExportMessageRequest.deserializeBinary = function(bytes) {
@@ -1235,7 +1229,7 @@ proto.smartcore.bos.GetExportMessageRequest.deserializeBinaryFromReader = functi
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     default:
@@ -1341,7 +1335,7 @@ payload: jspb.Message.getFieldWithDefault(msg, 2, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.MqttMessage}
  */
 proto.smartcore.bos.MqttMessage.deserializeBinary = function(bytes) {
@@ -1366,11 +1360,11 @@ proto.smartcore.bos.MqttMessage.deserializeBinaryFromReader = function(msg, read
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setTopic(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setPayload(value);
       break;
     default:

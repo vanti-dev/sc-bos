@@ -13,13 +13,7 @@
 
 var jspb = require('google-protobuf');
 var goog = jspb;
-var global =
-    (typeof globalThis !== 'undefined' && globalThis) ||
-    (typeof window !== 'undefined' && window) ||
-    (typeof global !== 'undefined' && global) ||
-    (typeof self !== 'undefined' && self) ||
-    (function () { return this; }).call(null) ||
-    Function('return this')();
+var global = globalThis;
 
 var google_protobuf_field_mask_pb = require('google-protobuf/google/protobuf/field_mask_pb.js');
 goog.object.extend(proto, google_protobuf_field_mask_pb);
@@ -263,7 +257,7 @@ treesSaved: (f = jspb.Message.getOptionalFloatingPointField(msg, 11)) == null ? 
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.WasteRecord}
  */
 proto.smartcore.bos.WasteRecord.deserializeBinary = function(bytes) {
@@ -288,7 +282,7 @@ proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader = function(msg, read
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setId(value);
       break;
     case 2:
@@ -301,7 +295,7 @@ proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader = function(msg, read
       msg.setWeight(value);
       break;
     case 4:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setSystem(value);
       break;
     case 5:
@@ -309,7 +303,7 @@ proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader = function(msg, read
       msg.setType(value);
       break;
     case 6:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setArea(value);
       break;
     case 7:
@@ -318,7 +312,7 @@ proto.smartcore.bos.WasteRecord.deserializeBinaryFromReader = function(msg, read
       msg.setWasteCreateTime(value);
       break;
     case 8:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setStream(value);
       break;
     case 9:
@@ -804,7 +798,7 @@ totalSize: jspb.Message.getFieldWithDefault(msg, 3, 0)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.ListWasteRecordsResponse}
  */
 proto.smartcore.bos.ListWasteRecordsResponse.deserializeBinary = function(bytes) {
@@ -834,7 +828,7 @@ proto.smartcore.bos.ListWasteRecordsResponse.deserializeBinaryFromReader = funct
       msg.addWasterecords(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setNextPageToken(value);
       break;
     case 3:
@@ -1019,7 +1013,7 @@ orderBy: jspb.Message.getFieldWithDefault(msg, 6, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.ListWasteRecordsRequest}
  */
 proto.smartcore.bos.ListWasteRecordsRequest.deserializeBinary = function(bytes) {
@@ -1044,7 +1038,7 @@ proto.smartcore.bos.ListWasteRecordsRequest.deserializeBinaryFromReader = functi
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -1057,7 +1051,7 @@ proto.smartcore.bos.ListWasteRecordsRequest.deserializeBinaryFromReader = functi
       msg.setPageSize(value);
       break;
     case 4:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setPageToken(value);
       break;
     case 5:
@@ -1066,7 +1060,7 @@ proto.smartcore.bos.ListWasteRecordsRequest.deserializeBinaryFromReader = functi
       msg.setPeriod(value);
       break;
     case 6:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setOrderBy(value);
       break;
     default:
@@ -1338,7 +1332,7 @@ updatesOnly: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullWasteRecordsRequest}
  */
 proto.smartcore.bos.PullWasteRecordsRequest.deserializeBinary = function(bytes) {
@@ -1363,7 +1357,7 @@ proto.smartcore.bos.PullWasteRecordsRequest.deserializeBinaryFromReader = functi
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -1555,7 +1549,7 @@ changesList: jspb.Message.toObjectList(msg.getChangesList(),
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullWasteRecordsResponse}
  */
 proto.smartcore.bos.PullWasteRecordsResponse.deserializeBinary = function(bytes) {
@@ -1673,7 +1667,7 @@ type: jspb.Message.getFieldWithDefault(msg, 5, 0)
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.PullWasteRecordsResponse.Change}
  */
 proto.smartcore.bos.PullWasteRecordsResponse.Change.deserializeBinary = function(bytes) {
@@ -1698,7 +1692,7 @@ proto.smartcore.bos.PullWasteRecordsResponse.Change.deserializeBinaryFromReader 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     case 2:
@@ -2020,7 +2014,7 @@ name: jspb.Message.getFieldWithDefault(msg, 1, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.DescribeWasteRecordRequest}
  */
 proto.smartcore.bos.DescribeWasteRecordRequest.deserializeBinary = function(bytes) {
@@ -2045,7 +2039,7 @@ proto.smartcore.bos.DescribeWasteRecordRequest.deserializeBinaryFromReader = fun
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setName(value);
       break;
     default:
@@ -2153,7 +2147,7 @@ landSavedUnit: jspb.Message.getFieldWithDefault(msg, 4, "")
 
 /**
  * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @param {jspb.binary.bytesource.ByteSource} bytes The bytes to deserialize.
  * @return {!proto.smartcore.bos.WasteRecordSupport}
  */
 proto.smartcore.bos.WasteRecordSupport.deserializeBinary = function(bytes) {
@@ -2183,15 +2177,15 @@ proto.smartcore.bos.WasteRecordSupport.deserializeBinaryFromReader = function(ms
       msg.setResourceSupport(value);
       break;
     case 2:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setUnit(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setCo2SavedUnit(value);
       break;
     case 4:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {string} */ (reader.readStringRequireUtf8());
       msg.setLandSavedUnit(value);
       break;
     default:
