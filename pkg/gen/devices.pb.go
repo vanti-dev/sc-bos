@@ -736,6 +736,7 @@ func (x *DownloadDevicesUrl) GetExpireAfterTime() *timestamppb.Timestamp {
 	return nil
 }
 
+// Query selects a subset of devices based on how message property values match against conditions.
 type Device_Query struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Conditions that must match for the device to be included in the results.
@@ -782,10 +783,19 @@ func (x *Device_Query) GetConditions() []*Device_Query_Condition {
 	return nil
 }
 
+// Condition describes a check against a set of values in the device.
+// The set of values the condition applies to is identified by the field path.
+// The check is described by one of the value oneof options.
 type Device_Query_Condition struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The name of a field relative to Device using '.' as a path separator.
-	// For example "metadata.membership.group".
+	// Field identifies a set of values in the device based on a dot separated path of field names.
+	// For example "metadata.membership.group" would select the group field inside the membership message of the devices metadata.
+	// Omitting the field path selects all values in the device.
+	//
+	// The field path may traverse or terminate at repeated fields,
+	// in which case the set of values identified by the field path contains all entries in the repeated field.
+	// Repeated fields include `repeated` fields and map values.
+	// For example, the value set for field "health_checks.normality" includes the normality value for each health check associated with the device.
 	Field string `protobuf:"bytes,1,opt,name=field,proto3" json:"field,omitempty"`
 	// Types that are valid to be assigned to Value:
 	//
@@ -1013,65 +1023,71 @@ type isDevice_Query_Condition_Value interface {
 }
 
 type Device_Query_Condition_StringEqual struct {
-	// Compare the field to this string using a case sensitive comparison
+	// The condition matches if the value is equal to this string.
+	// String conversion will be applied to non-string values before comparison.
 	StringEqual string `protobuf:"bytes,2,opt,name=string_equal,json=stringEqual,proto3,oneof"`
 }
 
 type Device_Query_Condition_StringEqualFold struct {
-	// Compare the field to this string using a simple unicode case folding comparison.
+	// The condition matches if the value is equal to this string using a simple unicode case folding comparison.
+	// String conversion will be applied to non-string values before comparison.
 	// See the go package strings.EqualFold.
 	StringEqualFold string `protobuf:"bytes,3,opt,name=string_equal_fold,json=stringEqualFold,proto3,oneof"`
 }
 
 type Device_Query_Condition_StringContains struct {
-	// Compare the field using case sensitive contains.
+	// The condition matches if the value contains this string.
+	// String conversion will be applied to non-string values before comparison.
 	StringContains string `protobuf:"bytes,4,opt,name=string_contains,json=stringContains,proto3,oneof"`
 }
 
 type Device_Query_Condition_StringContainsFold struct {
-	// Compare the field using contains in a case insensitive manner.
+	// The condition matches if the value contains this string using a simple unicode case folding comparison.
+	// String conversion will be applied to non-string values before comparison.
 	StringContainsFold string `protobuf:"bytes,5,opt,name=string_contains_fold,json=stringContainsFold,proto3,oneof"`
 }
 
 type Device_Query_Condition_StringIn struct {
-	// Compare the field to any of these strings using case sensitive comparison.
+	// The condition matches if the value is equal to any of these strings.
+	// String conversion will be applied to non-string values before comparison.
 	// The server may have limits on the number of strings that can be compared.
 	StringIn *Device_Query_StringList `protobuf:"bytes,6,opt,name=string_in,json=stringIn,proto3,oneof"`
 }
 
 type Device_Query_Condition_StringInFold struct {
-	// Compare the field to any of these strings using a simple unicode case folding comparison.
+	// The condition matches if the value is equal to any of these strings using a simple unicode case folding comparison.
+	// String conversion will be applied to non-string values before comparison.
 	// The server may have limits on the number of strings that can be compared.
 	StringInFold *Device_Query_StringList `protobuf:"bytes,7,opt,name=string_in_fold,json=stringInFold,proto3,oneof"`
 }
 
 type Device_Query_Condition_TimestampEqual struct {
-	// The condition matches if the field is equal to this timestamp.
+	// The condition matches if the value is equal to this timestamp.
 	TimestampEqual *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=timestamp_equal,json=timestampEqual,proto3,oneof"`
 }
 
 type Device_Query_Condition_TimestampGt struct {
-	// The condition matches if the field is greater than this timestamp.
+	// The condition matches if the value is greater than this timestamp.
 	TimestampGt *timestamppb.Timestamp `protobuf:"bytes,21,opt,name=timestamp_gt,json=timestampGt,proto3,oneof"`
 }
 
 type Device_Query_Condition_TimestampGte struct {
-	// The condition matches if the field is greater than or equal to this timestamp.
+	// The condition matches if the value is greater than or equal to this timestamp.
 	TimestampGte *timestamppb.Timestamp `protobuf:"bytes,22,opt,name=timestamp_gte,json=timestampGte,proto3,oneof"`
 }
 
 type Device_Query_Condition_TimestampLt struct {
-	// The condition matches if the field is less than this timestamp.
+	// The condition matches if the value is less than this timestamp.
 	TimestampLt *timestamppb.Timestamp `protobuf:"bytes,23,opt,name=timestamp_lt,json=timestampLt,proto3,oneof"`
 }
 
 type Device_Query_Condition_TimestampLte struct {
-	// The condition matches if the field is less than or equal to this timestamp.
+	// The condition matches if the value is less than or equal to this timestamp.
 	TimestampLte *timestamppb.Timestamp `protobuf:"bytes,24,opt,name=timestamp_lte,json=timestampLte,proto3,oneof"`
 }
 
 type Device_Query_Condition_NameDescendant struct {
-	// The condition matches if the field is a descendant of this name.
+	// The condition matches if the value is a descendant of this name.
 	// For example "a/b" would match "a/b/c" but not "a/bc".
 	//
 	// Names are used to identify resources: devices, services, etc.
@@ -1082,36 +1098,34 @@ type Device_Query_Condition_NameDescendant struct {
 }
 
 type Device_Query_Condition_NameDescendantInc struct {
-	// The condition matches if the field is equal to or a descendant of this name.
+	// The condition matches if the value is equal to or a descendant of this name.
 	// For example "a/b" would match "a/b" and "a/b/c" but not "a/bc".
 	NameDescendantInc string `protobuf:"bytes,31,opt,name=name_descendant_inc,json=nameDescendantInc,proto3,oneof"`
 }
 
 type Device_Query_Condition_NameDescendantIn struct {
-	// The condition matches if the field is a descendant of any of these names.
+	// The condition matches if the value is a descendant of any of these names.
 	// The server may have limits on the number of names that can be compared.
 	// See the name_descendant description for details of how descendant matching works.
 	NameDescendantIn *Device_Query_StringList `protobuf:"bytes,32,opt,name=name_descendant_in,json=nameDescendantIn,proto3,oneof"`
 }
 
 type Device_Query_Condition_NameDescendantIncIn struct {
-	// The condition matches if the field is equal to or a descendant of any of these names.
+	// The condition matches if the value is equal to or a descendant of any of these names.
 	// The server may have limits on the number of names that can be compared.
 	// See the name_descendant_inc description for details of how descendant matching works.
 	NameDescendantIncIn *Device_Query_StringList `protobuf:"bytes,33,opt,name=name_descendant_inc_in,json=nameDescendantIncIn,proto3,oneof"`
 }
 
 type Device_Query_Condition_Present struct {
-	// The condition matches if the field is present.
+	// The condition matches if the value is present.
 	// Default values are not present unless explicit presences is tracked for the field.
 	Present *emptypb.Empty `protobuf:"bytes,40,opt,name=present,proto3,oneof"`
 }
 
 type Device_Query_Condition_Matches struct {
-	// The condition matches when the field matches all conditions in the given query.
-	// Fields in the sub-query are relative to value resolved by the parent condition.
-	// For non-repeated fields, this is equivalent to providing multiple conditions on the root query.
-	// For repeated fields, or sub fields of those, there must exist at least one entry where all sub-query conditions match.
+	// The condition matches when the value matches all conditions in the given query.
+	// Fields in the sub-query are relative to the value this condition is matching against.
 	Matches *Device_Query `protobuf:"bytes,50,opt,name=matches,proto3,oneof"`
 }
 

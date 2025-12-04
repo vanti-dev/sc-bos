@@ -34,41 +34,57 @@ message Device {
   // normality or reliability and are omitted to reduce churn.
   repeated smartcore.bos.HealthCheck health_checks = 3;
 
+  // Query selects a subset of devices based on how message property values match against conditions.
   message Query {
+    // Condition describes a check against a set of values in the device.
+    // The set of values the condition applies to is identified by the field path.
+    // The check is described by one of the value oneof options.
     message Condition {
-      // The name of a field relative to Device using '.' as a path separator.
-      // For example "metadata.membership.group".
+      // Field identifies a set of values in the device based on a dot separated path of field names.
+      // For example "metadata.membership.group" would select the group field inside the membership message of the devices metadata.
+      // Omitting the field path selects all values in the device.
+      //
+      // The field path may traverse or terminate at repeated fields,
+      // in which case the set of values identified by the field path contains all entries in the repeated field.
+      // Repeated fields include `repeated` fields and map values.
+      // For example, the value set for field "health_checks.normality" includes the normality value for each health check associated with the device.
       string field = 1;
       oneof value {
-        // Compare the field to this string using a case sensitive comparison
+        // The condition matches if the value is equal to this string.
+        // String conversion will be applied to non-string values before comparison.
         string string_equal = 2;
-        // Compare the field to this string using a simple unicode case folding comparison.
+        // The condition matches if the value is equal to this string using a simple unicode case folding comparison.
+        // String conversion will be applied to non-string values before comparison.
         // See the go package strings.EqualFold.
         string string_equal_fold = 3;
-        // Compare the field using case sensitive contains.
+        // The condition matches if the value contains this string.
+        // String conversion will be applied to non-string values before comparison.
         string string_contains = 4;
-        // Compare the field using contains in a case insensitive manner.
+        // The condition matches if the value contains this string using a simple unicode case folding comparison.
+        // String conversion will be applied to non-string values before comparison.
         string string_contains_fold = 5;
 
-        // Compare the field to any of these strings using case sensitive comparison.
+        // The condition matches if the value is equal to any of these strings.
+        // String conversion will be applied to non-string values before comparison.
         // The server may have limits on the number of strings that can be compared.
         StringList string_in = 6;
-        // Compare the field to any of these strings using a simple unicode case folding comparison.
+        // The condition matches if the value is equal to any of these strings using a simple unicode case folding comparison.
+        // String conversion will be applied to non-string values before comparison.
         // The server may have limits on the number of strings that can be compared.
         StringList string_in_fold = 7;
 
-        // The condition matches if the field is equal to this timestamp.
+        // The condition matches if the value is equal to this timestamp.
         google.protobuf.Timestamp timestamp_equal = 20;
-        // The condition matches if the field is greater than this timestamp.
+        // The condition matches if the value is greater than this timestamp.
         google.protobuf.Timestamp timestamp_gt = 21;
-        // The condition matches if the field is greater than or equal to this timestamp.
+        // The condition matches if the value is greater than or equal to this timestamp.
         google.protobuf.Timestamp timestamp_gte = 22;
-        // The condition matches if the field is less than this timestamp.
+        // The condition matches if the value is less than this timestamp.
         google.protobuf.Timestamp timestamp_lt = 23;
-        // The condition matches if the field is less than or equal to this timestamp.
+        // The condition matches if the value is less than or equal to this timestamp.
         google.protobuf.Timestamp timestamp_lte = 24;
 
-        // The condition matches if the field is a descendant of this name.
+        // The condition matches if the value is a descendant of this name.
         // For example "a/b" would match "a/b/c" but not "a/bc".
         //
         // Names are used to identify resources: devices, services, etc.
@@ -76,29 +92,27 @@ message Device {
         // for example "a/b/c" is a child of "a/b".
         // Some of the authorization claims use this hierarchy to grant access to collections of resources.
         string name_descendant = 30;
-        // The condition matches if the field is equal to or a descendant of this name.
+        // The condition matches if the value is equal to or a descendant of this name.
         // For example "a/b" would match "a/b" and "a/b/c" but not "a/bc".
         string name_descendant_inc = 31;
-        // The condition matches if the field is a descendant of any of these names.
+        // The condition matches if the value is a descendant of any of these names.
         // The server may have limits on the number of names that can be compared.
         // See the name_descendant description for details of how descendant matching works.
         StringList name_descendant_in = 32;
-        // The condition matches if the field is equal to or a descendant of any of these names.
+        // The condition matches if the value is equal to or a descendant of any of these names.
         // The server may have limits on the number of names that can be compared.
         // See the name_descendant_inc description for details of how descendant matching works.
         StringList name_descendant_inc_in = 33;
 
-        // The condition matches if the field is present.
+        // The condition matches if the value is present.
         // Default values are not present unless explicit presences is tracked for the field.
         google.protobuf.Empty present = 40;
 
-        // The condition matches when the field matches all conditions in the given query.
-        // Fields in the sub-query are relative to value resolved by the parent condition.
-        // For non-repeated fields, this is equivalent to providing multiple conditions on the root query.
-        // For repeated fields, or sub fields of those, there must exist at least one entry where all sub-query conditions match.
+        // The condition matches when the value matches all conditions in the given query.
+        // Fields in the sub-query are relative to the value this condition is matching against.
         Query matches = 50;
 
-        // there's room here for additional rhs values for the field, but we don't need any
+        // there's room here for additional rhs values for the condition, but we don't need any
       }
     }
     // A list of strings, because oneof can't be repeated.
