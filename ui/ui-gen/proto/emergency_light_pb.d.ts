@@ -26,9 +26,9 @@ export class TestResultSet extends jspb.Message {
 
 export namespace TestResultSet {
   export type AsObject = {
-    functionTest?: EmergencyTestResult.AsObject,
-    durationTest?: EmergencyTestResult.AsObject,
-  }
+    functionTest?: EmergencyTestResult.AsObject;
+    durationTest?: EmergencyTestResult.AsObject;
+  };
 }
 
 export class EmergencyTestResult extends jspb.Message {
@@ -60,13 +60,13 @@ export class EmergencyTestResult extends jspb.Message {
 
 export namespace EmergencyTestResult {
   export type AsObject = {
-    result: EmergencyTestResult.Result,
-    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    duration?: google_protobuf_duration_pb.Duration.AsObject,
-  }
+    result: EmergencyTestResult.Result;
+    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    duration?: google_protobuf_duration_pb.Duration.AsObject;
+  };
 
-  export enum Result { 
+  export enum Result {
     TEST_RESULT_UNSPECIFIED = 0,
     TEST_RESULT_PENDING = 1,
     TEST_PASSED = 2,
@@ -95,8 +95,8 @@ export class StartEmergencyTestRequest extends jspb.Message {
 
 export namespace StartEmergencyTestRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class StartEmergencyTestResponse extends jspb.Message {
@@ -120,9 +120,9 @@ export class StartEmergencyTestResponse extends jspb.Message {
 
 export namespace StartEmergencyTestResponse {
   export type AsObject = {
-    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    duration?: google_protobuf_duration_pb.Duration.AsObject,
-  }
+    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    duration?: google_protobuf_duration_pb.Duration.AsObject;
+  };
 }
 
 export class StopEmergencyTestsRequest extends jspb.Message {
@@ -139,8 +139,8 @@ export class StopEmergencyTestsRequest extends jspb.Message {
 
 export namespace StopEmergencyTestsRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class StopEmergencyTestsResponse extends jspb.Message {
@@ -154,7 +154,7 @@ export class StopEmergencyTestsResponse extends jspb.Message {
 
 export namespace StopEmergencyTestsResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class GetTestResultSetRequest extends jspb.Message {
@@ -179,10 +179,10 @@ export class GetTestResultSetRequest extends jspb.Message {
 
 export namespace GetTestResultSetRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    queryDevice: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    queryDevice: boolean;
+  };
 }
 
 export class PullTestResultRequest extends jspb.Message {
@@ -207,10 +207,10 @@ export class PullTestResultRequest extends jspb.Message {
 
 export namespace PullTestResultRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullTestResultsResponse extends jspb.Message {
@@ -229,8 +229,8 @@ export class PullTestResultsResponse extends jspb.Message {
 
 export namespace PullTestResultsResponse {
   export type AsObject = {
-    changesList: Array<PullTestResultsResponse.Change.AsObject>,
-  }
+    changesList: Array<PullTestResultsResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -256,10 +256,10 @@ export namespace PullTestResultsResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      testResult?: TestResultSet.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      testResult?: TestResultSet.AsObject;
+    };
   }
 
 }

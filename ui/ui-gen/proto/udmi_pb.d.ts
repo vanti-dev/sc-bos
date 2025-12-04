@@ -16,8 +16,8 @@ export class PullControlTopicsRequest extends jspb.Message {
 
 export namespace PullControlTopicsRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class PullControlTopicsResponse extends jspb.Message {
@@ -39,9 +39,9 @@ export class PullControlTopicsResponse extends jspb.Message {
 
 export namespace PullControlTopicsResponse {
   export type AsObject = {
-    name: string,
-    topicsList: Array<string>,
-  }
+    name: string;
+    topicsList: Array<string>;
+  };
 }
 
 export class OnMessageRequest extends jspb.Message {
@@ -63,9 +63,9 @@ export class OnMessageRequest extends jspb.Message {
 
 export namespace OnMessageRequest {
   export type AsObject = {
-    name: string,
-    message?: MqttMessage.AsObject,
-  }
+    name: string;
+    message?: MqttMessage.AsObject;
+  };
 }
 
 export class OnMessageResponse extends jspb.Message {
@@ -82,8 +82,8 @@ export class OnMessageResponse extends jspb.Message {
 
 export namespace OnMessageResponse {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class PullExportMessagesRequest extends jspb.Message {
@@ -103,9 +103,9 @@ export class PullExportMessagesRequest extends jspb.Message {
 
 export namespace PullExportMessagesRequest {
   export type AsObject = {
-    name: string,
-    includeLast: boolean,
-  }
+    name: string;
+    includeLast: boolean;
+  };
 }
 
 export class PullExportMessagesResponse extends jspb.Message {
@@ -127,9 +127,9 @@ export class PullExportMessagesResponse extends jspb.Message {
 
 export namespace PullExportMessagesResponse {
   export type AsObject = {
-    name: string,
-    message?: MqttMessage.AsObject,
-  }
+    name: string;
+    message?: MqttMessage.AsObject;
+  };
 }
 
 export class GetExportMessageRequest extends jspb.Message {
@@ -146,8 +146,8 @@ export class GetExportMessageRequest extends jspb.Message {
 
 export namespace GetExportMessageRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class MqttMessage extends jspb.Message {
@@ -167,8 +167,8 @@ export class MqttMessage extends jspb.Message {
 
 export namespace MqttMessage {
   export type AsObject = {
-    topic: string,
-    payload: string,
-  }
+    topic: string;
+    payload: string;
+  };
 }
 

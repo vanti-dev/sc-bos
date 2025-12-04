@@ -21,10 +21,10 @@ export class SoundLevel extends jspb.Message {
 
 export namespace SoundLevel {
   export type AsObject = {
-    soundPressureLevel?: number,
-  }
+    soundPressureLevel?: number;
+  };
 
-  export enum SoundPressureLevelCase { 
+  export enum SoundPressureLevelCase {
     _SOUND_PRESSURE_LEVEL_NOT_SET = 0,
     SOUND_PRESSURE_LEVEL = 1,
   }
@@ -49,9 +49,9 @@ export class SoundLevelSupport extends jspb.Message {
 
 export namespace SoundLevelSupport {
   export type AsObject = {
-    resourceSupport?: types_info_pb.ResourceSupport.AsObject,
-    soundLevelUnit: string,
-  }
+    resourceSupport?: types_info_pb.ResourceSupport.AsObject;
+    soundLevelUnit: string;
+  };
 }
 
 export class GetSoundLevelRequest extends jspb.Message {
@@ -73,9 +73,9 @@ export class GetSoundLevelRequest extends jspb.Message {
 
 export namespace GetSoundLevelRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullSoundLevelRequest extends jspb.Message {
@@ -100,10 +100,10 @@ export class PullSoundLevelRequest extends jspb.Message {
 
 export namespace PullSoundLevelRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullSoundLevelResponse extends jspb.Message {
@@ -122,8 +122,8 @@ export class PullSoundLevelResponse extends jspb.Message {
 
 export namespace PullSoundLevelResponse {
   export type AsObject = {
-    changesList: Array<PullSoundLevelResponse.Change.AsObject>,
-  }
+    changesList: Array<PullSoundLevelResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -149,10 +149,10 @@ export namespace PullSoundLevelResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      soundLevel?: SoundLevel.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      soundLevel?: SoundLevel.AsObject;
+    };
   }
 
 }
@@ -171,7 +171,7 @@ export class DescribeSoundLevelRequest extends jspb.Message {
 
 export namespace DescribeSoundLevelRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 

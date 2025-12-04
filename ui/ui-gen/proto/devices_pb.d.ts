@@ -33,10 +33,10 @@ export class Device extends jspb.Message {
 
 export namespace Device {
   export type AsObject = {
-    name: string,
-    metadata?: traits_metadata_pb.Metadata.AsObject,
-    healthChecksList: Array<health_pb.HealthCheck.AsObject>,
-  }
+    name: string;
+    metadata?: traits_metadata_pb.Metadata.AsObject;
+    healthChecksList: Array<health_pb.HealthCheck.AsObject>;
+  };
 
   export class Query extends jspb.Message {
     getConditionsList(): Array<Device.Query.Condition>;
@@ -54,8 +54,8 @@ export namespace Device {
 
   export namespace Query {
     export type AsObject = {
-      conditionsList: Array<Device.Query.Condition.AsObject>,
-    }
+      conditionsList: Array<Device.Query.Condition.AsObject>;
+    };
 
     export class Condition extends jspb.Message {
       getField(): string;
@@ -63,15 +63,23 @@ export namespace Device {
 
       getStringEqual(): string;
       setStringEqual(value: string): Condition;
+      hasStringEqual(): boolean;
+      clearStringEqual(): Condition;
 
       getStringEqualFold(): string;
       setStringEqualFold(value: string): Condition;
+      hasStringEqualFold(): boolean;
+      clearStringEqualFold(): Condition;
 
       getStringContains(): string;
       setStringContains(value: string): Condition;
+      hasStringContains(): boolean;
+      clearStringContains(): Condition;
 
       getStringContainsFold(): string;
       setStringContainsFold(value: string): Condition;
+      hasStringContainsFold(): boolean;
+      clearStringContainsFold(): Condition;
 
       getStringIn(): Device.Query.StringList | undefined;
       setStringIn(value?: Device.Query.StringList): Condition;
@@ -110,9 +118,13 @@ export namespace Device {
 
       getNameDescendant(): string;
       setNameDescendant(value: string): Condition;
+      hasNameDescendant(): boolean;
+      clearNameDescendant(): Condition;
 
       getNameDescendantInc(): string;
       setNameDescendantInc(value: string): Condition;
+      hasNameDescendantInc(): boolean;
+      clearNameDescendantInc(): Condition;
 
       getNameDescendantIn(): Device.Query.StringList | undefined;
       setNameDescendantIn(value?: Device.Query.StringList): Condition;
@@ -146,27 +158,27 @@ export namespace Device {
 
     export namespace Condition {
       export type AsObject = {
-        field: string,
-        stringEqual: string,
-        stringEqualFold: string,
-        stringContains: string,
-        stringContainsFold: string,
-        stringIn?: Device.Query.StringList.AsObject,
-        stringInFold?: Device.Query.StringList.AsObject,
-        timestampEqual?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-        timestampGt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-        timestampGte?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-        timestampLt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-        timestampLte?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-        nameDescendant: string,
-        nameDescendantInc: string,
-        nameDescendantIn?: Device.Query.StringList.AsObject,
-        nameDescendantIncIn?: Device.Query.StringList.AsObject,
-        present?: google_protobuf_empty_pb.Empty.AsObject,
-        matches?: Device.Query.AsObject,
-      }
+        field: string;
+        stringEqual?: string;
+        stringEqualFold?: string;
+        stringContains?: string;
+        stringContainsFold?: string;
+        stringIn?: Device.Query.StringList.AsObject;
+        stringInFold?: Device.Query.StringList.AsObject;
+        timestampEqual?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+        timestampGt?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+        timestampGte?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+        timestampLt?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+        timestampLte?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+        nameDescendant?: string;
+        nameDescendantInc?: string;
+        nameDescendantIn?: Device.Query.StringList.AsObject;
+        nameDescendantIncIn?: Device.Query.StringList.AsObject;
+        present?: google_protobuf_empty_pb.Empty.AsObject;
+        matches?: Device.Query.AsObject;
+      };
 
-      export enum ValueCase { 
+      export enum ValueCase {
         VALUE_NOT_SET = 0,
         STRING_EQUAL = 2,
         STRING_EQUAL_FOLD = 3,
@@ -205,8 +217,8 @@ export namespace Device {
 
     export namespace StringList {
       export type AsObject = {
-        stringsList: Array<string>,
-      }
+        stringsList: Array<string>;
+      };
     }
 
   }
@@ -232,9 +244,9 @@ export class DevicesMetadata extends jspb.Message {
 
 export namespace DevicesMetadata {
   export type AsObject = {
-    totalCount: number,
-    fieldCountsList: Array<DevicesMetadata.StringFieldCount.AsObject>,
-  }
+    totalCount: number;
+    fieldCountsList: Array<DevicesMetadata.StringFieldCount.AsObject>;
+  };
 
   export class StringFieldCount extends jspb.Message {
     getField(): string;
@@ -253,9 +265,9 @@ export namespace DevicesMetadata {
 
   export namespace StringFieldCount {
     export type AsObject = {
-      field: string,
-      countsMap: Array<[string, number]>,
-    }
+      field: string;
+      countsMap: Array<[string, number]>;
+    };
   }
 
 
@@ -275,8 +287,8 @@ export namespace DevicesMetadata {
 
   export namespace Include {
     export type AsObject = {
-      fieldsList: Array<string>,
-    }
+      fieldsList: Array<string>;
+    };
   }
 
 }
@@ -308,11 +320,11 @@ export class ListDevicesRequest extends jspb.Message {
 
 export namespace ListDevicesRequest {
   export type AsObject = {
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    query?: Device.Query.AsObject,
-  }
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    query?: Device.Query.AsObject;
+  };
 }
 
 export class ListDevicesResponse extends jspb.Message {
@@ -337,10 +349,10 @@ export class ListDevicesResponse extends jspb.Message {
 
 export namespace ListDevicesResponse {
   export type AsObject = {
-    devicesList: Array<Device.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    devicesList: Array<Device.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class PullDevicesRequest extends jspb.Message {
@@ -367,10 +379,10 @@ export class PullDevicesRequest extends jspb.Message {
 
 export namespace PullDevicesRequest {
   export type AsObject = {
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-    query?: Device.Query.AsObject,
-  }
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+    query?: Device.Query.AsObject;
+  };
 }
 
 export class PullDevicesResponse extends jspb.Message {
@@ -389,8 +401,8 @@ export class PullDevicesResponse extends jspb.Message {
 
 export namespace PullDevicesResponse {
   export type AsObject = {
-    changesList: Array<PullDevicesResponse.Change.AsObject>,
-  }
+    changesList: Array<PullDevicesResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -424,12 +436,12 @@ export namespace PullDevicesResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      type: types_change_pb.ChangeType,
-      newValue?: Device.AsObject,
-      oldValue?: Device.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      name: string;
+      type: types_change_pb.ChangeType;
+      newValue?: Device.AsObject;
+      oldValue?: Device.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }
@@ -460,10 +472,10 @@ export class GetDevicesMetadataRequest extends jspb.Message {
 
 export namespace GetDevicesMetadataRequest {
   export type AsObject = {
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    includes?: DevicesMetadata.Include.AsObject,
-    query?: Device.Query.AsObject,
-  }
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    includes?: DevicesMetadata.Include.AsObject;
+    query?: Device.Query.AsObject;
+  };
 }
 
 export class PullDevicesMetadataRequest extends jspb.Message {
@@ -495,11 +507,11 @@ export class PullDevicesMetadataRequest extends jspb.Message {
 
 export namespace PullDevicesMetadataRequest {
   export type AsObject = {
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    includes?: DevicesMetadata.Include.AsObject,
-    updatesOnly: boolean,
-    query?: Device.Query.AsObject,
-  }
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    includes?: DevicesMetadata.Include.AsObject;
+    updatesOnly: boolean;
+    query?: Device.Query.AsObject;
+  };
 }
 
 export class PullDevicesMetadataResponse extends jspb.Message {
@@ -518,8 +530,8 @@ export class PullDevicesMetadataResponse extends jspb.Message {
 
 export namespace PullDevicesMetadataResponse {
   export type AsObject = {
-    changesList: Array<PullDevicesMetadataResponse.Change.AsObject>,
-  }
+    changesList: Array<PullDevicesMetadataResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -545,10 +557,10 @@ export namespace PullDevicesMetadataResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      devicesMetadata?: DevicesMetadata.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      name: string;
+      devicesMetadata?: DevicesMetadata.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }
@@ -585,12 +597,12 @@ export class GetDownloadDevicesUrlRequest extends jspb.Message {
 
 export namespace GetDownloadDevicesUrlRequest {
   export type AsObject = {
-    query?: Device.Query.AsObject,
-    mediaType: string,
-    history?: types_time_period_pb.Period.AsObject,
-    table?: GetDownloadDevicesUrlRequest.Table.AsObject,
-    filename: string,
-  }
+    query?: Device.Query.AsObject;
+    mediaType: string;
+    history?: types_time_period_pb.Period.AsObject;
+    table?: GetDownloadDevicesUrlRequest.Table.AsObject;
+    filename: string;
+  };
 
   export class Table extends jspb.Message {
     getIncludeColsList(): Array<GetDownloadDevicesUrlRequest.Table.Column>;
@@ -613,9 +625,9 @@ export namespace GetDownloadDevicesUrlRequest {
 
   export namespace Table {
     export type AsObject = {
-      includeColsList: Array<GetDownloadDevicesUrlRequest.Table.Column.AsObject>,
-      excludeColsList: Array<GetDownloadDevicesUrlRequest.Table.Column.AsObject>,
-    }
+      includeColsList: Array<GetDownloadDevicesUrlRequest.Table.Column.AsObject>;
+      excludeColsList: Array<GetDownloadDevicesUrlRequest.Table.Column.AsObject>;
+    };
 
     export class Column extends jspb.Message {
       getName(): string;
@@ -634,9 +646,9 @@ export namespace GetDownloadDevicesUrlRequest {
 
     export namespace Column {
       export type AsObject = {
-        name: string,
-        title: string,
-      }
+        name: string;
+        title: string;
+      };
     }
 
   }
@@ -668,10 +680,10 @@ export class DownloadDevicesUrl extends jspb.Message {
 
 export namespace DownloadDevicesUrl {
   export type AsObject = {
-    url: string,
-    filename: string,
-    mediaType: string,
-    expireAfterTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    url: string;
+    filename: string;
+    mediaType: string;
+    expireAfterTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 

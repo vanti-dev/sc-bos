@@ -26,16 +26,16 @@ export class Pressure extends jspb.Message {
 
 export namespace Pressure {
   export type AsObject = {
-    targetPressure?: number,
-    pressure?: number,
-  }
+    targetPressure?: number;
+    pressure?: number;
+  };
 
-  export enum TargetPressureCase { 
+  export enum TargetPressureCase {
     _TARGET_PRESSURE_NOT_SET = 0,
     TARGET_PRESSURE = 1,
   }
 
-  export enum PressureCase { 
+  export enum PressureCase {
     _PRESSURE_NOT_SET = 0,
     PRESSURE = 2,
   }
@@ -60,9 +60,9 @@ export class GetPressureRequest extends jspb.Message {
 
 export namespace GetPressureRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullPressureRequest extends jspb.Message {
@@ -87,10 +87,10 @@ export class PullPressureRequest extends jspb.Message {
 
 export namespace PullPressureRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullPressureResponse extends jspb.Message {
@@ -109,8 +109,8 @@ export class PullPressureResponse extends jspb.Message {
 
 export namespace PullPressureResponse {
   export type AsObject = {
-    changesList: Array<PullPressureResponse.Change.AsObject>,
-  }
+    changesList: Array<PullPressureResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -136,10 +136,10 @@ export namespace PullPressureResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      pressure?: Pressure.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      pressure?: Pressure.AsObject;
+    };
   }
 
 }
@@ -171,11 +171,11 @@ export class UpdatePressureRequest extends jspb.Message {
 
 export namespace UpdatePressureRequest {
   export type AsObject = {
-    name: string,
-    pressure?: Pressure.AsObject,
-    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    delta: boolean,
-  }
+    name: string;
+    pressure?: Pressure.AsObject;
+    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    delta: boolean;
+  };
 }
 
 export class DescribePressureRequest extends jspb.Message {
@@ -192,8 +192,8 @@ export class DescribePressureRequest extends jspb.Message {
 
 export namespace DescribePressureRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class PressureSupport extends jspb.Message {
@@ -215,8 +215,8 @@ export class PressureSupport extends jspb.Message {
 
 export namespace PressureSupport {
   export type AsObject = {
-    resourceSupport?: types_info_pb.ResourceSupport.AsObject,
-    pressureUnit: string,
-  }
+    resourceSupport?: types_info_pb.ResourceSupport.AsObject;
+    pressureUnit: string;
+  };
 }
 

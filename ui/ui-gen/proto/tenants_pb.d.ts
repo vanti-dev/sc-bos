@@ -34,12 +34,12 @@ export class Tenant extends jspb.Message {
 
 export namespace Tenant {
   export type AsObject = {
-    id: string,
-    title: string,
-    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    zoneNamesList: Array<string>,
-    etag: string,
-  }
+    id: string;
+    title: string;
+    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    zoneNamesList: Array<string>;
+    etag: string;
+  };
 }
 
 export class Secret extends jspb.Message {
@@ -95,17 +95,17 @@ export class Secret extends jspb.Message {
 
 export namespace Secret {
   export type AsObject = {
-    id: string,
-    tenant?: Tenant.AsObject,
-    secretHash: Uint8Array | string,
-    secret: string,
-    note: string,
-    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    expireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    firstUseTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    lastUseTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    etag: string,
-  }
+    id: string;
+    tenant?: Tenant.AsObject;
+    secretHash: Uint8Array | string;
+    secret: string;
+    note: string;
+    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    expireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    firstUseTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    lastUseTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    etag: string;
+  };
 }
 
 export class ListTenantsRequest extends jspb.Message {
@@ -119,7 +119,7 @@ export class ListTenantsRequest extends jspb.Message {
 
 export namespace ListTenantsRequest {
   export type AsObject = {
-  }
+  };
 }
 
 export class ListTenantsResponse extends jspb.Message {
@@ -138,8 +138,8 @@ export class ListTenantsResponse extends jspb.Message {
 
 export namespace ListTenantsResponse {
   export type AsObject = {
-    tenantsList: Array<Tenant.AsObject>,
-  }
+    tenantsList: Array<Tenant.AsObject>;
+  };
 }
 
 export class PullTenantsRequest extends jspb.Message {
@@ -156,8 +156,8 @@ export class PullTenantsRequest extends jspb.Message {
 
 export namespace PullTenantsRequest {
   export type AsObject = {
-    updatesOnly: boolean,
-  }
+    updatesOnly: boolean;
+  };
 }
 
 export class PullTenantsResponse extends jspb.Message {
@@ -176,8 +176,8 @@ export class PullTenantsResponse extends jspb.Message {
 
 export namespace PullTenantsResponse {
   export type AsObject = {
-    changesList: Array<PullTenantsResponse.Change.AsObject>,
-  }
+    changesList: Array<PullTenantsResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
@@ -200,9 +200,9 @@ export namespace PullTenantsResponse {
 
   export namespace Change {
     export type AsObject = {
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      tenant?: Tenant.AsObject,
-    }
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      tenant?: Tenant.AsObject;
+    };
   }
 
 }
@@ -223,8 +223,8 @@ export class CreateTenantRequest extends jspb.Message {
 
 export namespace CreateTenantRequest {
   export type AsObject = {
-    tenant?: Tenant.AsObject,
-  }
+    tenant?: Tenant.AsObject;
+  };
 }
 
 export class GetTenantRequest extends jspb.Message {
@@ -241,8 +241,8 @@ export class GetTenantRequest extends jspb.Message {
 
 export namespace GetTenantRequest {
   export type AsObject = {
-    id: string,
-  }
+    id: string;
+  };
 }
 
 export class UpdateTenantRequest extends jspb.Message {
@@ -266,9 +266,9 @@ export class UpdateTenantRequest extends jspb.Message {
 
 export namespace UpdateTenantRequest {
   export type AsObject = {
-    tenant?: Tenant.AsObject,
-    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    tenant?: Tenant.AsObject;
+    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class DeleteTenantRequest extends jspb.Message {
@@ -285,8 +285,8 @@ export class DeleteTenantRequest extends jspb.Message {
 
 export namespace DeleteTenantRequest {
   export type AsObject = {
-    id: string,
-  }
+    id: string;
+  };
 }
 
 export class DeleteTenantResponse extends jspb.Message {
@@ -300,7 +300,7 @@ export class DeleteTenantResponse extends jspb.Message {
 
 export namespace DeleteTenantResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class PullTenantRequest extends jspb.Message {
@@ -320,9 +320,9 @@ export class PullTenantRequest extends jspb.Message {
 
 export namespace PullTenantRequest {
   export type AsObject = {
-    id: string,
-    updatesOnly: boolean,
-  }
+    id: string;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullTenantResponse extends jspb.Message {
@@ -341,8 +341,8 @@ export class PullTenantResponse extends jspb.Message {
 
 export namespace PullTenantResponse {
   export type AsObject = {
-    changesList: Array<PullTenantResponse.Change.AsObject>,
-  }
+    changesList: Array<PullTenantResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
@@ -365,9 +365,9 @@ export namespace PullTenantResponse {
 
   export namespace Change {
     export type AsObject = {
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      tenant?: Tenant.AsObject,
-    }
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      tenant?: Tenant.AsObject;
+    };
   }
 
 }
@@ -391,9 +391,9 @@ export class AddTenantZonesRequest extends jspb.Message {
 
 export namespace AddTenantZonesRequest {
   export type AsObject = {
-    tenantId: string,
-    addZoneNamesList: Array<string>,
-  }
+    tenantId: string;
+    addZoneNamesList: Array<string>;
+  };
 }
 
 export class RemoveTenantZonesRequest extends jspb.Message {
@@ -415,9 +415,9 @@ export class RemoveTenantZonesRequest extends jspb.Message {
 
 export namespace RemoveTenantZonesRequest {
   export type AsObject = {
-    tenantId: string,
-    removeZoneNamesList: Array<string>,
-  }
+    tenantId: string;
+    removeZoneNamesList: Array<string>;
+  };
 }
 
 export class ListSecretsRequest extends jspb.Message {
@@ -437,9 +437,9 @@ export class ListSecretsRequest extends jspb.Message {
 
 export namespace ListSecretsRequest {
   export type AsObject = {
-    includeHash: boolean,
-    filter: string,
-  }
+    includeHash: boolean;
+    filter: string;
+  };
 }
 
 export class ListSecretsResponse extends jspb.Message {
@@ -458,8 +458,8 @@ export class ListSecretsResponse extends jspb.Message {
 
 export namespace ListSecretsResponse {
   export type AsObject = {
-    secretsList: Array<Secret.AsObject>,
-  }
+    secretsList: Array<Secret.AsObject>;
+  };
 }
 
 export class PullSecretsRequest extends jspb.Message {
@@ -479,9 +479,9 @@ export class PullSecretsRequest extends jspb.Message {
 
 export namespace PullSecretsRequest {
   export type AsObject = {
-    includeHash: boolean,
-    updatesOnly: boolean,
-  }
+    includeHash: boolean;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullSecretsResponse extends jspb.Message {
@@ -500,8 +500,8 @@ export class PullSecretsResponse extends jspb.Message {
 
 export namespace PullSecretsResponse {
   export type AsObject = {
-    changesList: Array<PullSecretsResponse.Change.AsObject>,
-  }
+    changesList: Array<PullSecretsResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
@@ -524,9 +524,9 @@ export namespace PullSecretsResponse {
 
   export namespace Change {
     export type AsObject = {
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      secret?: Secret.AsObject,
-    }
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      secret?: Secret.AsObject;
+    };
   }
 
 }
@@ -547,8 +547,8 @@ export class CreateSecretRequest extends jspb.Message {
 
 export namespace CreateSecretRequest {
   export type AsObject = {
-    secret?: Secret.AsObject,
-  }
+    secret?: Secret.AsObject;
+  };
 }
 
 export class VerifySecretRequest extends jspb.Message {
@@ -568,9 +568,9 @@ export class VerifySecretRequest extends jspb.Message {
 
 export namespace VerifySecretRequest {
   export type AsObject = {
-    tenantId: string,
-    secret: string,
-  }
+    tenantId: string;
+    secret: string;
+  };
 }
 
 export class GetSecretRequest extends jspb.Message {
@@ -590,9 +590,9 @@ export class GetSecretRequest extends jspb.Message {
 
 export namespace GetSecretRequest {
   export type AsObject = {
-    id: string,
-    includeHash: boolean,
-  }
+    id: string;
+    includeHash: boolean;
+  };
 }
 
 export class GetSecretByHashRequest extends jspb.Message {
@@ -611,8 +611,8 @@ export class GetSecretByHashRequest extends jspb.Message {
 
 export namespace GetSecretByHashRequest {
   export type AsObject = {
-    secretHash: Uint8Array | string,
-  }
+    secretHash: Uint8Array | string;
+  };
 }
 
 export class UpdateSecretRequest extends jspb.Message {
@@ -631,8 +631,8 @@ export class UpdateSecretRequest extends jspb.Message {
 
 export namespace UpdateSecretRequest {
   export type AsObject = {
-    secret?: Secret.AsObject,
-  }
+    secret?: Secret.AsObject;
+  };
 }
 
 export class DeleteSecretRequest extends jspb.Message {
@@ -649,8 +649,8 @@ export class DeleteSecretRequest extends jspb.Message {
 
 export namespace DeleteSecretRequest {
   export type AsObject = {
-    id: string,
-  }
+    id: string;
+  };
 }
 
 export class DeleteSecretResponse extends jspb.Message {
@@ -664,7 +664,7 @@ export class DeleteSecretResponse extends jspb.Message {
 
 export namespace DeleteSecretResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class PullSecretRequest extends jspb.Message {
@@ -687,10 +687,10 @@ export class PullSecretRequest extends jspb.Message {
 
 export namespace PullSecretRequest {
   export type AsObject = {
-    id: string,
-    includeHash: boolean,
-    updatesOnly: boolean,
-  }
+    id: string;
+    includeHash: boolean;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullSecretResponse extends jspb.Message {
@@ -709,8 +709,8 @@ export class PullSecretResponse extends jspb.Message {
 
 export namespace PullSecretResponse {
   export type AsObject = {
-    changesList: Array<PullSecretResponse.Change.AsObject>,
-  }
+    changesList: Array<PullSecretResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getChangeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
@@ -733,9 +733,9 @@ export namespace PullSecretResponse {
 
   export namespace Change {
     export type AsObject = {
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      secret?: Secret.AsObject,
-    }
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      secret?: Secret.AsObject;
+    };
   }
 
 }
@@ -754,7 +754,7 @@ export class RegenerateSecretRequest extends jspb.Message {
 
 export namespace RegenerateSecretRequest {
   export type AsObject = {
-    id: string,
-  }
+    id: string;
+  };
 }
 

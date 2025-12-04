@@ -26,9 +26,9 @@ export class Temperature extends jspb.Message {
 
 export namespace Temperature {
   export type AsObject = {
-    setPoint?: types_unit_pb.Temperature.AsObject,
-    measured?: types_unit_pb.Temperature.AsObject,
-  }
+    setPoint?: types_unit_pb.Temperature.AsObject;
+    measured?: types_unit_pb.Temperature.AsObject;
+  };
 }
 
 export class GetTemperatureRequest extends jspb.Message {
@@ -50,9 +50,9 @@ export class GetTemperatureRequest extends jspb.Message {
 
 export namespace GetTemperatureRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullTemperatureRequest extends jspb.Message {
@@ -77,10 +77,10 @@ export class PullTemperatureRequest extends jspb.Message {
 
 export namespace PullTemperatureRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullTemperatureResponse extends jspb.Message {
@@ -99,8 +99,8 @@ export class PullTemperatureResponse extends jspb.Message {
 
 export namespace PullTemperatureResponse {
   export type AsObject = {
-    changesList: Array<PullTemperatureResponse.Change.AsObject>,
-  }
+    changesList: Array<PullTemperatureResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -126,10 +126,10 @@ export namespace PullTemperatureResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      temperature?: Temperature.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      temperature?: Temperature.AsObject;
+    };
   }
 
 }
@@ -161,10 +161,10 @@ export class UpdateTemperatureRequest extends jspb.Message {
 
 export namespace UpdateTemperatureRequest {
   export type AsObject = {
-    name: string,
-    temperature?: Temperature.AsObject,
-    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    delta: boolean,
-  }
+    name: string;
+    temperature?: Temperature.AsObject;
+    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    delta: boolean;
+  };
 }
 

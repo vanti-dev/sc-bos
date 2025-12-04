@@ -39,15 +39,17 @@ export class HistoryRecord extends jspb.Message {
 
 export namespace HistoryRecord {
   export type AsObject = {
-    id: string,
-    source: string,
-    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    payload: Uint8Array | string,
-  }
+    id: string;
+    source: string;
+    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    payload: Uint8Array | string;
+  };
 
   export class Query extends jspb.Message {
     getSourceEqual(): string;
     setSourceEqual(value: string): Query;
+    hasSourceEqual(): boolean;
+    clearSourceEqual(): Query;
 
     getFromRecord(): HistoryRecord | undefined;
     setFromRecord(value?: HistoryRecord): Query;
@@ -71,12 +73,12 @@ export namespace HistoryRecord {
 
   export namespace Query {
     export type AsObject = {
-      sourceEqual: string,
-      fromRecord?: HistoryRecord.AsObject,
-      toRecord?: HistoryRecord.AsObject,
-    }
+      sourceEqual?: string;
+      fromRecord?: HistoryRecord.AsObject;
+      toRecord?: HistoryRecord.AsObject;
+    };
 
-    export enum SourceCase { 
+    export enum SourceCase {
       SOURCE_NOT_SET = 0,
       SOURCE_EQUAL = 1,
     }
@@ -103,9 +105,9 @@ export class CreateHistoryRecordRequest extends jspb.Message {
 
 export namespace CreateHistoryRecordRequest {
   export type AsObject = {
-    name: string,
-    record?: HistoryRecord.AsObject,
-  }
+    name: string;
+    record?: HistoryRecord.AsObject;
+  };
 }
 
 export class ListHistoryRecordsRequest extends jspb.Message {
@@ -136,12 +138,12 @@ export class ListHistoryRecordsRequest extends jspb.Message {
 
 export namespace ListHistoryRecordsRequest {
   export type AsObject = {
-    name: string,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-    query?: HistoryRecord.Query.AsObject,
-  }
+    name: string;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+    query?: HistoryRecord.Query.AsObject;
+  };
 }
 
 export class ListHistoryRecordsResponse extends jspb.Message {
@@ -166,10 +168,10 @@ export class ListHistoryRecordsResponse extends jspb.Message {
 
 export namespace ListHistoryRecordsResponse {
   export type AsObject = {
-    recordsList: Array<HistoryRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    recordsList: Array<HistoryRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class AirTemperatureRecord extends jspb.Message {
@@ -193,9 +195,9 @@ export class AirTemperatureRecord extends jspb.Message {
 
 export namespace AirTemperatureRecord {
   export type AsObject = {
-    airTemperature?: traits_air_temperature_pb.AirTemperature.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    airTemperature?: traits_air_temperature_pb.AirTemperature.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ListAirTemperatureHistoryRequest extends jspb.Message {
@@ -231,13 +233,13 @@ export class ListAirTemperatureHistoryRequest extends jspb.Message {
 
 export namespace ListAirTemperatureHistoryRequest {
   export type AsObject = {
-    name: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class ListAirTemperatureHistoryResponse extends jspb.Message {
@@ -262,10 +264,10 @@ export class ListAirTemperatureHistoryResponse extends jspb.Message {
 
 export namespace ListAirTemperatureHistoryResponse {
   export type AsObject = {
-    airTemperatureRecordsList: Array<AirTemperatureRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    airTemperatureRecordsList: Array<AirTemperatureRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class MeterReadingRecord extends jspb.Message {
@@ -289,9 +291,9 @@ export class MeterReadingRecord extends jspb.Message {
 
 export namespace MeterReadingRecord {
   export type AsObject = {
-    meterReading?: meter_pb.MeterReading.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    meterReading?: meter_pb.MeterReading.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ListMeterReadingHistoryRequest extends jspb.Message {
@@ -327,13 +329,13 @@ export class ListMeterReadingHistoryRequest extends jspb.Message {
 
 export namespace ListMeterReadingHistoryRequest {
   export type AsObject = {
-    name: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class ListMeterReadingHistoryResponse extends jspb.Message {
@@ -358,10 +360,10 @@ export class ListMeterReadingHistoryResponse extends jspb.Message {
 
 export namespace ListMeterReadingHistoryResponse {
   export type AsObject = {
-    meterReadingRecordsList: Array<MeterReadingRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    meterReadingRecordsList: Array<MeterReadingRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class ElectricDemandRecord extends jspb.Message {
@@ -385,9 +387,9 @@ export class ElectricDemandRecord extends jspb.Message {
 
 export namespace ElectricDemandRecord {
   export type AsObject = {
-    electricDemand?: traits_electric_pb.ElectricDemand.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    electricDemand?: traits_electric_pb.ElectricDemand.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ListElectricDemandHistoryRequest extends jspb.Message {
@@ -423,13 +425,13 @@ export class ListElectricDemandHistoryRequest extends jspb.Message {
 
 export namespace ListElectricDemandHistoryRequest {
   export type AsObject = {
-    name: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class ListElectricDemandHistoryResponse extends jspb.Message {
@@ -454,10 +456,10 @@ export class ListElectricDemandHistoryResponse extends jspb.Message {
 
 export namespace ListElectricDemandHistoryResponse {
   export type AsObject = {
-    electricDemandRecordsList: Array<ElectricDemandRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    electricDemandRecordsList: Array<ElectricDemandRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class OccupancyRecord extends jspb.Message {
@@ -481,9 +483,9 @@ export class OccupancyRecord extends jspb.Message {
 
 export namespace OccupancyRecord {
   export type AsObject = {
-    occupancy?: traits_occupancy_sensor_pb.Occupancy.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    occupancy?: traits_occupancy_sensor_pb.Occupancy.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ListOccupancyHistoryRequest extends jspb.Message {
@@ -519,13 +521,13 @@ export class ListOccupancyHistoryRequest extends jspb.Message {
 
 export namespace ListOccupancyHistoryRequest {
   export type AsObject = {
-    name: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class ListOccupancyHistoryResponse extends jspb.Message {
@@ -550,10 +552,10 @@ export class ListOccupancyHistoryResponse extends jspb.Message {
 
 export namespace ListOccupancyHistoryResponse {
   export type AsObject = {
-    occupancyRecordsList: Array<OccupancyRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    occupancyRecordsList: Array<OccupancyRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class AirQualityRecord extends jspb.Message {
@@ -577,9 +579,9 @@ export class AirQualityRecord extends jspb.Message {
 
 export namespace AirQualityRecord {
   export type AsObject = {
-    airQuality?: traits_air_quality_sensor_pb.AirQuality.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    airQuality?: traits_air_quality_sensor_pb.AirQuality.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ListAirQualityHistoryRequest extends jspb.Message {
@@ -615,13 +617,13 @@ export class ListAirQualityHistoryRequest extends jspb.Message {
 
 export namespace ListAirQualityHistoryRequest {
   export type AsObject = {
-    name: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class ListAirQualityHistoryResponse extends jspb.Message {
@@ -646,10 +648,10 @@ export class ListAirQualityHistoryResponse extends jspb.Message {
 
 export namespace ListAirQualityHistoryResponse {
   export type AsObject = {
-    airQualityRecordsList: Array<AirQualityRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    airQualityRecordsList: Array<AirQualityRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class SoundLevelRecord extends jspb.Message {
@@ -673,9 +675,9 @@ export class SoundLevelRecord extends jspb.Message {
 
 export namespace SoundLevelRecord {
   export type AsObject = {
-    soundLevel?: sound_sensor_pb.SoundLevel.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    soundLevel?: sound_sensor_pb.SoundLevel.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ListSoundLevelHistoryRequest extends jspb.Message {
@@ -711,13 +713,13 @@ export class ListSoundLevelHistoryRequest extends jspb.Message {
 
 export namespace ListSoundLevelHistoryRequest {
   export type AsObject = {
-    name: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class ListSoundLevelHistoryResponse extends jspb.Message {
@@ -742,10 +744,10 @@ export class ListSoundLevelHistoryResponse extends jspb.Message {
 
 export namespace ListSoundLevelHistoryResponse {
   export type AsObject = {
-    soundLevelRecordsList: Array<SoundLevelRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    soundLevelRecordsList: Array<SoundLevelRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class EnterLeaveEventRecord extends jspb.Message {
@@ -769,9 +771,9 @@ export class EnterLeaveEventRecord extends jspb.Message {
 
 export namespace EnterLeaveEventRecord {
   export type AsObject = {
-    enterLeaveEvent?: traits_enter_leave_sensor_pb.EnterLeaveEvent.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    enterLeaveEvent?: traits_enter_leave_sensor_pb.EnterLeaveEvent.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ListEnterLeaveHistoryRequest extends jspb.Message {
@@ -807,13 +809,13 @@ export class ListEnterLeaveHistoryRequest extends jspb.Message {
 
 export namespace ListEnterLeaveHistoryRequest {
   export type AsObject = {
-    name: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class ListEnterLeaveHistoryResponse extends jspb.Message {
@@ -838,9 +840,9 @@ export class ListEnterLeaveHistoryResponse extends jspb.Message {
 
 export namespace ListEnterLeaveHistoryResponse {
   export type AsObject = {
-    enterLeaveRecordsList: Array<EnterLeaveEventRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    enterLeaveRecordsList: Array<EnterLeaveEventRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 

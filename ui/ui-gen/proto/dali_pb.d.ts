@@ -18,8 +18,8 @@ export class GetGroupMembershipRequest extends jspb.Message {
 
 export namespace GetGroupMembershipRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class GetGroupMembershipResponse extends jspb.Message {
@@ -38,8 +38,8 @@ export class GetGroupMembershipResponse extends jspb.Message {
 
 export namespace GetGroupMembershipResponse {
   export type AsObject = {
-    groupsList: Array<number>,
-  }
+    groupsList: Array<number>;
+  };
 }
 
 export class AddToGroupRequest extends jspb.Message {
@@ -59,9 +59,9 @@ export class AddToGroupRequest extends jspb.Message {
 
 export namespace AddToGroupRequest {
   export type AsObject = {
-    name: string,
-    group: number,
-  }
+    name: string;
+    group: number;
+  };
 }
 
 export class AddToGroupResponse extends jspb.Message {
@@ -75,7 +75,7 @@ export class AddToGroupResponse extends jspb.Message {
 
 export namespace AddToGroupResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class RemoveFromGroupRequest extends jspb.Message {
@@ -95,9 +95,9 @@ export class RemoveFromGroupRequest extends jspb.Message {
 
 export namespace RemoveFromGroupRequest {
   export type AsObject = {
-    name: string,
-    group: number,
-  }
+    name: string;
+    group: number;
+  };
 }
 
 export class RemoveFromGroupResponse extends jspb.Message {
@@ -111,7 +111,7 @@ export class RemoveFromGroupResponse extends jspb.Message {
 
 export namespace RemoveFromGroupResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class EmergencyStatus extends jspb.Message {
@@ -159,24 +159,24 @@ export class EmergencyStatus extends jspb.Message {
 
 export namespace EmergencyStatus {
   export type AsObject = {
-    activeModesList: Array<EmergencyStatus.Mode>,
-    pendingTestsList: Array<EmergencyStatus.Test>,
-    overdueTestsList: Array<EmergencyStatus.Test>,
-    resultsAvailableList: Array<EmergencyStatus.Test>,
-    inhibitActive: boolean,
-    identificationActive: boolean,
-    batteryLevelPercent: number,
-    failuresList: Array<EmergencyStatus.Failure>,
-  }
+    activeModesList: Array<EmergencyStatus.Mode>;
+    pendingTestsList: Array<EmergencyStatus.Test>;
+    overdueTestsList: Array<EmergencyStatus.Test>;
+    resultsAvailableList: Array<EmergencyStatus.Test>;
+    inhibitActive: boolean;
+    identificationActive: boolean;
+    batteryLevelPercent: number;
+    failuresList: Array<EmergencyStatus.Failure>;
+  };
 
-  export enum Test { 
+  export enum Test {
     TEST_UNKNOWN = 0,
     NO_TEST = 1,
     FUNCTION_TEST = 2,
     DURATION_TEST = 3,
   }
 
-  export enum Mode { 
+  export enum Mode {
     MODE_UNSPECIFIED = 0,
     REST = 1,
     NORMAL = 3,
@@ -188,7 +188,7 @@ export namespace EmergencyStatus {
     HARDWIRED_SWITCH = 9,
   }
 
-  export enum Failure { 
+  export enum Failure {
     FAILURE_UNSPECIFIED = 0,
     CIRCUIT_FAILURE = 1,
     BATTERY_DURATION_FAILURE = 2,
@@ -213,8 +213,8 @@ export class GetEmergencyStatusRequest extends jspb.Message {
 
 export namespace GetEmergencyStatusRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class ControlGearStatus extends jspb.Message {
@@ -233,10 +233,10 @@ export class ControlGearStatus extends jspb.Message {
 
 export namespace ControlGearStatus {
   export type AsObject = {
-    failuresList: Array<ControlGearStatus.Failure>,
-  }
+    failuresList: Array<ControlGearStatus.Failure>;
+  };
 
-  export enum Failure { 
+  export enum Failure {
     FAILURE_UNSPECIFIED = 0,
     LAMP_FAILURE = 1,
     CONTROL_GEAR_FAILURE = 2,
@@ -257,8 +257,8 @@ export class GetControlGearStatusRequest extends jspb.Message {
 
 export namespace GetControlGearStatusRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class IdentifyRequest extends jspb.Message {
@@ -275,8 +275,8 @@ export class IdentifyRequest extends jspb.Message {
 
 export namespace IdentifyRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class IdentifyResponse extends jspb.Message {
@@ -290,7 +290,7 @@ export class IdentifyResponse extends jspb.Message {
 
 export namespace IdentifyResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class StartTestRequest extends jspb.Message {
@@ -310,9 +310,9 @@ export class StartTestRequest extends jspb.Message {
 
 export namespace StartTestRequest {
   export type AsObject = {
-    name: string,
-    test: EmergencyStatus.Test,
-  }
+    name: string;
+    test: EmergencyStatus.Test;
+  };
 }
 
 export class StartTestResponse extends jspb.Message {
@@ -326,7 +326,7 @@ export class StartTestResponse extends jspb.Message {
 
 export namespace StartTestResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class StopTestRequest extends jspb.Message {
@@ -343,8 +343,8 @@ export class StopTestRequest extends jspb.Message {
 
 export namespace StopTestRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class StopTestResponse extends jspb.Message {
@@ -358,7 +358,7 @@ export class StopTestResponse extends jspb.Message {
 
 export namespace StopTestResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class UpdateTestIntervalRequest extends jspb.Message {
@@ -383,10 +383,10 @@ export class UpdateTestIntervalRequest extends jspb.Message {
 
 export namespace UpdateTestIntervalRequest {
   export type AsObject = {
-    name: string,
-    test: EmergencyStatus.Test,
-    interval?: google_protobuf_duration_pb.Duration.AsObject,
-  }
+    name: string;
+    test: EmergencyStatus.Test;
+    interval?: google_protobuf_duration_pb.Duration.AsObject;
+  };
 }
 
 export class UpdateTestIntervalResponse extends jspb.Message {
@@ -405,8 +405,8 @@ export class UpdateTestIntervalResponse extends jspb.Message {
 
 export namespace UpdateTestIntervalResponse {
   export type AsObject = {
-    interval?: google_protobuf_duration_pb.Duration.AsObject,
-  }
+    interval?: google_protobuf_duration_pb.Duration.AsObject;
+  };
 }
 
 export class TestResult extends jspb.Message {
@@ -447,14 +447,14 @@ export class TestResult extends jspb.Message {
 
 export namespace TestResult {
   export type AsObject = {
-    test: EmergencyStatus.Test,
-    pass: boolean,
-    duration?: google_protobuf_duration_pb.Duration.AsObject,
-    etag: string,
-    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    failureReason: EmergencyStatus.Failure,
-  }
+    test: EmergencyStatus.Test;
+    pass: boolean;
+    duration?: google_protobuf_duration_pb.Duration.AsObject;
+    etag: string;
+    startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    endTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    failureReason: EmergencyStatus.Failure;
+  };
 }
 
 export class GetTestResultRequest extends jspb.Message {
@@ -474,9 +474,9 @@ export class GetTestResultRequest extends jspb.Message {
 
 export namespace GetTestResultRequest {
   export type AsObject = {
-    name: string,
-    test: EmergencyStatus.Test,
-  }
+    name: string;
+    test: EmergencyStatus.Test;
+  };
 }
 
 export class DeleteTestResultRequest extends jspb.Message {
@@ -499,9 +499,9 @@ export class DeleteTestResultRequest extends jspb.Message {
 
 export namespace DeleteTestResultRequest {
   export type AsObject = {
-    name: string,
-    test: EmergencyStatus.Test,
-    etag: string,
-  }
+    name: string;
+    test: EmergencyStatus.Test;
+    etag: string;
+  };
 }
 

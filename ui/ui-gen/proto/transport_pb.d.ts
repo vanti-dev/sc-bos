@@ -82,21 +82,21 @@ export class Transport extends jspb.Message {
 
 export namespace Transport {
   export type AsObject = {
-    actualPosition?: Transport.Location.AsObject,
-    nextDestinationsList: Array<Transport.Location.AsObject>,
-    movingDirection: Transport.Direction,
-    load?: number,
-    doorsList: Array<Transport.Door.AsObject>,
-    operatingMode: Transport.OperatingMode,
-    faultsList: Array<Transport.Fault.AsObject>,
-    passengerAlarm?: Transport.Alarm.AsObject,
-    speed?: number,
-    supportedDestinationsList: Array<Transport.Location.AsObject>,
-    active: Transport.Active,
-    payloadsList: Array<Transport.Payload.AsObject>,
-    etaToNextDestination?: google_protobuf_duration_pb.Duration.AsObject,
-    stoppedReason?: Transport.StoppedReason.AsObject,
-  }
+    actualPosition?: Transport.Location.AsObject;
+    nextDestinationsList: Array<Transport.Location.AsObject>;
+    movingDirection: Transport.Direction;
+    load?: number;
+    doorsList: Array<Transport.Door.AsObject>;
+    operatingMode: Transport.OperatingMode;
+    faultsList: Array<Transport.Fault.AsObject>;
+    passengerAlarm?: Transport.Alarm.AsObject;
+    speed?: number;
+    supportedDestinationsList: Array<Transport.Location.AsObject>;
+    active: Transport.Active;
+    payloadsList: Array<Transport.Payload.AsObject>;
+    etaToNextDestination?: google_protobuf_duration_pb.Duration.AsObject;
+    stoppedReason?: Transport.StoppedReason.AsObject;
+  };
 
   export class Alarm extends jspb.Message {
     getState(): Transport.Alarm.AlarmState;
@@ -117,11 +117,11 @@ export namespace Transport {
 
   export namespace Alarm {
     export type AsObject = {
-      state: Transport.Alarm.AlarmState,
-      time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      state: Transport.Alarm.AlarmState;
+      time?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
 
-    export enum AlarmState { 
+    export enum AlarmState {
       ALARM_STATE_UNSPECIFIED = 0,
       UNACTIVATED = 1,
       ACTIVATED = 2,
@@ -151,12 +151,12 @@ export namespace Transport {
 
   export namespace Fault {
     export type AsObject = {
-      faultType: Transport.Fault.FaultType,
-      time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      description: string,
-    }
+      faultType: Transport.Fault.FaultType;
+      time?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      description: string;
+    };
 
-    export enum FaultType { 
+    export enum FaultType {
       FAULT_TYPE_UNSPECIFIED = 0,
       CONTROLLER_FAULT = 1,
       DRIVE_AND_MOTOR_FAULT = 2,
@@ -225,12 +225,12 @@ export namespace Transport {
 
   export namespace Journey {
     export type AsObject = {
-      start?: Transport.Location.AsObject,
-      destinationsList: Array<Transport.Location.AsObject>,
-      reason: string,
-      startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      estimatedArrivalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      start?: Transport.Location.AsObject;
+      destinationsList: Array<Transport.Location.AsObject>;
+      reason: string;
+      startTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      estimatedArrivalTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 
@@ -254,12 +254,12 @@ export namespace Transport {
 
   export namespace Door {
     export type AsObject = {
-      title: string,
-      deck: number,
-      status: Transport.Door.DoorStatus,
-    }
+      title: string;
+      deck: number;
+      status: Transport.Door.DoorStatus;
+    };
 
-    export enum DoorStatus { 
+    export enum DoorStatus {
       DOOR_STATUS_UNSPECIFIED = 0,
       CLOSED = 1,
       OPEN = 2,
@@ -294,11 +294,11 @@ export namespace Transport {
 
   export namespace Location {
     export type AsObject = {
-      id: string,
-      title: string,
-      description: string,
-      floor: string,
-    }
+      id: string;
+      title: string;
+      description: string;
+      floor: string;
+    };
   }
 
 
@@ -321,11 +321,11 @@ export namespace Transport {
 
   export namespace StoppedReason {
     export type AsObject = {
-      reason: Transport.StoppedReason.Reason,
-      time?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      reason: Transport.StoppedReason.Reason;
+      time?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
 
-    export enum Reason { 
+    export enum Reason {
       REASON_UNSPECIFIED = 0,
       EMERGENCY_STOP_SENSOR = 1,
       EMERGENCY_STOP_USER = 2,
@@ -364,16 +364,16 @@ export namespace Transport {
 
   export namespace Payload {
     export type AsObject = {
-      payloadId: string,
-      description: string,
-      intendedJourney?: Transport.Journey.AsObject,
-      actualJourney?: Transport.Journey.AsObject,
-      externalIdsMap: Array<[string, string]>,
-    }
+      payloadId: string;
+      description: string;
+      intendedJourney?: Transport.Journey.AsObject;
+      actualJourney?: Transport.Journey.AsObject;
+      externalIdsMap: Array<[string, string]>;
+    };
   }
 
 
-  export enum Direction { 
+  export enum Direction {
     DIRECTION_UNSPECIFIED = 0,
     NO_DIRECTION = 1,
     UP = 2,
@@ -393,7 +393,7 @@ export namespace Transport {
     SIDEWAYS = 16,
   }
 
-  export enum OperatingMode { 
+  export enum OperatingMode {
     OPERATING_MODE_UNSPECIFIED = 0,
     NORMAL = 1,
     SERVICE_CONTROL = 2,
@@ -418,19 +418,19 @@ export namespace Transport {
     ENERGY_SAVING = 21,
   }
 
-  export enum Active { 
+  export enum Active {
     ACTIVE_UNSPECIFIED = 0,
     INACTIVE = 1,
     ACTIVE = 2,
     STANDBY = 3,
   }
 
-  export enum LoadCase { 
+  export enum LoadCase {
     _LOAD_NOT_SET = 0,
     LOAD = 4,
   }
 
-  export enum SpeedCase { 
+  export enum SpeedCase {
     _SPEED_NOT_SET = 0,
     SPEED = 9,
   }
@@ -461,11 +461,11 @@ export class TransportSupport extends jspb.Message {
 
 export namespace TransportSupport {
   export type AsObject = {
-    resourceSupport?: types_info_pb.ResourceSupport.AsObject,
-    loadUnit: string,
-    maxLoad: number,
-    speedUnit: string,
-  }
+    resourceSupport?: types_info_pb.ResourceSupport.AsObject;
+    loadUnit: string;
+    maxLoad: number;
+    speedUnit: string;
+  };
 }
 
 export class GetTransportRequest extends jspb.Message {
@@ -487,9 +487,9 @@ export class GetTransportRequest extends jspb.Message {
 
 export namespace GetTransportRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class DescribeTransportRequest extends jspb.Message {
@@ -506,8 +506,8 @@ export class DescribeTransportRequest extends jspb.Message {
 
 export namespace DescribeTransportRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class PullTransportRequest extends jspb.Message {
@@ -532,10 +532,10 @@ export class PullTransportRequest extends jspb.Message {
 
 export namespace PullTransportRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullTransportResponse extends jspb.Message {
@@ -554,8 +554,8 @@ export class PullTransportResponse extends jspb.Message {
 
 export namespace PullTransportResponse {
   export type AsObject = {
-    changesList: Array<PullTransportResponse.Change.AsObject>,
-  }
+    changesList: Array<PullTransportResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -581,10 +581,10 @@ export namespace PullTransportResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      transport?: Transport.AsObject,
-    }
+      name: string;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      transport?: Transport.AsObject;
+    };
   }
 
 }
@@ -622,13 +622,13 @@ export class ListTransportHistoryRequest extends jspb.Message {
 
 export namespace ListTransportHistoryRequest {
   export type AsObject = {
-    name: string,
-    period?: types_time_period_pb.Period.AsObject,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    orderBy: string,
-  }
+    name: string;
+    period?: types_time_period_pb.Period.AsObject;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    orderBy: string;
+  };
 }
 
 export class TransportRecord extends jspb.Message {
@@ -652,9 +652,9 @@ export class TransportRecord extends jspb.Message {
 
 export namespace TransportRecord {
   export type AsObject = {
-    transport?: Transport.AsObject,
-    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    transport?: Transport.AsObject;
+    recordTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ListTransportHistoryResponse extends jspb.Message {
@@ -679,9 +679,9 @@ export class ListTransportHistoryResponse extends jspb.Message {
 
 export namespace ListTransportHistoryResponse {
   export type AsObject = {
-    transportRecordsList: Array<TransportRecord.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    transportRecordsList: Array<TransportRecord.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 

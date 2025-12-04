@@ -21,9 +21,9 @@ export class GetAccountRequest extends jspb.Message {
 
 export namespace GetAccountRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-  }
+    name: string;
+    id: string;
+  };
 }
 
 export class CreateAccountRequest extends jspb.Message {
@@ -48,10 +48,10 @@ export class CreateAccountRequest extends jspb.Message {
 
 export namespace CreateAccountRequest {
   export type AsObject = {
-    name: string,
-    account?: Account.AsObject,
-    password: string,
-  }
+    name: string;
+    account?: Account.AsObject;
+    password: string;
+  };
 }
 
 export class ListAccountsRequest extends jspb.Message {
@@ -74,10 +74,10 @@ export class ListAccountsRequest extends jspb.Message {
 
 export namespace ListAccountsRequest {
   export type AsObject = {
-    name: string,
-    pageSize: number,
-    pageToken: string,
-  }
+    name: string;
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListAccountsResponse extends jspb.Message {
@@ -102,10 +102,10 @@ export class ListAccountsResponse extends jspb.Message {
 
 export namespace ListAccountsResponse {
   export type AsObject = {
-    accountsList: Array<Account.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    accountsList: Array<Account.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class UpdateAccountRequest extends jspb.Message {
@@ -132,10 +132,10 @@ export class UpdateAccountRequest extends jspb.Message {
 
 export namespace UpdateAccountRequest {
   export type AsObject = {
-    name: string,
-    account?: Account.AsObject,
-    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    account?: Account.AsObject;
+    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class UpdateAccountPasswordRequest extends jspb.Message {
@@ -161,11 +161,11 @@ export class UpdateAccountPasswordRequest extends jspb.Message {
 
 export namespace UpdateAccountPasswordRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    newPassword: string,
-    oldPassword: string,
-  }
+    name: string;
+    id: string;
+    newPassword: string;
+    oldPassword: string;
+  };
 }
 
 export class UpdateAccountPasswordResponse extends jspb.Message {
@@ -179,7 +179,7 @@ export class UpdateAccountPasswordResponse extends jspb.Message {
 
 export namespace UpdateAccountPasswordResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class RotateAccountClientSecretRequest extends jspb.Message {
@@ -204,10 +204,10 @@ export class RotateAccountClientSecretRequest extends jspb.Message {
 
 export namespace RotateAccountClientSecretRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    previousSecretExpireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    name: string;
+    id: string;
+    previousSecretExpireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class RotateAccountClientSecretResponse extends jspb.Message {
@@ -224,8 +224,8 @@ export class RotateAccountClientSecretResponse extends jspb.Message {
 
 export namespace RotateAccountClientSecretResponse {
   export type AsObject = {
-    clientSecret: string,
-  }
+    clientSecret: string;
+  };
 }
 
 export class DeleteAccountRequest extends jspb.Message {
@@ -248,10 +248,10 @@ export class DeleteAccountRequest extends jspb.Message {
 
 export namespace DeleteAccountRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    allowMissing: boolean,
-  }
+    name: string;
+    id: string;
+    allowMissing: boolean;
+  };
 }
 
 export class DeleteAccountResponse extends jspb.Message {
@@ -265,7 +265,7 @@ export class DeleteAccountResponse extends jspb.Message {
 
 export namespace DeleteAccountResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class GetRoleRequest extends jspb.Message {
@@ -285,9 +285,9 @@ export class GetRoleRequest extends jspb.Message {
 
 export namespace GetRoleRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-  }
+    name: string;
+    id: string;
+  };
 }
 
 export class ListRolesRequest extends jspb.Message {
@@ -310,10 +310,10 @@ export class ListRolesRequest extends jspb.Message {
 
 export namespace ListRolesRequest {
   export type AsObject = {
-    name: string,
-    pageSize: number,
-    pageToken: string,
-  }
+    name: string;
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListRolesResponse extends jspb.Message {
@@ -338,10 +338,10 @@ export class ListRolesResponse extends jspb.Message {
 
 export namespace ListRolesResponse {
   export type AsObject = {
-    rolesList: Array<Role.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    rolesList: Array<Role.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class CreateRoleRequest extends jspb.Message {
@@ -363,9 +363,9 @@ export class CreateRoleRequest extends jspb.Message {
 
 export namespace CreateRoleRequest {
   export type AsObject = {
-    name: string,
-    role?: Role.AsObject,
-  }
+    name: string;
+    role?: Role.AsObject;
+  };
 }
 
 export class UpdateRoleRequest extends jspb.Message {
@@ -392,10 +392,10 @@ export class UpdateRoleRequest extends jspb.Message {
 
 export namespace UpdateRoleRequest {
   export type AsObject = {
-    name: string,
-    role?: Role.AsObject,
-    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    role?: Role.AsObject;
+    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class DeleteRoleRequest extends jspb.Message {
@@ -418,10 +418,10 @@ export class DeleteRoleRequest extends jspb.Message {
 
 export namespace DeleteRoleRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    allowMissing: boolean,
-  }
+    name: string;
+    id: string;
+    allowMissing: boolean;
+  };
 }
 
 export class DeleteRoleResponse extends jspb.Message {
@@ -435,7 +435,7 @@ export class DeleteRoleResponse extends jspb.Message {
 
 export namespace DeleteRoleResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class GetRoleAssignmentRequest extends jspb.Message {
@@ -455,9 +455,9 @@ export class GetRoleAssignmentRequest extends jspb.Message {
 
 export namespace GetRoleAssignmentRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-  }
+    name: string;
+    id: string;
+  };
 }
 
 export class ListRoleAssignmentsRequest extends jspb.Message {
@@ -483,11 +483,11 @@ export class ListRoleAssignmentsRequest extends jspb.Message {
 
 export namespace ListRoleAssignmentsRequest {
   export type AsObject = {
-    name: string,
-    pageSize: number,
-    pageToken: string,
-    filter: string,
-  }
+    name: string;
+    pageSize: number;
+    pageToken: string;
+    filter: string;
+  };
 }
 
 export class ListRoleAssignmentsResponse extends jspb.Message {
@@ -512,10 +512,10 @@ export class ListRoleAssignmentsResponse extends jspb.Message {
 
 export namespace ListRoleAssignmentsResponse {
   export type AsObject = {
-    roleAssignmentsList: Array<RoleAssignment.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    roleAssignmentsList: Array<RoleAssignment.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class CreateRoleAssignmentRequest extends jspb.Message {
@@ -537,9 +537,9 @@ export class CreateRoleAssignmentRequest extends jspb.Message {
 
 export namespace CreateRoleAssignmentRequest {
   export type AsObject = {
-    name: string,
-    roleAssignment?: RoleAssignment.AsObject,
-  }
+    name: string;
+    roleAssignment?: RoleAssignment.AsObject;
+  };
 }
 
 export class DeleteRoleAssignmentRequest extends jspb.Message {
@@ -562,10 +562,10 @@ export class DeleteRoleAssignmentRequest extends jspb.Message {
 
 export namespace DeleteRoleAssignmentRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    allowMissing: boolean,
-  }
+    name: string;
+    id: string;
+    allowMissing: boolean;
+  };
 }
 
 export class DeleteRoleAssignmentResponse extends jspb.Message {
@@ -579,7 +579,7 @@ export class DeleteRoleAssignmentResponse extends jspb.Message {
 
 export namespace DeleteRoleAssignmentResponse {
   export type AsObject = {
-  }
+  };
 }
 
 export class GetPermissionRequest extends jspb.Message {
@@ -599,9 +599,9 @@ export class GetPermissionRequest extends jspb.Message {
 
 export namespace GetPermissionRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-  }
+    name: string;
+    id: string;
+  };
 }
 
 export class ListPermissionsRequest extends jspb.Message {
@@ -624,10 +624,10 @@ export class ListPermissionsRequest extends jspb.Message {
 
 export namespace ListPermissionsRequest {
   export type AsObject = {
-    name: string,
-    pageSize: number,
-    pageToken: string,
-  }
+    name: string;
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListPermissionsResponse extends jspb.Message {
@@ -652,10 +652,10 @@ export class ListPermissionsResponse extends jspb.Message {
 
 export namespace ListPermissionsResponse {
   export type AsObject = {
-    permissionsList: Array<Permission.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    permissionsList: Array<Permission.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class GetAccountLimitsRequest extends jspb.Message {
@@ -672,8 +672,8 @@ export class GetAccountLimitsRequest extends jspb.Message {
 
 export namespace GetAccountLimitsRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class Account extends jspb.Message {
@@ -716,22 +716,22 @@ export class Account extends jspb.Message {
 
 export namespace Account {
   export type AsObject = {
-    id: string,
-    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    type: Account.Type,
-    displayName: string,
-    description: string,
-    userDetails?: UserAccount.AsObject,
-    serviceDetails?: ServiceAccount.AsObject,
-  }
+    id: string;
+    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    type: Account.Type;
+    displayName: string;
+    description: string;
+    userDetails?: UserAccount.AsObject;
+    serviceDetails?: ServiceAccount.AsObject;
+  };
 
-  export enum Type { 
+  export enum Type {
     ACCOUNT_TYPE_UNSPECIFIED = 0,
     USER_ACCOUNT = 1,
     SERVICE_ACCOUNT = 2,
   }
 
-  export enum DetailsCase { 
+  export enum DetailsCase {
     DETAILS_NOT_SET = 0,
     USER_DETAILS = 6,
     SERVICE_DETAILS = 7,
@@ -755,9 +755,9 @@ export class UserAccount extends jspb.Message {
 
 export namespace UserAccount {
   export type AsObject = {
-    username: string,
-    hasPassword: boolean,
-  }
+    username: string;
+    hasPassword: boolean;
+  };
 }
 
 export class ServiceAccount extends jspb.Message {
@@ -782,10 +782,10 @@ export class ServiceAccount extends jspb.Message {
 
 export namespace ServiceAccount {
   export type AsObject = {
-    clientId: string,
-    clientSecret: string,
-    previousSecretExpireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    clientId: string;
+    clientSecret: string;
+    previousSecretExpireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class Role extends jspb.Message {
@@ -819,13 +819,13 @@ export class Role extends jspb.Message {
 
 export namespace Role {
   export type AsObject = {
-    id: string,
-    displayName: string,
-    description: string,
-    permissionIdsList: Array<string>,
-    legacyRoleName: string,
-    pb_protected: boolean,
-  }
+    id: string;
+    displayName: string;
+    description: string;
+    permissionIdsList: Array<string>;
+    legacyRoleName: string;
+    pb_protected: boolean;
+  };
 }
 
 export class RoleAssignment extends jspb.Message {
@@ -853,11 +853,11 @@ export class RoleAssignment extends jspb.Message {
 
 export namespace RoleAssignment {
   export type AsObject = {
-    id: string,
-    accountId: string,
-    roleId: string,
-    scope?: RoleAssignment.Scope.AsObject,
-  }
+    id: string;
+    accountId: string;
+    roleId: string;
+    scope?: RoleAssignment.Scope.AsObject;
+  };
 
   export class Scope extends jspb.Message {
     getResourceType(): RoleAssignment.ResourceType;
@@ -876,13 +876,13 @@ export namespace RoleAssignment {
 
   export namespace Scope {
     export type AsObject = {
-      resourceType: RoleAssignment.ResourceType,
-      resource: string,
-    }
+      resourceType: RoleAssignment.ResourceType;
+      resource: string;
+    };
   }
 
 
-  export enum ResourceType { 
+  export enum ResourceType {
     RESOURCE_TYPE_UNSPECIFIED = 0,
     NAMED_RESOURCE = 1,
     NAMED_RESOURCE_PATH_PREFIX = 2,
@@ -912,10 +912,10 @@ export class Permission extends jspb.Message {
 
 export namespace Permission {
   export type AsObject = {
-    id: string,
-    displayName: string,
-    description: string,
-  }
+    id: string;
+    displayName: string;
+    description: string;
+  };
 }
 
 export class AccountLimits extends jspb.Message {
@@ -949,11 +949,11 @@ export class AccountLimits extends jspb.Message {
 
 export namespace AccountLimits {
   export type AsObject = {
-    username?: AccountLimits.Field.AsObject,
-    password?: AccountLimits.Field.AsObject,
-    displayName?: AccountLimits.Field.AsObject,
-    description?: AccountLimits.Field.AsObject,
-  }
+    username?: AccountLimits.Field.AsObject;
+    password?: AccountLimits.Field.AsObject;
+    displayName?: AccountLimits.Field.AsObject;
+    description?: AccountLimits.Field.AsObject;
+  };
 
   export class Field extends jspb.Message {
     getMinLength(): number;
@@ -972,9 +972,9 @@ export namespace AccountLimits {
 
   export namespace Field {
     export type AsObject = {
-      minLength: number,
-      maxLength: number,
-    }
+      minLength: number;
+      maxLength: number;
+    };
   }
 
 }

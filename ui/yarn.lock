@@ -748,21 +748,13 @@
   resolved "https://registry.npmjs.org/@sindresorhus/merge-streams/-/merge-streams-2.3.0.tgz#719df7fb41766bc143369eaa0dd56d8dc87c9958"
   integrity sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg==
 
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.56":
-  version "1.0.0-beta.56"
-  resolved "https://npm.pkg.github.com/download/@smart-core-os/sc-api-grpc-web/1.0.0-beta.56/010c5da8c16e0906edb214728886fda9c1fc242a#010c5da8c16e0906edb214728886fda9c1fc242a"
-  integrity sha512-fiDXdEOHcQvBj1tg9YJahspYbIamyCtKYUu20wG2RGhCozxahNBbniHgoIhmRLoci0AOHPCQU1mooago85cSSw==
+"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.59":
+  version "1.0.0-beta.59"
+  resolved "https://npm.pkg.github.com/download/@smart-core-os/sc-api-grpc-web/1.0.0-beta.59/0698a9f28210d61ef0ee4a206c40a0d7d51cc383#0698a9f28210d61ef0ee4a206c40a0d7d51cc383"
+  integrity sha512-6ExWX0+x8uB4MrhB95Op79RoBadhMrjH8/9c7/y0GV8P76z+3pekriyPUhWurDS0uMPqQtOw2LIGsu7RjVO69Q==
   dependencies:
     google-protobuf "^3.21.2"
-    grpc-web "^1.5.0"
-
-"@smart-core-os/sc-api-grpc-web@^1.0.0-beta.57":
-  version "1.0.0-beta.57"
-  resolved "https://npm.pkg.github.com/download/@smart-core-os/sc-api-grpc-web/1.0.0-beta.57/3e906b0a9786887bb3c3db1f46c140232516c73c#3e906b0a9786887bb3c3db1f46c140232516c73c"
-  integrity sha512-Q+iYxTaaYjBh4v48/ybFqIOG5cjrAj+nnhQHL421B1eucnUdy8/5B4yoaEZtILXUgXxufy9VYgE5XvFg40M4Pw==
-  dependencies:
-    google-protobuf "^3.21.2"
-    grpc-web "^1.5.0"
+    grpc-web "^2.0.2"
 
 "@sphinxxxx/color-conversion@^2.2.2":
   version "2.2.2"
@@ -1769,10 +1761,10 @@ google-protobuf@^3.21.0, google-protobuf@^3.21.2:
   resolved "https://registry.npmjs.org/google-protobuf/-/google-protobuf-3.21.4.tgz#2f933e8b6e5e9f8edde66b7be0024b68f77da6c9"
   integrity sha512-MnG7N936zcKTco4Jd2PX2U96Kf9PxygAPKBug+74LHzmHXmceN16MmRcdgZv+DGef/S9YvQAfRsNCn4cjf9yyQ==
 
-grpc-web@^1.4.2, grpc-web@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.npmjs.org/grpc-web/-/grpc-web-1.5.0.tgz#154e4007ab59a94bf7726b87ef6c5bd8815ecf6e"
-  integrity sha512-y1tS3BBIoiVSzKTDF3Hm7E8hV2n7YY7pO0Uo7depfWJqKzWE+SKr0jvHNIJsJJYILQlpYShpi/DRJJMbosgDMQ==
+grpc-web@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/grpc-web/-/grpc-web-2.0.2.tgz#416164eb747bab5c3054fd58f73b21814f325d83"
+  integrity sha512-bvBP0/d5jyVM3eGxxffJhRLAPpH6eXhJeUzBT+bSIEgUKkG4a/BotEimVeW3phP0WLnsJnkRl8uQdRf2yDLaVA==
 
 handlebars@^4.7.8:
   version "4.7.8"

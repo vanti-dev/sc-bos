@@ -39,14 +39,14 @@ export class Ticket extends jspb.Message {
 
 export namespace Ticket {
   export type AsObject = {
-    id: string,
-    summary: string,
-    description: string,
-    reporterName: string,
-    classification?: Ticket.Classification.AsObject,
-    severity?: Ticket.Severity.AsObject,
-    externalUrl: string,
-  }
+    id: string;
+    summary: string;
+    description: string;
+    reporterName: string;
+    classification?: Ticket.Classification.AsObject;
+    severity?: Ticket.Severity.AsObject;
+    externalUrl: string;
+  };
 
   export class Classification extends jspb.Message {
     getId(): string;
@@ -68,10 +68,10 @@ export namespace Ticket {
 
   export namespace Classification {
     export type AsObject = {
-      id: string,
-      title: string,
-      description: string,
-    }
+      id: string;
+      title: string;
+      description: string;
+    };
   }
 
 
@@ -95,10 +95,10 @@ export namespace Ticket {
 
   export namespace Severity {
     export type AsObject = {
-      id: string,
-      title: string,
-      description: string,
-    }
+      id: string;
+      title: string;
+      description: string;
+    };
   }
 
 }
@@ -122,9 +122,9 @@ export class CreateTicketRequest extends jspb.Message {
 
 export namespace CreateTicketRequest {
   export type AsObject = {
-    name: string,
-    ticket?: Ticket.AsObject,
-  }
+    name: string;
+    ticket?: Ticket.AsObject;
+  };
 }
 
 export class UpdateTicketRequest extends jspb.Message {
@@ -146,9 +146,9 @@ export class UpdateTicketRequest extends jspb.Message {
 
 export namespace UpdateTicketRequest {
   export type AsObject = {
-    name: string,
-    ticket?: Ticket.AsObject,
-  }
+    name: string;
+    ticket?: Ticket.AsObject;
+  };
 }
 
 export class DescribeTicketRequest extends jspb.Message {
@@ -165,8 +165,8 @@ export class DescribeTicketRequest extends jspb.Message {
 
 export namespace DescribeTicketRequest {
   export type AsObject = {
-    name: string,
-  }
+    name: string;
+  };
 }
 
 export class TicketSupport extends jspb.Message {
@@ -195,9 +195,9 @@ export class TicketSupport extends jspb.Message {
 
 export namespace TicketSupport {
   export type AsObject = {
-    resourceSupport?: types_info_pb.ResourceSupport.AsObject,
-    classificationsList: Array<Ticket.Classification.AsObject>,
-    severitiesList: Array<Ticket.Severity.AsObject>,
-  }
+    resourceSupport?: types_info_pb.ResourceSupport.AsObject;
+    classificationsList: Array<Ticket.Classification.AsObject>;
+    severitiesList: Array<Ticket.Severity.AsObject>;
+  };
 }
 

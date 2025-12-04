@@ -72,21 +72,21 @@ export class Service extends jspb.Message {
 
 export namespace Service {
   export type AsObject = {
-    id: string,
-    type: string,
-    active: boolean,
-    lastInactiveTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    lastActiveTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    loading: boolean,
-    lastLoadingStartTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    lastLoadingEndTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    error: string,
-    lastErrorTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    configRaw: string,
-    lastConfigTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    failedAttempts: number,
-    nextAttemptTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    id: string;
+    type: string;
+    active: boolean;
+    lastInactiveTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    lastActiveTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    loading: boolean;
+    lastLoadingStartTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    lastLoadingEndTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    error: string;
+    lastErrorTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    configRaw: string;
+    lastConfigTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    failedAttempts: number;
+    nextAttemptTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class ServiceMetadata extends jspb.Message {
@@ -112,11 +112,11 @@ export class ServiceMetadata extends jspb.Message {
 
 export namespace ServiceMetadata {
   export type AsObject = {
-    totalCount: number,
-    typeCountsMap: Array<[string, number]>,
-    totalActiveCount: number,
-    totalErrorCount: number,
-  }
+    totalCount: number;
+    typeCountsMap: Array<[string, number]>;
+    totalActiveCount: number;
+    totalErrorCount: number;
+  };
 }
 
 export class GetServiceRequest extends jspb.Message {
@@ -141,10 +141,10 @@ export class GetServiceRequest extends jspb.Message {
 
 export namespace GetServiceRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    id: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullServiceRequest extends jspb.Message {
@@ -172,11 +172,11 @@ export class PullServiceRequest extends jspb.Message {
 
 export namespace PullServiceRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    updatesOnly: boolean,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    id: string;
+    updatesOnly: boolean;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullServiceResponse extends jspb.Message {
@@ -195,8 +195,8 @@ export class PullServiceResponse extends jspb.Message {
 
 export namespace PullServiceResponse {
   export type AsObject = {
-    changesList: Array<PullServiceResponse.Change.AsObject>,
-  }
+    changesList: Array<PullServiceResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -222,10 +222,10 @@ export namespace PullServiceResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      service?: Service.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      name: string;
+      service?: Service.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }
@@ -249,9 +249,9 @@ export class CreateServiceRequest extends jspb.Message {
 
 export namespace CreateServiceRequest {
   export type AsObject = {
-    name: string,
-    service?: Service.AsObject,
-  }
+    name: string;
+    service?: Service.AsObject;
+  };
 }
 
 export class DeleteServiceRequest extends jspb.Message {
@@ -274,10 +274,10 @@ export class DeleteServiceRequest extends jspb.Message {
 
 export namespace DeleteServiceRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    allowMissing: boolean,
-  }
+    name: string;
+    id: string;
+    allowMissing: boolean;
+  };
 }
 
 export class ListServicesRequest extends jspb.Message {
@@ -305,11 +305,11 @@ export class ListServicesRequest extends jspb.Message {
 
 export namespace ListServicesRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+  };
 }
 
 export class ListServicesResponse extends jspb.Message {
@@ -334,10 +334,10 @@ export class ListServicesResponse extends jspb.Message {
 
 export namespace ListServicesResponse {
   export type AsObject = {
-    servicesList: Array<Service.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    servicesList: Array<Service.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class PullServicesRequest extends jspb.Message {
@@ -362,10 +362,10 @@ export class PullServicesRequest extends jspb.Message {
 
 export namespace PullServicesRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    updatesOnly: boolean,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    updatesOnly: boolean;
+  };
 }
 
 export class PullServicesResponse extends jspb.Message {
@@ -384,8 +384,8 @@ export class PullServicesResponse extends jspb.Message {
 
 export namespace PullServicesResponse {
   export type AsObject = {
-    changesList: Array<PullServicesResponse.Change.AsObject>,
-  }
+    changesList: Array<PullServicesResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -419,12 +419,12 @@ export namespace PullServicesResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      type: types_change_pb.ChangeType,
-      newValue?: Service.AsObject,
-      oldValue?: Service.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      name: string;
+      type: types_change_pb.ChangeType;
+      newValue?: Service.AsObject;
+      oldValue?: Service.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }
@@ -449,10 +449,10 @@ export class StartServiceRequest extends jspb.Message {
 
 export namespace StartServiceRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    allowActive: boolean,
-  }
+    name: string;
+    id: string;
+    allowActive: boolean;
+  };
 }
 
 export class ConfigureServiceRequest extends jspb.Message {
@@ -475,10 +475,10 @@ export class ConfigureServiceRequest extends jspb.Message {
 
 export namespace ConfigureServiceRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    configRaw: string,
-  }
+    name: string;
+    id: string;
+    configRaw: string;
+  };
 }
 
 export class StopServiceRequest extends jspb.Message {
@@ -501,10 +501,10 @@ export class StopServiceRequest extends jspb.Message {
 
 export namespace StopServiceRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    allowInactive: boolean,
-  }
+    name: string;
+    id: string;
+    allowInactive: boolean;
+  };
 }
 
 export class GetServiceMetadataRequest extends jspb.Message {
@@ -526,9 +526,9 @@ export class GetServiceMetadataRequest extends jspb.Message {
 
 export namespace GetServiceMetadataRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullServiceMetadataRequest extends jspb.Message {
@@ -553,10 +553,10 @@ export class PullServiceMetadataRequest extends jspb.Message {
 
 export namespace PullServiceMetadataRequest {
   export type AsObject = {
-    name: string,
-    updatesOnly: boolean,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    updatesOnly: boolean;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullServiceMetadataResponse extends jspb.Message {
@@ -575,8 +575,8 @@ export class PullServiceMetadataResponse extends jspb.Message {
 
 export namespace PullServiceMetadataResponse {
   export type AsObject = {
-    changesList: Array<PullServiceMetadataResponse.Change.AsObject>,
-  }
+    changesList: Array<PullServiceMetadataResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -602,10 +602,10 @@ export namespace PullServiceMetadataResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      metadata?: ServiceMetadata.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      name: string;
+      metadata?: ServiceMetadata.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }

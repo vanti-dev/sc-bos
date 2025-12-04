@@ -36,13 +36,13 @@ export class SaveQRCredentialRequest extends jspb.Message {
 
 export namespace SaveQRCredentialRequest {
   export type AsObject = {
-    name: string,
-    cardNumber: number,
-    firstName: string,
-    lastName: string,
-    activeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    expireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-  }
+    name: string;
+    cardNumber: number;
+    firstName: string;
+    lastName: string;
+    activeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    expireTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+  };
 }
 
 export class SaveQRCredentialResponse extends jspb.Message {
@@ -56,6 +56,6 @@ export class SaveQRCredentialResponse extends jspb.Message {
 
 export namespace SaveQRCredentialResponse {
   export type AsObject = {
-  }
+  };
 }
 

@@ -55,18 +55,18 @@ export class Alert extends jspb.Message {
 
 export namespace Alert {
   export type AsObject = {
-    id: string,
-    description: string,
-    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    resolveTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    acknowledgement?: Alert.Acknowledgement.AsObject,
-    severity: Alert.Severity,
-    floor: string,
-    zone: string,
-    source: string,
-    federation: string,
-    subsystem: string,
-  }
+    id: string;
+    description: string;
+    createTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    resolveTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    acknowledgement?: Alert.Acknowledgement.AsObject;
+    severity: Alert.Severity;
+    floor: string;
+    zone: string;
+    source: string;
+    federation: string;
+    subsystem: string;
+  };
 
   export class Acknowledgement extends jspb.Message {
     getAcknowledgeTime(): google_protobuf_timestamp_pb.Timestamp | undefined;
@@ -89,9 +89,9 @@ export namespace Alert {
 
   export namespace Acknowledgement {
     export type AsObject = {
-      acknowledgeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      author?: Alert.Acknowledgement.Author.AsObject,
-    }
+      acknowledgeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      author?: Alert.Acknowledgement.Author.AsObject;
+    };
 
     export class Author extends jspb.Message {
       getId(): string;
@@ -113,10 +113,10 @@ export namespace Alert {
 
     export namespace Author {
       export type AsObject = {
-        id: string,
-        displayName: string,
-        email: string,
-      }
+        id: string;
+        displayName: string;
+        email: string;
+      };
     }
 
   }
@@ -184,34 +184,34 @@ export namespace Alert {
 
   export namespace Query {
     export type AsObject = {
-      createdNotBefore?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      createdNotAfter?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      severityNotBelow: number,
-      severityNotAbove: number,
-      floor: string,
-      zone: string,
-      source: string,
-      federation: string,
-      subsystem: string,
-      acknowledged?: boolean,
-      resolved?: boolean,
-      resolvedNotBefore?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-      resolvedNotAfter?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      createdNotBefore?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      createdNotAfter?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      severityNotBelow: number;
+      severityNotAbove: number;
+      floor: string;
+      zone: string;
+      source: string;
+      federation: string;
+      subsystem: string;
+      acknowledged?: boolean;
+      resolved?: boolean;
+      resolvedNotBefore?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+      resolvedNotAfter?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
 
-    export enum AcknowledgedCase { 
+    export enum AcknowledgedCase {
       _ACKNOWLEDGED_NOT_SET = 0,
       ACKNOWLEDGED = 8,
     }
 
-    export enum ResolvedCase { 
+    export enum ResolvedCase {
       _RESOLVED_NOT_SET = 0,
       RESOLVED = 10,
     }
   }
 
 
-  export enum Severity { 
+  export enum Severity {
     SEVERITY_UNSPECIFIED = 0,
     INFO = 9,
     WARNING = 13,
@@ -255,15 +255,15 @@ export class AlertMetadata extends jspb.Message {
 
 export namespace AlertMetadata {
   export type AsObject = {
-    totalCount: number,
-    floorCountsMap: Array<[string, number]>,
-    zoneCountsMap: Array<[string, number]>,
-    acknowledgedCountsMap: Array<[boolean, number]>,
-    severityCountsMap: Array<[number, number]>,
-    resolvedCountsMap: Array<[boolean, number]>,
-    needsAttentionCountsMap: Array<[string, number]>,
-    subsystemCountsMap: Array<[string, number]>,
-  }
+    totalCount: number;
+    floorCountsMap: Array<[string, number]>;
+    zoneCountsMap: Array<[string, number]>;
+    acknowledgedCountsMap: Array<[boolean, number]>;
+    severityCountsMap: Array<[number, number]>;
+    resolvedCountsMap: Array<[boolean, number]>;
+    needsAttentionCountsMap: Array<[string, number]>;
+    subsystemCountsMap: Array<[string, number]>;
+  };
 }
 
 export class ListAlertsRequest extends jspb.Message {
@@ -296,12 +296,12 @@ export class ListAlertsRequest extends jspb.Message {
 
 export namespace ListAlertsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    pageSize: number,
-    pageToken: string,
-    query?: Alert.Query.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    pageSize: number;
+    pageToken: string;
+    query?: Alert.Query.AsObject;
+  };
 }
 
 export class ListAlertsResponse extends jspb.Message {
@@ -326,10 +326,10 @@ export class ListAlertsResponse extends jspb.Message {
 
 export namespace ListAlertsResponse {
   export type AsObject = {
-    alertsList: Array<Alert.AsObject>,
-    nextPageToken: string,
-    totalSize: number,
-  }
+    alertsList: Array<Alert.AsObject>;
+    nextPageToken: string;
+    totalSize: number;
+  };
 }
 
 export class PullAlertsRequest extends jspb.Message {
@@ -356,10 +356,10 @@ export class PullAlertsRequest extends jspb.Message {
 
 export namespace PullAlertsRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-    query?: Alert.Query.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+    query?: Alert.Query.AsObject;
+  };
 }
 
 export class PullAlertsResponse extends jspb.Message {
@@ -378,8 +378,8 @@ export class PullAlertsResponse extends jspb.Message {
 
 export namespace PullAlertsResponse {
   export type AsObject = {
-    changesList: Array<PullAlertsResponse.Change.AsObject>,
-  }
+    changesList: Array<PullAlertsResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -413,12 +413,12 @@ export namespace PullAlertsResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      type: types_change_pb.ChangeType,
-      newValue?: Alert.AsObject,
-      oldValue?: Alert.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      name: string;
+      type: types_change_pb.ChangeType;
+      newValue?: Alert.AsObject;
+      oldValue?: Alert.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }
@@ -451,12 +451,12 @@ export class AcknowledgeAlertRequest extends jspb.Message {
 
 export namespace AcknowledgeAlertRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    author?: Alert.Acknowledgement.Author.AsObject,
-    allowAcknowledged: boolean,
-    allowMissing: boolean,
-  }
+    name: string;
+    id: string;
+    author?: Alert.Acknowledgement.Author.AsObject;
+    allowAcknowledged: boolean;
+    allowMissing: boolean;
+  };
 }
 
 export class GetAlertMetadataRequest extends jspb.Message {
@@ -478,9 +478,9 @@ export class GetAlertMetadataRequest extends jspb.Message {
 
 export namespace GetAlertMetadataRequest {
   export type AsObject = {
-    name: string,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullAlertMetadataRequest extends jspb.Message {
@@ -505,10 +505,10 @@ export class PullAlertMetadataRequest extends jspb.Message {
 
 export namespace PullAlertMetadataRequest {
   export type AsObject = {
-    name: string,
-    updatesOnly: boolean,
-    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    updatesOnly: boolean;
+    readMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class PullAlertMetadataResponse extends jspb.Message {
@@ -527,8 +527,8 @@ export class PullAlertMetadataResponse extends jspb.Message {
 
 export namespace PullAlertMetadataResponse {
   export type AsObject = {
-    changesList: Array<PullAlertMetadataResponse.Change.AsObject>,
-  }
+    changesList: Array<PullAlertMetadataResponse.Change.AsObject>;
+  };
 
   export class Change extends jspb.Message {
     getName(): string;
@@ -554,10 +554,10 @@ export namespace PullAlertMetadataResponse {
 
   export namespace Change {
     export type AsObject = {
-      name: string,
-      metadata?: AlertMetadata.AsObject,
-      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
+      name: string;
+      metadata?: AlertMetadata.AsObject;
+      changeTime?: google_protobuf_timestamp_pb.Timestamp.AsObject;
+    };
   }
 
 }
@@ -584,10 +584,10 @@ export class CreateAlertRequest extends jspb.Message {
 
 export namespace CreateAlertRequest {
   export type AsObject = {
-    name: string,
-    alert?: Alert.AsObject,
-    mergeSource: boolean,
-  }
+    name: string;
+    alert?: Alert.AsObject;
+    mergeSource: boolean;
+  };
 }
 
 export class UpdateAlertRequest extends jspb.Message {
@@ -614,10 +614,10 @@ export class UpdateAlertRequest extends jspb.Message {
 
 export namespace UpdateAlertRequest {
   export type AsObject = {
-    name: string,
-    alert?: Alert.AsObject,
-    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject,
-  }
+    name: string;
+    alert?: Alert.AsObject;
+    updateMask?: google_protobuf_field_mask_pb.FieldMask.AsObject;
+  };
 }
 
 export class ResolveAlertRequest extends jspb.Message {
@@ -642,10 +642,10 @@ export class ResolveAlertRequest extends jspb.Message {
 
 export namespace ResolveAlertRequest {
   export type AsObject = {
-    name: string,
-    alert?: Alert.AsObject,
-    allowMissing: boolean,
-  }
+    name: string;
+    alert?: Alert.AsObject;
+    allowMissing: boolean;
+  };
 }
 
 export class DeleteAlertRequest extends jspb.Message {
@@ -668,10 +668,10 @@ export class DeleteAlertRequest extends jspb.Message {
 
 export namespace DeleteAlertRequest {
   export type AsObject = {
-    name: string,
-    id: string,
-    allowMissing: boolean,
-  }
+    name: string;
+    id: string;
+    allowMissing: boolean;
+  };
 }
 
 export class DeleteAlertResponse extends jspb.Message {
@@ -685,6 +685,6 @@ export class DeleteAlertResponse extends jspb.Message {
 
 export namespace DeleteAlertResponse {
   export type AsObject = {
-  }
+  };
 }
 
