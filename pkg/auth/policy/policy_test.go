@@ -8,6 +8,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/open-policy-agent/opa/rego"
+
+	"github.com/smart-core-os/sc-bos/internal/auth/permission"
+	"github.com/smart-core-os/sc-bos/pkg/auth/token"
+	"github.com/smart-core-os/sc-bos/pkg/gen"
 )
 
 func TestValidate(t *testing.T) {
@@ -177,5 +181,41 @@ func TestValidate_Integration(t *testing.T) {
 				t.Errorf("unexpected error: %v", err)
 			}
 		})
+	}
+}
+
+// tests that the policy knows which BOS APIs are traits
+func TestDefaultPolicy_Traits(t *testing.T) {
+	policy := Default(false)
+
+	attrs := Attributes{
+		Protocol: ProtocolGRPC,
+		Service:  "smartcore.bos.SoundSensorApi",
+		Method:   "GetSoundLevel",
+		Request: &gen.GetSoundLevelRequest{
+			Name: "foo/testsoundsensor",
+		},
+		TokenPresent: true,
+		TokenValid:   true,
+		TokenClaims: token.Claims{
+			Permissions: []token.PermissionAssignment{
+				{
+					Permission:   permission.TraitRead,
+					Scoped:       true,
+					ResourceType: token.ResourceType(gen.RoleAssignment_NAMED_RESOURCE_PATH_PREFIX),
+					Resource:     "foo",
+				},
+			},
+		},
+	}
+	_, err := Validate(context.Background(), policy, attrs)
+	if err != nil {
+		t.Errorf("expected access to be allowed, got error: %v", err)
+	}
+
+	attrs.Service = "smartcore.bos.NonExistentApi"
+	_, err = Validate(context.Background(), policy, attrs)
+	if !errors.Is(err, ErrPermissionDenied) {
+		t.Errorf("expected permission denied, got: %v", err)
 	}
 }
