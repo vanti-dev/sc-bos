@@ -2,7 +2,6 @@ package goproto
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -223,10 +222,6 @@ func TestDetermineGenerators(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode")
 	}
-	// Skip if protomod is not available
-	if _, err := exec.LookPath("protomod"); err != nil {
-		t.Skip("protomod not found in PATH, skipping test")
-	}
 
 	tests := []struct {
 		name    string
@@ -268,10 +263,6 @@ func TestDetermineGenerators(t *testing.T) {
 func TestAnalyzeProtoFiles(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test in short mode")
-	}
-	// Skip if protomod is not available
-	if _, err := exec.LookPath("protomod"); err != nil {
-		t.Skip("protomod not found in PATH, skipping test")
 	}
 
 	tests := []struct {
