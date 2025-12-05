@@ -14,6 +14,7 @@ import (
 	"github.com/smart-core-os/sc-bos/pkg/auto/occupancyemail"
 	"github.com/smart-core-os/sc-bos/pkg/auto/resetbrightness"
 	"github.com/smart-core-os/sc-bos/pkg/auto/resetenterleave"
+	"github.com/smart-core-os/sc-bos/pkg/auto/sccexporter"
 	"github.com/smart-core-os/sc-bos/pkg/auto/statusalerts"
 	"github.com/smart-core-os/sc-bos/pkg/auto/statusemail"
 	"github.com/smart-core-os/sc-bos/pkg/auto/udmi"
@@ -33,6 +34,7 @@ func Factories() map[string]auto.Factory {
 		occupancyemail.AutoName:     occupancyemail.Factory,
 		resetbrightness.AutoName:    resetbrightness.Factory,
 		resetenterleave.AutoName:    resetenterleave.Factory,
+		sccexporter.AutoName:        sccexporter.Factory,
 		statusalerts.AutoName:       statusalerts.Factory,
 		statusemail.AutoName:        statusemail.Factory,
 		udmi.AutoType:               udmi.Factory,
