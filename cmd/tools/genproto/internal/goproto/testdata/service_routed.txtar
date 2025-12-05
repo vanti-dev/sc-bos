@@ -1,0 +1,34 @@
+-- proto.mod --
+module github.com/example/proto
+-- routed.proto --
+syntax = "proto3";
+
+package example;
+
+option go_package = "github.com/example/gen";
+
+// Routed API - all request messages have 'name' string field
+service DeviceApi {
+  rpc GetDevice(GetDeviceRequest) returns (Device);
+  rpc UpdateDevice(UpdateDeviceRequest) returns (Device);
+  rpc DeleteDevice(DeleteDeviceRequest) returns (Device);
+}
+
+message GetDeviceRequest {
+  string name = 1;  // Required for routing
+}
+
+message UpdateDeviceRequest {
+  string name = 1;  // Required for routing
+  Device device = 2;
+}
+
+message DeleteDeviceRequest {
+  string name = 1;  // Required for routing
+}
+
+message Device {
+  string id = 1;
+  string model = 2;
+}
+

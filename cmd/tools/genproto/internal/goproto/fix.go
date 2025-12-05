@@ -15,7 +15,7 @@ func fixGeneratedFiles(ctx *generator.Context, genDir string) error {
 	// Check for old version fixes
 	oldGenDir := filepath.Join(traitDir, "gen")
 	if info, err := os.Stat(oldGenDir); err == nil && info.IsDir() {
-		ctx.Verbose("Processing old version fixes from %s", oldGenDir)
+		ctx.Verbose("Moving files from %q to %q", relPath(ctx.RootDir, oldGenDir), relPath(ctx.RootDir, genDir))
 		if err := processOldVersion(ctx, oldGenDir, genDir); err != nil {
 			return err
 		}
@@ -24,7 +24,7 @@ func fixGeneratedFiles(ctx *generator.Context, genDir string) error {
 	// Check for new version fixes
 	newGenDir := filepath.Join(traitDir, "genpb")
 	if info, err := os.Stat(newGenDir); err == nil && info.IsDir() {
-		ctx.Verbose("Processing new version fixes from %s", newGenDir)
+		ctx.Verbose("Moving files from %q to %q", relPath(ctx.RootDir, newGenDir), relPath(ctx.RootDir, genDir))
 		if err := processNewVersion(ctx, newGenDir, genDir); err != nil {
 			return err
 		}
@@ -32,7 +32,7 @@ func fixGeneratedFiles(ctx *generator.Context, genDir string) error {
 
 	// Clean up trait directory
 	if _, err := os.Stat(traitDir); err == nil {
-		ctx.Verbose("Removing trait directory %s", traitDir)
+		ctx.Verbose("Removing trait directory %q", relPath(ctx.RootDir, traitDir))
 		if !ctx.DryRun {
 			if err := os.RemoveAll(traitDir); err != nil {
 				return fmt.Errorf("removing trait directory: %w", err)
@@ -41,6 +41,14 @@ func fixGeneratedFiles(ctx *generator.Context, genDir string) error {
 	}
 
 	return nil
+}
+
+func relPath(from, to string) string {
+	rel, err := filepath.Rel(from, to)
+	if err != nil {
+		return to
+	}
+	return rel
 }
 
 func processOldVersion(ctx *generator.Context, srcDir, dstDir string) error {
