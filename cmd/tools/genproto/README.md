@@ -32,6 +32,9 @@ Options:
 ```bash
 go run ./cmd/tools/genproto -v          # verbose output
 go run ./cmd/tools/genproto -dry-run    # preview without executing
+go run ./cmd/tools/genproto -list       # list available generation steps
+go run ./cmd/tools/genproto -only uiproto   # run only UI generation
+go run ./cmd/tools/genproto -skip goproto   # skip Go generation
 ```
 
 For JetBrains IDEs (GoLand, IntelliJ IDEA), use the "gen-proto" run configuration.
