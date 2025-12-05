@@ -20,7 +20,7 @@ import (
 	"github.com/smart-core-os/sc-golang/pkg/wrap"
 )
 
-func setup(devs *devicespb.Collection) *healthpb.Registry {
+func newTestRegistry(devs *devicespb.Collection) *healthpb.Registry {
 
 	return healthpb.NewRegistry(
 		healthpb.WithOnCheckCreate(func(name string, c *gen.HealthCheck) *gen.HealthCheck {
@@ -56,7 +56,7 @@ func setupTestHarness(t *testing.T) *testHarness {
 	devs := devicespb.NewCollection()
 	server := devices.NewServer(devicesServerModel{Collection: devs})
 	deviceName := "helvarnet-device-1"
-	reg := setup(devs)
+	reg := newTestRegistry(devs)
 	healthChecks := reg.ForOwner("example")
 
 	_, _ = devs.Update(&gen.Device{Name: deviceName}, resource.WithCreateIfAbsent())
