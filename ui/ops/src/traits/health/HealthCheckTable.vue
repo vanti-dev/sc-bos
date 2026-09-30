@@ -89,10 +89,10 @@
 import FilterBtn from '@/components/filter/FilterBtn.vue';
 import FilterChoiceChips from '@/components/filter/FilterChoiceChips.vue';
 import MdText from '@/components/MdText.vue';
-import {useDevices} from '@/composables/devices.js';
+import {unhealthyDeviceConditions, useDevices} from '@/composables/devices.js';
 import {useDataTableCollection} from '@/composables/table.js';
 import CheckCountCell from '@/traits/health/CheckCountCell.vue';
-import {ABNORMAL_NORMALITY_STATES, countChecks, RELIABILITY_FAILURE_STATES, useHealthCheckFilters} from '@/traits/health/health';
+import {countChecks, useHealthCheckFilters} from '@/traits/health/health';
 import HealthCheckEnrichedRows from '@/traits/health/HealthCheckEnrichedRows.vue';
 import NormalityLastChangeCell from '@/traits/health/NormalityLastChangeCell.vue';
 import ReliabilityLastChangeCell from '@/traits/health/ReliabilityLastChangeCell.vue';
@@ -100,32 +100,33 @@ import UdmiCard from '@/traits/udmi/UdmiCard.vue';
 import {computed, ref} from 'vue';
 
 const props = defineProps({
+  /**
+   * Which devices to list, as raw query conditions. Overrides the default selection
+   * outright.
+   *
+   * The default lists devices the way useDeviceHealthCount counts them: any check that is
+   * abnormal *or* unreadable. Normality and reliability are independent (a device we can't
+   * talk to can still read NORMAL), so selecting on normality alone would hide comms-only
+   * issues, and a table next to a MeterHealthCard would miss meters the card counts as not
+   * reporting.
+   */
   conditions: {
     type: Array, // of Device.Query.Condition.AsObject
-    // Default to devices that are unhealthy in either dimension: an abnormal check
-    // OR a comms/reliability failure. Normality and reliability are independent
-    // (a device we can't talk to can still read NORMAL), so any_of ORs them so
-    // comms-only issues surface by default. See SCB-1381 for the any_of primitive.
-    default: () => ([
-      {
-        field: 'health_checks',
-        anyOf: {queriesList: [
-          {conditionsList: [{field: 'normality', stringIn: {stringsList: ABNORMAL_NORMALITY_STATES}}]},
-          {conditionsList: [{field: 'reliability.state', stringIn: {stringsList: RELIABILITY_FAILURE_STATES}}]}
-        ]}
-      }
-    ])
+    default: null
   },
   /**
    * A fully-qualified trait name, or several, limiting the table to devices implementing it
    * (any of them, if given a list).
    *
    * This composes with conditions rather than replacing it, so a config wanting unhealthy
-   * meters sets trait alone and leaves conditions to its abnormal-normality default. Setting
-   * conditions still overrides that default outright.
+   * meters sets trait alone and leaves the selection to its default. Setting conditions
+   * still overrides that default outright.
    */
   trait: {type: [String, Array], default: null}
 });
+
+// conditions wins if given, so an explicit [] still clears the filter entirely.
+const selection = computed(() => props.conditions ?? unhealthyDeviceConditions());
 
 // Filter setup
 const search = ref('');
@@ -154,7 +155,7 @@ const wantCount = ref(20);
 const _useDevicesOpts = computed(() => {
   return {
     search: search.value,
-    conditions: [...props.conditions, ...filterConditions.value],
+    conditions: [...selection.value, ...filterConditions.value],
     trait: props.trait,
     wantCount: wantCount.value,
     paused: expandedRow.value !== null,
