@@ -2,6 +2,7 @@ package connecttelemetry
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/smart-core-os/sc-bos/pkg/dbo"
 	"github.com/smart-core-os/sc-bos/pkg/proto/metadatapb"
 	"github.com/smart-core-os/sc-bos/pkg/proto/meterpb"
+	"github.com/smart-core-os/sc-bos/pkg/proto/resourceusepb"
 )
 
 func TestEventTopics(t *testing.T) {
@@ -183,4 +185,91 @@ func TestDiscoveryEventFallsBackToDeviceName(t *testing.T) {
 	assert.Empty(t, ev.System.Tags)
 	assert.Nil(t, ev.System.Location)
 	assert.Nil(t, ev.Pointset, "no inventory ⇒ no pointset block")
+}
+
+// Disk instances are the fnv32a hash of the mount point, pinned here (and in
+// Connect's ingest-transform spec) so a change to the hashing can't pass unseen.
+const (
+	instRoot   = "705468254"  // "/"
+	instVarLib = "3086875876" // "/var/lib/bos"
+	instC      = "1065500364" // `C:\`
+)
+
+func TestResourceUseTelemetry(t *testing.T) {
+	t.Run("full reading maps to utilisation and byte points", func(t *testing.T) {
+		r := &resourceusepb.ResourceUse{
+			Cpu:    &resourceusepb.CpuUse{Utilization: new(float32(12.5)), CorePercent: []float32{10, 15}},
+			Memory: &resourceusepb.MemoryUse{Usage: new(uint64(4 << 30)), Limit: new(uint64(16 << 30)), Utilization: new(float32(25))},
+			Disks: []*resourceusepb.DiskUse{
+				{MountPoint: "/", Usage: new(uint64(100)), FreeBytes: new(uint64(300)), Limit: new(uint64(400)), Utilization: new(float32(25))},
+				{MountPoint: "/var/lib/bos", Usage: new(uint64(50)), Limit: new(uint64(200)), Utilization: new(float32(25))},
+			},
+			Network: &resourceusepb.NetworkUse{ConnectionCount: new(uint64(7))},
+		}
+
+		assert.Equal(t, udmi.PointsEvent{
+			"cpu_percentage_sensor":                {PresentValue: float32(12.5)},
+			"memory_percentage_sensor":             {PresentValue: float32(25)},
+			"memory_datasize_sensor":               {PresentValue: uint64(4 << 30)},
+			"memory_datasize_capacity":             {PresentValue: uint64(16 << 30)},
+			"disk_percentage_sensor_" + instRoot:   {PresentValue: float32(25)},
+			"disk_datasize_sensor_" + instRoot:     {PresentValue: uint64(100)},
+			"disk_datasize_capacity_" + instRoot:   {PresentValue: uint64(400)},
+			"disk_percentage_sensor_" + instVarLib: {PresentValue: float32(25)},
+			"disk_datasize_sensor_" + instVarLib:   {PresentValue: uint64(50)},
+			"disk_datasize_capacity_" + instVarLib: {PresentValue: uint64(200)},
+		}, resourceUseTelemetry(r), "core_percent, free_bytes and connection_count are not exported")
+	})
+
+	t.Run("unset optionals are omitted", func(t *testing.T) {
+		r := &resourceusepb.ResourceUse{
+			Cpu:    &resourceusepb.CpuUse{},
+			Memory: &resourceusepb.MemoryUse{Usage: new(uint64(1))},
+			Disks:  []*resourceusepb.DiskUse{{MountPoint: "/", Utilization: new(float32(0))}},
+		}
+		assert.Equal(t, udmi.PointsEvent{
+			"memory_datasize_sensor":             {PresentValue: uint64(1)},
+			"disk_percentage_sensor_" + instRoot: {PresentValue: float32(0)},
+		}, resourceUseTelemetry(r), "a set zero is kept, an unset field is not")
+	})
+
+	t.Run("nil reading has no points", func(t *testing.T) {
+		assert.Empty(t, resourceUseTelemetry(nil))
+	})
+}
+
+func TestResourceUseInventory(t *testing.T) {
+	r := &resourceusepb.ResourceUse{
+		Cpu:    &resourceusepb.CpuUse{Utilization: new(float32(1))},
+		Memory: &resourceusepb.MemoryUse{Usage: new(uint64(1)), Limit: new(uint64(2)), Utilization: new(float32(50))},
+		Disks:  []*resourceusepb.DiskUse{{MountPoint: `C:\`, Usage: new(uint64(1)), Limit: new(uint64(2)), Utilization: new(float32(50))}},
+	}
+
+	assert.Equal(t, map[string]udmi.MetadataPoint{
+		"cpu_percentage_sensor":           {Units: "percent"},
+		"memory_percentage_sensor":        {Units: "percent"},
+		"memory_datasize_sensor":          {Units: "bytes"},
+		"memory_datasize_capacity":        {Units: "bytes"},
+		"disk_percentage_sensor_" + instC: {Units: "percent", Ref: `C:\`},
+		"disk_datasize_sensor_" + instC:   {Units: "bytes", Ref: `C:\`},
+		"disk_datasize_capacity_" + instC: {Units: "bytes", Ref: `C:\`},
+	}, resourceUseInventory(r))
+
+	assert.Empty(t, resourceUseInventory(nil), "no reading yet ⇒ no inventory")
+}
+
+func TestDiskInstance(t *testing.T) {
+	assert.Equal(t, instRoot, strconv.FormatUint(uint64(diskInstance("/")), 10))
+	assert.Equal(t, instVarLib, strconv.FormatUint(uint64(diskInstance("/var/lib/bos")), 10))
+	assert.Equal(t, instC, strconv.FormatUint(uint64(diskInstance(`C:\`)), 10))
+	assert.NotEqual(t, diskInstance("/var-lib"), diskInstance("/var/lib"),
+		"mounts differing only in punctuation stay distinct")
+
+	// The same mount keeps its points whatever order the disks are listed in.
+	a := &resourceusepb.DiskUse{MountPoint: "/var-lib", Utilization: new(float32(1))}
+	b := &resourceusepb.DiskUse{MountPoint: "/var/lib", Utilization: new(float32(2))}
+	forward := resourceUseTelemetry(&resourceusepb.ResourceUse{Disks: []*resourceusepb.DiskUse{a, b}})
+	reverse := resourceUseTelemetry(&resourceusepb.ResourceUse{Disks: []*resourceusepb.DiskUse{b, a}})
+	assert.Equal(t, forward, reverse, "names must not depend on disk order")
+	assert.Len(t, forward, 2)
 }

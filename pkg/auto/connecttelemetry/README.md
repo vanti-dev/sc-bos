@@ -9,7 +9,7 @@ each device's data per-device as:
 
 - **Telemetry** — a UDMI pointset (`{timestamp, version, points{<name>{present_value}}}`).
 - **Discovery** — a UDMI device-metadata message (`{system{name, description, tags,
-  location}, pointset{points{<name>{units, writable}}}}`), on the first cycle and then
+  location}, pointset{points{<name>{units, writable, ref}}}}`), on the first cycle and then
   every `metadataInterval` cycles.
 
 With `health.enabled` it also publishes the health checks this node evaluates, one complete
@@ -21,7 +21,12 @@ the topic grammar and the payload contract agreed with the Connect ingest side.
 
 ## Supported traits
 
-Only **Meter** (`smartcore.bos.Meter`) is exported today. Point names are **Google Digital
+Two traits are exported: **Meter** (`smartcore.bos.Meter`) for every device that implements
+it, and **ResourceUse** (`smartcore.bos.ResourceUse`) for the local node only.
+
+### Meter
+
+Point names are **Google Digital
 Buildings Ontology (DBO) standard field names** (mapped in `pkg/dbo`), so the building-config
 translation is an identity mapping — see `docs/connect-telemetry-ingest.md` and
 `.claude/plans/dbo-conformance-plan.md`. The meter reading maps to:
@@ -37,6 +42,42 @@ The telemetry timestamp is `MeterReading.end_time` (the reading instant), fallin
 Discovery units carry the **raw** device unit string; the raw→DBO unit-name mapping (e.g.
 `kWh`→`kilowatt_hours`) is a building-config concern. Meters are read-only, so no point is
 marked `writable`.
+
+### ResourceUse
+
+The node's host CPU, memory and disk use, published as ordinary telemetry on the node's own
+entity: Connect gives each node an entity whose `aka.bos.ref` is the node name, so
+`tlm/devices/<nodeName>/events/pointset` binds to it. Connect judges the values with a
+`healthbounds` check rather than a status snapshot.
+
+Requires the `resourceUse` system to be enabled in `system.conf.json`; it announces the trait on
+the node name. The collector attaches **only to the local node** (`Node.Name()`): a gateway sees
+its cohort's ResourceUse too, but each node publishes its own.
+
+DBO has no host resource fields, so the names come from Connect's field catalogue, which extends
+DBO with the `cpu`, `memory` and `disk` components and the `datasize` measurement (standard unit
+bytes) beside DBO's own `percentage`. They are the same in both `pointNaming` modes.
+
+| Point                         | Source                 | Units (discovery) |
+|-------------------------------|------------------------|-------------------|
+| `cpu_percentage_sensor`       | `cpu.utilization`      | `percent`         |
+| `memory_percentage_sensor`    | `memory.utilization`   | `percent`         |
+| `memory_datasize_sensor`      | `memory.usage`         | `bytes`           |
+| `memory_datasize_capacity`    | `memory.limit`         | `bytes`           |
+| `disk_percentage_sensor_<n>`  | `disks[].utilization`  | `percent`         |
+| `disk_datasize_sensor_<n>`    | `disks[].usage`        | `bytes`           |
+| `disk_datasize_capacity_<n>`  | `disks[].limit`        | `bytes`           |
+
+- Unset fields produce no point. `core_percent`, `free_bytes` and `network.connection_count`
+  are not exported.
+- Disks are keyed by mount point, not list position. `<n>` is DBO's numeric instance suffix: the
+  fnv32a hash of the raw mount point, in decimal, so `/` → `705468254` and `/var/lib/bos` →
+  `3086875876`. A mount can't be spelt into the name, as every token must be a catalogue
+  subfield, and the hash keeps each disk's points the same whatever order the disks are listed in.
+- Each disk point's discovery entry carries the raw mount point as `ref`.
+- ResourceUse has no timestamp, so the telemetry is stamped with the time of the fetch.
+
+### Other traits
 
 Other traits configured in `traits` are logged as unsupported and skipped. Add a trait by
 implementing a `traitCollector` in `device.go` and wiring it in `newCollector` (`auto.go`).
@@ -69,7 +110,7 @@ Two mutually-exclusive credential modes:
 ```json
 {
   "type": "connecttelemetry",
-  "traits": ["smartcore.bos.Meter"],
+  "traits": ["smartcore.bos.Meter", "smartcore.bos.ResourceUse"],
   "fetchTimeout": "5s",
   "mqtt": {
     "host": "tls://telemetry.example.com:8883",
@@ -107,7 +148,7 @@ For the file-path dev mode, drop `useCloudCredential` and supply certs instead:
 
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `traits` | unless health is enabled | — | Traits to export; only `smartcore.bos.Meter` is supported |
+| `traits` | unless health is enabled | — | Traits to export: `smartcore.bos.Meter` and/or `smartcore.bos.ResourceUse` |
 | `fetchTimeout` | no | `5s` | Per-device trait-fetch timeout |
 | `mqtt.host` | yes | — | MQTT v5 broker URL; must use a TLS scheme (`tls://`, `ssl://`, `mqtts://`, `wss://`) — non-TLS schemes are rejected so certs are never silently dropped |
 | `mqtt.topicPrefix` | no | `tlm` | Fixed intent prefix (publish-authz scope) |
