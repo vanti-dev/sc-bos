@@ -143,7 +143,7 @@ func (a *AutoImpl) runTelemetry(autoCtx context.Context, grp *errgroup.Group, cf
 				// ListDevices failure retains the previous export set rather than
 				// blanking it until the next discovery cycle (potentially minutes away).
 				refreshed := make(map[string]*device)
-				if err := a.refreshDevices(autoCtx, cfg.Traits, refreshed); err != nil {
+				if err := a.refreshDevices(autoCtx, cfg, refreshed); err != nil {
 					a.Logger.Error("error refreshing device list; retaining previous set", zap.Error(err))
 				} else {
 					allDevices = refreshed
@@ -166,7 +166,7 @@ func (a *AutoImpl) runHealth(autoCtx context.Context, grp *errgroup.Group, cfg c
 // for every device, bounding concurrency to avoid overwhelming slow devices.
 func (a *AutoImpl) publishCycle(ctx context.Context, cfg config.Root, pub *publisher, devices map[string]*device, publishDiscovery bool) {
 	var wg errgroup.Group
-	wg.SetLimit(100)
+	wg.SetLimit(maxConcurrentFetches)
 	for _, dev := range devices {
 		wg.Go(func() error {
 			a.publishDevice(ctx, cfg, pub, dev, publishDiscovery)
@@ -205,9 +205,9 @@ func (a *AutoImpl) publishJSON(ctx context.Context, pub *publisher, topic string
 
 // refreshDevices discovers all devices implementing the configured traits and
 // (re)builds the export set.
-func (a *AutoImpl) refreshDevices(ctx context.Context, traits []string, allDevices map[string]*device) error {
-	for _, traitName := range traits {
-		if err := a.getAllTraitImplementors(ctx, trait.Name(traitName), allDevices); err != nil {
+func (a *AutoImpl) refreshDevices(ctx context.Context, cfg config.Root, allDevices map[string]*device) error {
+	for _, traitName := range cfg.Traits {
+		if err := a.getAllTraitImplementors(ctx, trait.Name(traitName), cfg.FetchTimeout.Duration, allDevices); err != nil {
 			a.Logger.Error("failed to get devices for trait", zap.String("trait", traitName), zap.Error(err))
 			return err
 		}
@@ -217,7 +217,7 @@ func (a *AutoImpl) refreshDevices(ctx context.Context, traits []string, allDevic
 
 // getAllTraitImplementors populates devices with those implementing traitName,
 // attaching a collector for the trait.
-func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.Name, devices map[string]*device) error {
+func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.Name, fetchTimeout time.Duration, devices map[string]*device) error {
 	conditions := []*devicespb.Device_Query_Condition{
 		{
 			Field: "metadata.traits.name",
@@ -236,15 +236,44 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 			},
 		})
 	}
-	resp, err := a.Services.Devices.ListDevices(ctx, &devicespb.ListDevicesRequest{
-		Query: &devicespb.Device_Query{Conditions: conditions},
-	})
-	if err != nil {
-		return err
+	var deviceInfos []*devicespb.Device
+	req := &devicespb.ListDevicesRequest{
+		Query:    &devicespb.Device_Query{Conditions: conditions},
+		PageSize: listDevicesPageSize,
 	}
-	for _, deviceInfo := range resp.Devices {
-		collector, supported := a.newCollector(ctx, traitName, deviceInfo.Name)
-		if !supported {
+	for {
+		resp, err := a.Services.Devices.ListDevices(ctx, req)
+		if err != nil {
+			return err
+		}
+		deviceInfos = append(deviceInfos, resp.Devices...)
+		req.PageToken = resp.NextPageToken
+		if req.PageToken == "" {
+			break
+		}
+	}
+
+	// Building a collector fetches from the device, so bound each build as
+	// publishDevice bounds its fetches; a slow device can't stall the refresh.
+	type built struct {
+		collector traitCollector
+		supported bool
+	}
+	builds := make([]built, len(deviceInfos))
+	var grp errgroup.Group
+	grp.SetLimit(maxConcurrentFetches)
+	for i, deviceInfo := range deviceInfos {
+		grp.Go(func() error {
+			fetchCtx, cancel := context.WithTimeout(ctx, fetchTimeout)
+			defer cancel()
+			builds[i].collector, builds[i].supported = a.newCollector(fetchCtx, traitName, deviceInfo.Name)
+			return nil
+		})
+	}
+	_ = grp.Wait()
+
+	for i, deviceInfo := range deviceInfos {
+		if !builds[i].supported {
 			a.Logger.Warn("trait is configured but not supported",
 				zap.String("trait", string(traitName)), zap.String("device", deviceInfo.Name))
 			continue
@@ -254,10 +283,18 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 			dev = &device{name: deviceInfo.Name, metaData: deviceInfo.Metadata}
 			devices[deviceInfo.Name] = dev
 		}
-		dev.collectors = append(dev.collectors, collector)
+		dev.collectors = append(dev.collectors, builds[i].collector)
 	}
 	return nil
 }
+
+// listDevicesPageSize is the devices server's maximum page size, so most sites
+// list each trait in one round trip.
+const listDevicesPageSize = 1000
+
+// maxConcurrentFetches bounds how many devices are fetched from at once, to
+// avoid overwhelming slow devices.
+const maxConcurrentFetches = 100
 
 // newCollector builds a collector for traitName. supported is false if the trait
 // can't be exported.
