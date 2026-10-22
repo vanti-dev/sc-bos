@@ -13,6 +13,7 @@ import (
 
 	"github.com/smart-core-os/sc-bos/internal/manage/devices"
 	"github.com/smart-core-os/sc-bos/pkg/auto"
+	"github.com/smart-core-os/sc-bos/pkg/auto/connecttelemetry/config"
 	"github.com/smart-core-os/sc-bos/pkg/auto/udmi"
 	"github.com/smart-core-os/sc-bos/pkg/dbo"
 	"github.com/smart-core-os/sc-bos/pkg/node"
@@ -161,4 +162,13 @@ func TestGetAllTraitImplementorsUnsupported(t *testing.T) {
 	allDevices := make(map[string]*device)
 	require.NoError(t, a.getAllTraitImplementors(context.Background(), trait.OccupancySensor, allDevices))
 	assert.Empty(t, allDevices, "unsupported trait should attach no devices")
+}
+
+// TestApplyConfigHealthOnlyUnavailable confirms a config whose only output is health
+// fails when the node's health checks are unavailable, rather than publishing nothing.
+func TestApplyConfigHealthOnlyUnavailable(t *testing.T) {
+	a := &AutoImpl{Services: auto.Services{Logger: zap.NewNop()}}
+	cfg := config.Root{Health: &config.Health{Enabled: true}}
+	err := a.applyConfig(context.Background(), cfg)
+	require.ErrorContains(t, err, "nothing to publish")
 }

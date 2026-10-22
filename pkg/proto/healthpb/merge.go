@@ -106,6 +106,18 @@ func MergeChecks(merge func(dst, src proto.Message), dst []*HealthCheck, src ...
 	return dst
 }
 
+// SetCheck adds c to dst, replacing any check with the same id, returning the modified slice.
+// Unlike MergeChecks, c replaces the existing check wholesale, create_time included.
+// The dst checks must be sorted by ID in ascending order, and remain so.
+func SetCheck(dst []*HealthCheck, c *HealthCheck) []*HealthCheck {
+	index, found := findCheck(c.Id, dst)
+	if found {
+		dst[index] = c
+		return dst
+	}
+	return slices.Insert(dst, index, c)
+}
+
 // RemoveCheck removes the check with the given id from dst, returning the modified slice.
 // If no such check exists, dst is returned unmodified.
 func RemoveCheck(dst []*HealthCheck, id string) []*HealthCheck {
