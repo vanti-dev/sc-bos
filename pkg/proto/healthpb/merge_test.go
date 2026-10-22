@@ -424,6 +424,64 @@ func TestCheck_resettingMerge(t *testing.T) {
 	}
 }
 
+func TestSetCheck(t *testing.T) {
+	t1 := timestamppb.New(time.Unix(100, 0))
+	t2 := timestamppb.New(time.Unix(200, 0))
+	tests := []struct {
+		name string
+		dst  []*HealthCheck
+		c    *HealthCheck
+		want []*HealthCheck
+	}{
+		{
+			name: "empty slice",
+			c:    &HealthCheck{Id: "a"},
+			want: []*HealthCheck{{Id: "a"}},
+		},
+		{
+			name: "insert first",
+			dst:  []*HealthCheck{{Id: "b"}, {Id: "c"}},
+			c:    &HealthCheck{Id: "a"},
+			want: []*HealthCheck{{Id: "a"}, {Id: "b"}, {Id: "c"}},
+		},
+		{
+			name: "insert middle",
+			dst:  []*HealthCheck{{Id: "a"}, {Id: "c"}},
+			c:    &HealthCheck{Id: "b"},
+			want: []*HealthCheck{{Id: "a"}, {Id: "b"}, {Id: "c"}},
+		},
+		{
+			name: "insert last",
+			dst:  []*HealthCheck{{Id: "a"}, {Id: "b"}},
+			c:    &HealthCheck{Id: "c"},
+			want: []*HealthCheck{{Id: "a"}, {Id: "b"}, {Id: "c"}},
+		},
+		{
+			name: "replace wholesale",
+			dst: []*HealthCheck{
+				{Id: "a"},
+				{Id: "b", DisplayName: "old", Description: "gone", CreateTime: t1},
+				{Id: "c"},
+			},
+			c: &HealthCheck{Id: "b", DisplayName: "new", CreateTime: t2},
+			want: []*HealthCheck{
+				{Id: "a"},
+				{Id: "b", DisplayName: "new", CreateTime: t2},
+				{Id: "c"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := SetCheck(tt.dst, tt.c)
+			if diff := cmp.Diff(tt.want, got, protocmp.Transform()); diff != "" {
+				t.Errorf("SetCheck() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func intValue(value int) *HealthCheck_Value {
 	return &HealthCheck_Value{
 		Value: &HealthCheck_Value_IntValue{IntValue: int64(value)},
