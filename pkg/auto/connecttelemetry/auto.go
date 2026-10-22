@@ -236,28 +236,39 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 			},
 		})
 	}
-	resp, err := a.Services.Devices.ListDevices(ctx, &devicespb.ListDevicesRequest{
-		Query: &devicespb.Device_Query{Conditions: conditions},
-	})
-	if err != nil {
-		return err
+	req := &devicespb.ListDevicesRequest{
+		Query:    &devicespb.Device_Query{Conditions: conditions},
+		PageSize: listDevicesPageSize,
 	}
-	for _, deviceInfo := range resp.Devices {
-		collector, supported := a.newCollector(ctx, traitName, deviceInfo.Name)
-		if !supported {
-			a.Logger.Warn("trait is configured but not supported",
-				zap.String("trait", string(traitName)), zap.String("device", deviceInfo.Name))
-			continue
+	for {
+		resp, err := a.Services.Devices.ListDevices(ctx, req)
+		if err != nil {
+			return err
 		}
-		dev, ok := devices[deviceInfo.Name]
-		if !ok {
-			dev = &device{name: deviceInfo.Name, metaData: deviceInfo.Metadata}
-			devices[deviceInfo.Name] = dev
+		for _, deviceInfo := range resp.Devices {
+			collector, supported := a.newCollector(ctx, traitName, deviceInfo.Name)
+			if !supported {
+				a.Logger.Warn("trait is configured but not supported",
+					zap.String("trait", string(traitName)), zap.String("device", deviceInfo.Name))
+				continue
+			}
+			dev, ok := devices[deviceInfo.Name]
+			if !ok {
+				dev = &device{name: deviceInfo.Name, metaData: deviceInfo.Metadata}
+				devices[deviceInfo.Name] = dev
+			}
+			dev.collectors = append(dev.collectors, collector)
 		}
-		dev.collectors = append(dev.collectors, collector)
+		req.PageToken = resp.NextPageToken
+		if req.PageToken == "" {
+			return nil
+		}
 	}
-	return nil
 }
+
+// listDevicesPageSize is the devices server's maximum page size, so most sites
+// list each trait in one round trip.
+const listDevicesPageSize = 1000
 
 // newCollector builds a collector for traitName. supported is false if the trait
 // can't be exported.

@@ -3,6 +3,7 @@ package connecttelemetry
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -139,6 +140,38 @@ func TestGetAllTraitImplementorsMeter(t *testing.T) {
 	require.NotNil(t, disc.Pointset)
 	assert.Equal(t, "kWh", disc.Pointset.Points[dbo.FieldEnergyAccumulator].Units)
 	assert.Equal(t, "kWh", disc.Pointset.Points[dbo.FieldExportedEnergyAccumulator].Units)
+}
+
+// TestGetAllTraitImplementorsPaginates confirms every implementor is collected
+// when there are more than fit in one page of ListDevices, whether that's the
+// server's default (50) or the size we ask for.
+func TestGetAllTraitImplementorsPaginates(t *testing.T) {
+	const n = 2*listDevicesPageSize + 17
+	root := node.New("meters")
+
+	devicesApi := devices.NewServer(root)
+	meterModel := meterpb.NewModel()
+	support := &meterpb.MeterReadingSupport{UsageUnit: "kWh"}
+	for i := range n {
+		root.Announce(fmt.Sprintf("meter-%04d", i),
+			node.HasServer(meterpb.RegisterMeterApiServer, meterpb.MeterApiServer(meterpb.NewModelServer(meterModel))),
+			node.HasServer(meterpb.RegisterMeterInfoServer, meterpb.MeterInfoServer(&meterpb.InfoServer{MeterReading: support})),
+			node.HasTrait(meterpb.TraitName),
+		)
+	}
+
+	a := &AutoImpl{Services: auto.Services{
+		Logger:  zap.NewNop(),
+		Node:    root,
+		Devices: devicespb.NewDevicesApiClient(wrap.ServerToClient(devicespb.DevicesApi_ServiceDesc, devicesApi)),
+	}}
+	a.initialiseClients(root)
+
+	allDevices := make(map[string]*device)
+	require.NoError(t, a.getAllTraitImplementors(context.Background(), meterpb.TraitName, allDevices))
+
+	assert.Equal(t, n, len(allDevices))
+	assert.NotNil(t, allDevices[fmt.Sprintf("meter-%04d", n-1)], "last device by name")
 }
 
 // TestGetAllTraitImplementorsUnsupported confirms an unsupported trait is skipped
