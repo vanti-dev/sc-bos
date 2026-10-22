@@ -19,7 +19,8 @@ with the Connect ingest side.
 > until Connect builds it. What follows is aligned to the spec's shapes + the concrete infra.
 
 The exporter discovers devices **by trait**, polls the typed trait API on a schedule, and
-publishes each device's data as UDMI. The first rollout is **meter-only**.
+publishes each device's data as UDMI. Meter is published for every device that implements it;
+ResourceUse only for the local node, which publishes its own host resources.
 
 It can also publish the node's **health checks**, over the same connection, in sc-bos's own
 shape rather than UDMI. See [Health](#health).
@@ -125,10 +126,10 @@ Shape matches `ingest.md`'s device-metadata example. Built from the device's
 - `system.location.floor` = metadata location floor → Connect's `floor=` selector. **`site` is
   left empty** — org/site identity is supplied by broker enrichment, not the payload.
 - `pointset.points` is the declared inventory: point name, optional `units`, optional
-  `writable`. Writable/command points are announced here (`writable: true`) but never sent as
-  telemetry.
+  `writable`, optional `ref` (the source's own name for the point, e.g. a disk's mount point).
+  Writable/command points are announced here (`writable: true`) but never sent as telemetry.
 
-### Meter point mapping (the only trait wired today)
+### Meter point mapping
 
 Point names are DBO standard fields (`pkg/dbo`); discovery `units` carry the **raw** device
 unit string (the raw→DBO unit-name mapping, e.g. `kWh`→`kilowatt_hours`, is a building-config
@@ -147,6 +148,56 @@ entity type** (all `METERS/EM_PWM*` require `power_sensor`) — see the DBO conf
 On the trait-poll path there are no raw vendor point names, so the trait's semantic field
 names become the UDMI point names. This is the trade-off for supporting devices that don't
 implement the UDMI export trait, and for per-trait rollout granularity (meter-first).
+
+### Node resources (ResourceUse)
+
+Connect's health spec (`docs/health.md`, "Host resources are telemetry, not a snapshot") wants a
+node's CPU, memory and disk use as ordinary telemetry on the node's entity, judged by a
+`healthbounds` check. The node publishes its own `smartcore.bos.ResourceUse` under its node name,
+which is the `aka.bos.ref` of the node entity Connect registers (`bos-auth.md`). A gateway does
+not republish its cohort's resources.
+
+```json
+{
+  "timestamp": "2026-10-12T09:00:00Z",
+  "version": "1.5.2",
+  "points": {
+    "cpu_percentage_sensor":             { "present_value": 12.5 },
+    "memory_percentage_sensor":          { "present_value": 41.3 },
+    "memory_datasize_sensor":            { "present_value": 6979321856 },
+    "memory_datasize_capacity":          { "present_value": 16899117056 },
+    "disk_percentage_sensor_705468254":  { "present_value": 63.2 },
+    "disk_datasize_sensor_705468254":    { "present_value": 63215742976 },
+    "disk_datasize_capacity_705468254":  { "present_value": 100000000000 },
+    "disk_percentage_sensor_3086875876": { "present_value": 18.4 },
+    "disk_datasize_sensor_3086875876":   { "present_value": 92000000000 },
+    "disk_datasize_capacity_3086875876": { "present_value": 500000000000 }
+  }
+}
+```
+
+Discovery declares `units` (`percent` for utilisation, `bytes` for usage and limit) and, for each
+disk point, the raw mount point as `ref`:
+
+```json
+"pointset": {
+  "points": {
+    "cpu_percentage_sensor":           { "units": "percent" },
+    "memory_datasize_sensor":          { "units": "bytes" },
+    "disk_datasize_sensor_3086875876": { "units": "bytes", "ref": "/var/lib/bos" }
+  }
+}
+```
+
+- ResourceUse carries no timestamp, so the event is stamped with the time the node last sampled
+  it (the model's change time).
+- Unset fields are omitted rather than sent as zero.
+- The names are fields in Connect's catalogue, which extends DBO with the `cpu`, `memory` and
+  `disk` components and the `datasize` measurement (DBO has no host resource fields). They are
+  identical in both `pointNaming` modes. Connect's `ingest-transform.spec.ts` lands this exact
+  payload through the BOS pipeline template.
+- A disk's instance suffix is the fnv32a hash of its raw mount point, in decimal: `705468254` is
+  `/` and `3086875876` is `/var/lib/bos`. See the automation README for why.
 
 ### Exclusions
 

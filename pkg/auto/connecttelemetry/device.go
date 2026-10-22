@@ -2,6 +2,7 @@ package connecttelemetry
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"go.uber.org/zap"
@@ -10,6 +11,7 @@ import (
 	"github.com/smart-core-os/sc-bos/pkg/dbo"
 	"github.com/smart-core-os/sc-bos/pkg/proto/metadatapb"
 	"github.com/smart-core-os/sc-bos/pkg/proto/meterpb"
+	"github.com/smart-core-os/sc-bos/pkg/proto/resourceusepb"
 )
 
 // traitCollector fetches telemetry and declares the discovery inventory for one
@@ -93,4 +95,46 @@ func (c *meterCollector) points(ctx context.Context, now time.Time) (udmi.Points
 
 func (c *meterCollector) inventory() map[string]udmi.MetadataPoint {
 	return meterInventory(c.support, c.naming)
+}
+
+// resourceUseCollector exports the smartcore.bos.ResourceUse trait of the local
+// node as host resource points. Each reading is stamped with the time the
+// resourceuse system last sampled it, so a stalled sampler shows as stale rather
+// than fresh. last is the most recent reading; inventory builds from it so
+// discovery declares the current set of disks. Telemetry is fetched before
+// discovery in each cycle, and newCollector seeds last with an initial Get.
+// Cycles run one after another, so last needs no lock.
+type resourceUseCollector struct {
+	name   string
+	client resourceusepb.ResourceUseApiClient
+	last   *resourceusepb.ResourceUse
+}
+
+func (c *resourceUseCollector) points(ctx context.Context, now time.Time) (udmi.PointsEvent, time.Time, error) {
+	// ResourceUse carries no timestamp, but Pull seeds with the model's change
+	// time: read that first message and close the stream.
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	stream, err := c.client.PullResourceUse(ctx, &resourceusepb.PullResourceUseRequest{Name: c.name})
+	if err != nil {
+		return nil, time.Time{}, err
+	}
+	resp, err := stream.Recv()
+	if err != nil {
+		return nil, time.Time{}, err
+	}
+	if len(resp.GetChanges()) == 0 {
+		return nil, time.Time{}, errors.New("pull resource use returned no changes")
+	}
+	change := resp.GetChanges()[0]
+	c.last = change.GetResourceUse()
+	ts := now
+	if change.GetChangeTime() != nil {
+		ts = change.GetChangeTime().AsTime()
+	}
+	return resourceUseTelemetry(c.last), ts, nil
+}
+
+func (c *resourceUseCollector) inventory() map[string]udmi.MetadataPoint {
+	return resourceUseInventory(c.last)
 }

@@ -1,6 +1,8 @@
 package connecttelemetry
 
 import (
+	"fmt"
+	"hash/fnv"
 	"strings"
 	"time"
 
@@ -8,6 +10,7 @@ import (
 	"github.com/smart-core-os/sc-bos/pkg/dbo"
 	"github.com/smart-core-os/sc-bos/pkg/proto/metadatapb"
 	"github.com/smart-core-os/sc-bos/pkg/proto/meterpb"
+	"github.com/smart-core-os/sc-bos/pkg/proto/resourceusepb"
 )
 
 // UDMI event subfolders, the trailing topic segment Connect classifies on.
@@ -72,6 +75,83 @@ func meterInventory(support *meterpb.MeterReadingSupport, naming dbo.Naming) map
 		inv[f.PointName(naming)] = udmi.MetadataPoint{Units: f.RawUnit}
 	}
 	return inv
+}
+
+// Units declared in discovery for ResourceUse points. ResourceUse leaves them
+// implicit: utilisation is a 0-100 percentage and usage/limit are byte counts.
+const (
+	unitPercent = "percent"
+	unitBytes   = "bytes"
+)
+
+// resourceUseTelemetry maps a node's ResourceUse to UDMI points. The names are
+// DBO-style fields from Connect's catalogue, which extends DBO with the `cpu`,
+// `memory` and `disk` components and the `datasize` measurement (SCC-978); they
+// are the same in both naming modes. Unset optional fields produce no point.
+// Disks are keyed by mount point (see diskInstance), so their list order doesn't
+// matter.
+//
+// ResourceUse carries no timestamp; the caller stamps the reading with the time
+// the node last sampled it (the model's change time).
+func resourceUseTelemetry(r *resourceusepb.ResourceUse) udmi.PointsEvent {
+	points := udmi.PointsEvent{}
+	forEachResourceUsePoint(r, func(name string, value any, _ string, _ string) {
+		points[name] = udmi.PointValue{PresentValue: value}
+	})
+	return points
+}
+
+// resourceUseInventory declares the points resourceUseTelemetry emits for r, with
+// their units. Disk points carry the raw mount point as the model-point ref.
+func resourceUseInventory(r *resourceusepb.ResourceUse) map[string]udmi.MetadataPoint {
+	inv := map[string]udmi.MetadataPoint{}
+	forEachResourceUsePoint(r, func(name string, _ any, units, ref string) {
+		inv[name] = udmi.MetadataPoint{Units: units, Ref: ref}
+	})
+	return inv
+}
+
+// forEachResourceUsePoint calls fn for every set ResourceUse field we export, so
+// telemetry and discovery can't drift apart. ref is the disk mount point, or empty.
+func forEachResourceUsePoint(r *resourceusepb.ResourceUse, fn func(name string, value any, units, ref string)) {
+	if cpu := r.GetCpu(); cpu != nil && cpu.Utilization != nil {
+		fn("cpu_percentage_sensor", cpu.GetUtilization(), unitPercent, "")
+	}
+	if mem := r.GetMemory(); mem != nil {
+		if mem.Utilization != nil {
+			fn("memory_percentage_sensor", mem.GetUtilization(), unitPercent, "")
+		}
+		if mem.Usage != nil {
+			fn("memory_datasize_sensor", mem.GetUsage(), unitBytes, "")
+		}
+		if mem.Limit != nil {
+			fn("memory_datasize_capacity", mem.GetLimit(), unitBytes, "")
+		}
+	}
+	for _, d := range r.GetDisks() {
+		mount := d.GetMountPoint()
+		n := diskInstance(mount)
+		if d.Utilization != nil {
+			fn(fmt.Sprintf("disk_percentage_sensor_%d", n), d.GetUtilization(), unitPercent, mount)
+		}
+		if d.Usage != nil {
+			fn(fmt.Sprintf("disk_datasize_sensor_%d", n), d.GetUsage(), unitBytes, mount)
+		}
+		if d.Limit != nil {
+			fn(fmt.Sprintf("disk_datasize_capacity_%d", n), d.GetLimit(), unitBytes, mount)
+		}
+	}
+}
+
+// diskInstance is a disk's DBO numeric instance suffix: the fnv32a hash of its raw
+// mount point, so "/" is 705468254. A field name's tokens must all be catalogue
+// subfields, so a mount can't be spelt into the name, and a list index would move
+// one disk's history onto another when a mount appears or goes. The hash keeps
+// each mount on its own series in any order; discovery's ref names the mount.
+func diskInstance(mount string) uint32 {
+	h := fnv.New32a()
+	_, _ = h.Write([]byte(mount))
+	return h.Sum32()
 }
 
 // discoveryEvent builds the UDMI device-metadata (discovery) message from the
