@@ -68,9 +68,9 @@ The response carries the `nodeId` SCC assigned. `GetCloudConnection` should then
 `system.conf.json` has no `cloud.registerUrl`, so `register_url` is required here. Setting `cloud.registerUrl` makes it
 the default.
 
-**Restart after enrolling.** `connecttelemetry` reads the node ID once, when its config is applied. If it started
-before enrolment, it keeps connecting with an empty MQTT client ID and no `nodeId` property until BOS restarts. The
-registration survives the restart because it is stored under `--data`.
+**Restart after enrolling, unlinking or re-enrolling.** `connecttelemetry` reads the node ID once, when its config is
+applied, so it keeps connecting with the old node ID (or an empty MQTT client ID and no `nodeId` property) until BOS
+restarts. The registration survives the restart because it is stored under `--data`.
 
 Unlink when you're done:
 
@@ -86,12 +86,11 @@ grpcurl -insecure -d '{"name":"connect-node"}' localhost:23560 \
   line `in cloud config mode, but no active config available - using local config instead` confirms the local config
   is in use.
 - **Each SCC environment has its own CA.** A registration made against one environment, or against cloudsim, is not
-  valid against another. Use a fresh `--data` directory, or unlink first, when switching. cloudsim regenerates its CA
-  every time it starts, so re-enrol after restarting it.
+  valid against another. Use a fresh `--data` directory when switching. Unlinking isn't enough: it clears only the
+  registration, and a config deployment already downloaded under `<data>/cloud` stays and loads after the next
+  enrolment. cloudsim regenerates its CA every time it starts, so re-enrol after restarting it.
 - **`connecttelemetry` needs TLS.** It rejects `mqtt://` hosts, so it can't talk to a plain-text broker on 1883. Point
   it at a TLS listener.
-- **Storage health checks don't fire on Windows.** The `dataretention` disk check can't read capacity there. Run in
-  WSL or Linux if you need it.
 
 ## Against cloudsim
 
@@ -101,11 +100,16 @@ broker, so `connecttelemetry` keeps warning.
 cloudsim serves a self-signed certificate, so add `"cloud": {"insecureSkipVerify": true}` to your copy of
 `system.conf.json`. Never set this against a real SCC.
 
+Start from an empty database. The `-data` file persists between runs, and cloudsim regenerates its CA anyway, so
+keeping it buys nothing here:
+
 ```shell
+rm -f .data/cloudsim.db
 go run ./cmd/cloudsim -listen 127.0.0.1:9443 -data .data/cloudsim.db
 ```
 
-Create a site, a node and an enrolment code, either in the web UI at <https://127.0.0.1:9443> or through the API:
+Create a site, a node and an enrolment code, either in the web UI at <https://127.0.0.1:9443> or through the API.
+The `1`s below assume an empty database. Otherwise use the `id` from each create response:
 
 ```shell
 curl -sk -X POST https://127.0.0.1:9443/api/v1/management/sites -d '{"name":"test"}'
@@ -118,7 +122,16 @@ Enrol with `"register_url": "https://127.0.0.1:9443/v1/device/register"`. Check-
 
 ## Health scenarios
 
-The driver's `systemStatusCheck` flaps by itself. To push a meter out of bounds on demand:
+The driver's `systemStatusCheck` flaps by itself. To push a meter out of bounds on demand, first stop its simulation.
+The mock meters take their first reading 30 seconds to 2 minutes after start, then a new one every 1 to 30 minutes,
+and each overwrites a forced value:
+
+```shell
+grpcurl -insecure -d '{"name":"meter-01","automations":[{"trait":"smartcore.bos.Meter","active":false}]}' \
+  localhost:23560 smartcore.bos.mock.v1.MockDeviceApi/SetDeviceAutomation
+```
+
+Then force the value:
 
 ```shell
 grpcurl -insecure -d '{"name":"meter-01","values":[
@@ -126,18 +139,10 @@ grpcurl -insecure -d '{"name":"meter-01","values":[
 ]}' localhost:23560 smartcore.bos.mock.v1.MockDeviceApi/ForceTraitValue
 ```
 
-The meter's `healthbounds:connect-node/auto/meter-health` check goes `HIGH`. List every device carrying a health check
-with:
+The meter's `healthbounds:connect-node/auto/meter-health` check goes `HIGH` and stays there. List every device
+carrying a health check with:
 
 ```shell
 grpcurl -insecure -d '{"query":{"conditions":[{"field":"health_checks.id","present":{}}]}}' \
   localhost:23560 smartcore.bos.devices.v1.DevicesApi/ListDevices
-```
-
-The mock meters simulate a new reading every 1 to 30 minutes, which overwrites a forced value. Stop the simulation
-first to hold the meter where you put it:
-
-```shell
-grpcurl -insecure -d '{"name":"meter-01","automations":[{"trait":"smartcore.bos.Meter","active":false}]}' \
-  localhost:23560 smartcore.bos.mock.v1.MockDeviceApi/SetDeviceAutomation
 ```
