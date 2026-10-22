@@ -10,6 +10,7 @@ import (
 
 // MergeCheck merges src into dst, which must share the same id.
 // This is similar to proto.Merge, but some repeated fields are replaced instead of appended to.
+// The earliest create_time of dst and src is kept. src is not modified.
 func MergeCheck(merge func(dst, src proto.Message), dst, src *HealthCheck) {
 	if src == nil || dst == nil {
 		return
@@ -51,10 +52,15 @@ func MergeCheck(merge func(dst, src proto.Message), dst, src *HealthCheck) {
 		})
 	}
 
-	// manual merging of timestamps
-	dst.CreateTime, src.CreateTime = earliestTimestamp(dst.CreateTime, src.CreateTime), nil
+	// Manual merging of timestamps, applied after merge as it may reset dst (see masks.FieldUpdater.Merge).
+	// Cloned because merge may write into dst's existing timestamp.
+	createTime := earliestTimestamp(dst.CreateTime, src.CreateTime)
+	if createTime != nil {
+		createTime = proto.Clone(createTime).(*timestamppb.Timestamp)
+	}
 
 	merge(dst, src)
+	dst.CreateTime = createTime
 
 	for _, f := range post {
 		f()

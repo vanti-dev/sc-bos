@@ -193,9 +193,13 @@ func TestCheck(t *testing.T) {
 			if tt.ignore != "" {
 				t.Skipf("skipping test %q: %s", tt.name, tt.ignore)
 			}
+			srcBefore := proto.Clone(tt.src)
 			MergeCheck(proto.Merge, tt.dst, tt.src)
 			if diff := cmp.Diff(tt.want, tt.dst, protocmp.Transform()); diff != "" {
 				t.Errorf("mergeCheck() mismatch (-want +got):\n%s", diff)
+			}
+			if diff := cmp.Diff(srcBefore, tt.src, protocmp.Transform()); diff != "" {
+				t.Errorf("mergeCheck() modified src (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -402,6 +406,21 @@ func TestRemove(t *testing.T) {
 				t.Errorf("Remove() mismatch (-want +got):\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestCheck_resettingMerge(t *testing.T) {
+	// masks.FieldUpdater.Merge without an update mask resets dst before merging
+	resetMerge := func(dst, src proto.Message) {
+		proto.Reset(dst)
+		proto.Merge(dst, src)
+	}
+	dst := &HealthCheck{CreateTime: timestamppb.New(time.Unix(10, 0)), DisplayName: "old"}
+	src := &HealthCheck{DisplayName: "new"}
+	MergeCheck(resetMerge, dst, src)
+	want := &HealthCheck{CreateTime: timestamppb.New(time.Unix(10, 0)), DisplayName: "new"}
+	if diff := cmp.Diff(want, dst, protocmp.Transform()); diff != "" {
+		t.Errorf("MergeCheck() mismatch (-want +got):\n%s", diff)
 	}
 }
 
