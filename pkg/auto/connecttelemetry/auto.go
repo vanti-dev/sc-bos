@@ -218,17 +218,26 @@ func (a *AutoImpl) refreshDevices(ctx context.Context, traits []string, allDevic
 // getAllTraitImplementors populates devices with those implementing traitName,
 // attaching a collector for the trait.
 func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.Name, devices map[string]*device) error {
-	resp, err := a.Services.Devices.ListDevices(ctx, &devicespb.ListDevicesRequest{
-		Query: &devicespb.Device_Query{
-			Conditions: []*devicespb.Device_Query_Condition{
-				{
-					Field: "metadata.traits.name",
-					Value: &devicespb.Device_Query_Condition_StringEqual{
-						StringEqual: string(traitName),
-					},
-				},
+	conditions := []*devicespb.Device_Query_Condition{
+		{
+			Field: "metadata.traits.name",
+			Value: &devicespb.Device_Query_Condition_StringEqual{
+				StringEqual: string(traitName),
 			},
 		},
+	}
+	if traitName == resourceusepb.TraitName {
+		// The reporting node publishes its own resources: a gateway sees its
+		// cohort's ResourceUse too, but leaves those nodes to publish their own.
+		conditions = append(conditions, &devicespb.Device_Query_Condition{
+			Field: "name",
+			Value: &devicespb.Device_Query_Condition_StringEqual{
+				StringEqual: a.Node.Name(),
+			},
+		})
+	}
+	resp, err := a.Services.Devices.ListDevices(ctx, &devicespb.ListDevicesRequest{
+		Query: &devicespb.Device_Query{Conditions: conditions},
 	})
 	if err != nil {
 		return err
@@ -237,11 +246,6 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 		collector, supported := a.newCollector(ctx, traitName, deviceInfo.Name)
 		if !supported {
 			a.Logger.Warn("trait is configured but not supported",
-				zap.String("trait", string(traitName)), zap.String("device", deviceInfo.Name))
-			continue
-		}
-		if collector == nil {
-			a.Logger.Debug("trait not exported for this device",
 				zap.String("trait", string(traitName)), zap.String("device", deviceInfo.Name))
 			continue
 		}
@@ -256,16 +260,10 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 }
 
 // newCollector builds a collector for traitName. supported is false if the trait
-// can't be exported at all; a nil collector with supported true means the trait
-// is exported, but not for this device.
+// can't be exported.
 func (a *AutoImpl) newCollector(ctx context.Context, traitName trait.Name, deviceName string) (_ traitCollector, supported bool) {
 	switch traitName {
 	case resourceusepb.TraitName:
-		// The reporting node publishes its own resources: a gateway sees its
-		// cohort's ResourceUse too, but leaves those nodes to publish their own.
-		if deviceName != a.Node.Name() {
-			return nil, true
-		}
 		c := &resourceUseCollector{name: deviceName, client: a.resourceUseClient}
 		// Seed the reading so discovery has an inventory even if the first
 		// telemetry fetch fails.

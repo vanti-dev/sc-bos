@@ -75,7 +75,8 @@ bytes) beside DBO's own `percentage`. They are the same in both `pointNaming` mo
   `3086875876`. A mount can't be spelt into the name, as every token must be a catalogue
   subfield, and the hash keeps each disk's points the same whatever order the disks are listed in.
 - Each disk point's discovery entry carries the raw mount point as `ref`.
-- ResourceUse has no timestamp, so the telemetry is stamped with the time of the fetch.
+- ResourceUse has no timestamp, so the telemetry is stamped with the time the node last sampled
+  it (the model's change time). A stalled sampler shows up as stale telemetry rather than fresh.
 
 ### Other traits
 

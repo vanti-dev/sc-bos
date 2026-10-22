@@ -91,7 +91,8 @@ const (
 // Disks are keyed by mount point (see diskInstance), so their list order doesn't
 // matter.
 //
-// ResourceUse carries no timestamp; the caller stamps the reading with now.
+// ResourceUse carries no timestamp; the caller stamps the reading with the time
+// the node last sampled it (the model's change time).
 func resourceUseTelemetry(r *resourceusepb.ResourceUse) udmi.PointsEvent {
 	points := udmi.PointsEvent{}
 	forEachResourceUsePoint(r, func(name string, value any, _ string, _ string) {

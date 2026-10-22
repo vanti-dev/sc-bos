@@ -178,8 +178,9 @@ func TestGetAllTraitImplementorsResourceUse(t *testing.T) {
 	cohortUse := &resourceusepb.ResourceUse{Cpu: &resourceusepb.CpuUse{Utilization: new(float32(99))}}
 
 	devicesApi := devices.NewServer(root)
+	sampled := time.Date(2026, 10, 12, 8, 59, 0, 0, time.UTC)
 	for name, use := range map[string]*resourceusepb.ResourceUse{"node1": nodeUse, "cohort": cohortUse} {
-		model := resourceusepb.NewModel(resource.WithInitialValue(use))
+		model := resourceusepb.NewModel(resource.WithInitialValue(use), resource.WithClock(fixedClock(sampled)))
 		root.Announce(name,
 			node.HasServer(resourceusepb.RegisterResourceUseApiServer, resourceusepb.ResourceUseApiServer(resourceusepb.NewModelServer(model))),
 			node.HasTrait(resourceusepb.TraitName),
@@ -208,11 +209,12 @@ func TestGetAllTraitImplementorsResourceUse(t *testing.T) {
 	assert.Equal(t, udmi.MetadataPoint{Units: "percent"}, disc.Pointset.Points["cpu_percentage_sensor"])
 	assert.Equal(t, udmi.MetadataPoint{Units: "bytes", Ref: "/"}, disc.Pointset.Points["disk_datasize_sensor_"+instRoot])
 
-	// Telemetry is stamped with now, as ResourceUse carries no timestamp.
+	// Telemetry is stamped with when the node sampled the reading, not when it
+	// was fetched, so a stalled sampler arrives stale.
 	now := time.Date(2026, 10, 12, 9, 0, 0, 0, time.UTC)
 	ev, ok := dev.buildTelemetry(context.Background(), now, logger)
 	require.True(t, ok)
-	assert.Equal(t, now, ev.Timestamp)
+	assert.Equal(t, sampled, ev.Timestamp)
 	assert.Equal(t, udmi.PointsEvent{
 		"cpu_percentage_sensor":              {PresentValue: float32(12.5)},
 		"disk_percentage_sensor_" + instRoot: {PresentValue: float32(25)},
@@ -220,6 +222,11 @@ func TestGetAllTraitImplementorsResourceUse(t *testing.T) {
 		"disk_datasize_capacity_" + instRoot: {PresentValue: uint64(400)},
 	}, ev.Points)
 }
+
+// fixedClock is a resource.Clock pinned to one instant.
+type fixedClock time.Time
+
+func (c fixedClock) Now() time.Time { return time.Time(c) }
 
 // TestApplyConfigHealthOnlyUnavailable confirms a config whose only output is health
 // fails when the node's health checks are unavailable, rather than publishing nothing.

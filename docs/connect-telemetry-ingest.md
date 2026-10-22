@@ -19,7 +19,8 @@ with the Connect ingest side.
 > until Connect builds it. What follows is aligned to the spec's shapes + the concrete infra.
 
 The exporter discovers devices **by trait**, polls the typed trait API on a schedule, and
-publishes each device's data as UDMI. The first rollout is **meter-only**.
+publishes each device's data as UDMI. Meter is published for every device that implements it;
+ResourceUse only for the local node, which publishes its own host resources.
 
 It can also publish the node's **health checks**, over the same connection, in sc-bos's own
 shape rather than UDMI. See [Health](#health).
@@ -188,7 +189,8 @@ disk point, the raw mount point as `ref`:
 }
 ```
 
-- The timestamp is the fetch time: ResourceUse carries none.
+- ResourceUse carries no timestamp, so the event is stamped with the time the node last sampled
+  it (the model's change time).
 - Unset fields are omitted rather than sent as zero.
 - The names are fields in Connect's catalogue, which extends DBO with the `cpu`, `memory` and
   `disk` components and the `datasize` measurement (DBO has no host resource fields). They are
