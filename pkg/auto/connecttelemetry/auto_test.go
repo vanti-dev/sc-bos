@@ -119,7 +119,7 @@ func TestGetAllTraitImplementorsMeter(t *testing.T) {
 	a.initialiseClients(root)
 
 	allDevices := make(map[string]*device)
-	require.NoError(t, a.getAllTraitImplementors(context.Background(), meterpb.TraitName, allDevices))
+	require.NoError(t, a.getAllTraitImplementors(context.Background(), meterpb.TraitName, testFetchTimeout, allDevices))
 
 	require.Len(t, allDevices, 1)
 	dev := allDevices["foo"]
@@ -168,11 +168,63 @@ func TestGetAllTraitImplementorsPaginates(t *testing.T) {
 	a.initialiseClients(root)
 
 	allDevices := make(map[string]*device)
-	require.NoError(t, a.getAllTraitImplementors(context.Background(), meterpb.TraitName, allDevices))
+	require.NoError(t, a.getAllTraitImplementors(context.Background(), meterpb.TraitName, testFetchTimeout, allDevices))
 
 	assert.Equal(t, n, len(allDevices))
 	assert.NotNil(t, allDevices[fmt.Sprintf("meter-%04d", n-1)], "last device by name")
 }
+
+// TestGetAllTraitImplementorsSlowDevices confirms devices that never answer
+// collector seeding cost the refresh one fetch timeout between them, not one
+// each, and are still exported.
+func TestGetAllTraitImplementorsSlowDevices(t *testing.T) {
+	const (
+		n            = 20
+		fetchTimeout = 100 * time.Millisecond
+	)
+	root := node.New("meters")
+
+	devicesApi := devices.NewServer(root)
+	meterModel := meterpb.NewModel()
+	for i := range n {
+		root.Announce(fmt.Sprintf("hung-%02d", i),
+			node.HasServer(meterpb.RegisterMeterApiServer, meterpb.MeterApiServer(meterpb.NewModelServer(meterModel))),
+			node.HasServer(meterpb.RegisterMeterInfoServer, meterpb.MeterInfoServer(hungMeterInfo{})),
+			node.HasTrait(meterpb.TraitName),
+		)
+	}
+
+	a := &AutoImpl{Services: auto.Services{
+		Logger:  zap.NewNop(),
+		Node:    root,
+		Devices: devicespb.NewDevicesApiClient(wrap.ServerToClient(devicespb.DevicesApi_ServiceDesc, devicesApi)),
+	}}
+	a.initialiseClients(root)
+
+	allDevices := make(map[string]*device)
+	start := time.Now()
+	require.NoError(t, a.getAllTraitImplementors(context.Background(), meterpb.TraitName, fetchTimeout, allDevices))
+	assert.Less(t, time.Since(start), n*fetchTimeout/2, "seed fetches should time out together")
+
+	assert.Equal(t, n, len(allDevices))
+	for name, dev := range allDevices {
+		require.Len(t, dev.collectors, 1, name)
+		assert.Nil(t, dev.collectors[0].(*meterCollector).support, name)
+	}
+}
+
+// hungMeterInfo is a MeterInfo server that never answers.
+type hungMeterInfo struct {
+	meterpb.UnimplementedMeterInfoServer
+}
+
+func (hungMeterInfo) DescribeMeterReading(ctx context.Context, _ *meterpb.DescribeMeterReadingRequest) (*meterpb.MeterReadingSupport, error) {
+	<-ctx.Done()
+	return nil, ctx.Err()
+}
+
+// testFetchTimeout bounds device fetches in tests whose devices answer promptly.
+const testFetchTimeout = 5 * time.Second
 
 // TestGetAllTraitImplementorsUnsupported confirms an unsupported trait is skipped
 // (no collector, no device) rather than erroring.
@@ -194,7 +246,7 @@ func TestGetAllTraitImplementorsUnsupported(t *testing.T) {
 	a.initialiseClients(root)
 
 	allDevices := make(map[string]*device)
-	require.NoError(t, a.getAllTraitImplementors(context.Background(), trait.OccupancySensor, allDevices))
+	require.NoError(t, a.getAllTraitImplementors(context.Background(), trait.OccupancySensor, testFetchTimeout, allDevices))
 	assert.Empty(t, allDevices, "unsupported trait should attach no devices")
 }
 
@@ -229,7 +281,7 @@ func TestGetAllTraitImplementorsResourceUse(t *testing.T) {
 	a.initialiseClients(root)
 
 	allDevices := make(map[string]*device)
-	require.NoError(t, a.getAllTraitImplementors(context.Background(), resourceusepb.TraitName, allDevices))
+	require.NoError(t, a.getAllTraitImplementors(context.Background(), resourceusepb.TraitName, testFetchTimeout, allDevices))
 
 	require.Len(t, allDevices, 1, "a gateway must not republish its cohort's resources")
 	dev := allDevices["node1"]
