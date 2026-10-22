@@ -19,7 +19,8 @@ var (
 //
 // Create and delete callbacks are called with the registry locked, in the order the registry changed state,
 // so a check recreated while the old one is being deleted is seen after that delete.
-// Callbacks must not call back into the Registry.
+// These callbacks must not call back into the Registry, which includes creating a check via [Checks]
+// or disposing any check, as doing so deadlocks.
 type Registry struct {
 	mu     sync.RWMutex
 	byName map[string]*namedChecks
