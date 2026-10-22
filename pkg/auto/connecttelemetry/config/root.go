@@ -61,7 +61,8 @@ type Root struct {
 	auto.Config
 
 	// Traits is the set of traits to export. Devices implementing one of these
-	// traits are discovered and polled. Only smartcore.bos.Meter is supported today.
+	// traits are discovered and polled. smartcore.bos.Meter and
+	// smartcore.bos.ResourceUse are supported; ResourceUse only for the local node.
 	// May be empty only when health is enabled.
 	Traits []string `json:"traits"`
 	Mqtt   Mqtt     `json:"mqtt"`
