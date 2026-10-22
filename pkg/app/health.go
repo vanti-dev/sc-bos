@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -130,7 +129,7 @@ func setupHealthRegistry(ctx context.Context, config sysconf.Config, deviceStore
 			defer announcedChecksMu.Unlock()
 			a, ok := announcedChecks[name]
 			if !ok {
-				// see SCB-1508, carry on so the stores below still track the registry
+				// carry on so the stores below still track the registry
 				logger.Error("update health check for unknown name", zap.String("name", name), zap.String("checkId", c.Id))
 			} else if _, err := a.m.UpdateHealthCheck(c); err != nil {
 				logger.Error("update health check", zap.String("name", name), zap.String("checkId", c.Id), zap.Error(err))
@@ -179,15 +178,8 @@ func setupHealthRegistry(ctx context.Context, config sysconf.Config, deviceStore
 			}
 		}),
 		healthpb.WithOnNameDelete(func(name string) {
-			// A check can be created for name between the registry forgetting it and this callback (SCB-1508),
-			// so only remove the local checks mirror entry if it is still empty.
-			_, err := localChecks.Delete(name, resource.WithAllowMissing(true), resource.WithExpectedCheck(func(msg proto.Message) error {
-				if len(msg.(*devicespb.Device).GetHealthChecks()) > 0 {
-					return errLocalChecksNotEmpty
-				}
-				return nil
-			}))
-			if err != nil && !errors.Is(err, errLocalChecksNotEmpty) {
+			_, err := localChecks.Delete(name, resource.WithAllowMissing(true))
+			if err != nil {
 				logger.Error("delete local checks", zap.String("name", name), zap.Error(err))
 			}
 
@@ -207,8 +199,6 @@ func setupHealthRegistry(ctx context.Context, config sysconf.Config, deviceStore
 	)
 	return checkRegistry, localChecks, close, nil
 }
-
-var errLocalChecksNotEmpty = errors.New("local checks not empty")
 
 // setLocalCheck records a copy of c against name in localChecks, replacing any check with the same id.
 // A NotFound error, for a name localChecks has no entry for, is ignored.

@@ -16,6 +16,10 @@ var (
 )
 
 // Registry manages a collection of health checks.
+//
+// Create and delete callbacks are called with the registry locked, in the order the registry changed state,
+// so a check recreated while the old one is being deleted is seen after that delete.
+// Callbacks must not call back into the Registry.
 type Registry struct {
 	mu     sync.RWMutex
 	byName map[string]*namedChecks
@@ -48,6 +52,7 @@ func (f registryOptionFunc) apply(r *Registry) {
 }
 
 // WithOnNameCreate configures a callback that is invoked when a new name is created.
+// It is called with the registry locked, see [Registry].
 func WithOnNameCreate(f func(name string)) RegistryOption {
 	return registryOptionFunc(func(r *Registry) {
 		r.onNameCreate = f
@@ -56,6 +61,7 @@ func WithOnNameCreate(f func(name string)) RegistryOption {
 
 // WithOnCheckCreate configures a callback that is invoked when a new check is created.
 // The callback may return a different HealthCheck instance to be used instead of the one passed in.
+// It is called with the registry locked, see [Registry].
 func WithOnCheckCreate(f func(name string, c *HealthCheck) *HealthCheck) RegistryOption {
 	return registryOptionFunc(func(r *Registry) {
 		r.onCheckCreate = f
@@ -70,6 +76,7 @@ func WithOnCheckUpdate(f func(name string, c *HealthCheck)) RegistryOption {
 }
 
 // WithOnCheckDelete configures a callback that is invoked when a check is deleted.
+// It is called with the registry locked, see [Registry].
 func WithOnCheckDelete(f func(name, id string)) RegistryOption {
 	return registryOptionFunc(func(r *Registry) {
 		r.onCheckDelete = f
@@ -77,6 +84,7 @@ func WithOnCheckDelete(f func(name, id string)) RegistryOption {
 }
 
 // WithOnNameDelete configures a callback that is invoked when the last check for a name is deleted.
+// It is called with the registry locked, see [Registry].
 func WithOnNameDelete(f func(name string)) RegistryOption {
 	return registryOptionFunc(func(r *Registry) {
 		r.onNameDelete = f
@@ -145,14 +153,15 @@ func (r *Registry) addCheck(name, id string, c *checkBase) error {
 		}
 	}
 	c.onDispose = func(c *HealthCheck) {
-		// clean up our own state
+		// clean up our own state.
+		// Hold mu across the callbacks, as addCheck does, so they see this delete before any recreate.
 		r.mu.Lock()
+		defer r.mu.Unlock()
 		delete(nc.byId, id)
 		deleteName := len(nc.byId) == 0
 		if deleteName {
 			delete(r.byName, name)
 		}
-		r.mu.Unlock()
 		if r.onCheckDelete != nil {
 			r.onCheckDelete(name, id)
 		}
