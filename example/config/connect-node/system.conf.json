@@ -2,5 +2,6 @@
   "name": "connect-node",
   "listenGrpc": ":23560",
   "listenHttps": ":8460",
-  "logger": {"initialFields": {"proc": "connect-node"}}
+  "logger": {"initialFields": {"proc": "connect-node"}},
+  "systems": {"resourceUse": {}}
 }

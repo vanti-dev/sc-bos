@@ -35,13 +35,14 @@
     },
     {
       "type": "connecttelemetry", "name": "connect-node/auto/connect-telemetry",
-      "traits": ["smartcore.bos.Meter"],
+      "traits": ["smartcore.bos.Meter", "smartcore.bos.ResourceUse"],
       "mqtt": {
         "host": "tls://REPLACE-WITH-BROKER-HOST:8883",
         "useCloudCredential": true,
         "sendInterval": "* * * * *",
         "metadataInterval": 10
-      }
+      },
+      "health": {"enabled": true}
     }
   ]
 }

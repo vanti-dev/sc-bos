@@ -15,8 +15,12 @@ The app config contains:
   health check that flaps to a fault 15% of the time (`healthCheck.faultProbability`).
 - A `healthbounds` automation that raises a health check on each meter whose usage leaves `0..10000`.
 - A `history` automation recording meter readings in memory.
-- A [`connecttelemetry`](../../../pkg/auto/connecttelemetry) automation that publishes the meters to the Connect
-  telemetry broker every minute, using the node's enrolled certificate (`useCloudCredential`).
+- A [`connecttelemetry`](../../../pkg/auto/connecttelemetry) automation that publishes the meters and the node's own
+  host resources (`smartcore.bos.ResourceUse`) to the Connect telemetry broker every minute, and the node's health
+  checks as they change, using the node's enrolled certificate (`useCloudCredential`).
+
+The system config turns on the `resourceUse` system, which announces the node's CPU, memory and disk use as
+`smartcore.bos.ResourceUse` on the `connect-node` device. Without it there is no host telemetry to send.
 
 The `connecttelemetry` broker host is a placeholder, `tls://REPLACE-WITH-BROKER-HOST:8883`. Until you replace it the
 automation logs a connection warning on every retry, which is harmless. Everything else works without it.
@@ -139,8 +143,9 @@ grpcurl -insecure -d '{"name":"meter-01","values":[
 ]}' localhost:23560 smartcore.bos.mock.v1.MockDeviceApi/ForceTraitValue
 ```
 
-The meter's `healthbounds:connect-node/auto/meter-health` check goes `HIGH` and stays there. List every device
-carrying a health check with:
+The meter's `healthbounds:connect-node/auto/meter-health` check goes `HIGH` and stays there, and
+`connecttelemetry` sends the change to Connect, where it shows held at the meter's ref until the device is
+adopted. List every device carrying a health check with:
 
 ```shell
 grpcurl -insecure -d '{"query":{"conditions":[{"field":"health_checks.id","present":{}}]}}' \
