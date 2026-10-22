@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"errors"
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -54,6 +56,41 @@ func Test_setupHealthRegistry(t *testing.T) {
 		check := h.createFaultCheck("dev1", "deletable check")
 
 		h.assertCheckExists(t, "dev1")
+		check.Dispose()
+		h.assertCheckDeleted(t, "dev1")
+	})
+
+	t.Run("recreate while disposing", func(t *testing.T) {
+		// healthbounds disposes and recreates a check with the same id when its device is reconfigured
+		h := newHealthTestHarness(t)
+		check := h.createFaultCheck("dev1", "recreated check")
+		for range 50 {
+			var wg sync.WaitGroup
+			wg.Go(check.Dispose)
+			for {
+				var err error
+				check, err = h.registry.ForOwner(h.owner).NewFaultCheck("dev1", &healthpb.HealthCheck{DisplayName: "recreated check"})
+				if err == nil {
+					break
+				}
+				if !errors.Is(err, healthpb.ErrAlreadyExists) {
+					t.Fatalf("NewFaultCheck() error = %v", err)
+				}
+			}
+			wg.Wait()
+
+			h.getOnlyCheck(t, "dev1")
+			if got := h.getLocalChecks(t, "dev1"); len(got) != 1 {
+				t.Fatalf("expected 1 local check, got %d", len(got))
+			}
+			dev, err := h.devices.GetDevice("dev1")
+			if err != nil {
+				t.Fatalf("GetDevice() error = %v", err)
+			}
+			if len(dev.HealthChecks) != 1 {
+				t.Fatalf("expected 1 device check, got %d", len(dev.HealthChecks))
+			}
+		}
 		check.Dispose()
 		h.assertCheckDeleted(t, "dev1")
 	})
