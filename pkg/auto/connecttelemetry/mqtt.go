@@ -106,8 +106,9 @@ func newPublisher(ctx context.Context, cfg config.Mqtt, cred auto.CloudCredentia
 }
 
 // publish sends payload to topic at the configured QoS, waiting up to
-// publishTimeout for the connection to be up. The nodeId user property is set
-// when known (local MQTT path).
+// publishTimeout for the connection to be up. The telemetry cycle has already
+// waited for the connection, so that wait only covers a drop since. The nodeId
+// user property is set when known (local MQTT path).
 func (p *publisher) publish(ctx context.Context, topic string, payload []byte) error {
 	ctx, cancel := context.WithTimeout(ctx, p.publishTimeout)
 	defer cancel()

@@ -118,9 +118,18 @@ func (a *AutoImpl) applyConfig(ctx context.Context, cfg config.Root) error {
 	return nil
 }
 
+// telemetrySink is where telemetry and discovery go, a *publisher outside tests.
+type telemetrySink interface {
+	// awaitConnection blocks until the connection is up, or ctx is done.
+	awaitConnection(ctx context.Context) error
+	// publish sends payload to topic at the configured QoS.
+	publish(ctx context.Context, topic string, payload []byte) error
+}
+
 // runTelemetry starts polling the configured traits and publishing their telemetry and discovery.
-func (a *AutoImpl) runTelemetry(autoCtx context.Context, grp *errgroup.Group, cfg config.Root, pub *publisher) {
+func (a *AutoImpl) runTelemetry(autoCtx context.Context, grp *errgroup.Group, cfg config.Root, sink telemetrySink) {
 	allDevices := make(map[string]*device)
+	refreshDue := true
 	t := a.now()
 	iterationCount := 0
 	grp.Go(func() error {
@@ -133,24 +142,46 @@ func (a *AutoImpl) runTelemetry(autoCtx context.Context, grp *errgroup.Group, cf
 				t = a.now()
 			}
 
-			// Publish discovery on the first run and then every N cycles; refresh
-			// the device list on the same cadence.
-			publishDiscovery := (iterationCount % *cfg.Mqtt.MetadataInterval) == 0
+			// Owe every device its discovery on the first cycle and then every N
+			// cycles, and refresh the device list on the same cadence. Skipped cycles
+			// count, keeping the cadence on the schedule; whatever is owed goes on the
+			// next cycle that reaches the broker.
+			if iterationCount%*cfg.Mqtt.MetadataInterval == 0 {
+				refreshDue = true
+				for _, dev := range allDevices {
+					dev.discoveryOwed = true
+				}
+			}
 			iterationCount++
 
-			if publishDiscovery {
+			// Wait for the broker before refreshing or fetching, so the metadata and
+			// readings are current when they go, but only until the next send, which
+			// takes over from this one.
+			waitCtx, cancel := context.WithTimeout(autoCtx, cfg.Mqtt.SendInterval.Next(t).Sub(a.now()))
+			err := sink.awaitConnection(waitCtx)
+			cancel()
+			if err != nil {
+				if autoCtx.Err() != nil {
+					return nil
+				}
+				a.Logger.Warn("broker not connected; skipping telemetry cycle", zap.Error(err))
+				continue
+			}
+
+			if refreshDue {
 				// Refresh into a fresh map and only swap on success, so a transient
 				// ListDevices failure retains the previous export set rather than
-				// blanking it until the next discovery cycle (potentially minutes away).
+				// blanking it. A failed refresh is retried next cycle.
 				refreshed := make(map[string]*device)
 				if err := a.refreshDevices(autoCtx, cfg, refreshed); err != nil {
 					a.Logger.Error("error refreshing device list; retaining previous set", zap.Error(err))
 				} else {
 					allDevices = refreshed
+					refreshDue = false
 				}
 			}
 
-			a.publishCycle(autoCtx, cfg, pub, allDevices, publishDiscovery)
+			a.publishCycle(autoCtx, cfg, sink, allDevices)
 		}
 	})
 }
@@ -162,21 +193,21 @@ func (a *AutoImpl) runHealth(autoCtx context.Context, grp *errgroup.Group, cfg c
 	grp.Go(func() error { return hp.run(autoCtx) })
 }
 
-// publishCycle publishes telemetry (and, when publishDiscovery is set, discovery)
-// for every device, bounding concurrency to avoid overwhelming slow devices.
-func (a *AutoImpl) publishCycle(ctx context.Context, cfg config.Root, pub *publisher, devices map[string]*device, publishDiscovery bool) {
+// publishCycle publishes telemetry, and any discovery owed, for every device,
+// bounding concurrency to avoid overwhelming slow devices.
+func (a *AutoImpl) publishCycle(ctx context.Context, cfg config.Root, sink telemetrySink, devices map[string]*device) {
 	var wg errgroup.Group
 	wg.SetLimit(maxConcurrentFetches)
 	for _, dev := range devices {
 		wg.Go(func() error {
-			a.publishDevice(ctx, cfg, pub, dev, publishDiscovery)
+			a.publishDevice(ctx, cfg, sink, dev)
 			return nil
 		})
 	}
 	_ = wg.Wait()
 }
 
-func (a *AutoImpl) publishDevice(ctx context.Context, cfg config.Root, pub *publisher, dev *device, publishDiscovery bool) {
+func (a *AutoImpl) publishDevice(ctx context.Context, cfg config.Root, sink telemetrySink, dev *device) {
 	// Bound the trait fetches so a slow device can't stall the cycle.
 	fetchCtx, cancel := context.WithTimeout(ctx, cfg.FetchTimeout.Duration)
 	defer cancel()
@@ -184,23 +215,28 @@ func (a *AutoImpl) publishDevice(ctx context.Context, cfg config.Root, pub *publ
 	now := a.now()
 
 	if ev, ok := dev.buildTelemetry(fetchCtx, now, a.Logger); ok {
-		a.publishJSON(ctx, pub, pointsetTopic(cfg.Mqtt.TopicPrefix, dev.name), ev, "telemetry", dev.name)
+		a.publishJSON(ctx, sink, pointsetTopic(cfg.Mqtt.TopicPrefix, dev.name), ev, "telemetry", dev.name)
 	}
 
-	if publishDiscovery {
-		a.publishJSON(ctx, pub, discoveryTopic(cfg.Mqtt.TopicPrefix, dev.name), dev.buildDiscovery(now), "discovery", dev.name)
+	if dev.discoveryOwed {
+		if a.publishJSON(ctx, sink, discoveryTopic(cfg.Mqtt.TopicPrefix, dev.name), dev.buildDiscovery(now), "discovery", dev.name) {
+			dev.discoveryOwed = false
+		}
 	}
 }
 
-func (a *AutoImpl) publishJSON(ctx context.Context, pub *publisher, topic string, payload any, kind, deviceName string) {
+// publishJSON reports whether payload was published.
+func (a *AutoImpl) publishJSON(ctx context.Context, sink telemetrySink, topic string, payload any, kind, deviceName string) bool {
 	bytes, err := json.Marshal(payload)
 	if err != nil {
 		a.Logger.Error("failed to marshal "+kind, zap.String("device", deviceName), zap.Error(err))
-		return
+		return false
 	}
-	if err := pub.publish(ctx, topic, bytes); err != nil {
+	if err := sink.publish(ctx, topic, bytes); err != nil {
 		a.Logger.Warn("failed to publish "+kind, zap.String("device", deviceName), zap.String("topic", topic), zap.Error(err))
+		return false
 	}
+	return true
 }
 
 // refreshDevices discovers all devices implementing the configured traits and
@@ -280,7 +316,7 @@ func (a *AutoImpl) getAllTraitImplementors(ctx context.Context, traitName trait.
 		}
 		dev, ok := devices[deviceInfo.Name]
 		if !ok {
-			dev = &device{name: deviceInfo.Name, metaData: deviceInfo.Metadata}
+			dev = &device{name: deviceInfo.Name, metaData: deviceInfo.Metadata, discoveryOwed: true}
 			devices[deviceInfo.Name] = dev
 		}
 		dev.collectors = append(dev.collectors, builds[i].collector)
