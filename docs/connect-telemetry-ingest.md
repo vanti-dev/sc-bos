@@ -355,11 +355,15 @@ credential.
 
 ## Lifecycle
 
-Discovery is published on the first cycle and then every `metadataInterval` poll cycles;
-telemetry every cycle. Per `ingest.md`, matching the UDMI shape is not "zero-config" landing:
-UDMI is a **future built-in template** (a starting layout + mappings an operator adopts), and
-even then an operator must ratify the stream (bind `(bos, ref)` → entity) and author the
-point-name → catalogue-field mapping; pre-ratification telemetry is held as `unresolved` and
+Discovery is published on the first cycle that reaches the broker and then every
+`metadataInterval` poll cycles, and a discovery that fails to send is retried each cycle until
+it goes; telemetry every cycle. Each cycle waits for the broker connection, up to the next
+scheduled send, and is skipped if it can't connect by then.
+
+Per `ingest.md`, matching the UDMI shape is not "zero-config" landing: UDMI is a **future
+built-in template** (a starting layout + mappings an operator adopts), and even then an
+operator must ratify the stream (bind `(bos, ref)` → entity) and author the point-name →
+catalogue-field mapping; pre-ratification telemetry is held as `unresolved` and
 replayed after binding. So the exporter needs no store-and-forward for correctness; in-session
 assurance is MQTT QoS.
 

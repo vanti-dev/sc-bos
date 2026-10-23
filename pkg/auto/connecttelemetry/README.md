@@ -9,8 +9,12 @@ each device's data per-device as:
 
 - **Telemetry** — a UDMI pointset (`{timestamp, version, points{<name>{present_value}}}`).
 - **Discovery** — a UDMI device-metadata message (`{system{name, description, tags,
-  location}, pointset{points{<name>{units, writable, ref}}}}`), on the first cycle and then
-  every `metadataInterval` cycles.
+  location}, pointset{points{<name>{units, writable, ref}}}}`), on the first cycle that
+  reaches the broker and then every `metadataInterval` cycles. A discovery that fails to
+  send is retried each cycle until it goes.
+
+Each cycle waits for the broker connection, up to the next scheduled send, before it fetches
+and publishes. A cycle that can't connect in that time is skipped, not caught up.
 
 With `health.enabled` it also publishes the health checks this node evaluates, one complete
 set per resource on `tlm/bos/health` whenever the set changes, plus a periodic manifest of every
@@ -158,10 +162,10 @@ For the file-path dev mode, drop `useCloudCredential` and supply certs instead:
 | `mqtt.clientCertPath` / `mqtt.clientKeyPath` | file mode | — | Client cert + key for mTLS |
 | `mqtt.caCertPath` | no | system roots | CA to verify the broker |
 | `mqtt.sendInterval` | no | `*/15 * * * *` | Telemetry poll schedule |
-| `mqtt.metadataInterval` | no | `100` | Publish discovery every N cycles (and cycle 0) |
+| `mqtt.metadataInterval` | no | `100` | Publish discovery, and refresh the device list, every N cycles (and cycle 0); either is retried each cycle until it succeeds |
 | `mqtt.qos` | no | `1` | MQTT QoS (0, 1, or 2) |
 | `mqtt.connectTimeout` | no | `5s` | Connect timeout |
-| `mqtt.publishTimeout` | no | `5s` | Per-publish timeout (includes awaiting connection) |
+| `mqtt.publishTimeout` | no | `5s` | Per-publish timeout. Each cycle has already waited for the connection, up to the next send |
 | `health.enabled` | no | `false` | Publish this node's own health checks |
 | `health.manifestInterval` | no | `15m` | Time between health manifests, at most `15m`: Connect flags a node that goes 30 minutes without one |
 | `health.maxPublishRate` | no | `10` | Most health messages a second, at most `16` (Connect accepts 10,000 per 10 minutes) |

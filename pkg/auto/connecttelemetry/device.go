@@ -31,6 +31,11 @@ type device struct {
 	name       string // Smart Core device name; also the deviceRef in the topic (parked gap)
 	metaData   *metadatapb.Metadata
 	collectors []traitCollector
+	// discoveryOwed is set when the device is found and every metadataInterval cycles,
+	// and cleared once its discovery is published, so a failed send is retried next cycle.
+	// Only one goroutine touches a device at a time: the loop between cycles, or its
+	// publishDevice during one.
+	discoveryOwed bool
 }
 
 // buildTelemetry fetches every collector's current points and merges them into a

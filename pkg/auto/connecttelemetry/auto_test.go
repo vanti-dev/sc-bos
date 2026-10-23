@@ -4,12 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/smart-core-os/sc-bos/internal/manage/devices"
@@ -320,4 +325,249 @@ func TestApplyConfigHealthOnlyUnavailable(t *testing.T) {
 	cfg := config.Root{Health: &config.Health{Enabled: true}}
 	err := a.applyConfig(context.Background(), cfg)
 	require.ErrorContains(t, err, "nothing to publish")
+}
+
+// fakeTelemetrySink records what the telemetry loop publishes.
+type fakeTelemetrySink struct {
+	mu                sync.Mutex
+	upCh              chan struct{} // closed while connected
+	failNextDiscovery int           // discovery publishes to fail
+	msgs              []telemetryMsg
+}
+
+type telemetryMsg struct {
+	at    time.Time
+	topic string
+}
+
+func newFakeTelemetrySink() *fakeTelemetrySink {
+	up := make(chan struct{})
+	close(up)
+	return &fakeTelemetrySink{upCh: up}
+}
+
+func (f *fakeTelemetrySink) awaitConnection(ctx context.Context) error {
+	f.mu.Lock()
+	up := f.upCh
+	f.mu.Unlock()
+	select {
+	case <-up:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+// publish fails at once while disconnected, as a *publisher does once its publishTimeout,
+// much shorter than a send interval, has passed.
+func (f *fakeTelemetrySink) publish(_ context.Context, topic string, _ []byte) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	select {
+	case <-f.upCh:
+	default:
+		return errors.New("not connected")
+	}
+	if f.failNextDiscovery > 0 && topic == discoveryTopic("tlm", "foo") {
+		f.failNextDiscovery--
+		return errors.New("no PUBACK")
+	}
+	f.msgs = append(f.msgs, telemetryMsg{at: time.Now(), topic: topic})
+	return nil
+}
+
+func (f *fakeTelemetrySink) setConnected(connected bool) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if !connected {
+		f.upCh = make(chan struct{})
+		return
+	}
+	close(f.upCh)
+}
+
+func (f *fakeTelemetrySink) setFailNextDiscovery(n int) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.failNextDiscovery = n
+}
+
+// sent returns when each message on topic was published.
+func (f *fakeTelemetrySink) sent(topic string) []time.Time {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var res []time.Time
+	for _, m := range f.msgs {
+		if m.topic == topic {
+			res = append(res, m.at)
+		}
+	}
+	return res
+}
+
+// flakyDevicesClient fails the first failNext ListDevices calls.
+type flakyDevicesClient struct {
+	devicespb.DevicesApiClient
+	mu       sync.Mutex
+	failNext int
+}
+
+func (c *flakyDevicesClient) ListDevices(ctx context.Context, in *devicespb.ListDevicesRequest, opts ...grpc.CallOption) (*devicespb.ListDevicesResponse, error) {
+	c.mu.Lock()
+	fail := c.failNext > 0
+	if fail {
+		c.failNext--
+	}
+	c.mu.Unlock()
+	if fail {
+		return nil, errors.New("devices unavailable")
+	}
+	return c.DevicesApiClient.ListDevices(ctx, in, opts...)
+}
+
+type telemetryHarness struct {
+	t       *testing.T
+	sink    *fakeTelemetrySink
+	devices *flakyDevicesClient
+	a       *AutoImpl
+	start   time.Time
+}
+
+// newTelemetryHarness must be called inside a synctest bubble.
+// It announces one meter, "foo".
+func newTelemetryHarness(t *testing.T) *telemetryHarness {
+	root := node.New("meter")
+	meterModel := meterpb.NewModel(resource.WithInitialValue(&meterpb.MeterReading{Usage: 123.45}))
+	root.Announce("foo",
+		node.HasServer(meterpb.RegisterMeterApiServer, meterpb.MeterApiServer(meterpb.NewModelServer(meterModel))),
+		node.HasServer(meterpb.RegisterMeterInfoServer, meterpb.MeterInfoServer(&meterpb.InfoServer{MeterReading: &meterpb.MeterReadingSupport{UsageUnit: "kWh"}})),
+		node.HasTrait(meterpb.TraitName),
+	)
+	devicesClient := &flakyDevicesClient{
+		DevicesApiClient: devicespb.NewDevicesApiClient(wrap.ServerToClient(devicespb.DevicesApi_ServiceDesc, devices.NewServer(root))),
+	}
+	a := &AutoImpl{Services: auto.Services{
+		Logger:  zaptest.NewLogger(t),
+		Node:    root,
+		Devices: devicesClient,
+	}}
+	a.initialiseClients(root)
+	return &telemetryHarness{t: t, sink: newFakeTelemetrySink(), devices: devicesClient, a: a}
+}
+
+// run starts the telemetry loop, sending every minute and discovery every metadataInterval sends.
+func (h *telemetryHarness) run(metadataInterval int) {
+	cfg, err := config.ParseConfig(fmt.Appendf(nil, `{
+		"traits": [%q],
+		"mqtt": {"host": "tls://broker:8883", "clientCertPath": "c", "clientKeyPath": "k",
+			"sendInterval": "* * * * *", "metadataInterval": %d}
+	}`, meterpb.TraitName, metadataInterval))
+	require.NoError(h.t, err)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	grp, ctx := errgroup.WithContext(ctx)
+	h.a.runTelemetry(ctx, grp, cfg, h.sink)
+	h.start = time.Now()
+	h.t.Cleanup(func() {
+		cancel()
+		if err := grp.Wait(); err != nil {
+			h.t.Errorf("runTelemetry error = %v", err)
+		}
+	})
+}
+
+// sleepUntil advances the bubble's clock to d after run, then waits for the loop to settle.
+func (h *telemetryHarness) sleepUntil(d time.Duration) {
+	time.Sleep(time.Until(h.start.Add(d)))
+	synctest.Wait()
+}
+
+func (h *telemetryHarness) telemetry() []time.Time { return h.sink.sent(pointsetTopic("tlm", "foo")) }
+func (h *telemetryHarness) discovery() []time.Time { return h.sink.sent(discoveryTopic("tlm", "foo")) }
+
+// TestRunTelemetry_waitsForConnection is SCB-1512: a broker that refuses the node for part
+// of the first interval must not cost that cycle's telemetry and discovery.
+func TestRunTelemetry_waitsForConnection(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		h := newTelemetryHarness(t)
+		h.sink.setConnected(false)
+		h.run(100)
+
+		h.sleepUntil(90 * time.Second)
+		assert.Empty(t, h.telemetry(), "nothing sent while disconnected")
+		assert.Empty(t, h.discovery(), "nothing sent while disconnected")
+
+		h.sink.setConnected(true)
+		synctest.Wait()
+		connected := h.start.Add(90 * time.Second)
+		assert.Equal(t, []time.Time{connected}, h.telemetry(), "the first cycle's telemetry, once connected")
+		assert.Equal(t, []time.Time{connected}, h.discovery(), "the first cycle's discovery, once connected")
+
+		h.sleepUntil(2*time.Minute + time.Second)
+		assert.Equal(t, []time.Time{connected, h.start.Add(2 * time.Minute)}, h.telemetry(), "telemetry at the next send")
+		assert.Len(t, h.discovery(), 1, "discovery not again until cycle N")
+	})
+}
+
+// TestRunTelemetry_skipsCycleWhenConnectionTakesTooLong confirms a cycle that can't reach the
+// broker before the next send gives way to it, and the discovery it owed goes then.
+func TestRunTelemetry_skipsCycleWhenConnectionTakesTooLong(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		h := newTelemetryHarness(t)
+		h.sink.setConnected(false)
+		h.run(100)
+
+		h.sleepUntil(150 * time.Second)
+		assert.Empty(t, h.telemetry(), "nothing sent while disconnected")
+
+		h.sink.setConnected(true)
+		synctest.Wait()
+		connected := h.start.Add(150 * time.Second)
+		assert.Equal(t, []time.Time{connected}, h.telemetry(), "one cycle sent, the skipped one not caught up")
+		assert.Equal(t, []time.Time{connected}, h.discovery(), "the owed discovery")
+
+		h.sleepUntil(3*time.Minute + time.Second)
+		assert.Len(t, h.telemetry(), 2, "telemetry at the next send")
+		assert.Len(t, h.discovery(), 1, "discovery not again until cycle N")
+	})
+}
+
+// TestRunTelemetry_retriesFailedDiscovery confirms discovery that fails to publish is resent
+// on the next cycle, without moving the every-N-cycles cadence.
+func TestRunTelemetry_retriesFailedDiscovery(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		h := newTelemetryHarness(t)
+		h.sink.setFailNextDiscovery(1)
+		h.run(3)
+
+		h.sleepUntil(time.Minute + time.Second)
+		assert.Len(t, h.telemetry(), 1)
+		assert.Empty(t, h.discovery(), "first discovery failed")
+
+		h.sleepUntil(2*time.Minute + time.Second)
+		assert.Equal(t, []time.Time{h.start.Add(2 * time.Minute)}, h.discovery(), "resent on the next cycle")
+
+		h.sleepUntil(4*time.Minute + time.Second)
+		assert.Len(t, h.telemetry(), 4)
+		assert.Equal(t, []time.Time{h.start.Add(2 * time.Minute), h.start.Add(4 * time.Minute)}, h.discovery(),
+			"not again until cycle N")
+	})
+}
+
+// TestRunTelemetry_retriesFailedRefresh confirms a failed first device list is retried on the
+// next cycle, rather than leaving nothing to export until cycle N.
+func TestRunTelemetry_retriesFailedRefresh(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		h := newTelemetryHarness(t)
+		h.devices.failNext = 1
+		h.run(100)
+
+		h.sleepUntil(time.Minute + time.Second)
+		assert.Empty(t, h.telemetry(), "no devices to export")
+		assert.Empty(t, h.discovery(), "no devices to export")
+
+		h.sleepUntil(2*time.Minute + time.Second)
+		assert.Equal(t, []time.Time{h.start.Add(2 * time.Minute)}, h.telemetry(), "found on the retried refresh")
+		assert.Equal(t, []time.Time{h.start.Add(2 * time.Minute)}, h.discovery(), "found on the retried refresh")
+	})
 }
